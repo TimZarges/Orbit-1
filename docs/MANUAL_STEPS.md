@@ -42,3 +42,10 @@
 | ☐ | Berechtigungen einrichten (Allow-/Deny-/Ask-Listen aus `02_PERMISSIONS.md`). Diese liegen **nicht im Repo**, sondern in deinen Antigravity-Einstellungen. | 00 |
 | ☐ | Unter **Customizations** prüfen, dass `AGENTS.md`, die 4 Regeln und die 10 Skills erkannt werden. | 00 |
 | ☐ | Eventuell vorhandene globale Regeln (`~/.gemini/GEMINI.md`) auf Widersprüche zu `AGENTS.md` prüfen. | 00 |
+
+### Phase 00: Firebase & Crashlytics
+1. **Firebase-Projekte anlegen:** Falls nicht geschehen, erstelle `orbit-dev` und `orbit-prod` in der Firebase Console.
+2. **FlutterFire CLI ausführen:** Führe `flutterfire configure --project=orbit-dev -o lib/firebase_options_dev.dart` und analog für `prod` aus, um die Firebase-Apps mit den Android/iOS-Flavors zu verknüpfen.
+3. **Crashlytics aktivieren:** Aktiviere Crashlytics in der Firebase Console für beide Projekte.
+4. **App Distribution:** Lade die ersten APKs via App Distribution hoch, um sie auf dem echten Gerät zu testen (hilft beim Chart-Performance Test).
+5. **Chart-Spike Messung (S1):** Miss die Chart-Scrubbing-Performance auf dem physischen Gerät im Profile Mode (`flutter run --profile`).

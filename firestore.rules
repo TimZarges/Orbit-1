@@ -1,0 +1,91 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    // Collection: users/{uid}
+    // Fields: uid, email, createdAt, role, trainerVerified, coachId, profile, settings, consents, plan
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    function areImmutableFieldsUnchanged(fields) {
+      return !request.resource.data.diff(resource.data).affectedKeys().hasAny(fields);
+    }
+    function checkStringSize(val, minLen, maxLen) {
+      return val is string && val.size() >= minLen && val.size() <= maxLen;
+    }
+    function checkOptionalStringSize(val, minLen, maxLen) {
+      return val == null || checkStringSize(val, minLen, maxLen);
+    }
+
+    // ===============================================================
+    // Domain Validators
+    // ===============================================================
+    function isValidUserDoc(data) {
+      // Basic size checks to prevent 1MB DoS attacks
+      // Ensure if string fields exist, they are reasonably sized
+      let emailOk = !('email' in data) || checkStringSize(data.email, 3, 254);
+      let roleOk = !('role' in data) || data.role in ["ATHLETE", "TRAINER"];
+      
+      return emailOk && roleOk;
+    }
+
+    function isValidUserCreate(data) {
+      // Must not escalate privileges on creation
+      let roleOk = !('role' in data) || data.role == 'ATHLETE';
+      let verifiedOk = !('trainerVerified' in data) || data.trainerVerified == false;
+      let coachOk = !('coachId' in data) || data.coachId == null;
+      let uidOk = !('uid' in data) || data.uid == request.auth.uid;
+      
+      return isValidUserDoc(data) && roleOk && verifiedOk && coachOk && uidOk;
+    }
+
+    function isValidUserUpdate() {
+      // Must not change critical server-side fields
+      let protectedFieldsUnchanged = areImmutableFieldsUnchanged([
+        'role', 'trainerVerified', 'coachId', 'uid', 'email', 'createdAt', 'metrics', 'metricsVersion'
+      ]);
+      return isValidUserDoc(request.resource.data) && protectedFieldsUnchanged;
+    }
+
+    // ===============================================================
+    // Security Rules
+    // ===============================================================
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidUserCreate(request.resource.data);
+      allow update: if isOwner(userId) && isValidUserUpdate();
+      
+      match /thresholdHistory/{historyId} {
+        allow read: if isOwner(userId);
+        allow create, update: if isOwner(userId); // Prototype for now
+        allow delete: if isOwner(userId);
+      }
+
+      match /consents/{consentId} {
+        allow read: if isOwner(userId);
+        allow create, update: if isOwner(userId); // Prototype for now
+        allow delete: if isOwner(userId);
+      }
+
+      match /private/{privateId} {
+        allow read, write: if false;
+      }
+    }
+  }
+}

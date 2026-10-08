@@ -1,0 +1,37 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "activities",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "athleteId", "order": "ASCENDING" },
+        { "fieldPath": "localDate", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "activities",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "coachId", "order": "ASCENDING" },
+        { "fieldPath": "localDate", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "plannedWorkouts",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "athleteId", "order": "ASCENDING" },
+        { "fieldPath": "localDate", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "plannedWorkouts",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "coachId", "order": "ASCENDING" },
+        { "fieldPath": "localDate", "order": "ASCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

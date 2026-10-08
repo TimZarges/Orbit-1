@@ -1,0 +1,43 @@
+name: orbit
+description: Mobile-First-Trainingsplattform für Ausdauersportler.
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.3.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  
+  # State Management & Routing
+  flutter_riverpod: ^2.5.1
+  go_router: ^13.2.0
+
+  # Models & JSON
+  freezed_annotation: ^2.4.1
+  json_annotation: ^4.9.0
+
+  # Charts (for spike)
+  fl_chart: ^0.66.0
+  firebase_auth: ^6.7.0
+  google_sign_in: ^7.2.0
+  cloud_firestore: ^6.10.0
+  cloud_functions: ^6.5.0
+  firebase_app_check: ^0.4.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.1
+  
+  # Code generation
+  build_runner: ^2.4.8
+  freezed: ^2.4.7
+  json_serializable: ^6.9.5
+
+flutter:
+  uses-material-design: true
+  generate: true
