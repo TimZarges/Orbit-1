@@ -41,6 +41,41 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     ];
 
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('Orbit'),
+        actions: [
+          IconButton(
+            icon: const CircleAvatar(
+              radius: 16,
+              child: Icon(Icons.person, size: 16),
+            ),
+            onPressed: () {
+              // Menü öffnen oder direkt zum Profil
+              showMenu(
+                context: context,
+                position: const RelativeRect.fromLTRB(100, kToolbarHeight, 0, 0),
+                items: [
+                  PopupMenuItem(
+                    value: 'profile',
+                    child: const Text('Profil'),
+                    onTap: () => context.go('/profile'),
+                  ),
+                  PopupMenuItem(
+                    value: 'thresholds',
+                    child: const Text('Schwellenwerte'),
+                    onTap: () => context.go('/thresholds'),
+                  ),
+                  PopupMenuItem(
+                    value: 'settings',
+                    child: const Text('Einstellungen'),
+                    onTap: () => context.go('/settings'),
+                  ),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
       body: pages[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,

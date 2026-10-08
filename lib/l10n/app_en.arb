@@ -1,0 +1,15 @@
+{
+  "@@locale": "en",
+  "infoTerm_ftp": "Functional Threshold Power (FTP)",
+  "infoTerm_ftp_desc": "The highest average power in watts you can sustain for about an hour. Serves as the basis for your cycling training zones.",
+  "infoTerm_lthr": "Lactate Threshold Heart Rate (LTHR)",
+  "infoTerm_lthr_desc": "The highest average heart rate you can sustain for about an hour.",
+  "infoTerm_css": "Critical Swim Speed (CSS)",
+  "infoTerm_css_desc": "Your theoretical continuous swimming speed without exhaustion. Basis for your swimming training zones.",
+  "infoTerm_zones": "Training Zones",
+  "infoTerm_zones_desc": "Intensity ranges calculated from your threshold values. Each zone trains different energy systems in your body.",
+  "infoTerm_maxHr": "Maximum Heart Rate (Max-HR)",
+  "infoTerm_maxHr_desc": "The highest heart rate your heart can reach during maximum effort.",
+  "infoTerm_restingHr": "Resting Heart Rate",
+  "infoTerm_restingHr_desc": "Your heart rate in a state of absolute rest. A low resting heart rate is often a sign of good aerobic fitness."
+}

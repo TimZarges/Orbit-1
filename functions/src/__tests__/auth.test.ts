@@ -1,4 +1,4 @@
-import * as admin from "firebase-admin";
+
 import * as fft from "firebase-functions-test";
 import { setInitialRole } from "../auth";
 

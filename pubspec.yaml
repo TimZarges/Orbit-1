@@ -27,6 +27,7 @@ dependencies:
   cloud_firestore: ^6.10.0
   cloud_functions: ^6.5.0
   firebase_app_check: ^0.4.8
+  intl: ^0.20.3
 
 dev_dependencies:
   flutter_test:

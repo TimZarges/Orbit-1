@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/dashboard/screens/dashboard_screen.dart';
+import '../../features/profile/screens/profile_screen.dart';
+import '../../features/profile/screens/thresholds_screen.dart';
+import '../../features/settings/screens/settings_screen.dart';
 import '../design/widget_gallery.dart';
 import '../../features/auth/screens/login_screen.dart';
 import '../../features/onboarding/screens/onboarding_screen.dart';
@@ -60,6 +63,20 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/',
         builder: (context, state) => const DashboardScreen(),
+        routes: [
+          GoRoute(
+            path: 'profile',
+            builder: (context, state) => const ProfileScreen(),
+          ),
+          GoRoute(
+            path: 'thresholds',
+            builder: (context, state) => const ThresholdsScreen(),
+          ),
+          GoRoute(
+            path: 'settings',
+            builder: (context, state) => const SettingsScreen(),
+          ),
+        ]
       ),
       GoRoute(
         path: '/gallery',

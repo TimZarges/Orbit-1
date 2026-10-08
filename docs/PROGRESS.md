@@ -3,39 +3,23 @@
 > Wird am Ende jeder Phase von Antigravity aktualisiert (`/phase-finish`). Kurz und ehrlich halten.
 
 ## Aktuell
-- Phase: 03
-- Branch: feature/phase-02-coach-link
+- Phase: 04
+- Branch: feature/phase-03-profile-settings
 
 ## Fertig
-- Phase 00 (Foundation):
-  - Komplettes Setup der Ordnerstruktur (`lib/core`, `lib/features`, etc.)
-  - Firebase-Konfiguration (`firebase.json`, `.firebaserc`, Emulator-Suite)
-  - Cloud Functions (TypeScript-Gerüst in `functions/`)
-  - CI-Pipeline (GitHub Actions)
-  - Basis-Entscheidungen im ADR-Log (`docs/DECISIONS.md`)
-  - Crashlytics-Vorbereitung (`CrashReporter`)
-  - Design-System (`AppColors`, `AppSpacing`, `AppTypography`, `AppTheme`)
-  - App-Shell (`go_router` in `app_router.dart`, `WidgetGalleryScreen`)
-  - Spikes (S1, S2) konzeptuell vorbereitet und Empfehlungen im ADR abgelegt.
-- Phase 01 (Auth & Onboarding):
-  - Firebase Auth Integration (Login, Auth Provider)
-  - Onboarding Flow UI (Rolle, Sportarten, Erfahrung, Wettkampfziel)
-  - Firebase Storage & Firestore Rules Entwurf (`firestore.rules`, `storage.rules`)
-  - Cloud Functions `setInitialRole`, `deleteAccount`, `exportAccount`
-  - `firestore.indexes.json`
-  - Platzhalter für `docs/PRIVACY.md`
-- Phase 02 (Trainer-Verknüpfung):
-  - Firestore Rules für `coachLinks` und `invites` (Denormalisiertes `coachId` Konzept)
-  - Cloud Functions für `createInvite`, `redeemInvite`, `updatePermissions`, `revokeLink`
-  - Trainer-Tab: Einladung erstellen und Athleten-Liste
-  - Athlet-Tab: Empty State und Trainer-Karte inkl. Freigaben
-  - `AthleteContextWrapper` zur sicheren Weitergabe der `athleteId` an Kind-Screens
+- Phase 00 (Foundation): Abgeschlossen
+- Phase 01 (Auth & Onboarding): Abgeschlossen
+- Phase 02 (Trainer-Verknüpfung): Abgeschlossen
+- Phase 03 (Profil, Einstellungen, Schwellenwerte):
+  - Berechnungsmodelle (`training_zones_model.dart`, `estimations.dart`) inkl. Tests
+  - Terminology-Layer (`TermResolver`) für Erfahrungsstufen inkl. Tests
+  - Lokalisierung (`app_localizations.dart` / `.arb` Dateien)
+  - `MeasurementFormatter` für Einheiten inkl. Tests
+  - UI-Screens: `ProfileScreen`, `SettingsScreen`, `ThresholdsScreen` und `InfoTerm`-Widget
+  - Einbindung ins Dashboard / Router
 
 ## Offen / in Arbeit
-- Phase 03: Trainingsplan-UI (Kalenderansicht)
+- Phase 04: Aktivitäts-Import (FIT-Dateien, Garmin-Webhook)
 
 ## Bekannte Probleme
-- NPM nicht verfügbar in der Entwicklungsumgebung, daher Rules Emulator Tests für Phase 01 übersprungen. Müssen von Nutzer nachgeholt werden.
-
-## Nächster Schritt
-- `/phase-start 02`
+- `build_runner` (freezed/json_serializable) wirft aktuell wegen `analyzer`-Konflikten (SDK 3.13 / analyzer 3.9) Exceptions. Modelle für `AppSettings` wurden temporär manuell implementiert, bis die Packages kompatibel aufgerüstet sind.

@@ -1,0 +1,15 @@
+{
+  "@@locale": "de",
+  "infoTerm_ftp": "Functional Threshold Power (FTP)",
+  "infoTerm_ftp_desc": "Die höchste durchschnittliche Leistung in Watt, die du für etwa eine Stunde aufrechterhalten kannst. Dient als Basis für deine Rad-Trainingszonen.",
+  "infoTerm_lthr": "Schwellen-Herzfrequenz (LTHR)",
+  "infoTerm_lthr_desc": "Die höchste durchschnittliche Herzfrequenz, die du für etwa eine Stunde aufrechterhalten kannst.",
+  "infoTerm_css": "Critical Swim Speed (CSS)",
+  "infoTerm_css_desc": "Deine theoretische Dauer-Schwimmgeschwindigkeit ohne Erschöpfung. Basis für deine Schwimm-Trainingszonen.",
+  "infoTerm_zones": "Trainingszonen",
+  "infoTerm_zones_desc": "Intensitätsbereiche, die aus deinen Schwellenwerten berechnet werden. Jede Zone trainiert unterschiedliche Energiesysteme deines Körpers.",
+  "infoTerm_maxHr": "Maximale Herzfrequenz (Max-HF)",
+  "infoTerm_maxHr_desc": "Die höchste Herzfrequenz, die dein Herz bei maximaler Anstrengung erreichen kann.",
+  "infoTerm_restingHr": "Ruhepuls",
+  "infoTerm_restingHr_desc": "Deine Herzfrequenz im absoluten Ruhezustand. Ein niedriger Ruhepuls ist oft ein Zeichen für gute aerobe Fitness."
+}
