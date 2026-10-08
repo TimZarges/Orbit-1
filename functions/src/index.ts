@@ -5,3 +5,4 @@ setGlobalOptions({ region: "europe-west3" });
 
 export * from "./metrics";
 export * from "./auth";
+export * from "./coach";

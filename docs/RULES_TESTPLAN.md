@@ -67,3 +67,16 @@ Sicherstellen, dass die implementierten Firestore Security Rules für die `users
 
 ## Umsetzung
 Die Tests werden als `.spec.ts` oder `.test.ts` im Testordner angelegt (z. B. `functions/tests/rules.spec.ts`) und per `npm test` gegen den laufenden Emulator (`firebase emulators:start`) ausgeführt. Dies wird im Rahmen der Phase 01 Implementierung sichergestellt.
+
+### Theoretischer Beweis (Architektur-Check): Trainer-Zugriffsmodell (Phase 02)
+
+**1. Warum das denormalisierte `coachId`-Feld in Listenabfragen funktioniert:**
+Firestore Security Rules sind keine Filter (Stichwort: "Rules are not filters"). Wenn ein Trainer eine Abfrage `db.collection('activities').get()` ausführt, wird sie abgewiesen, da er nicht auf alle Aktivitäten global zugreifen darf. 
+Führt der Trainer jedoch eine gefilterte Abfrage `db.collection('activities').where('coachId', '==', request.auth.uid).get()` aus, kann Firestore diese statisch analysieren. Da die Rule `allow read: if resource.data.coachId == request.auth.uid;` exakt dieser Filterbedingung entspricht, ist die Abfrage zulässig und extrem performant, da nur ein Index auf `coachId` abgefragt werden muss.
+
+**2. Warum wir für Subcollections wie Health auf `get()` zurückgreifen müssen:**
+Die Health-Daten liegen als Subcollection in `users/{uid}/dailyMetrics/{date}`. Wir denormalisieren die `coachId` nicht in jedes einzelne Tagesdokument, da die Berechtigung granular in `coachLinks` verwaltet wird (Feld `permissions.health`). Um bei einem Read auf die Health-Daten zu prüfen, ob der Trainer diese sehen darf, muss die Rule dynamisch das Verknüpfungs-Dokument laden: 
+`get(/databases/$(database)/documents/coachLinks/$(uid)_$(request.auth.uid)).data.permissions.health == true`.
+
+**3. Warum `get()` bei Einzelabfragen pro Tag in Ordnung ist:**
+Der Aufruf von `get()` in Security Rules kostet einen zusätzlichen Document Read. Da der Trainer in der Regel Health-Daten eines Athleten gezielt (z.B. für die heutige Ansicht oder ausgewählte Tage) abruft, löst dies keine massiven List-Abfragen mit hunderten `get()`-Aufrufen aus. Das Limit von 10 Document Access Calls pro Rule-Auswertung (für Einzel-Dokumente bzw. 20 für Listen) wird hier nicht überschritten, und die Kosten sind minimal. Der große Vorteil ist die absolute Datenkonsistenz: Entzieht der Athlet das Health-Recht, greift die Sperre in derselben Sekunde für alle Tagesdaten rückwirkend.

@@ -3,8 +3,8 @@
 > Wird am Ende jeder Phase von Antigravity aktualisiert (`/phase-finish`). Kurz und ehrlich halten.
 
 ## Aktuell
-- Phase: 02
-- Branch: feature/phase-01-auth-onboarding
+- Phase: 03
+- Branch: feature/phase-02-coach-link
 
 ## Fertig
 - Phase 00 (Foundation):
@@ -24,9 +24,15 @@
   - Cloud Functions `setInitialRole`, `deleteAccount`, `exportAccount`
   - `firestore.indexes.json`
   - Platzhalter für `docs/PRIVACY.md`
+- Phase 02 (Trainer-Verknüpfung):
+  - Firestore Rules für `coachLinks` und `invites` (Denormalisiertes `coachId` Konzept)
+  - Cloud Functions für `createInvite`, `redeemInvite`, `updatePermissions`, `revokeLink`
+  - Trainer-Tab: Einladung erstellen und Athleten-Liste
+  - Athlet-Tab: Empty State und Trainer-Karte inkl. Freigaben
+  - `AthleteContextWrapper` zur sicheren Weitergabe der `athleteId` an Kind-Screens
 
 ## Offen / in Arbeit
-- Phase 02: Coach-Verknüpfung und Kalender-Freigabe
+- Phase 03: Trainingsplan-UI (Kalenderansicht)
 
 ## Bekannte Probleme
 - NPM nicht verfügbar in der Entwicklungsumgebung, daher Rules Emulator Tests für Phase 01 übersprungen. Müssen von Nutzer nachgeholt werden.

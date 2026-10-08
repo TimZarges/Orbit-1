@@ -7,6 +7,18 @@ service cloud.firestore {
     // ===============================================================
     // Collection: users/{uid}
     // Fields: uid, email, createdAt, role, trainerVerified, coachId, profile, settings, consents, plan
+    //
+    // Collection: coachLinks/{linkId}
+    // Fields: athleteId, coachId, status, permissions, createdAt, updatedAt
+    //
+    // Collection: invites/{code}
+    // Fields: coachId, expiresAt, maxUses, usedBy
+    //
+    // Collection: activities/{activityId}
+    // Fields: athleteId, coachId, ...
+    //
+    // Collection: plannedWorkouts/{workoutId}
+    // Fields: athleteId, coachId, ...
     // ===============================================================
 
     // ===============================================================
@@ -33,7 +45,6 @@ service cloud.firestore {
     // ===============================================================
     function isValidUserDoc(data) {
       // Basic size checks to prevent 1MB DoS attacks
-      // Ensure if string fields exist, they are reasonably sized
       let emailOk = !('email' in data) || checkStringSize(data.email, 3, 254);
       let roleOk = !('role' in data) || data.role in ["ATHLETE", "TRAINER"];
       
@@ -56,6 +67,11 @@ service cloud.firestore {
         'role', 'trainerVerified', 'coachId', 'uid', 'email', 'createdAt', 'metrics', 'metricsVersion'
       ]);
       return isValidUserDoc(request.resource.data) && protectedFieldsUnchanged;
+    }
+
+    function isCoachForHealth(userId) {
+      let linkDoc = get(/databases/$(database)/documents/coachLinks/$(userId)_$(request.auth.uid));
+      return linkDoc != null && linkDoc.data.permissions.health == true;
     }
 
     // ===============================================================
@@ -86,6 +102,36 @@ service cloud.firestore {
       match /private/{privateId} {
         allow read, write: if false;
       }
+      
+      match /dailyMetrics/{date} {
+        allow read: if isOwner(userId) || (isAuthenticated() && isCoachForHealth(userId));
+        allow create, update: if isOwner(userId); // Prototype for now
+        allow delete: if isOwner(userId);
+      }
+    }
+
+    match /coachLinks/{linkId} {
+      allow read: if isAuthenticated() && (resource.data.athleteId == request.auth.uid || resource.data.coachId == request.auth.uid);
+      allow write: if false; // Only backend can write
+    }
+
+    match /invites/{code} {
+      allow read: if isAuthenticated();
+      allow write: if false; // Only backend can write
+    }
+
+    match /activities/{activityId} {
+      allow read: if isAuthenticated() && (resource.data.athleteId == request.auth.uid || resource.data.coachId == request.auth.uid);
+      allow create: if isAuthenticated() && request.resource.data.athleteId == request.auth.uid; // Prototype
+      allow update: if isAuthenticated() && resource.data.athleteId == request.auth.uid && request.resource.data.athleteId == resource.data.athleteId; // Prototype, immutable athleteId
+      allow delete: if isAuthenticated() && resource.data.athleteId == request.auth.uid;
+    }
+
+    match /plannedWorkouts/{workoutId} {
+      allow read: if isAuthenticated() && (resource.data.athleteId == request.auth.uid || resource.data.coachId == request.auth.uid);
+      allow create: if isAuthenticated() && request.resource.data.athleteId == request.auth.uid; // Prototype
+      allow update: if isAuthenticated() && resource.data.athleteId == request.auth.uid && request.resource.data.athleteId == resource.data.athleteId; // Prototype
+      allow delete: if isAuthenticated() && resource.data.athleteId == request.auth.uid;
     }
   }
 }
