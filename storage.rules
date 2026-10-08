@@ -11,11 +11,24 @@ service firebase.storage {
       allow read, write: if false;
     }
 
-    // Nutzer dürfen nur in ihrem eigenen Verzeichnis lesen und schreiben
-    match /users/{userId}/{allPaths=**} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+    // Nutzer dürfen FIT-Dateien hochladen (max. 25 MB)
+    match /users/{userId}/fit/{fileName} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow write: if request.auth != null 
+                   && request.auth.uid == userId 
+                   && request.resource.size < 25 * 1024 * 1024;
+    }
+
+    // Streams (Zeitreihen) dürfen nur vom Server geschrieben, aber vom Nutzer gelesen werden
+    match /users/{userId}/streams/{fileName} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow write: if false; // Nur Cloud Functions (Admin SDK)
     }
     
-    // Später (Phase 02/13): chats/{chatId}/attachments/*
+    // Profilbilder (Platzhalter für später)
+    match /users/{userId}/profile/{fileName} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow write: if request.auth != null && request.auth.uid == userId && request.resource.size < 5 * 1024 * 1024;
+    }
   }
 }

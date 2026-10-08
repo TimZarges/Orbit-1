@@ -25,30 +25,28 @@ Eine FIT-Datei hochladen und als Aktivität (inkl. Zeitreihen) in ORBIT sehen. E
 10. **Tests:** Parser mit **synthetischen FIT-Dateien** (per Encoder erzeugt, falls verfügbar) für Rad mit Leistung, Lauf mit GPS, Pool-Schwimmen, Triathlon-Multisport, Datei ohne Leistung, beschädigte Datei. Zusätzlich Platz für **echte, anonymisierte** FIT-Dateien in `testvectors/fit/` (Eintrag in `MANUAL_STEPS.md`: ich liefere 2–3 eigene Dateien, GPS-Start/Ziel vorher unkenntlich machen).
 11. **STOPP 2 [RISIKO-MITTEL]:** Kurzbericht zur Pipeline (Testergebnisse, bekannte Grenzen). Danach Teil B.
 
-### Teil B: Client und Demo-Modus
+### Teil B: Client
 12. **Import-UI:** FIT-Datei wählen (Dateiauswahl), Upload-Fortschritt, Verarbeitungsstatus live (Firestore-Stream), Fehlerzustände mit Hilfetext. Alles im **Athlete-Kontext**.
 13. **Aktivitätsliste und Detail (nur Zusammenfassung):** Liste nach `localDate` absteigend mit Paginierung, Sport-Icon + Sportfarbe, Titel, Datum (lokal), Dauer, Distanz. Detail mit Kennzahlen je Sportart, Segmenten (Multisport), „Mehr Details" als deaktivierter Platzhalter (Phase 11). Aktivität löschen mit Bestätigung. Skeleton-Loader und Empty State.
-14. **Demo-Modus:** Callable `enableDemoMode` / `disableDemoMode`. Erzeugt **deterministisch** (feste Zufallsbasis) rund 60–90 Tage realistische Trainingsdaten (Schwimmen im Pool, Rad mit Leistung, Lauf mit GPS, ein Triathlon-Wettkampf mit Wechseln, Ruhetage, Belastungsverlauf mit Aufbau und Erholung). **Bevorzugter Weg:** synthetische FIT-Dateien erzeugen und durch dieselbe Pipeline schicken (testet sie Ende-zu-Ende). `source: "DEMO"`, im UI klar gekennzeichnet („Demo-Daten"), jederzeit komplett löschbar. Aktivierbar im Onboarding und in den Einstellungen. Für spätere Phasen auch geplante Workouts und Health-Tage ergänzbar (Erweiterungspunkt vorsehen).
-15. **First-Run-Screen** (Tab „Heute" bzw. Aktivitätsliste leer): drei Optionen „Garmin verbinden (folgt in Phase 06, deaktiviert mit Hinweis)", „FIT-Datei importieren", „Demo ansehen". Gestalteter Empty State nach `DESIGN.md`.
-16. Lokalisierung (de + en), Galerie-Einträge, Golden Tests (Liste, Detail, Empty State, Fehlerzustand).
+14. **First-Run-Screen** (Tab „Heute" bzw. Aktivitätsliste leer): zwei Optionen „Garmin verbinden (folgt in Phase 06, deaktiviert mit Hinweis)" und „FIT-Datei importieren". Gestalteter Empty State nach `DESIGN.md`.
+15. Lokalisierung (de + en), Galerie-Einträge, Golden Tests (Liste, Detail, Empty State, Fehlerzustand).
 
 ## STOPP-Punkte
 - **STOPP 1 [RISIKO-HOCH]** nach Aufgabe 1 (finales Aktivitäts-Modell, Streams-Format)
 - **STOPP 2 [RISIKO-MITTEL]** nach Aufgabe 10 (Pipeline fertig)
 
 ## Nicht-Ziele
-Metrik-Berechnung (Phase 05), Charts und Karte (11), Garmin-Anbindung (06), Zuordnung zu geplanten Workouts (08), Health-Daten (07).
+Metrik-Berechnung (Phase 05), Charts und Karte (11), Garmin-Anbindung (06), Zuordnung zu geplanten Workouts (08), Health-Daten (07). Demo-Daten werden explizit vom Nutzer abgelehnt, stattdessen werden echte FIT-Dateien zur Verfügung gestellt.
 
 ## Abnahme
 ### Automatisch prüfbar
 - [ ] `flutter analyze`, `flutter test`, Functions-Build und -Tests grün
 - [ ] Parser-Tests für alle genannten Dateitypen und Fehlerfälle grün, Idempotenz (doppelter Upload) getestet
 - [ ] Rules-Tests: Client kann `activities` nicht schreiben, fremde Dateien nicht lesen, Größenlimit greift
-- [ ] Demo-Modus erzeugt reproduzierbar dieselben Daten, `disableDemoMode` entfernt alle Demo-Aktivitäten samt Storage-Dateien
 - [ ] Zeitzonen-Tests (Mitternacht, Zeitzonenwechsel) grün
 ### Manuell (ich)
-- [ ] Eine eigene FIT-Datei (Rad/Lauf/Schwimmen) hochladen: Werte stimmen mit meiner Uhr/Garmin Connect überein
-- [ ] Demo-Modus aktivieren und löschen, Listen- und Detailansicht fühlen sich gut an
+- [ ] Vom Nutzer bereitgestellte FIT-Dateien (Rad/Lauf/Schwimmen) hochladen: Werte stimmen überein
+- [ ] Listen- und Detailansicht fühlen sich gut an
 - [ ] Fehlerfall (kaputte Datei) ist verständlich erklärt
 
 ## Dokumentation am Ende

@@ -62,6 +62,7 @@ metrics?: { tss?, intensityFactor?, normalizedPowerW?, variabilityIndex?, … } 
 metricsVersion, thresholdsSnapshot
 streamsPath?, fitPath?                    // Storage
 plannedWorkoutId?, matchStatus: "UNMATCHED"|"AUTO"|"MANUAL"
+processing: { state: "UPLOADED"|"PROCESSING"|"READY"|"FAILED", errorCode? }
 createdAt
 ```
 Garmin-Aktivitätstypen werden auf diese Enums gemappt, unbekannte auf `OTHER`.
@@ -98,6 +99,29 @@ Roh-Payloads von Anbietern. Eine Firestore-getriggerte Function verarbeitet sie 
 ## Storage-Pfade
 - `users/{uid}/fit/{activityId}.fit`
 - `users/{uid}/streams/{activityId}.json.gz`
+  *Format (auf 1 Hz resampled, Lücken als null):*
+  ```json
+  {
+    "version": 1,
+    "sampleRateSec": 1,
+    "length": 3600,
+    "time":        [0,   1,   2,   3, ...],
+    "heartRate":   [120, 121, null, 125, ...],
+    "power":       [200, 210, 0,   215, ...],
+    "cadence":     [90,  90,  0,   92, ...],
+    "speed":       [3.5, 3.6, null, 3.7, ...],
+    "altitude":    [100.5, 100.5, ...],
+    "positionLat": [48.123456, ...],
+    "positionLng": [11.123456, ...],
+    // Erweitert für externe Sensoren und Garmin Advanced Dynamics:
+    "temperature": [20.0, ...],          // Körper- oder Umgebungstemperatur
+    "coreTemperature": [37.5, ...],      // z.B. CORE Sensor
+    "smo2": [65, ...],                   // Muscle Oxygenation
+    "thb": [12, ...],                    // Total Hemoglobin
+    "stanceTime": [250, ...],            // Laufdynamik
+    "verticalOscillation": [8.5, ...]    // Laufdynamik
+  }
+  ```
 - `chats/{chatId}/attachments/{file}` (Größen- und Typlimit in Rules)
 
 ## Indizes
