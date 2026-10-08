@@ -65,7 +65,10 @@ export async function parseFitAndSave(
     positionLat: [] as (number | null)[],
     positionLng: [] as (number | null)[],
     temperature: [] as (number | null)[],
-    coreTemperature: [] as (number | null)[]
+    coreTemperature: [] as (number | null)[],
+    stanceTime: [] as (number | null)[],
+    verticalOscillation: [] as (number | null)[],
+    stepLength: [] as (number | null)[]
   };
   
   // Resample at 1Hz
@@ -90,13 +93,16 @@ export async function parseFitAndSave(
           streams.positionLng.push(null);
           streams.temperature.push(null);
           streams.coreTemperature.push(null);
+          streams.stanceTime.push(null);
+          streams.verticalOscillation.push(null);
+          streams.stepLength.push(null);
         }
         
         streams.heartRate[offset] = r.heartRate as number ?? null;
         streams.power[offset] = r.power as number ?? null;
         streams.cadence[offset] = r.cadence as number ?? null;
-        streams.speed[offset] = r.speed as number ?? null;
-        streams.altitude[offset] = r.altitude as number ?? null;
+        streams.speed[offset] = r.enhancedSpeed as number ?? r.speed as number ?? null;
+        streams.altitude[offset] = r.enhancedAltitude as number ?? r.altitude as number ?? null;
         
         // Convert semicircles to degrees
         if (r.positionLat) streams.positionLat[offset] = (r.positionLat as number) * (180.0 / 2147483648.0);
@@ -104,6 +110,9 @@ export async function parseFitAndSave(
         
         streams.temperature[offset] = r.temperature as number ?? null;
         streams.coreTemperature[offset] = r.coreTemperature as number ?? null;
+        streams.stanceTime[offset] = r.stanceTime as number ?? null;
+        streams.verticalOscillation[offset] = r.verticalOscillation as number ?? null;
+        streams.stepLength[offset] = r.stepLength as number ?? null;
       }
     }
   }

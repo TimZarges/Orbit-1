@@ -26,7 +26,8 @@ class ProfileScreen extends StatelessWidget {
                     radius: 18,
                     backgroundColor: Theme.of(context).primaryColor,
                     child: IconButton(
-                      icon: const Icon(Icons.camera_alt, size: 18, color: Colors.white),
+                      icon: const Icon(Icons.camera_alt,
+                          size: 18, color: Colors.white),
                       onPressed: () {
                         // TODO: Implement image upload
                       },
@@ -80,14 +81,24 @@ class ProfileScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 24),
-          const Text('Sportarten', style: TextStyle(fontWeight: FontWeight.bold)),
+          const Text('Sportarten',
+              style: TextStyle(fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
           Wrap(
             spacing: 8.0,
             children: [
-              FilterChip(label: const Text('Laufen'), selected: true, onSelected: (_) {}),
-              FilterChip(label: const Text('Radfahren'), selected: true, onSelected: (_) {}),
-              FilterChip(label: const Text('Schwimmen'), selected: false, onSelected: (_) {}),
+              FilterChip(
+                  label: const Text('Laufen'),
+                  selected: true,
+                  onSelected: (_) {}),
+              FilterChip(
+                  label: const Text('Radfahren'),
+                  selected: true,
+                  onSelected: (_) {}),
+              FilterChip(
+                  label: const Text('Schwimmen'),
+                  selected: false,
+                  onSelected: (_) {}),
             ],
           ),
           const SizedBox(height: 24),

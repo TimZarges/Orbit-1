@@ -4,22 +4,23 @@
 
 ## Aktuell
 - Phase: 04
-- Branch: feature/phase-03-profile-settings
+- Branch: feature/phase-04-activity-import
 
 ## Fertig
 - Phase 00 (Foundation): Abgeschlossen
 - Phase 01 (Auth & Onboarding): Abgeschlossen
 - Phase 02 (Trainer-Verknüpfung): Abgeschlossen
-- Phase 03 (Profil, Einstellungen, Schwellenwerte):
-  - Berechnungsmodelle (`training_zones_model.dart`, `estimations.dart`) inkl. Tests
-  - Terminology-Layer (`TermResolver`) für Erfahrungsstufen inkl. Tests
-  - Lokalisierung (`app_localizations.dart` / `.arb` Dateien)
-  - `MeasurementFormatter` für Einheiten inkl. Tests
-  - UI-Screens: `ProfileScreen`, `SettingsScreen`, `ThresholdsScreen` und `InfoTerm`-Widget
-  - Einbindung ins Dashboard / Router
+- Phase 03 (Profil, Einstellungen, Schwellenwerte): Abgeschlossen
+- Phase 04 (Aktivitäts-Import):
+  - FIT-Dateiverarbeitung im Backend über Cloud Function (inkl. Dynamischem `@garmin/fitsdk` Import, 1Hz Downsampling, GZIP Streaming).
+  - `Activity` und `ActivitySummary` Models.
+  - Upload-Flow mit Storage-Regeln (25MB Limit) und Riverpod-State (`activity_upload_provider.dart`).
+  - Listenansicht im `TodayTabScreen` mit Empty-State.
+  - Detailansicht mit Summary-Werten (`ActivityDetailScreen`), Multisport-Segmenten und Lösch-Funktion (`deleteActivity` Callable).
+  - Vollständiger Frontend-Backend-Workflow.
 
 ## Offen / in Arbeit
-- Phase 04: Aktivitäts-Import (FIT-Dateien, Garmin-Webhook)
+- Phase 05: Metriken & Belastung (TSS, Normalized Power, Zonenverteilung)
 
 ## Bekannte Probleme
-- `build_runner` (freezed/json_serializable) wirft aktuell wegen `analyzer`-Konflikten (SDK 3.13 / analyzer 3.9) Exceptions. Modelle für `AppSettings` wurden temporär manuell implementiert, bis die Packages kompatibel aufgerüstet sind.
+- `build_runner` Konflikte durch `analyzer` Abhängigkeiten: Wir nutzen derzeit manuelle Models anstelle von `freezed`.

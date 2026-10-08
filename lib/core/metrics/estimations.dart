@@ -2,7 +2,6 @@
 /// ACHTUNG: Dies sind nur grobe Schätzungen und sollten vom Nutzer nur als Vorschlag genutzt werden.
 /// Eine automatische Übernahme findet nie statt.
 class Estimations {
-  
   /// Grobe Schätzung der maximalen Herzfrequenz.
   /// Formel: 208 - (0.7 * Alter) (Tanaka et al. 2001)
   /// Quelle: https://pubmed.ncbi.nlm.nih.gov/11153730/

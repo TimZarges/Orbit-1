@@ -10,7 +10,7 @@ class ThresholdsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Schwellenwerte'),
@@ -41,7 +41,8 @@ class ThresholdsScreen extends StatelessWidget {
             title: 'Laufen (Schwellen-Pace)',
             currentValue: '4:30 min/km',
             infoTitle: 'Schwellen-Pace',
-            infoDesc: 'Die Geschwindigkeit, ab der sich Laktat schneller im Blut ansammelt als es abgebaut werden kann.',
+            infoDesc:
+                'Die Geschwindigkeit, ab der sich Laktat schneller im Blut ansammelt als es abgebaut werden kann.',
             zones: runPaceZones,
           ),
           const SizedBox(height: 16),
@@ -93,7 +94,8 @@ class ThresholdsScreen extends StatelessWidget {
             const SizedBox(height: 8),
             Text(currentValue, style: Theme.of(context).textTheme.displaySmall),
             const SizedBox(height: 16),
-            const Text('Zonen-Vorschau', style: TextStyle(fontWeight: FontWeight.bold)),
+            const Text('Zonen-Vorschau',
+                style: TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             SizedBox(
               height: 40,
@@ -105,7 +107,10 @@ class ThresholdsScreen extends StatelessWidget {
                       child: Center(
                         child: Text(
                           z.shortName,
-                          style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold),
                         ),
                       ),
                     ),

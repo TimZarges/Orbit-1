@@ -45,3 +45,9 @@
 - **Kontext:** Performance von Telemetrie-Charts bei >7.000 Datenpunkten.
 - **Entscheidung:** Nutzung von `fl_chart` in Kombination mit starkem Downsampling (serverseitig oder Client-seitig auf max. 500 Punkte).
 - **Begründung:** Ein kompletter CustomPainter für interaktives Chart-Scrubbing ist zu aufwendig. Mit gedownsampleten Daten performt `fl_chart` ausreichend gut und ist deutlich wartbarer.
+
+### 2026-10-08: FIT-Dateiverarbeitung und ESM Import
+- **Kontext:** Das Garmin `@garmin/fitsdk` ist ein reines ES-Module, aber Cloud Functions nutzen per Default CommonJS (v20).
+- **Entscheidung:** Das `@garmin/fitsdk` wird über dynamische `import()` Aufrufe in der Laufzeit eingebunden, statt die komplette Cloud Function auf ESM umzustellen.
+- **Begründung:** Verhindert tiefgreifende Umbauten des Build-Setups für die Cloud Functions, ermöglicht aber dennoch die Nutzung des offiziellen SDKs.
+- **Alternativen:** Komplettes TypeScript Setup auf ESM umstellen (komplex mit jest/firebase) oder externe Konverter nutzen.

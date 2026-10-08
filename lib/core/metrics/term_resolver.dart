@@ -33,7 +33,8 @@ class TermResolver {
         return 'TSS';
       case MetricTerm.np:
         if (level == ExperienceLevel.beginner) return 'Gewichtete Leistung';
-        if (level == ExperienceLevel.advanced) return 'Gewichtete Leistung (NP)';
+        if (level == ExperienceLevel.advanced)
+          return 'Gewichtete Leistung (NP)';
         return 'NP';
       case MetricTerm.ifactor:
         if (level == ExperienceLevel.beginner) return 'Intensität';

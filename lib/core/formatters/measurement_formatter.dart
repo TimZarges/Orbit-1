@@ -1,6 +1,6 @@
 import 'package:orbit/features/settings/models/app_settings.dart';
 
-/// Zentrale Schicht zur Formatierung von Einheiten basierend auf dem 
+/// Zentrale Schicht zur Formatierung von Einheiten basierend auf dem
 /// Messsystem (Metrisch vs. Imperial).
 class MeasurementFormatter {
   final MeasurementSystem system;
@@ -21,20 +21,21 @@ class MeasurementFormatter {
   /// Geschwindigkeit/Pace (m/s zu min/km oder min/mi)
   String formatPace(double speedMetersPerSecond) {
     if (speedMetersPerSecond <= 0) return '-:--';
-    
-    double distanceMultiplier = system == MeasurementSystem.imperial ? 1609.34 : 1000.0;
-    
+
+    double distanceMultiplier =
+        system == MeasurementSystem.imperial ? 1609.34 : 1000.0;
+
     // Sekunden pro km/mi
     double secondsPerUnit = distanceMultiplier / speedMetersPerSecond;
-    
+
     int minutes = (secondsPerUnit / 60).floor();
     int seconds = (secondsPerUnit % 60).round();
-    
+
     if (seconds == 60) {
       minutes++;
       seconds = 0;
     }
-    
+
     final unit = system == MeasurementSystem.imperial ? 'mi' : 'km';
     return '$minutes:${seconds.toString().padLeft(2, '0')} min/$unit';
   }
@@ -42,20 +43,20 @@ class MeasurementFormatter {
   /// Schwimm-Pace (m/s zu min/100m oder min/100yd)
   String formatSwimPace(double speedMetersPerSecond) {
     if (speedMetersPerSecond <= 0) return '-:--';
-    
+
     // Für imperial (yd) -> 100yd = 91.44m
     double distance = system == MeasurementSystem.imperial ? 91.44 : 100.0;
-    
+
     double secondsPerUnit = distance / speedMetersPerSecond;
-    
+
     int minutes = (secondsPerUnit / 60).floor();
     int seconds = (secondsPerUnit % 60).round();
-    
+
     if (seconds == 60) {
       minutes++;
       seconds = 0;
     }
-    
+
     final unit = system == MeasurementSystem.imperial ? '100yd' : '100m';
     return '$minutes:${seconds.toString().padLeft(2, '0')} /$unit';
   }

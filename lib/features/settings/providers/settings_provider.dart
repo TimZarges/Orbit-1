@@ -26,6 +26,7 @@ class SettingsController extends Notifier<AppSettings> {
   }
 }
 
-final settingsControllerProvider = NotifierProvider<SettingsController, AppSettings>(() {
+final settingsControllerProvider =
+    NotifierProvider<SettingsController, AppSettings>(() {
   return SettingsController();
 });

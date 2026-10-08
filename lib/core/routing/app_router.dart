@@ -61,23 +61,22 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const OnboardingScreen(),
       ),
       GoRoute(
-        path: '/',
-        builder: (context, state) => const DashboardScreen(),
-        routes: [
-          GoRoute(
-            path: 'profile',
-            builder: (context, state) => const ProfileScreen(),
-          ),
-          GoRoute(
-            path: 'thresholds',
-            builder: (context, state) => const ThresholdsScreen(),
-          ),
-          GoRoute(
-            path: 'settings',
-            builder: (context, state) => const SettingsScreen(),
-          ),
-        ]
-      ),
+          path: '/',
+          builder: (context, state) => const DashboardScreen(),
+          routes: [
+            GoRoute(
+              path: 'profile',
+              builder: (context, state) => const ProfileScreen(),
+            ),
+            GoRoute(
+              path: 'thresholds',
+              builder: (context, state) => const ThresholdsScreen(),
+            ),
+            GoRoute(
+              path: 'settings',
+              builder: (context, state) => const SettingsScreen(),
+            ),
+          ]),
       GoRoute(
         path: '/gallery',
         builder: (context, state) => const WidgetGalleryScreen(),

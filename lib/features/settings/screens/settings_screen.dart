@@ -21,7 +21,8 @@ class SettingsScreen extends ConsumerWidget {
           ListTile(
             leading: const Icon(Icons.language),
             title: const Text('Sprache'),
-            subtitle: Text(settings.languageCode == 'de' ? 'Deutsch' : 'English'),
+            subtitle:
+                Text(settings.languageCode == 'de' ? 'Deutsch' : 'English'),
             trailing: DropdownButton<String>(
               value: settings.languageCode,
               items: const [
@@ -30,26 +31,35 @@ class SettingsScreen extends ConsumerWidget {
               ],
               onChanged: (val) {
                 if (val != null) {
-                  ref.read(settingsControllerProvider.notifier).setLanguage(val);
+                  ref
+                      .read(settingsControllerProvider.notifier)
+                      .setLanguage(val);
                 }
               },
             ),
           ),
-          
+
           // Einheiten
           ListTile(
             leading: const Icon(Icons.straighten),
             title: const Text('Einheiten'),
-            subtitle: Text(settings.measurementSystem == MeasurementSystem.metric ? 'Metrisch (km, kg)' : 'Imperial (mi, lbs)'),
+            subtitle: Text(
+                settings.measurementSystem == MeasurementSystem.metric
+                    ? 'Metrisch (km, kg)'
+                    : 'Imperial (mi, lbs)'),
             trailing: DropdownButton<MeasurementSystem>(
               value: settings.measurementSystem,
               items: const [
-                DropdownMenuItem(value: MeasurementSystem.metric, child: Text('Metrisch')),
-                DropdownMenuItem(value: MeasurementSystem.imperial, child: Text('Imperial')),
+                DropdownMenuItem(
+                    value: MeasurementSystem.metric, child: Text('Metrisch')),
+                DropdownMenuItem(
+                    value: MeasurementSystem.imperial, child: Text('Imperial')),
               ],
               onChanged: (val) {
                 if (val != null) {
-                  ref.read(settingsControllerProvider.notifier).setMeasurementSystem(val);
+                  ref
+                      .read(settingsControllerProvider.notifier)
+                      .setMeasurementSystem(val);
                 }
               },
             ),
@@ -63,13 +73,16 @@ class SettingsScreen extends ConsumerWidget {
             trailing: DropdownButton<ThemeMode>(
               value: settings.themeMode,
               items: const [
-                DropdownMenuItem(value: ThemeMode.system, child: Text('Automatisch')),
+                DropdownMenuItem(
+                    value: ThemeMode.system, child: Text('Automatisch')),
                 DropdownMenuItem(value: ThemeMode.light, child: Text('Hell')),
                 DropdownMenuItem(value: ThemeMode.dark, child: Text('Dunkel')),
               ],
               onChanged: (val) {
                 if (val != null) {
-                  ref.read(settingsControllerProvider.notifier).setThemeMode(val);
+                  ref
+                      .read(settingsControllerProvider.notifier)
+                      .setThemeMode(val);
                 }
               },
             ),
@@ -83,13 +96,19 @@ class SettingsScreen extends ConsumerWidget {
             trailing: DropdownButton<ExperienceLevel>(
               value: settings.experienceLevel,
               items: const [
-                DropdownMenuItem(value: ExperienceLevel.beginner, child: Text('Einfach')),
-                DropdownMenuItem(value: ExperienceLevel.advanced, child: Text('Fortgeschritten')),
-                DropdownMenuItem(value: ExperienceLevel.expert, child: Text('Experte')),
+                DropdownMenuItem(
+                    value: ExperienceLevel.beginner, child: Text('Einfach')),
+                DropdownMenuItem(
+                    value: ExperienceLevel.advanced,
+                    child: Text('Fortgeschritten')),
+                DropdownMenuItem(
+                    value: ExperienceLevel.expert, child: Text('Experte')),
               ],
               onChanged: (val) {
                 if (val != null) {
-                  ref.read(settingsControllerProvider.notifier).setExperienceLevel(val);
+                  ref
+                      .read(settingsControllerProvider.notifier)
+                      .setExperienceLevel(val);
                 }
               },
             ),

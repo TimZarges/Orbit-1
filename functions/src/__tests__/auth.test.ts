@@ -17,7 +17,7 @@ describe("setInitialRole", () => {
 
   it("should fail if user is not authenticated", async () => {
     try {
-      await wrapped({ data: { role: "ATHLETE" } }, { auth: null });
+      await wrapped({ data: { role: "ATHLETE" }, auth: null });
       fail("Should have thrown an error");
     } catch (e: any) {
       expect(e.code).toBe("unauthenticated");
@@ -26,7 +26,9 @@ describe("setInitialRole", () => {
 
   it("should fail if role is invalid", async () => {
     try {
-      await wrapped({ data: { role: "ADMIN" } }, { auth: { uid: "test1" } });
+      
+      await wrapped({ data: { role: "ADMIN" }, auth: { uid: "test1", token: {} } });
+
       fail("Should have thrown an error");
     } catch (e: any) {
       expect(e.code).toBe("invalid-argument");

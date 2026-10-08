@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../auth/providers/user_provider.dart';
 import '../../coach_link/screens/athlete_coach_tab_screen.dart';
 import '../../coach_link/screens/trainer_athletes_tab_screen.dart';
+import '../../activities/screens/today_tab_screen.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
@@ -21,19 +22,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     final role = userDoc?['role'];
 
     final List<Widget> pages = [
-      Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text('Dashboard Placeholder'),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () => context.go('/gallery'),
-              child: const Text('Zur Widget-Galerie'),
-            ),
-          ],
-        ),
-      ),
+      const TodayTabScreen(),
       if (role == 'TRAINER')
         const TrainerAthletesTabScreen()
       else
@@ -53,7 +42,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               // Menü öffnen oder direkt zum Profil
               showMenu(
                 context: context,
-                position: const RelativeRect.fromLTRB(100, kToolbarHeight, 0, 0),
+                position:
+                    const RelativeRect.fromLTRB(100, kToolbarHeight, 0, 0),
                 items: [
                   PopupMenuItem(
                     value: 'profile',

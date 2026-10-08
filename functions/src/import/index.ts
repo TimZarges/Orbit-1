@@ -44,3 +44,5 @@ export const processFitUpload = functions.storage.object().onFinalize(async (obj
     }, { merge: true });
   }
 });
+
+export { deleteActivity } from './deleteActivity';
