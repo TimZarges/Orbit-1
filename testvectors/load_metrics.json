@@ -1,0 +1,19 @@
+[
+  {
+    "id": "load_ema_5days",
+    "description": "5 Tage Belastung: 100, 150, 0, 50, 120. Startwert 0.",
+    "input": {
+      "dailyLoads": [100, 150, 0, 50, 120],
+      "ctlConstant": 42,
+      "atlConstant": 7,
+      "startCtl": 0,
+      "startAtl": 0
+    },
+    "expected": {
+      "ctl": 9.397,
+      "atl": 42.270,
+      "tsb": -32.873
+    },
+    "tolerance": 0.01
+  }
+]

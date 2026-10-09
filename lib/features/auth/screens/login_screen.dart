@@ -32,6 +32,24 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
   }
 
+  Future<void> _register() async {
+    setState(() => _isLoading = true);
+    try {
+      await ref.read(authServiceProvider).signUpWithEmail(
+            _emailController.text.trim(),
+            _passwordController.text.trim(),
+          );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Registrierung fehlgeschlagen: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -56,9 +74,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             if (_isLoading)
               const CircularProgressIndicator()
             else
-              ElevatedButton(
-                onPressed: _login,
-                child: const Text('Anmelden'),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ElevatedButton(
+                    onPressed: _login,
+                    child: const Text('Anmelden'),
+                  ),
+                  TextButton(
+                    onPressed: _register,
+                    child: const Text('Registrieren (Emulator)'),
+                  ),
+                ],
               ),
           ],
         ),

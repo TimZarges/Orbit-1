@@ -1,0 +1,58 @@
+[
+  {
+    "id": "power_constant_1h",
+    "description": "Konstante Leistung am FTP für 1 Stunde. NP=200, IF=1.0, TSS=100",
+    "input": {
+      "powerArray": "constant:200:3600",
+      "ftp": 200
+    },
+    "expected": {
+      "np": 200,
+      "if": 1.0,
+      "tss": 100
+    },
+    "tolerance": 0.1
+  },
+  {
+    "id": "power_constant_10m",
+    "description": "Konstante Leistung am FTP für 10 Minuten. NP=200, IF=1.0, TSS=16.67",
+    "input": {
+      "powerArray": "constant:200:600",
+      "ftp": 200
+    },
+    "expected": {
+      "np": 200,
+      "if": 1.0,
+      "tss": 16.666
+    },
+    "tolerance": 0.01
+  },
+  {
+    "id": "power_intervals_2",
+    "description": "Wechselnde Leistung: 5 Min 100W, 5 Min 300W",
+    "input": {
+      "powerArray": "constant:100:300,constant:300:300",
+      "ftp": 200
+    },
+    "expected": {
+      "np": 251.67, 
+      "if": 1.258,
+      "tss": 26.39
+    },
+    "tolerance": 0.01
+  },
+  {
+    "id": "power_too_short",
+    "description": "Weniger als 30 Sekunden Daten. NP = Average Power",
+    "input": {
+      "powerArray": "constant:250:20",
+      "ftp": 200
+    },
+    "expected": {
+      "np": 250,
+      "if": 1.25,
+      "tss": 0.868
+    },
+    "tolerance": 0.01
+  }
+]

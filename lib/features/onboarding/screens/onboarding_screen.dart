@@ -1,3 +1,5 @@
+import 'package:cloud_functions/cloud_functions.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -30,7 +32,40 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   void _finishOnboarding() async {
-    // TODO: Call cloud function setInitialRole
+    try {
+      final functions = FirebaseFunctions.instance;
+      await functions.httpsCallable('setInitialRole').call({
+        'role': _selectedRole ?? 'ATHLETE',
+        'profile': {
+          'firstName': 'Nutzer', // Default/Platzhalter
+          'lastName': 'Test',
+          'gender': 'M',
+          'birthDate': '1990-01-01',
+          'weightKg': 75.0,
+          'heightCm': 180,
+          'experienceLevel': _experienceLevel ?? 'ADVANCED',
+          'sports': _selectedSports,
+          if (_goalNameController.text.isNotEmpty)
+            'goals': [
+              {
+                'name': _goalNameController.text,
+                'type': _goalTypeController.text,
+                'date': _goalDate?.toIso8601String(),
+              }
+            ],
+        },
+        'consents': {
+          'healthData': DateTime.now().toIso8601String(),
+          'privacyVersion': 'v1',
+        }
+      });
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Fehler beim Setup: $e')),
+        );
+      }
+    }
   }
 
   @override

@@ -1,0 +1,7 @@
+{
+  "projects": {
+    "default": "orbit-dev",
+    "dev": "orbit-dev",
+    "prod": "orbit-prod"
+  }
+}

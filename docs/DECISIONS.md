@@ -51,3 +51,16 @@
 - **Entscheidung:** Das `@garmin/fitsdk` wird über dynamische `import()` Aufrufe in der Laufzeit eingebunden, statt die komplette Cloud Function auf ESM umzustellen.
 - **Begründung:** Verhindert tiefgreifende Umbauten des Build-Setups für die Cloud Functions, ermöglicht aber dennoch die Nutzung des offiziellen SDKs.
 - **Alternativen:** Komplettes TypeScript Setup auf ESM umstellen (komplex mit jest/firebase) oder externe Konverter nutzen.
+
+### 2026-10-09: Metrik-Methoden (Phase 05)
+- **Kontext:** Berechnung von Belastungswerten (TSS, CTL, ATL, etc.) für Rad, Lauf und Schwimmen.
+- **Entscheidung & Begründung:**
+  1. **Lauf-Belastung:** Primär **rTSS** (basierend auf Pace & Threshold Pace), da es die mechanische Belastung besser abbildet. Fallback auf **hrTSS** (basierend auf HF & Schwellen-HF), falls GPS/Pace unzuverlässig (z.B. Indoor) aber HF vorhanden ist.
+  2. **sTSS (Schwimmen):** `sTSS = (Dauer_in_h) * (IF^3) * 100`, wobei `IF = Normalized Pace / Critical Swim Speed (CSS)`. Da Wasserwiderstand kubisch wächst, ist die dritte Potenz fachlich korrekt.
+  3. **Behandlung fehlender Daten:** 
+     - Keine FTP/Schwellenwerte: Berechnung mit Standard-Schätzwerten (z.B. HF-Max-Formel), Metrik-Qualität wird als `INSUFFICIENT` markiert.
+     - Indoor ohne Leistung/Pace: Fallback auf hrTSS. Wenn auch keine HF, dann `TSS = 0` (oder manuelle RPE-Eingabe in Phase 09).
+  4. **CTL/ATL-Modell:** Exponentieller gleitender Durchschnitt (EMA). CTL-Konstante = 42 Tage, ATL = 7 Tage. Startwert bei neuen Athleten ist 0 (baut sich über 6 Wochen auf, Option zur manuellen Vorgabe in Profil-Einstellungen).
+  5. **NP (Glättung & Nullwerte):** 30-Sekunden gleitender Durchschnitt. Datenlücken < 30s werden als 0-Watt gewertet (verhindert das künstliche "Schönrechnen" bei Tretpausen).
+  6. **Umgang mit langen Pausen:** Pausen > 30s (z.B. Ampel, Kaffeepause) setzen das 30s-Fenster zurück (verhindern Verzerrung durch extrem lange Null-Phasen im Moving Average).
+- **Alternativen:** TRIMP statt hrTSS (weniger vergleichbar mit Rad-TSS), simple Durchschnitts-Pace statt rTSS.
