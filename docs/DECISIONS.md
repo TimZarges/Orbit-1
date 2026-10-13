@@ -149,3 +149,26 @@
      - FCM-Pushs enthalten standardmäßig **keinen** Nachrichtentext und keine Gesundheitsdaten („Neue Nachricht von <Name>"). Eine Vorschau ist nur bei bewusster Aktivierung in den Einstellungen möglich.
      - Während konfigurierter Ruhezeiten (`settings.quietHours`) werden Pushes serverseitig unterdrückt (Nachrichten verbleiben im Chat und im Unread-Badge). Ungültige oder abgemeldete Geräte-Tokens werden nach jedem Multicast-Versand automatisch bereinigt.
 - **Begründung:** Wahrung strenger DSGVO-Standards, Schutz vor unbefugtem Datenabfluss und störungsfreie Erholungsphasen für Athleten.
+
+### 2026-10-13: Home-Dashboard („Heute"), Daily Ring und Read-Budget (Phase 14)
+- **Kontext:** Der Tab „Heute" ist der zentrale Einstiegspunkt der App für Athleten. Er muss auf einen Blick Orientierung bieten, darf Nutzer nicht überfordern und muss ressourceneffizient (Firestore Quotas) bleiben.
+- **Entscheidung:**
+  1. **Inhalts- und Prioritätskonzept (`HomeCardResolver`):**
+     - Maximal 4 Karten oberhalb der Falz.
+     - Reihenfolge:
+       1. `HomeActionBanner`: Dringende Handlungsbedarfe (ungelesene Trainer-Nachrichten, neue Schwellenwert-Vorschläge, nicht zugeordnete Einheiten).
+       2. `HomeHeroCard`: Visuelles Zentrum mit Volt Daily Ring (`#CDFB17`) auf Deep Navy (`#0F172A`) und heutigem Training / Ruhetag.
+       3. `RaceCountdownCard`: Saisonziel-Countdown in Tagen/Wochen mit 1-Klick-Bearbeitung.
+       4. `FormTrafficLightCard` / `ReadinessCard`: Physiologischer Kontext (Belastungszustand & Erholung).
+       5. `HomeRecentActivityCard`: Zuletzt absolvierte Einheit mit Direktlink ins Cockpit.
+     - Neuer Nutzer ohne Daten sieht einen fokussierten, gestalteten Onboarding-State mit Schnellstart-Aktionen (FIT-Upload, Garmin verbinden, Saisonziel).
+  2. **Strikte Einhaltung der Volt-Regel (`docs/DESIGN.md` §2):**
+     - Performance-Volt (`#CDFB17`) wird niemals als Schrift auf hellen Flächen verwendet, sondern ausschließlich auf Deep Navy (`#0F172A`) oder als Schaltflächen-/Badge-Hintergrund mit Navy-Schrift.
+     - Barrierefreiheit: Ring besitzt Semantics und volles Textäquivalent („Ist: 45 / Plan: 68 TSS" bzw. „Ruhetag"), funktioniert auch ohne Farbwahrnehmung.
+  3. **Read-Budget ($\le 4$ Firestore-Reads pro Öffnung):**
+     - Ein gebündelter Provider (`homeDashboardProvider`) führt maximal 4 Reads durch (Tagesaggregat, 1 geplantes Workout, 1 letzte Aktivität, User-Profil & Pending Proposals).
+     - Kein unkoordiniertes Einzel-Laden pro Karte. Caching via Riverpod FutureProvider mit Pull-to-Refresh (`RefreshIndicator`).
+  4. **Kein Home-Tab für Trainer:**
+     - Für Trainer ist der Starttab „Athleten" (`TrainerAthletesTabScreen`), da deren Arbeitsfokus auf der Betreuung des Kaders liegt.
+- **Begründung:** Ruhige Mobile-First-Trainingsplattform, Vermeidung von Quota-Erschöpfung und strikte Design-Konsistenz.
+

@@ -26,6 +26,32 @@
 
 ## Einträge
 
+### [Phase 14] Home-Dashboard („Heute") · RISIKO-MITTEL
+- **STOPP-Punkt/Anlass:** STOPP 1 aus Phasendatei (Inhalts- und Prioritätskonzept, Daily Ring auf Deep Navy #0F172A, maximal 4 Karten oberhalb der Falz, Read-Budget).
+- **Entscheidung:**
+  1. **Inhalts- und Prioritätskonzept (`HomeCardResolver`):**
+     - Klare Prioritätenfolge: Dringende Aktionen / To-Dos (`HomeActionBanner`), Hero-Karte mit Daily Ring (`HomeHeroCard`), Saisonziel-Countdown (`RaceCountdownCard`), physiologische Form-Ampel / Erholungsstatus (`FormTrafficLightCard` / `ReadinessCard`), letzte Trainingseinheit mit Direktzugriff auf Cockpit (`HomeRecentActivityCard`).
+     - Brandneue Nutzer ohne Daten erhalten den gestalteten Empty-State mit Schnelleinstieg (FIT-Import, Garmin-Anbindung, Saisonziel).
+     - Maximal 4 Karten oberhalb der Falz für einen ruhigen, aufgeräumten Startscreen ohne Reizüberflutung.
+  2. **Volt-Hero & Daily Ring (`DailyRingWidget`, `HomeHeroCard`):**
+     - Strikte Einhaltung der Volt-Regel (`docs/DESIGN.md` §2): Performance-Volt (`#CDFB17`) nur auf Deep-Navy-Hintergrund (`#0F172A`) oder als Button/Badge-Fläche mit Navy-Text.
+     - Ring visualisiert Ist-Belastung im Verhältnis zum Tagesplan bzw. zur typischen Belastung; Kennzeichnung bei Ruhetag („Ruhetag").
+     - Vollständiges Textäquivalent (`Semantics`) für Barrierefreiheit / Screenreader.
+  3. **Gebündelte Datenabfrage & Read-Budget (`homeDashboardProvider`):**
+     - Maximal $\le 4$ Firestore-Reads pro Home-Öffnung (Tagesaggregat, 1 geplantes Workout, 1 letzte Aktivität, User-Profil & Pending Proposals).
+     - Caching via Riverpod FutureProvider mit Pull-to-Refresh (`RefreshIndicator`).
+  4. **Saisonziel-Countdown & Modal-Sheet (`RaceGoal`, `RaceCountdownCard`, `EditRaceGoalSheet`):**
+     - Countdown in Tagen/Wochen, neutrale motivierende Formulierung.
+     - Inline-Bearbeitungsmöglichkeit im Profil (`users/{uid}.profile.raceGoal`).
+  5. **Trainer-Rolle & Navigation:**
+     - Für Trainer existiert wie in den Anforderungen definiert kein separates Home-Dashboard; der Standard-Einstiegstab ist die Athleten-Übersicht (`TrainerAthletesTabScreen`).
+  6. **Responsive Layout:**
+     - Einspaltig auf Smartphones, zweispaltiges Grid ab Tablet-Breite ($\ge 600\text{ px}$).
+- **Alternative:** Alle Karten laden jeweils isoliert Daten (führt zu bis zu 15 Firestore-Reads pro Öffnung) oder Überfrachtung des Homescreens mit mehr als 6 Karten.
+- **Begründung:** Ruhige Mobile-First-Trainingsplattform, Vermeidung von Quota-Erschöpfung und strikte Design-Konsistenz.
+- **Bitte prüfen:** Tab „Heute", Bearbeiten des Saisonziels und Galerie (`/gallery`).
+- **Rückholen:** Branch `feature/phase-14-home` verwerfen.
+
 ### [Phase 13] Chat und Push-Benachrichtigungen · RISIKO-HOCH
 - **STOPP-Punkt/Anlass:** STOPP 1 aus Phasendatei (Rules-Entwurf, Chat/Nachrichten-Modell, Verhalten nach Widerruf, Soft-Delete und Push-Datensparsamkeit).
 - **Entscheidung:**

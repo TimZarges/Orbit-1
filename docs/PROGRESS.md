@@ -3,8 +3,8 @@
 > Wird am Ende jeder Phase von Antigravity aktualisiert (`/phase-finish`). Kurz und ehrlich halten.
 
 ## Aktuell
-- Phase: 13 (Abgeschlossen) -> Phase 14 (Home & Dashboard)
-- Branch: feature/phase-13-chat-push
+- Phase: 14 (Abgeschlossen) -> Phase 15 (Coach Desktop & Dashboard)
+- Branch: feature/phase-14-home
 
 ## Fertig
 - Phase 00 (Foundation): Abgeschlossen
@@ -20,27 +20,29 @@
 - Phase 10 (Analyse einfach – Ampel, Wochenbelastung, Erfahrungsstufen): Abgeschlossen
 - Phase 11 (Analyse Cockpit – Telemetrie, Karte, Power-Kurve): Abgeschlossen
 - Phase 12 (Leistungsdiagnostik & Schwellenwert-Erkennung): Abgeschlossen
-- Phase 13 (Chat und Push-Benachrichtigungen):
-  - Datenmodell & Security Rules (`chats/{athleteId}_{coachId}`, Subcollection `messages`, `state`):
-    - Teilnehmer-Validierung über `isChatParticipant(chatId)`.
-    - Schreibzugriff für Nachrichten erfordert aktiven Chat (`isChatActive(chatId)` blockiert nach Widerruf).
-    - Nachrichten-Updates ausschließlich für Soft-Delete durch den Sender (`status == 'DELETED'`), Hard-Delete strikt gesperrt.
-    - Storage Rules (`storage.rules`): Bildanhänge $\le 10\text{ MB}$, Dokumente $\le 25\text{ MB}$.
-  - Aktivitäts-Sharing (`ActivityShareSnapshot`):
-    - Übertragen einer Momentaufnahme absolvierter Trainingseinheiten im Chat ohne Erhöhung von Datenzugriffsrechten.
-  - Push-Infrastruktur & Cloud Functions (`functions/src/chat/` & `notifications/`):
-    - Trigger `onMessageCreated` aktualisiert `lastMessage` und `unreadCount` transaktional.
-    - Datensparsamer Multicast-Versand via FCM ohne sensible Gesundheitsdaten oder Nachrichtentexte.
-    - Automatische Unterdrückung während konfigurierter Ruhezeiten (`settings.quietHours`).
-    - Automatische Bereinigung ungültiger/abgemeldeter Endgeräte-Tokens (`users/{uid}/devices`).
-  - Mobile UI & Routing:
-    - `ChatScreen` mit Echtzeit-Stream, Paginierung, Datumstrennern, Eingabeleiste und Soft-Delete.
-    - `ChatListScreen` für Trainer-Postfach mit Suche und Unread-Zählern.
-    - Aufklärungsdialog vor Push-Berechtigungsanfrage (`NotificationService`).
-    - Erweiterung der Widget-Galerie (`/gallery`) und Integration im Coach-Tab sowie Dashboard.
+- Phase 13 (Chat und Push-Benachrichtigungen): Abgeschlossen
+- Phase 14 (Home-Dashboard „Heute"):
+  - Inhalts- und Prioritätskonzept (`HomeCardResolver`):
+    - Dynamische Priorisierung (Action-Banner, Hero Daily Ring, Saisonziel-Countdown, Form-Ampel / Readiness, Letzte Aktivität).
+    - Maximal 4 Karten oberhalb der Falz für einen ruhigen Startscreen ohne Überforderung.
+  - Volt Hero-Karte (`HomeHeroCard` & `DailyRingWidget`):
+    - Strikte Einhaltung der Volt-Regel (`docs/DESIGN.md` §2): Volt (`#CDFB17`) auf Deep Navy (`#0F172A`).
+    - Visualisierung des Verhältnisses von Ist-Belastung zu Planbelastung (oder Ruhetag) mit vollem Semantics-/Screenreader-Textäquivalent.
+    - Heutiges Training mit Sportfarbe, Dauer, TSS und Schnellzugriff auf Detailsheet (`WorkoutDetailSheet`).
+  - Saisonziel-Countdown (`RaceGoal`, `RaceCountdownCard`, `EditRaceGoalSheet`):
+    - Countdown in Tagen/Wochen mit 1-Klick-Bearbeitung direkt aus der Karte ins Profil.
+  - Action-Banner (`HomeActionBanner`):
+    - Kontextsensitive Anzeige für neue Schwellenwerte (Phase 12), ungelesene Trainer-Nachrichten (Phase 13) und nicht zugeordnete Einheiten (Phase 08).
+  - Gebündelter Datenzugriff & Quota-Schutz (`homeDashboardProvider`):
+    - Maximal 4 Firestore-Reads pro Öffnung, Riverpod-Caching und Pull-to-Refresh (`RefreshIndicator`).
+  - Responsives Layout:
+    - Einspaltig auf Mobile, Zweispalten-Raster ab Tablet-Breite ($\ge 600\text{ px}$).
+    - Gestalteter Onboarding Empty-State für Neunutzer mit FIT-Upload und Garmin-Connect.
+  - Unit-Tests: `test/features/home/domain/home_card_resolver_test.dart`.
+  - Integration in Widget-Galerie (`/gallery`).
 
 ## Offen / in Arbeit
-- Phase 14: Home (Heute-Tab, Tageszusammenfassung, Quick Actions, Feedback)
+- Phase 15: Coach Desktop & Dashboard (Kaderübersicht, Schnellfilter, Compliance, Feedback)
 
 ## Bekannte Probleme
 - `build_runner` Konflikte durch `analyzer` Abhängigkeiten: Wir nutzen derzeit manuelle Models anstelle von `freezed`.

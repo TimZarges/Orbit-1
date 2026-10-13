@@ -29,6 +29,11 @@ import '../../features/diagnostics/widgets/guided_test_card.dart';
 import '../../features/diagnostics/widgets/threshold_history_chart.dart';
 import '../../features/chat/models/chat_message.dart';
 import '../../features/chat/widgets/chat_bubble.dart';
+import '../../features/home/models/race_goal.dart';
+import '../../features/home/widgets/home_hero_card.dart';
+import '../../features/home/widgets/home_action_banner.dart';
+import '../../features/home/widgets/race_countdown_card.dart';
+import '../../features/calendar/models/planned_workout.dart';
 
 class WidgetGalleryScreen extends StatelessWidget {
   const WidgetGalleryScreen({super.key});
@@ -329,6 +334,37 @@ class WidgetGalleryScreen extends StatelessWidget {
               createdAt: DateTime.now().subtract(const Duration(minutes: 2)),
             ),
             isMe: true,
+          ),
+          const SizedBox(height: 32),
+          Text('Home-Dashboard („Heute") (Phase 14)', style: Theme.of(context).textTheme.headlineLarge),
+          const SizedBox(height: 16),
+          const HomeActionBanner(
+            pendingThresholdsCount: 1,
+            unreadChatMessagesCount: 2,
+          ),
+          const SizedBox(height: 16),
+          HomeHeroCard(
+            actualLoad: 52.0,
+            plannedWorkout: PlannedWorkout(
+              id: 'w_demo',
+              athleteId: 'a1',
+              createdBy: 'a1',
+              localDate: '2026-10-13',
+              sport: 'BIKE',
+              title: '4x4min Schwellenintervalle Rad',
+              plannedDurationSec: 3600,
+              plannedLoad: 68.0,
+              status: PlannedWorkoutStatus.planned,
+              createdAt: DateTime.now(),
+            ),
+          ),
+          const SizedBox(height: 16),
+          RaceCountdownCard(
+            raceGoal: RaceGoal(
+              title: 'Ironman 70.3 Kraichgau',
+              date: '${DateTime.now().year + 1}-05-25',
+              distance: 'Mitteldistanz',
+            ),
           ),
           const SizedBox(height: 32),
         ],
