@@ -24,6 +24,16 @@
 - **Repo ist privat.** `google-services.json` darf (nach Rückfrage im Audit) committet werden. Service-Account-Schlüssel, Keystores, `.env` und Secrets nie.
 - **Autopilot-Modus** (`/phase-run`): STOPP-Punkte werden zu Checkpoints in `docs/CHECKPOINTS.md`, Branches werden gestapelt, harte Stopps nur bei Blockern, Irreversiblem, Regelverstoß, Audit-Befund oder wiederholtem Fehler. Zweck: maximale Selbstständigkeit bei sichtbaren Review-Schulden.
 
+### 2026-10-13: Workout-Struktur Schema v1 & Builder-Architektur (Phase 09)
+- **Kontext:** Schnelles, mobiles und fehlerarmes Erstellen strukturierter Einheiten per Text-Kurzeingabe oder grafischem Block-Editor sowie Speichern und Einplanen von Vorlagen.
+- **Entscheidung & Begründung:**
+  1. **Schema v1 (`WORKOUT_SYNTAX.md`):** Reine SI-Einheiten intern (Sekunden, Meter), strikt typisierte Sealed Classes (`StepBlock`, `RepeatBlock`), maximale Verschachtelungstiefe von 3, maximal 200 Blöcke nach Expansion. Unbekannte Schema-Versionen werden abgelehnt (`migrateStructure`).
+  2. **Bidirektionale Synchronisation:** Vollständige Kopplung zwischen Freitext (`WorkoutParser`) und Block-Editor (`WorkoutBlockEditorSheet`) über `WorkoutBuilderNotifier`. Jede Änderung am Text aktualisiert das Diagramm und den Editor; jede Änderung an Steppern/Blöcken aktualisiert den Text im kanonischen Format (`WorkoutFormatter`).
+  3. **Entkoppeltes Einplanen:** Beim Einplanen aus einer Vorlage (`workoutTemplates`) wird die Struktur in das neue Kalender-Dokument (`plannedWorkouts`) tief kopiert und nicht nur referenziert. So bleiben historische Kalenderdaten bei späteren Änderungen der Vorlage unverändert erhalten.
+  4. **Granulare Trainer-Sichtbarkeit:** Vorlagen mit `SHARED_WITH_MY_ATHLETES` sind für betreute Athleten lesbar (`exists(/coachLinks/{athleteId}_{ownerId})`), aber nicht schreibbar.
+  5. **Live-Profilgrafik:** Eigener performanter `CustomPainter` (`WorkoutProfileChart`) mit garantierter Mindestbalkenbreite (4 px für kurze 15s-Schritte) und Barrierefreiheit via `Semantics`.
+- **Alternativen:** Reine Formularfelder (auf Mobilgeräten langsam und umständlich) oder JSON-Texteditor (fehleranfällig).
+
 ### 2026-10-08: Architektur-Fundament
 - **Kontext:** Neuaufsetzen des Projekts von Null.
 - **Entscheidung:** Nutzung von `flutter_riverpod` für State-Management, `go_router` für Routing und Dart 3 Records + `freezed`/`json_serializable` für komplexe Modelle.

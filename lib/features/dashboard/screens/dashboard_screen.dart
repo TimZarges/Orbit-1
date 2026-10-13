@@ -55,6 +55,16 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           onTap: () => context.go('/profile'),
                         ),
                         PopupMenuItem(
+                          value: 'templates',
+                          child: const Text('Workout-Vorlagen'),
+                          onTap: () => context.go('/templates'),
+                        ),
+                        PopupMenuItem(
+                          value: 'builder',
+                          child: const Text('Workout Builder'),
+                          onTap: () => context.go('/workout-builder'),
+                        ),
+                        PopupMenuItem(
                           value: 'thresholds',
                           child: const Text('Schwellenwerte'),
                           onTap: () => context.go('/thresholds'),

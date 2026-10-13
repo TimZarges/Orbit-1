@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../features/workout_builder/domain/workout_parser.dart';
+import '../../features/workout_builder/widgets/workout_profile_chart.dart';
 
 class WidgetGalleryScreen extends StatelessWidget {
   const WidgetGalleryScreen({super.key});
@@ -51,6 +53,18 @@ class WidgetGalleryScreen extends StatelessWidget {
                 ],
               ),
             ),
+          ),
+          const SizedBox(height: 32),
+          Text('Workout Profil (Live-Balkengrafik)', style: Theme.of(context).textTheme.headlineLarge),
+          const SizedBox(height: 16),
+          const Text('Live-Profilgrafik in Zonenfarben mit Unterstützung für bis zu 200 Intervallblöcke und verschachtelte Wiederholungen.'),
+          const SizedBox(height: 12),
+          Builder(
+            builder: (context) {
+              const parser = WorkoutParser(sport: 'BIKE');
+              final result = parser.parse("10' Z1, 4x(4' Z4 / 2' Z1), 10' Z1");
+              return WorkoutProfileChart(structure: result.structure, height: 100);
+            },
           ),
         ],
       ),

@@ -26,6 +26,21 @@
 
 ## Einträge
 
+### [Phase 09] Workout Builder & Vorlagenbibliothek · RISIKO-MITTEL
+- **STOPP-Punkt/Anlass:** STOPP 1 aus Phasendatei (Schema v1 und Textgrammatik freigegeben)
+- **Entscheidung:**
+  - Domänenmodell (`WorkoutStructure`, `StepBlock`, `RepeatBlock`, `WorkoutTarget`, `WorkoutIntensity`, `WorkoutCadence`) mit SI-Einheiten und `schemaVersion: 1`.
+  - Reiner Dart-Parser (`WorkoutParser`) und Formatter (`WorkoutFormatter`) mit exakter Fehlerlokalisierung, Round-Trip-Konsistenz und Kurzformen.
+  - Berechnungen (`WorkoutCalculator`) für Zeit, Distanz, Zonen und Belastungsschätzung (TSS / ORBIT Score) mit Annahmen-Dokumentation.
+  - Live-Profilchart (`WorkoutProfileChart`) mit `CustomPainter`, Mindestbalkenbreite für ultrakurze Schritte und `Semantics`.
+  - Mobile UI (`WorkoutBuilderScreen`, `WorkoutBlockEditorSheet`, `WorkoutTemplateLibraryScreen`) mit bidirektionaler Synchronisation, Undo/Redo und Kalender-Einplanung (Struktur kopieren).
+  - Firestore Security Rules für `workoutTemplates` durch `firestore-rules-author` mit `SHARED_WITH_MY_ATHLETES`-Prüfung über `coachLinks`.
+  - 20 triathlon-spezifische Original-Vorlagen in `TemplateSeedData`.
+- **Alternative:** Reine Formularfelder ohne Freitext-Kurzeingabe oder referenziertes Einplanen (hätte historische Pläne bei Vorlagen-Updates verfälscht).
+- **Begründung:** Maximale mobile Geschwindigkeit bei gleichzeitig voller mathematischer Typsicherheit und Barrierefreiheit.
+- **Bitte prüfen:** Text-Kurzeingabe im Workout Builder (`/workout-builder`) und Vorlagenbibliothek (`/templates`).
+- **Rückholen:** Branch `feature/phase-09-workout-builder` verwerfen.
+
 ### [Phase 00] Initiales Audit & Architektur · RISIKO-MITTEL
 - **STOPP-Punkt/Anlass:** STOPP 1 aus Phasendatei (Audit-Bericht + Vorschlag Zielstruktur)
 - **Entscheidung:** Audit-Bericht in `docs/AUDIT.md` erstellt. Da das Repo komplett neu ist, gibt es keinen Legacy-Code. Entscheidungen: `flutter_riverpod` (State), `go_router` (Routing), Dart 3 Records/Sealed Classes + `freezed` (Modelle), Backend-only FIT-Parsing.

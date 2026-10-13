@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../core/design/app_colors.dart';
 import '../../../core/design/app_spacing.dart';
+import '../../workout_builder/screens/workout_builder_screen.dart';
+import '../../workout_builder/screens/workout_template_library_screen.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../models/planned_workout.dart';
 import '../providers/calendar_provider.dart';
@@ -213,7 +215,52 @@ class _CreateWorkoutDialogState extends ConsumerState<CreateWorkoutDialog> {
                   border: OutlineInputBorder(),
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 14),
+
+              // Aus Vorlage wählen oder im Builder bauen
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      icon: const Icon(Icons.library_books_outlined, size: 16),
+                      label: const Text('Aus Vorlage', style: TextStyle(fontSize: 12)),
+                      onPressed: () {
+                        Navigator.pop(context);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => WorkoutTemplateLibraryScreen(
+                              athleteId: widget.athleteId,
+                              targetLocalDate: DateFormat('yyyy-MM-dd').format(_selectedDate),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      icon: const Icon(Icons.construction_outlined, size: 16),
+                      label: const Text('Im Builder bauen', style: TextStyle(fontSize: 12)),
+                      onPressed: () {
+                        Navigator.pop(context);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => WorkoutBuilderScreen(
+                              sport: _sport,
+                              athleteId: widget.athleteId,
+                              targetLocalDate: DateFormat('yyyy-MM-dd').format(_selectedDate),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
 
               // Speichern
               ElevatedButton(

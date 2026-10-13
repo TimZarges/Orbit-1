@@ -19,6 +19,9 @@ service cloud.firestore {
     //
     // Collection: plannedWorkouts/{workoutId}
     // Fields: athleteId, coachId, createdBy, localDate, sport, title, status, plannedDurationSec, ...
+    //
+    // Collection: workoutTemplates/{templateId}
+    // Fields: ownerId, visibility, sport, title, description, structure, tags, isFavorite, createdAt, updatedAt
     // ===============================================================
 
     // ===============================================================
@@ -67,6 +70,15 @@ service cloud.firestore {
         'role', 'trainerVerified', 'coachId', 'uid', 'email', 'createdAt', 'metrics', 'metricsVersion'
       ]);
       return isValidUserDoc(request.resource.data) && protectedFieldsUnchanged;
+    }
+
+    function isValidWorkoutTemplate(data) {
+      let visibilityOk = data.visibility in ['PRIVATE', 'SHARED_WITH_MY_ATHLETES', 'PUBLIC'];
+      let titleOk = !('title' in data) || checkStringSize(data.title, 1, 200);
+      let sportOk = !('sport' in data) || checkStringSize(data.sport, 1, 50);
+      let descOk = !('description' in data) || checkStringSize(data.description, 0, 5000);
+      let tagsOk = !('tags' in data) || (data.tags is list && data.tags.size() <= 50);
+      return visibilityOk && titleOk && sportOk && descOk && tagsOk;
     }
 
     function isCoachForHealth(userId) {
@@ -165,6 +177,27 @@ service cloud.firestore {
         resource.data.athleteId == request.auth.uid ||
         (resource.data.createdBy == request.auth.uid && isCoachForCalendar(resource.data.athleteId))
       );
+    }
+
+    match /workoutTemplates/{templateId} {
+      allow read: if isAuthenticated() && (
+        resource.data.visibility == 'PUBLIC' ||
+        resource.data.ownerId == request.auth.uid ||
+        (
+          resource.data.visibility == 'SHARED_WITH_MY_ATHLETES' &&
+          exists(/databases/$(database)/documents/coachLinks/$(request.auth.uid + '_' + resource.data.ownerId))
+        )
+      );
+      allow create: if isAuthenticated() &&
+        request.resource.data.ownerId == request.auth.uid &&
+        request.resource.data.visibility in ['PRIVATE', 'SHARED_WITH_MY_ATHLETES', 'PUBLIC'] &&
+        isValidWorkoutTemplate(request.resource.data);
+      allow update: if isAuthenticated() &&
+        resource.data.ownerId == request.auth.uid &&
+        request.resource.data.ownerId == resource.data.ownerId &&
+        isValidWorkoutTemplate(request.resource.data);
+      allow delete: if isAuthenticated() &&
+        resource.data.ownerId == request.auth.uid;
     }
   }
 }

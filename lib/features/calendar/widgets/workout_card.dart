@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/design/app_colors.dart';
+import '../../workout_builder/models/workout_builder_models.dart';
+import '../../workout_builder/widgets/workout_profile_chart.dart';
 import '../models/planned_workout.dart';
 
 /// Reusable Karte für eine geplante Trainingseinheit im Kalender.
@@ -146,10 +148,30 @@ class WorkoutCard extends StatelessWidget {
                 ],
               ],
             ),
+            if (workout.structure != null) ...[
+              const SizedBox(height: 6),
+              _buildMiniProfile(workout.structure!),
+            ],
           ],
         ),
       ),
     );
+  }
+
+  Widget _buildMiniProfile(Map<String, dynamic> rawStructure) {
+    try {
+      final struct = WorkoutStructure.migrateStructure(rawStructure);
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(4),
+        child: WorkoutProfileChart(
+          structure: struct,
+          height: 22,
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+        ),
+      );
+    } catch (_) {
+      return const SizedBox.shrink();
+    }
   }
 
   Color _getSportColor(String sport) {

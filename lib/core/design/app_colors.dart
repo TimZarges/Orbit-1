@@ -21,6 +21,28 @@ class AppColors {
   static const Color z6 = Color(0xFF9F7AEA);
   static const Color z7 = Color(0xFFD53F8C);
 
+  /// Gibt die Farbe für eine Trainingszone (1 bis 7) zurück.
+  static Color zoneColor(int zone) {
+    switch (zone) {
+      case 1:
+        return z1;
+      case 2:
+        return z2;
+      case 3:
+        return z3;
+      case 4:
+        return z4;
+      case 5:
+        return z5;
+      case 6:
+        return z6;
+      case 7:
+        return z7;
+      default:
+        return z1;
+    }
+  }
+
   // Telemetry Channels
   static const Color channelPower = Color(0xFFF6C453);
   static const Color channelHeartRate = Color(0xFFFF6B6B);

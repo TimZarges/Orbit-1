@@ -1,12 +1,12 @@
-# Testplan für Firestore Security Rules (Phasen 01, 02 & 08)
+# Testplan für Firestore Security Rules (Phasen 01, 02, 08 & 09)
 
 ## Ziel
-Sicherstellen, dass die implementierten Firestore Security Rules für alle Collections (`users`, Subcollections, `coachLinks`, `activities` und `plannedWorkouts`) robust sind und die geforderten Berechtigungen durchsetzen:
+Sicherstellen, dass die implementierten Firestore Security Rules für alle Collections (`users`, Subcollections, `coachLinks`, `activities`, `plannedWorkouts` und `workoutTemplates`) robust sind und die geforderten Berechtigungen durchsetzen:
 - Default Deny an der Wurzel
 - Owner-Only & Authenticated Access
-- Schutz unveränderlicher Server- und Identitätsfelder (`athleteId`, `createdBy`, `role`, etc.)
-- Granulare Trainer-Freigaben (`coachLinks.permissions.calendar`, `coachLinks.permissions.health`)
-- Schutz vor Privilege Escalation, Identitätsfälschung und unbefugter Datenlöschung
+- Schutz unveränderlicher Server- und Identitätsfelder (`athleteId`, `createdBy`, `ownerId`, `role`, etc.)
+- Granulare Trainer-Freigaben (`coachLinks.permissions.calendar`, `coachLinks.permissions.health`, `coachLinks` Trainer-Vorlagen-Sharing)
+- Schutz vor Privilege Escalation, Identitätsfälschung, Resource Exhaustion/DoS und unbefugter Datenlöschung
 
 ## Setup
 - Die Tests werden gegen den lokalen **Firebase Emulator** ausgeführt.
@@ -160,6 +160,88 @@ Sicherstellen, dass die implementierten Firestore Security Rules für alle Colle
   - **Aktion:** `eveAuth` versucht Dokument von Alice zu löschen.
   - **Erwartet:** `PERMISSION_DENIED`.
 
+### 7. Collection `workoutTemplates/{templateId}` (Phase 09 – Workout-Vorlagenbibliothek)
+
+#### 7.1 Read (Lesen)
+- **Besitzer liest eigene private Vorlage:**
+  - **Aktion:** `aliceAuth` liest `/workoutTemplates/t1` (`ownerId: "alice"`, `visibility: "PRIVATE"`).
+  - **Erwartet:** Erfolg.
+- **Besitzer liest eigene geteilte Vorlage:**
+  - **Aktion:** `bobAuth` liest `/workoutTemplates/t2` (`ownerId: "coachBob"`, `visibility: "SHARED_WITH_MY_ATHLETES"`).
+  - **Erwartet:** Erfolg.
+- **Beliebiger Nutzer liest öffentliche Vorlage:**
+  - **Aktion:** `aliceAuth` liest `/workoutTemplates/t_pub` (`ownerId: "coachBob"`, `visibility: "PUBLIC"`).
+  - **Erwartet:** Erfolg.
+- **Athlet liest geteilte Vorlage seines verknüpften Trainers:**
+  - **Aktion:** `aliceAuth` liest `/workoutTemplates/t2` (`ownerId: "coachBob"`, `visibility: "SHARED_WITH_MY_ATHLETES"`, bei existierendem `coachLinks/alice_coachBob`).
+  - **Erwartet:** Erfolg (Zugriff über `exists(coachLinks/$(request.auth.uid + '_' + resource.data.ownerId))`).
+- **Athlet versucht geteilte Vorlage eines fremden Trainers zu lesen:**
+  - **Aktion:** `eveAuth` liest `/workoutTemplates/t2` (`ownerId: "coachBob"`, `visibility: "SHARED_WITH_MY_ATHLETES"`, ohne Verknüpfung `coachLinks/eve_coachBob`).
+  - **Erwartet:** `PERMISSION_DENIED`.
+- **Fremder liest private Vorlage:**
+  - **Aktion:** `eveAuth` liest `/workoutTemplates/t1` (`ownerId: "alice"`, `visibility: "PRIVATE"`).
+  - **Erwartet:** `PERMISSION_DENIED`.
+- **Trainer versucht private Vorlage seines Athleten zu lesen:**
+  - **Aktion:** `bobAuth` liest `/workoutTemplates/t1` (`ownerId: "alice"`, `visibility: "PRIVATE"`).
+  - **Erwartet:** `PERMISSION_DENIED` (Vorlagen des Athleten bleiben strikt privat, es sei denn `PUBLIC`).
+- **Unauthentifizierter liest Vorlage:**
+  - **Aktion:** `unauth` liest `/workoutTemplates/t_pub` (oder `t1`).
+  - **Erwartet:** `PERMISSION_DENIED` (Kein unauthentifizierter Zugriff, `isAuthenticated()` erforderlich).
+
+#### 7.2 Create (Anlegen)
+- **Nutzer legt eigene Vorlage mit gültiger Sichtbarkeit an:**
+  - **Aktion:** `aliceAuth` erstellt Vorlage mit `ownerId: "alice"`, `visibility: "PRIVATE"`, `sport: "RUN"`, `title: "5x1000m Intervalle"`.
+  - **Erwartet:** Erfolg.
+- **Trainer legt eigene Vorlage für Athleten geteilt an:**
+  - **Aktion:** `bobAuth` erstellt Vorlage mit `ownerId: "coachBob"`, `visibility: "SHARED_WITH_MY_ATHLETES"`, `sport: "BIKE"`, `title: "FTP Test"`.
+  - **Erwartet:** Erfolg.
+- **Nutzer versucht Vorlage mit fremder `ownerId` anzulegen:**
+  - **Aktion:** `aliceAuth` erstellt Vorlage mit `ownerId: "coachBob"`, `visibility: "PRIVATE"`.
+  - **Erwartet:** `PERMISSION_DENIED` (`request.resource.data.ownerId == request.auth.uid`).
+- **Nutzer versucht ungültigen Sichtbarkeits-Enum zu setzen:**
+  - **Aktion:** `aliceAuth` erstellt Vorlage mit `visibility: "CONFIDENTIAL"` oder `visibility: "FRIENDS_ONLY"`.
+  - **Erwartet:** `PERMISSION_DENIED` (`visibility in ['PRIVATE', 'SHARED_WITH_MY_ATHLETES', 'PUBLIC']`).
+- **Nutzer versucht DoS-Angriff über überlange Strings:**
+  - **Aktion:** `aliceAuth` erstellt Vorlage mit einem Titel > 200 Zeichen oder einer Beschreibung > 5000 Zeichen.
+  - **Erwartet:** `PERMISSION_DENIED` (Durchgesetzt via `isValidWorkoutTemplate` / `checkStringSize`).
+- **Unauthentifizierter versucht Vorlage anzulegen:**
+  - **Aktion:** `unauth` erstellt Vorlage.
+  - **Erwartet:** `PERMISSION_DENIED`.
+
+#### 7.3 Update (Ändern)
+- **Besitzer aktualisiert eigene Vorlage:**
+  - **Aktion:** `aliceAuth` ändert `title`, `description`, `tags` oder schaltet `isFavorite` um. `ownerId` bleibt `"alice"`.
+  - **Erwartet:** Erfolg.
+- **Besitzer versucht Eigentümer (`ownerId`) zu manipulieren:**
+  - **Aktion:** `aliceAuth` versucht bei einem Update `ownerId` von `"alice"` auf `"coachBob"` zu ändern.
+  - **Erwartet:** `PERMISSION_DENIED` (`request.resource.data.ownerId == resource.data.ownerId`).
+- **Fremder versucht Vorlage zu aktualisieren:**
+  - **Aktion:** `bobAuth` oder `eveAuth` versucht Vorlage von `alice` zu aktualisieren.
+  - **Erwartet:** `PERMISSION_DENIED` (`resource.data.ownerId == request.auth.uid`).
+- **Athlet versucht vom Trainer geteilte Vorlage zu aktualisieren:**
+  - **Aktion:** `aliceAuth` versucht `/workoutTemplates/t2` (`ownerId: "coachBob"`) zu bearbeiten.
+  - **Erwartet:** `PERMISSION_DENIED` (Nur der besitzende Trainer darf seine geteilten Vorlagen editieren).
+- **Update mit ungültiger Sichtbarkeit oder DoS-String:**
+  - **Aktion:** `aliceAuth` ändert `visibility` auf `"INVALID"` oder bläht `description` auf > 5000 Zeichen auf.
+  - **Erwartet:** `PERMISSION_DENIED` (Validierung greift auch bei `update`).
+- **Unauthentifizierter versucht Update:**
+  - **Aktion:** `unauth` versucht Update.
+  - **Erwartet:** `PERMISSION_DENIED`.
+
+#### 7.4 Delete (Löschen)
+- **Besitzer löscht eigene Vorlage:**
+  - **Aktion:** `aliceAuth` löscht Dokument `/workoutTemplates/t1`.
+  - **Erwartet:** Erfolg.
+- **Fremder versucht Vorlage zu löschen:**
+  - **Aktion:** `eveAuth` versucht Vorlage von `alice` zu löschen.
+  - **Erwartet:** `PERMISSION_DENIED`.
+- **Athlet versucht vom Trainer geteilte Vorlage zu löschen:**
+  - **Aktion:** `aliceAuth` versucht `/workoutTemplates/t2` (`ownerId: "coachBob"`) zu löschen.
+  - **Erwartet:** `PERMISSION_DENIED` (Athlet darf fremde geteilte Vorlagen nicht aus der Bibliothek entfernen).
+- **Unauthentifizierter versucht Vorlage zu löschen:**
+  - **Aktion:** `unauth` versucht Vorlage zu löschen.
+  - **Erwartet:** `PERMISSION_DENIED`.
+
 ---
 
 ## Umsetzung
@@ -191,3 +273,30 @@ Bei jedem `update` erzwingen die Rules `request.resource.data.athleteId == resou
 
 **4. Dynamischer Rechteentzug via `coachLinks`:**
 Sobald ein Athlet die Kalender-Berechtigung entzieht (`permissions.calendar = false`) oder die Verknüpfung auflöst, schlägt `isCoachForCalendar()` sofort fehl. Der Trainer verliert unmittelbar den schreibenden Zugriff sowie den Detail-Lesezugriff auf Einheiten ohne denormalisierte `coachId`.
+
+### Theoretischer Beweis (Architektur-Check): Workout-Vorlagenbibliothek (Phase 09)
+
+**1. Granulare Sichtbarkeits-Hierarchie ohne Datenlecks:**
+Die Vorlagenbibliothek unterstützt drei Sichtbarkeitsstufen: `PRIVATE`, `SHARED_WITH_MY_ATHLETES` und `PUBLIC`.
+- `PUBLIC`: Für alle authentifizierten Nutzer lesbar (z. B. vordefinierte System-Vorlagen oder kuratierte Community-Vorlagen).
+- `PRIVATE`: Streng auf den Besitzer beschränkt (`resource.data.ownerId == request.auth.uid`). Weder andere Athleten noch verknüpfte Trainer können private Vorlagen eines Nutzers einsehen.
+- `SHARED_WITH_MY_ATHLETES`: Erlaubt Trainern, ihre Vorlagen exklusiv für ihre eigenen aktiven Athleten freizugeben. Die Auswertung über `exists(/databases/$(database)/documents/coachLinks/$(request.auth.uid + '_' + resource.data.ownerId))` prüft exakt, ob eine aktive Verbindung existiert, bei der der anfragende Nutzer der Athlet (`athleteId == request.auth.uid`) und der Besitzer der Vorlage der Coach (`coachId == resource.data.ownerId`) ist. Da fremde Athleten keine entsprechende Verknüpfung in `coachLinks` besitzen, schlägt `exists()` für sie fehl.
+
+**2. Listenabfragen und Firestore "Rules are not filters"-Konformität:**
+In Firestore muss jede Listenabfrage mit den Security Rules mathematisch beweisbar übereinstimmen:
+- Abfrage der eigenen Vorlagen: `collection('workoutTemplates').where('ownerId', '==', currentUserId).get()`. Da `currentUserId == request.auth.uid`, matcht dies exakt den Zweig `resource.data.ownerId == request.auth.uid`. Die Abfrage ist zulässig und performant indexiert.
+- Abfrage der Trainer-Vorlagen durch den Athleten: `collection('workoutTemplates').where('ownerId', '==', coachId).where('visibility', '==', 'SHARED_WITH_MY_ATHLETES').get()`. Firestore bindet `resource.data.ownerId` an die Konstante `coachId` und `visibility` an `'SHARED_WITH_MY_ATHLETES'`. Dadurch kann der Pfad `coachLinks/$(request.auth.uid + '_' + coachId)` statisch ausgewertet werden: Existiert der Link, ist die Bedingung für alle Treffer erfüllt, und die Abfrage wird ausgeführt.
+- Ein unzulässiger globaler Scan (`collection('workoutTemplates').get()`) wird vom Regelwerk automatisch abgewiesen, wodurch ein versehentliches Auslesen privater Vorlagen dritter Nutzer unmöglich ist.
+
+**3. Unveränderlichkeit des Besitzers (`ownerId`) und Schutz vor Eigentumsübertragung:**
+Beim Anlegen (`create`) erzwingt `request.resource.data.ownerId == request.auth.uid`, dass der Ersteller immer die Identität des angemeldeten Nutzers trägt. Beim Ändern (`update`) wird verlangt:
+`resource.data.ownerId == request.auth.uid && request.resource.data.ownerId == resource.data.ownerId`.
+Dies garantiert:
+- Nur der rechtmäßige Besitzer kann ein Update initiieren.
+- Der Besitzer kann die Vorlage nicht heimlich einem anderen Nutzer unterjubeln oder die Urheberschaft fälschen.
+
+**4. Validator Function Pattern & DoS-/Payload-Schutz:**
+Durch `isValidWorkoutTemplate(request.resource.data)` in `create` UND `update` wird sichergestellt:
+- Kein "Update Bypass": Ein Nutzer kann nicht ein minimales gültiges Dokument anlegen und es anschließend per Update mit einem 1-MB-String oder bösartigen Daten überschreiben.
+- Begrenzung der Feldgrößen: `title` (max. 200 Zeichen), `sport` (max. 50 Zeichen), `description` (max. 5000 Zeichen), `tags` (max. 50 Elemente).
+- Strikt typisierte Enums: `visibility in ['PRIVATE', 'SHARED_WITH_MY_ATHLETES', 'PUBLIC']`. Unbekannte oder fehlerhafte Sichtbarkeitsstufen werden abgewiesen.
