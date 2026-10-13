@@ -14,7 +14,7 @@ export const onMessageCreated = onDocumentCreated(
     const msgData = event.data.data();
     if (!msgData) return;
 
-    const { chatId, messageId } = event.params;
+    const { chatId } = event.params;
     const db = admin.firestore();
 
     // 1. Chat-Dokument laden

@@ -2,6 +2,9 @@ import { onCall, HttpsError } from "firebase-functions/v2/https";
 import * as admin from "firebase-admin";
 import * as crypto from "crypto";
 
+export * from "./coach/dashboard";
+export * from "./seeds/seed_coach_athletes";
+
 // Helper function to generate a random invite code
 function generateInviteCode(): string {
   return crypto.randomBytes(4).toString("hex").toUpperCase();

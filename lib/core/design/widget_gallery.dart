@@ -34,6 +34,7 @@ import '../../features/home/widgets/home_hero_card.dart';
 import '../../features/home/widgets/home_action_banner.dart';
 import '../../features/home/widgets/race_countdown_card.dart';
 import '../../features/calendar/models/planned_workout.dart';
+import '../../features/coach_link/widgets/keyboard_shortcuts_dialog.dart';
 
 class WidgetGalleryScreen extends StatelessWidget {
   const WidgetGalleryScreen({super.key});
@@ -365,6 +366,14 @@ class WidgetGalleryScreen extends StatelessWidget {
               date: '${DateTime.now().year + 1}-05-25',
               distance: 'Mitteldistanz',
             ),
+          ),
+          const SizedBox(height: 32),
+          Text('Coach-Desktop & Web (Phase 15)', style: Theme.of(context).textTheme.headlineLarge),
+          const SizedBox(height: 16),
+          ElevatedButton.icon(
+            onPressed: () => KeyboardShortcutsDialog.show(context),
+            icon: const Icon(Icons.keyboard),
+            label: const Text('Tastaturkürzel-Dialog öffnen (?)'),
           ),
           const SizedBox(height: 32),
         ],

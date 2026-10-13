@@ -172,3 +172,26 @@
      - Für Trainer ist der Starttab „Athleten" (`TrainerAthletesTabScreen`), da deren Arbeitsfokus auf der Betreuung des Kaders liegt.
 - **Begründung:** Ruhige Mobile-First-Trainingsplattform, Vermeidung von Quota-Erschöpfung und strikte Design-Konsistenz.
 
+### 2026-10-13: Coach-Desktop & Web-Architektur, O(1) Aggregation und Drag & Drop (Phase 15)
+- **Kontext:** Trainer müssen am großen Bildschirm (Web und Desktop) effizient und ohne Ladehemmungen mit Dutzenden Athleten arbeiten (Statusübersicht, Wochenplanung, Massenzuweisung).
+- **Entscheidung:**
+  1. **O(1) Dashboard-Aggregation (`coachDashboard/{coachId}/athletes/{athleteId}`):**
+     - Statt beim Öffnen des Trainer-Dashboards für $N$ Athleten jeweils separate Subcollections (Profile, Aggregates, Workouts, Activities, Unread-Counts) abzufragen ($> 100$ Reads), pflegen server-seitige Cloud Functions ein aggregiertes Dashboard-Dokument pro Athlet.
+     - Der Trainer liest sein gesamtes Dashboard mit einer einzigen Abfrage (`coachDashboard/{coachId}/athletes`).
+     - Trigger auf Aktivitäten, Links, Pläne und Chats halten die Kennzahlen (Form, CTL/ATL/TSB, 7d-Compliance, Alerts, ungelesene Nachrichten) konsistent.
+  2. **Multi-Athlete Week Grid mit Drag & Drop und Undo (`MultiAthleteGridController`):**
+     - Reine funktionale Domain-Logik ohne Seiteneffekte: Verschieben, Tauschen und Kopieren (mittels Alt/Option-Taste).
+     - Jeder Drag-Vorgang speichert einen `GridActionHistoryEntry` im Undo-Stack, sodass versehentliche Planungsänderungen mit einem Klick rückgängig gemacht werden können.
+     - Für Tastatur- und Screenreader-Nutzung steht ein zugängliches Kontextmenü („Verschieben nach ...") zur Verfügung.
+  3. **Massenzuweisung (`BatchAssignService`):**
+     - Zuweisung von Workouts oder Wochenstrukturen an mehrere ausgewählte Athleten erfolgt atomar über Firestore `WriteBatch`.
+     - Validierung der Berechtigungen (`permissions.calendar == true`) im Frontend und Backend.
+  4. **Persönliche Arbeitsplatzansichten (`users/{userId}/preferences/{prefId}`):**
+     - Trainer können Tabellenspalten (Auswahl, Sortierung, Reihenfolge) und Filterpresets konfigurieren und in Firestore speichern.
+  5. **Web-Grundlagen & Hosting:**
+     - Flutter Web mit CanvasKit/HTML-Autoselektion.
+     - Konfiguration von `cors.json` für Cloud Storage.
+     - Detaillierte Dokumentation für Firebase Hosting, Custom Domains und App Check Web (reCAPTCHA Enterprise) in `docs/MANUAL_STEPS.md`.
+- **Begründung:** Maximale Performance bei professionellen Trainerkadern ($\ge 25$ Athleten), ergonomische Tastatur- und Mausbedienung am Desktop und Schutz vor DoS/Quota-Limits.
+
+

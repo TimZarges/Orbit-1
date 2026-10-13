@@ -1,17 +1,19 @@
-# Testplan für Firestore und Storage Security Rules (Phasen 01, 02, 08, 09, 10, 11, 12 & 13)
+# Testplan für Firestore und Storage Security Rules (Phasen 01, 02, 08, 09, 10, 11, 12, 13 & 15)
 
 ## Ziel
-Sicherstellen, dass die implementierten Firestore und Storage Security Rules für alle Collections (`users`, Subcollections inkl. `aggregates`, `bests`, `thresholdProposals`, `devices` und `notificationState`, `coachLinks`, `activities`, `plannedWorkouts`, `workoutTemplates` sowie `chats` mit `messages` und `state`) und Storage-Buckets robust sind und die geforderten Berechtigungen durchsetzen:
+Sicherstellen, dass die implementierten Firestore und Storage Security Rules für alle Collections (`users`, Subcollections inkl. `aggregates`, `bests`, `thresholdProposals`, `devices`, `notificationState` und `preferences`, `coachLinks`, `activities`, `plannedWorkouts`, `workoutTemplates`, `coachDashboard` sowie `chats` mit `messages` und `state`) und Storage-Buckets robust sind und die geforderten Berechtigungen durchsetzen:
 - Default Deny an der Wurzel
 - Owner-Only & Authenticated Access
 - Schutz unveränderlicher Server- und Identitätsfelder (`athleteId`, `createdBy`, `ownerId`, `senderId`, `role`, etc.)
 - Granulare Trainer-Freigaben (`coachLinks.permissions.calendar`, `coachLinks.permissions.health`, `coachLinks.permissions.activities`, `coachLinks` Trainer-Vorlagen-Sharing)
 - Schutz vor Privilege Escalation, Identitätsfälschung, Resource Exhaustion/DoS und unbefugter Datenlöschung
 - Striktes Schreibverbot für vorberechnete Aggregate und Bestwerte (nur Cloud Functions)
-- Schwellenwert-Vorschläge (Phase 12): Ausschließlich serverseitige Erstellung, Status-Update ('ACCEPTED'/'REJECTED') streng auf den Athleten beschränkt, Unveränderlichkeit diagnostischer Parameter, Lesezugriff für Coach mit `activities`-Freigabe
+- Schwellenwert-Vorschläge (Phase 12 & 15): Serverseitige Erstellung oder Erstellung durch Trainer mit `activities`-Freigabe (`proposedBy == auth.uid`, `status == 'PENDING'`, `sport in ['RUN', 'BIKE', 'SWIM']`, `proposedValue > 0`), Status-Update ('ACCEPTED'/'REJECTED') streng auf den Athleten beschränkt, Unveränderlichkeit diagnostischer Parameter, Lesezugriff für Coach mit `activities`-Freigabe
 - Chat & Messaging (Phase 13): Zugriff ausschließlich für Chat-Teilnehmer (`isChatParticipant`), Erstellung neuer Nachrichten nur in aktiven Chats (`isChatActive`), Verbot von Hard-Deletes (`allow delete: if false`), striktes Soft-Delete-Modell ausschließlich durch den Sender, Unveränderlichkeit von Metadaten
 - Push-Infrastruktur & FCM (Phase 13): Registrierung von Geräte-Tokens (`users/{uid}/devices`) streng nutzergebunden, Scheduler-Zustand (`users/{uid}/notificationState`) unberührbar für Clients (nur Cloud Functions)
 - Cloud Storage Sicherheit (Phase 13): Begrenzung von Bildern (≤ 10 MB, `image/*`) und Dateien (≤ 25 MB), Verbot von Updates (Immutabilität), Berechtigung zum Löschen für Teilnehmer bei Soft-Deletes
+- Coach-Dashboard Aggregation (Phase 15): O(1) Lesezugriff streng auf den Trainer selbst (`request.auth.uid == coachId`) beschränkt, striktes Client-Schreibverbot (`allow write: if false`)
+- Benutzer-Präferenzen & Ansichten (Phase 15): `users/{userId}/preferences/{prefId}` streng auf den Besitzer beschränkt (`isOwner(userId)`), DoS-geschützt
 
 ## Setup
 - Die Tests werden gegen den lokalen **Firebase Emulator** ausgeführt.
@@ -331,15 +333,35 @@ Sicherstellen, dass die implementierten Firestore und Storage Security Rules fü
   - **Erwartet:** `PERMISSION_DENIED`.
 
 #### 10.2 Create (Anlegen)
-- **Athlet versucht Schwellenwert-Vorschlag selbst anzulegen:**
+- **Trainer mit aktiver `activities`-Freigabe legt gültigen Schwellenwert-Vorschlag für Athlet an:**
+  - **Aktion:** `bobAuth` erstellt `/users/alice/thresholdProposals/prop1` mit:
+    `{ proposedBy: 'coachBob', status: 'PENDING', sport: 'RUN', proposedValue: 270, type: 'FTP', notes: 'Guter 30-Min Test' }`
+    (bei existierendem `coachLinks/alice_coachBob` mit `permissions.activities == true`).
+  - **Erwartet:** Erfolg (`isAuthenticated() && isCoachForActivities(userId) && isValidCoachThresholdProposalCreate(...)`).
+- **Trainer fälscht `proposedBy` (Identitätsfälschung):**
+  - **Aktion:** `bobAuth` erstellt Dokument mit `proposedBy: 'alice'` oder `proposedBy: 'eve'`.
+  - **Erwartet:** `PERMISSION_DENIED` (`data.proposedBy == request.auth.uid` schlägt fehl).
+- **Trainer versucht Vorschlag mit unzulässigem Status anzulegen:**
+  - **Aktion:** `bobAuth` erstellt Dokument mit `status: 'ACCEPTED'` oder `status: 'REJECTED'`.
+  - **Erwartet:** `PERMISSION_DENIED` (`data.status == 'PENDING'` schlägt fehl; nur der Athlet darf später akzeptieren).
+- **Trainer versucht Vorschlag für ungültige Sportart anzulegen:**
+  - **Aktion:** `bobAuth` erstellt Dokument mit `sport: 'TENNIS'` oder `sport: 'ROWING'`.
+  - **Erwartet:** `PERMISSION_DENIED` (`data.sport in ['RUN', 'BIKE', 'SWIM']` schlägt fehl).
+- **Trainer versucht Vorschlag mit nicht-positivem oder ungültigem Wert anzulegen:**
+  - **Aktion:** `bobAuth` erstellt Dokument mit `proposedValue: -50` oder `proposedValue: "high"`.
+  - **Erwartet:** `PERMISSION_DENIED` (`data.proposedValue is number && data.proposedValue > 0` schlägt fehl).
+- **Trainer ohne `activities`-Freigabe versucht Vorschlag anzulegen:**
+  - **Aktion:** `charlieAuth` erstellt Dokument für Alice (bei `coachLinks/alice_coachCharlie` mit `permissions.activities == false`).
+  - **Erwartet:** `PERMISSION_DENIED` (`isCoachForActivities` evaluiert zu `false`).
+- **Athlet versucht Schwellenwert-Vorschlag selbst via Client anzulegen:**
   - **Aktion:** `aliceAuth` versucht `/users/alice/thresholdProposals/prop1` anzulegen.
-  - **Erwartet:** `PERMISSION_DENIED` (`allow create: if false`, Vorschläge werden ausschließlich serverseitig via Cloud Functions generiert).
-- **Trainer versucht Schwellenwert-Vorschlag im Client anzulegen:**
-  - **Aktion:** `bobAuth` versucht `/users/alice/thresholdProposals/prop1` anzulegen.
-  - **Erwartet:** `PERMISSION_DENIED` (`allow create: if false`).
-- **Fremder / Unauthentifizierter versucht Vorschlag anzulegen:**
-  - **Aktion:** `eveAuth` oder `unauth` versucht `/users/alice/thresholdProposals/prop1` anzulegen.
-  - **Erwartet:** `PERMISSION_DENIED` (`allow create: if false`).
+  - **Erwartet:** `PERMISSION_DENIED` (`isCoachForActivities(userId)` schlägt fehl, da kein Verknüpfungsdokument `/coachLinks/alice_alice` existiert; Vorschläge kommen nur vom Trainer oder serverseitig).
+- **Fremder ohne Trainer-Verknüpfung versucht Vorschlag anzulegen:**
+  - **Aktion:** `eveAuth` versucht `/users/alice/thresholdProposals/prop1` anzulegen.
+  - **Erwartet:** `PERMISSION_DENIED` (`isCoachForActivities` evaluiert zu `false`).
+- **Unauthentifizierter versucht Vorschlag anzulegen:**
+  - **Aktion:** `unauth` versucht `/users/alice/thresholdProposals/prop1` anzulegen.
+  - **Erwartet:** `PERMISSION_DENIED` (`isAuthenticated()` schlägt fehl).
 
 #### 10.3 Update (Ändern / Statusentscheidung)
 - **Athlet übernimmt Vorschlag (`status: 'ACCEPTED'`):**
@@ -525,6 +547,84 @@ Sicherstellen, dass die implementierten Firestore und Storage Security Rules fü
   - **Aktion:** `eveAuth` versucht `/chats/alice_coachBob/images/photo.jpg` zu löschen.
   - **Erwartet:** `PERMISSION_DENIED`.
 
+### 12. Collection `coachDashboard/{coachId}/athletes/{athleteId}` (Phase 15 – Coach-Desktop Aggregationen)
+
+#### 12.1 Read (Lesen)
+- **Coach liest aggregiertes Dokument eines eigenen Athleten:**
+  - **Aktion:** `bobAuth` liest `/coachDashboard/coachBob/athletes/alice`.
+  - **Erwartet:** Erfolg (`isAuthenticated() && request.auth.uid == coachId`).
+- **Coach führt O(1) Dashboard-Listenabfrage über alle seine Athleten durch:**
+  - **Aktion:** `bobAuth` führt `db.collection('coachDashboard/coachBob/athletes').get()` aus.
+  - **Erwartet:** Erfolg (Query-Alignment: Pfadvariable `{coachId}` entspricht `request.auth.uid`, kein N+1 Read-Overhead).
+- **Athlet versucht sein aggregiertes Dokument im Coach-Dashboard zu lesen:**
+  - **Aktion:** `aliceAuth` liest `/coachDashboard/coachBob/athletes/alice`.
+  - **Erwartet:** `PERMISSION_DENIED` (`request.auth.uid == coachId` schlägt fehl, da Alice nicht CoachBob ist).
+- **Fremder Coach versucht fremdes Dashboard zu lesen:**
+  - **Aktion:** `charlieAuth` liest `/coachDashboard/coachBob/athletes/alice` oder fragt die Collection `/coachDashboard/coachBob/athletes` ab.
+  - **Erwartet:** `PERMISSION_DENIED` (`request.auth.uid == coachId` schlägt fehl).
+- **Fremder / Unauthentifizierter versucht zu lesen:**
+  - **Aktion:** `eveAuth` oder `unauth` liest `/coachDashboard/coachBob/athletes/alice`.
+  - **Erwartet:** `PERMISSION_DENIED`.
+
+#### 12.2 Write / Create / Update / Delete (Striktes Client-Schreibverbot)
+- **Coach versucht Athleten-Dashboard-Dokument anzulegen:**
+  - **Aktion:** `bobAuth` versucht `/coachDashboard/coachBob/athletes/alice` anzulegen.
+  - **Erwartet:** `PERMISSION_DENIED` (`allow write: if false;`, Pflege erfolgt ausschließlich serverseitig via Cloud Functions).
+- **Coach versucht aggregierte Werte (z. B. Form-Ampel, CTL, Soll-Ist) zu manipulieren:**
+  - **Aktion:** `bobAuth` sendet Update auf `/coachDashboard/coachBob/athletes/alice` mit manipulierter Form-Ampel oder verändertem `tsb`.
+  - **Erwartet:** `PERMISSION_DENIED` (`allow write: if false;`).
+- **Coach versucht Athleten-Dokument aus dem Dashboard zu löschen:**
+  - **Aktion:** `bobAuth` ruft `.delete()` auf `/coachDashboard/coachBob/athletes/alice` auf.
+  - **Erwartet:** `PERMISSION_DENIED` (`allow write: if false;`, Lifecycle wie Widerruf wird per Cloud Functions abgewickelt).
+- **Athlet, Fremder oder Unauthentifizierter versucht Schreibzugriff:**
+  - **Aktion:** `aliceAuth`, `eveAuth` oder `unauth` versucht beliebiges Schreibkommando auf `/coachDashboard/coachBob/athletes/alice`.
+  - **Erwartet:** `PERMISSION_DENIED` (`allow write: if false;`).
+
+### 13. Subcollection `users/{userId}/preferences/{prefId}` (Phase 15 – Arbeitsplatz-Präferenzen & Ansichten)
+
+#### 13.1 Read (Lesen)
+- **Coach liest eigene Tabellen-/Filterkonfiguration:**
+  - **Aktion:** `bobAuth` liest `/users/coachBob/preferences/view_master_table`.
+  - **Erwartet:** Erfolg (`isOwner(userId)`).
+- **Athlet liest eigene Ansichtseinstellungen:**
+  - **Aktion:** `aliceAuth` liest `/users/alice/preferences/custom_layout`.
+  - **Erwartet:** Erfolg (`isOwner(userId)`).
+- **Coach versucht Präferenzen eines Athleten zu lesen:**
+  - **Aktion:** `bobAuth` liest `/users/alice/preferences/custom_layout`.
+  - **Erwartet:** `PERMISSION_DENIED` (`isOwner(userId)` schlägt fehl, Privatsphäre der Ansichten bleibt gewahrt).
+- **Fremder oder Unauthentifizierter versucht Präferenzen zu lesen:**
+  - **Aktion:** `eveAuth` oder `unauth` liest `/users/alice/preferences/custom_layout`.
+  - **Erwartet:** `PERMISSION_DENIED`.
+
+#### 13.2 Create & Update (Anlegen & Aktualisieren)
+- **Coach speichert gültige Tabellen-Ansicht:**
+  - **Aktion:** `bobAuth` erstellt oder aktualisiert `/users/coachBob/preferences/view_master_table` mit:
+    `{ name: 'Triathlon Fokus', columns: ['name', 'ctl', 'compliance'], filters: { sport: 'TRIATHLON' } }`.
+  - **Erwartet:** Erfolg (`isOwner(userId) && isValidPreferenceDoc(request.resource.data)`).
+- **Nutzer versucht DoS-Payload mit übermäßig vielen Feldern zu speichern:**
+  - **Aktion:** `bobAuth` versucht ein Dokument mit > 50 Schlüsseln anzulegen.
+  - **Erwartet:** `PERMISSION_DENIED` (`isValidPreferenceDoc` schlägt fehl: `data.keys().size() <= 50`).
+- **Nutzer versucht überlangen Namen anzulegen:**
+  - **Aktion:** `bobAuth` speichert Präferenz mit einem `name` > 200 Zeichen.
+  - **Erwartet:** `PERMISSION_DENIED` (`checkStringSize(data.name, 1, 200)` schlägt fehl).
+- **Coach oder Fremder versucht Präferenzen eines anderen Nutzers zu verändern:**
+  - **Aktion:** `bobAuth` versucht `/users/alice/preferences/custom_layout` zu erstellen oder upzudaten.
+  - **Erwartet:** `PERMISSION_DENIED` (`isOwner(userId)` schlägt fehl).
+- **Unauthentifizierter versucht Präferenz zu schreiben:**
+  - **Aktion:** `unauth` versucht Write auf `/users/alice/preferences/custom_layout`.
+  - **Erwartet:** `PERMISSION_DENIED`.
+
+#### 13.3 Delete (Löschen)
+- **Besitzer löscht gespeicherte Ansicht:**
+  - **Aktion:** `bobAuth` löscht `/users/coachBob/preferences/view_master_table`.
+  - **Erwartet:** Erfolg (`isOwner(userId)`).
+- **Fremder versucht fremde Ansicht zu löschen:**
+  - **Aktion:** `eveAuth` oder `bobAuth` versucht `/users/alice/preferences/custom_layout` zu löschen.
+  - **Erwartet:** `PERMISSION_DENIED` (`isOwner(userId)` schlägt fehl).
+- **Unauthentifizierter versucht Ansicht zu löschen:**
+  - **Aktion:** `unauth` versucht Löschung auf `/users/alice/preferences/custom_layout`.
+  - **Erwartet:** `PERMISSION_DENIED`.
+
 ---
 
 ## Umsetzung
@@ -678,6 +778,55 @@ Der Athlet behält die volle Souveränität über seinen Speicherplatz und seine
 - Dateien sind auf `request.resource.size <= 25 * 1024 * 1024` (25 MB) beschränkt.
 - **Immutabilität:** `allow update: if false;` verhindert das heimliche Überschreiben von hochgeladenen Dokumenten durch schädliche Payloads.
 - **Getrennte Delete-Erlaubnis:** Da `request.resource` bei Storage-Deletes `null` ist, führt eine kombinierte `write`-Regel mit Größenprüfung bei Löschungen zu Runtime-Errors. Durch die explizite Trennung in `allow create` und `allow delete: if isChatParticipant(chatId);` kann der Nutzer beim Soft-Delete einer Nachricht den Anhang in Storage sauber entfernen, ohne dass Sicherheitsprüfungen fehlschlagen.
+
+### Theoretischer Beweis (Architektur-Check): Coach-Dashboard & O(1) Performance (Phase 15)
+
+**1. Radikale O(1) Read-Komplexität für das Dashboard:**
+Im Coach-Desktop und in der Web-App muss ein Coach bei der Betreuung von 25+ Athleten sämtliche Kernmetriken (Form-Ampel, Soll-Ist-Quote der letzten 7 Tage, letzte Aktivität, ungelesene Chat-Nachrichten, offene Schwellenwert-Vorschläge, Warn-Alerts) sofort auf einen Blick sehen.
+Würde der Client hierfür jeweils pro Athlet Subcollections (`aggregates`, `activities`, `plannedWorkouts`, `chats`, `thresholdProposals`) abfragen, entstünden pro Dashboard-Aufruf hunderte Document Reads (N*M Problem), was Mobilfunk-Datenvolumen, Ladezeit und Firestore-Quotas sprengen würde.
+Durch die denormalisierte Collection `coachDashboard/{coachId}/athletes/{athleteId}` lädt der Coach das gesamte Dashboard mit einer einzigen Abfrage:
+`collection('coachDashboard/' + coachId + '/athletes').get()`.
+Die Security Rule `allow read: if isAuthenticated() && request.auth.uid == coachId;` bindet die Berechtigung exakt an das Pfadsegment `{coachId}`. Da der Filter im Abfragepfad exakt mit der Rule übereinstimmt, ist die Abfrage für Firestore statisch beweisbar zulässig und erzeugt keinerlei "Rules are not filters"-Fehler.
+
+**2. Striktes Client-Schreibverbot (`allow write: if false`):**
+Das Dashboard stellt hochsensible diagnostische und trainingssteuernde Aggregationen dar. Kein Client darf diese Dokumente manipulieren oder fälschen. Die Regel `allow write: if false;` stellt sicher, dass alle Datenpunkte exklusiv von vertrauenswürdigen Cloud Functions (Firebase Admin SDK) bei relevanten Triggern (Aktivitäts-Import, Planänderung, neue Chat-Nachricht, Verknüpfungswiderruf) atomar und idempotent gepflegt werden.
+
+### Theoretischer Beweis (Architektur-Check): Benutzer-Präferenzen & Ansichten (Phase 15)
+
+**1. Vollständige Daten- und Arbeitsplatz-Isolation:**
+Sowohl Coaches als auch Athleten können in Phase 15 ihre Benutzeroberfläche individualisieren: Tabellenspalten (Auswahl, Reihenfolge, Breiten), Filter-Presets, Sortierungen und Wochenraster-Ansichten.
+Unter `users/{userId}/preferences/{prefId}` sind diese Einstellungen strikt pro Benutzer abgelegt. Durch `allow read, delete: if isOwner(userId);` und `allow create, update: if isOwner(userId) && isValidPreferenceDoc(...)` ist garantiert, dass kein anderer Nutzer – auch kein verknüpfter Trainer oder Athlet – Einsicht in fremde Arbeitsplatzkonfigurationen erhält oder diese überschreiben kann.
+
+**2. Schutz vor Resource Exhaustion & DoS:**
+Da Präferenzen vom Client frei verfasst werden können, schützt `isValidPreferenceDoc` die Firestore-Integrität:
+- `data.keys().size() <= 50`: Begrenzt die Feldanzahl, um das Einschleusen gigantischer Maps zu verhindern.
+- `checkStringSize(data.name, 1, 200)`: Begrenzt die Namenslänge für benannte Ansichten.
+- Beide Prüfungen werden konsistent in `create` und `update` aufgerufen (Validator Function Pattern).
+
+### Theoretischer Beweis (Architektur-Check): Trainer-Schwellenwert-Vorschläge & Athleten-Souveränität (Phase 15)
+
+**1. Autorisierte Vorschlagserstellung durch den Trainer:**
+Bisher war `users/{userId}/thresholdProposals/{proposalId}` für Clients komplett schreibgeschützt (`allow create: if false;`). In Phase 15 darf ein Trainer, der den Athleten betreut, gezielt Vorschläge unterbreiten.
+Die Rule verlangt:
+`allow create: if isAuthenticated() && isCoachForActivities(userId) && isValidCoachThresholdProposalCreate(request.resource.data);`
+- `isCoachForActivities(userId)` prüft dynamisch im Verknüpfungsdokument `/coachLinks/$(userId)_$(request.auth.uid)`, ob die Berechtigung `permissions.activities == true` aktiv vorliegt.
+- Trainer ohne Freigabe, fremde Trainer oder Unbeteiligte können keine Vorschläge anlegen.
+- Athleten selbst können keine Vorschläge für sich selbst über diesen Trainer-Kanal anlegen (kein `coachLinks/athleteId_athleteId`).
+
+**2. Identitätsbindung und mathematische Zustandsraum-Eingrenzung:**
+Die Hilfsfunktion `isValidCoachThresholdProposalCreate(data)` eliminiert typische Angriffsvektoren:
+- **Identitätsfälschung:** `data.proposedBy == request.auth.uid` bindet den Ersteller zwingend an den angemeldeten Trainer. Ein Coach kann nicht vorgeben, ein anderer Trainer zu sein.
+- **Keine eigenmächtige Aktivierung:** `data.status == 'PENDING'` verbietet das unmittelbare Erstellen bereits akzeptierter Vorschläge (`ACCEPTED`).
+- **Sportarten-Restriktion:** `data.sport in ['RUN', 'BIKE', 'SWIM']` schließt ungültige oder fehlerhafte Sportartenkürzel aus.
+- **Werte-Plausibilität:** `data.proposedValue is number && data.proposedValue > 0` garantiert, dass nur positive numerische Schwellenwerte vorgeschlagen werden.
+- **DoS-Schutz:** Feldgrößenbeschränkungen für optionale Notizen (`notes <= 2000` Zeichen), Typen (`type <= 50` Zeichen) und Begründungen (`basis <= 20` Einträge, Dokumentengröße `keys().size() <= 30`).
+
+**3. Unantastbare Entscheidungshoheit des Athleten:**
+Auch mit der Trainer-Erstellung bleibt das Grundprinzip von ORBIT unangetastet: **Nur der Athlet entscheidet.**
+- `allow update: if isOwner(userId) && isValidThresholdProposalUpdate();`: Ausschließlich der Athlet (`isOwner(userId)`) kann den Status auf `'ACCEPTED'` oder `'REJECTED'` setzen. Der Coach besitzt keinerlei Update-Rechte.
+- `areImmutableFieldsUnchanged([... 'proposedBy'])`: Weder der vorgeschlagene Wert noch die Urheberschaft des Coaches können bei einer Statusentscheidung verfälscht werden.
+- `allow delete: if isOwner(userId);`: Nur der Athlet darf alte oder abgelehnte Vorschläge aus seinem Profil entfernen.
+
 
 
 

@@ -3,8 +3,8 @@
 > Wird am Ende jeder Phase von Antigravity aktualisiert (`/phase-finish`). Kurz und ehrlich halten.
 
 ## Aktuell
-- Phase: 14 (Abgeschlossen) -> Phase 15 (Coach Desktop & Dashboard)
-- Branch: feature/phase-14-home
+- Phase: 15 (Abgeschlossen) -> Phase 16 (Release-Vorbereitung, Polish & Store-Readiness)
+- Branch: feature/phase-15-coach-desktop
 
 ## Fertig
 - Phase 00 (Foundation): Abgeschlossen
@@ -21,28 +21,36 @@
 - Phase 11 (Analyse Cockpit – Telemetrie, Karte, Power-Kurve): Abgeschlossen
 - Phase 12 (Leistungsdiagnostik & Schwellenwert-Erkennung): Abgeschlossen
 - Phase 13 (Chat und Push-Benachrichtigungen): Abgeschlossen
-- Phase 14 (Home-Dashboard „Heute"):
-  - Inhalts- und Prioritätskonzept (`HomeCardResolver`):
-    - Dynamische Priorisierung (Action-Banner, Hero Daily Ring, Saisonziel-Countdown, Form-Ampel / Readiness, Letzte Aktivität).
-    - Maximal 4 Karten oberhalb der Falz für einen ruhigen Startscreen ohne Überforderung.
-  - Volt Hero-Karte (`HomeHeroCard` & `DailyRingWidget`):
-    - Strikte Einhaltung der Volt-Regel (`docs/DESIGN.md` §2): Volt (`#CDFB17`) auf Deep Navy (`#0F172A`).
-    - Visualisierung des Verhältnisses von Ist-Belastung zu Planbelastung (oder Ruhetag) mit vollem Semantics-/Screenreader-Textäquivalent.
-    - Heutiges Training mit Sportfarbe, Dauer, TSS und Schnellzugriff auf Detailsheet (`WorkoutDetailSheet`).
-  - Saisonziel-Countdown (`RaceGoal`, `RaceCountdownCard`, `EditRaceGoalSheet`):
-    - Countdown in Tagen/Wochen mit 1-Klick-Bearbeitung direkt aus der Karte ins Profil.
-  - Action-Banner (`HomeActionBanner`):
-    - Kontextsensitive Anzeige für neue Schwellenwerte (Phase 12), ungelesene Trainer-Nachrichten (Phase 13) und nicht zugeordnete Einheiten (Phase 08).
-  - Gebündelter Datenzugriff & Quota-Schutz (`homeDashboardProvider`):
-    - Maximal 4 Firestore-Reads pro Öffnung, Riverpod-Caching und Pull-to-Refresh (`RefreshIndicator`).
-  - Responsives Layout:
-    - Einspaltig auf Mobile, Zweispalten-Raster ab Tablet-Breite ($\ge 600\text{ px}$).
-    - Gestalteter Onboarding Empty-State für Neunutzer mit FIT-Upload und Garmin-Connect.
-  - Unit-Tests: `test/features/home/domain/home_card_resolver_test.dart`.
-  - Integration in Widget-Galerie (`/gallery`).
+- Phase 14 (Home-Dashboard „Heute"): Abgeschlossen
+- Phase 15 (Coach-Desktop und Web):
+  - O(1) Dashboard-Aggregation (`coachDashboard/{coachId}/athletes/{athleteId}`):
+    - Cloud Functions berechnen aggregierte Statusdokumente (Form-Ampel, CTL/ATL/TSB, 7d-Soll-Ist-Erfüllung, unread chat messages, letzte Aktivität, Alerts, Wettkampfziel).
+    - Coach lädt das gesamte Dashboard mit einer einzigen Abfrage statt $N$ Abfragen.
+    - Automatischer Trigger bei Beendigung/Widerruf von Trainer-Verknüpfungen.
+  - Firestore Security Rules (via `firestore-rules-author`):
+    - `coachDashboard`: Nur Trainer liest (`coachId == auth.uid`), Client-Schreibverbot.
+    - `preferences`: Vollständige Trennung & Lese-/Schreibzugriff nur durch Besitzer (`isOwner(userId)`).
+    - `thresholdProposals`: Trainer mit Aktivitäts-Freigabe darf Vorschläge mit Status `PENDING` anlegen; Statusänderung (`ACCEPTED`/`REJECTED`) obliegt ausschließlich dem Athleten.
+  - UI & Adaptiver Coach-Arbeitsbereich (`TrainerAthletesTabScreen`):
+    - Responsives Layout mit Schnellumschaltung zwischen Kader-Tabelle (`CoachAthletesTable`) und Wochenraster (`MultiAthleteWeekGrid`).
+    - Filterchips nach Sportart, Statusampeln, Warnungen und Volltextsuche.
+    - Tastaturkürzel (`/` oder `Cmd+K` für Fokus auf Suche, `?` für Tastenkürzel-Übersicht).
+  - Mehrathleten-Wochenraster mit Drag & Drop und Undo (`MultiAthleteGridController`):
+    - Funktionale Domain-Logik für Verschieben und Kopieren (Alt/Option-Taste).
+    - Vollständiger Undo-Stack zur sicheren Rücknahme von Planungsaktionen.
+    - Zugängliche Alternative über Kontextmenü.
+  - Massenzuweisung (`BatchAssignService`, `BatchAssignDialog`):
+    - Sichere Zuweisung an mehrere Athleten via Firestore `WriteBatch` ($\le 500$ Ops) unter Beachtung der Kalender-Berechtigung.
+  - Web & Storage Konfiguration:
+    - `cors.json` für Cloud Storage, Titel/PWA-Konfiguration in `web/index.html`.
+    - Detaillierte Hosting-, Domain- und App-Check-Web-Anleitung in `docs/MANUAL_STEPS.md`.
+  - Last-Test Seed-Skript (`functions/src/seeds/seed_coach_athletes.ts`):
+    - Erzeugt 28 Test-Athleten für Lade- und Scrolltests, abgesichert gegen Ausführung in Produktivumgebungen.
+  - Unit-Tests: `test/features/coach_link/domain/multi_athlete_grid_controller_test.dart`, `test/features/coach_link/models/coach_dashboard_models_test.dart`.
+  - Showcase in `widget_gallery.dart`.
 
 ## Offen / in Arbeit
-- Phase 15: Coach Desktop & Dashboard (Kaderübersicht, Schnellfilter, Compliance, Feedback)
+- Phase 16: Release-Vorbereitung, Polish & Store-Readiness
 
 ## Bekannte Probleme
 - `build_runner` Konflikte durch `analyzer` Abhängigkeiten: Wir nutzen derzeit manuelle Models anstelle von `freezed`.

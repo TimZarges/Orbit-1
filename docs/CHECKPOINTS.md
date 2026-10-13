@@ -26,6 +26,42 @@
 
 ## Einträge
 
+### [Phase 15] Coach-Desktop und Web · RISIKO-HOCH
+- **STOPP-Punkt/Anlass:** STOPP 1 aus Phasendatei (Funktionsumfang des Coach-Dashboards, Web-Entscheidungen, O(1) Performance-Ziele bei 25+ Athleten).
+- **Entscheidung:**
+  1. **O(1) Dashboard-Aggregation (`coachDashboard/{coachId}/athletes/{athleteId}`):**
+     - Cloud Functions pflegen serverseitig vorberechnete Übersichten je verknüpftem Athleten (Form-Ampel, CTL/ATL/TSB, 7d-Soll-Ist-Quote, ungelesene Nachrichten, letzte Aktivität, Alerts wie „7 Tage ohne Aktivität", Wettkampfziel).
+     - Der Trainer lädt beim Dashboard-Aufruf alle Athleten über eine einzige Query (`coachDashboard/{coachId}/athletes`), was Quota-Limits bei 25+ Athleten radikal schützt.
+     - Automatische Bereinigung bei Widerruf der Trainer-Verknüpfung (`onCoachLinkChanged`).
+  2. **Firestore Security Rules (via `firestore-rules-author`):**
+     - `coachDashboard/{coachId}/athletes/{athleteId}`: Nur der Coach selbst darf lesen (`request.auth.uid == coachId`), Schreibzugriff für Clients strikt gesperrt (`allow write: if false;`).
+     - `users/{userId}/preferences/{prefId}`: Voller Lese-/Schreibzugriff nur durch den Besitzer (`isOwner(userId)`), geschützt durch `isValidPreferenceDoc()` gegen DoS/Payload-Injektion.
+     - `users/{userId}/thresholdProposals/{proposalId}`: Trainer mit Aktivitäten-Freigabe (`isCoachForActivities`) darf neue Schwellenwert-Vorschläge mit Status `PENDING` für Athleten einreichen; nur der Athlet darf sie akzeptieren oder ablehnen.
+  3. **Arbeitsbereich & Adaptives Layout (`TrainerAthletesTabScreen`):**
+     - Umschaltbar zwischen konfigurierbarer Kader-Tabelle (`CoachAthletesTable`) und Mehrathleten-Wochenraster (`MultiAthleteWeekGrid`).
+     - Breakpoints für Responsive Web/Desktop (Kompakt, Medium, Erweitert).
+     - Filter nach Sportart, Status, Warnungen und Volltextsuche.
+     - Tastaturkürzel: `/` oder `Cmd+K` für Schnellsuche, `?` für Shortcut-Dialog (`KeyboardShortcutsDialog`).
+  4. **Mehrathleten-Wochenraster & Drag & Drop (`MultiAthleteGridController`):**
+     - Reine funktionale Domain-Logik für Verschieben von Workouts zwischen Tagen und Athleten.
+     - Alt/Option-Taste erzeugt Kopie statt Verschiebung.
+     - Vollständiger Undo-Stack zur sicheren Rücknahme von Fehlaktionen.
+     - Barrierefreie Alternative über Kontext-Menü vorhanden.
+  5. **Massenzuweisung (`BatchAssignDialog`, `BatchAssignService`):**
+     - Zuweisung von Workouts an mehrere Athleten gleichzeitig via Firestore `WriteBatch` ($\le 500$ Operationen).
+     - Prüfung der Kalender-Berechtigung (`permissions.calendar == true`) vor dem Schreibzugriff.
+  6. **Web-Bereitstellung & Storage CORS:**
+     - `cors.json` für Cloud Storage Uploads/Downloads.
+     - `web/index.html` mit Titel, SEO und PWA-Konfiguration.
+     - Detaillierte Bereitstellungsanleitung in `docs/MANUAL_STEPS.md` (Firebase Hosting, Custom Domain, App Check reCAPTCHA Enterprise).
+  7. **Last-Test Seed-Skript (`functions/src/seeds/seed_coach_athletes.ts`):**
+     - Skript zum Erzeugen von 28 Test-Athleten für Ladezeit- und Scroll-Performancemessungen.
+     - Geschützt gegen Ausführung in Produktivumgebungen (`NODE_ENV === 'production'` sperrt Ausführung).
+- **Alternative:** Live-Abfrage aller Athleten-Subcollections pro Dashboard-Aufruf ($25 \times 4 = 100+$ Reads) oder Verzicht auf Desktop-Raster.
+- **Begründung:** O(1)-Skalierbarkeit für professionelle Coaches, flüssiges Arbeiten bei großen Kadern und strikter Schutz der Athleten-Daten.
+- **Bitte prüfen:** Tab „Athleten" in Trainer-Ansicht, Raster-Umschaltung, Tastenkürzel (`?`) und `docs/MANUAL_STEPS.md`.
+- **Rückholen:** Branch `feature/phase-15-coach-desktop` verwerfen.
+
 ### [Phase 14] Home-Dashboard („Heute") · RISIKO-MITTEL
 - **STOPP-Punkt/Anlass:** STOPP 1 aus Phasendatei (Inhalts- und Prioritätskonzept, Daily Ring auf Deep Navy #0F172A, maximal 4 Karten oberhalb der Falz, Read-Budget).
 - **Entscheidung:**

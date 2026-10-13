@@ -27,7 +27,7 @@ service cloud.firestore {
     // Fields: allTime, currentSeason, sport, updatedAt
     //
     // Subcollection: users/{uid}/thresholdProposals/{proposalId}
-    // Fields: sport, type, proposedValue, confidence, basis, status, createdAt
+    // Fields: sport, type, proposedValue, confidence, basis, status, createdAt, proposedBy, notes
     //
     // Collection: workoutTemplates/{templateId}
     // Fields: ownerId, visibility, sport, title, description, structure, tags, isFavorite, createdAt, updatedAt
@@ -46,6 +46,12 @@ service cloud.firestore {
     //
     // Subcollection: users/{uid}/notificationState/{docId}
     // Fields: nextReminderAtUtc, nextWeeklySummaryAtUtc
+    //
+    // Collection: coachDashboard/{coachId}/athletes/{athleteId}
+    // Fields: athleteId, coachId, name, avatarUrl, sport, formStatus, ctl, atl, tsb, compliance7d, actualLoad7d, plannedLoad7d, unreadMessagesCount, pendingProposalsCount, latestActivity, raceGoal, alert, updatedAt
+    //
+    // Subcollection: users/{uid}/preferences/{prefId}
+    // Fields: name, columns, filters, sort, ...
     // ===============================================================
 
     // ===============================================================
@@ -125,9 +131,28 @@ service cloud.firestore {
       let onlyStatusChanged = affected.hasOnly(['status']);
       let statusValid = request.resource.data.status in ['ACCEPTED', 'REJECTED'];
       let protectedFieldsUnchanged = areImmutableFieldsUnchanged([
-        'sport', 'type', 'proposedValue', 'confidence', 'basis', 'createdAt'
+        'sport', 'type', 'proposedValue', 'confidence', 'basis', 'createdAt', 'proposedBy'
       ]);
       return onlyStatusChanged && statusValid && protectedFieldsUnchanged;
+    }
+
+    function isValidCoachThresholdProposalCreate(data) {
+      let hasRequired = 'proposedBy' in data && 'status' in data && 'sport' in data && 'proposedValue' in data;
+      let proposedByOk = data.proposedBy == request.auth.uid;
+      let statusOk = data.status == 'PENDING';
+      let sportOk = data.sport in ['RUN', 'BIKE', 'SWIM'];
+      let valueOk = data.proposedValue is number && data.proposedValue > 0;
+      let typeOk = !('type' in data) || checkStringSize(data.type, 1, 50);
+      let notesOk = !('notes' in data) || checkStringSize(data.notes, 0, 2000);
+      let basisOk = !('basis' in data) || (data.basis is list && data.basis.size() <= 20);
+      let sizeOk = data.keys().size() <= 30;
+      return hasRequired && proposedByOk && statusOk && sportOk && valueOk && typeOk && notesOk && basisOk && sizeOk;
+    }
+
+    function isValidPreferenceDoc(data) {
+      let nameOk = !('name' in data) || checkStringSize(data.name, 1, 200);
+      let sizeOk = data.keys().size() <= 50;
+      return nameOk && sizeOk;
     }
 
     function isChatParticipant(chatId) {
@@ -219,7 +244,9 @@ service cloud.firestore {
 
       match /thresholdProposals/{proposalId} {
         allow read: if isOwner(userId) || (isAuthenticated() && isCoachForActivities(userId));
-        allow create: if false; // Only Cloud Functions
+        allow create: if isAuthenticated() &&
+          isCoachForActivities(userId) &&
+          isValidCoachThresholdProposalCreate(request.resource.data);
         allow update: if isOwner(userId) && isValidThresholdProposalUpdate();
         allow delete: if isOwner(userId);
       }
@@ -238,6 +265,12 @@ service cloud.firestore {
       match /notificationState/{docId} {
         allow read: if isOwner(userId);
         allow write: if false; // Only Cloud Functions
+      }
+
+      match /preferences/{prefId} {
+        allow read: if isOwner(userId);
+        allow create, update: if isOwner(userId) && isValidPreferenceDoc(request.resource.data);
+        allow delete: if isOwner(userId);
       }
     }
 
@@ -329,6 +362,11 @@ service cloud.firestore {
           isValidChatState(request.resource.data);
         allow delete: if false;
       }
+    }
+
+    match /coachDashboard/{coachId}/athletes/{athleteId} {
+      allow read: if isAuthenticated() && request.auth.uid == coachId;
+      allow write: if false; // Only Cloud Functions
     }
   }
 }

@@ -36,6 +36,15 @@
 | ☐ | Impressum und Datenschutzerklärung erstellen und hosten (Web-Link auch für Account-Löschung, Play-Pflicht). | 16 |
 | ☐ | Markenrechte-Check für Begriffe (z. B. TSS, NP, IF) und den Namen „ORBIT". | vor Release |
 
+## Web & Hosting (Phase 15)
+| ☐ | Aufgabe | Wann |
+|---|---|---|
+| ☐ | **Firebase Hosting einrichten:** `firebase init hosting` und Build-Target für Flutter Web (`build/web`) konfigurieren. | 15 |
+| ☐ | **Eigene Domain verknüpfen:** DNS A-/CNAME-Records für Trainer-Web-App (z. B. `app.orbit-training.de`) in Firebase Hosting hinterlegen. | 15 |
+| ☐ | **App Check für Web aktivieren:** reCAPTCHA v3 oder reCAPTCHA Enterprise Key in der Firebase Console anlegen und Domain whitelisten. Debug-Token für lokale Web-Entwicklung eintragen. | 15 |
+| ☐ | **Google Sign-In für Web:** Web-Client-ID in Google Cloud Console anlegen und autorisierte JavaScript-Ursprünge (eigene Domain + `localhost`) hinterlegen. | 15 |
+| ☐ | **Storage CORS anwenden:** `gsutil cors set cors.json gs://<bucket-name>` ausführen, um Web-Uploads/-Downloads von FIT-Dateien und Chat-Medien freizugeben. | 15 |
+
 ## Release
 | ☐ | Aufgabe | Wann |
 |---|---|---|

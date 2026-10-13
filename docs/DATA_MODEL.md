@@ -93,6 +93,26 @@ Standard-Freigaben bei Annahme: `calendar: true, activities: true, health: false
 `senderId, text, timestamp, attachment?: { path, type, name }, readBy?`
 Anhänge zusätzlich als verlinkte Aktivität (`activityId`) möglich. Zugriff auf die Aktivität richtet sich nach den Freigaben, nicht nach dem Chat.
 
+### `coachDashboard/{coachId}/athletes/{athleteId}`
+Serverseitig aggregiertes Dokument für O(1) Reads im Coach-Dashboard:
+```
+athleteId, coachId, athleteName, athletePhotoUrl?,
+formStatus: "FRESH"|"OPTIMAL"|"TIRED"|"OVERTRAINED",
+ctl, atl, tsb,
+compliance7d: number, // 0.0 .. 1.0 (Plan-Ist-Erfüllung der letzten 7 Tage)
+latestActivity?: { activityId, title, sport, localDate, durationSec, tss? },
+raceGoal?: { title, date, distanceCategory },
+alerts: string[], // z. B. "NO_ACTIVITY_7D", "HIGH_FATIGUE_SPIKE"
+unreadChatMessages: number,
+updatedAtUtc: ISO8601
+```
+
+### `users/{userId}/preferences/{key}`
+Speichert nutzer- und trainerspezifische Arbeitsplatzansichten, Spaltenkonfigurationen und Filter-Presets:
+```
+id, name, columns: string[], filters: map, sortColumn: string, sortAscending: bool, isDefault: bool, updatedAtUtc
+```
+
 ### `webhookEvents/{id}` (nur Server)
 Roh-Payloads von Anbietern. Eine Firestore-getriggerte Function verarbeitet sie (inkl. Retry). Status: `RECEIVED|PROCESSED|FAILED`.
 
