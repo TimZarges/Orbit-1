@@ -14,6 +14,7 @@ import '../../features/auth/providers/auth_provider.dart';
 import '../../features/auth/providers/user_provider.dart';
 import '../../features/workout_builder/screens/workout_builder_screen.dart';
 import '../../features/workout_builder/screens/workout_template_library_screen.dart';
+import '../../features/analysis/screens/analysis_tab_screen.dart';
 
 final goRouterProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authStateChangesProvider);
@@ -83,6 +84,13 @@ final goRouterProvider = Provider<GoRouter>((ref) {
             GoRoute(
               path: 'templates',
               builder: (context, state) => const WorkoutTemplateLibraryScreen(),
+            ),
+            GoRoute(
+              path: 'analysis',
+              builder: (context, state) => AnalysisTabScreen(
+                athleteId: state.uri.queryParameters['athleteId'],
+                athleteName: state.uri.queryParameters['athleteName'],
+              ),
             ),
             GoRoute(
               path: 'workout-builder',

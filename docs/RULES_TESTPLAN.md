@@ -1,12 +1,13 @@
-# Testplan für Firestore Security Rules (Phasen 01, 02, 08 & 09)
+# Testplan für Firestore Security Rules (Phasen 01, 02, 08, 09 & 10)
 
 ## Ziel
-Sicherstellen, dass die implementierten Firestore Security Rules für alle Collections (`users`, Subcollections, `coachLinks`, `activities`, `plannedWorkouts` und `workoutTemplates`) robust sind und die geforderten Berechtigungen durchsetzen:
+Sicherstellen, dass die implementierten Firestore Security Rules für alle Collections (`users`, Subcollections inkl. `aggregates`, `coachLinks`, `activities`, `plannedWorkouts` und `workoutTemplates`) robust sind und die geforderten Berechtigungen durchsetzen:
 - Default Deny an der Wurzel
 - Owner-Only & Authenticated Access
 - Schutz unveränderlicher Server- und Identitätsfelder (`athleteId`, `createdBy`, `ownerId`, `role`, etc.)
-- Granulare Trainer-Freigaben (`coachLinks.permissions.calendar`, `coachLinks.permissions.health`, `coachLinks` Trainer-Vorlagen-Sharing)
+- Granulare Trainer-Freigaben (`coachLinks.permissions.calendar`, `coachLinks.permissions.health`, `coachLinks.permissions.activities`, `coachLinks` Trainer-Vorlagen-Sharing)
 - Schutz vor Privilege Escalation, Identitätsfälschung, Resource Exhaustion/DoS und unbefugter Datenlöschung
+- Striktes Schreibverbot für vorberechnete Aggregate (nur Cloud Functions)
 
 ## Setup
 - Die Tests werden gegen den lokalen **Firebase Emulator** ausgeführt.
@@ -14,12 +15,16 @@ Sicherstellen, dass die implementierten Firestore Security Rules für alle Colle
 - Testdaten (Mocks):
   - `aliceAuth`: Authentifizierter Nutzer mit UID "alice" (Athlet)
   - `bobAuth`: Authentifizierter Nutzer mit UID "coachBob" (Trainer)
+  - `charlieAuth`: Authentifizierter Nutzer mit UID "coachCharlie" (Trainer mit eingeschränkten Rechten)
   - `eveAuth`: Authentifizierter unbeteiligter Nutzer mit UID "eve" (Fremder)
   - `unauth`: Nicht authentifizierter Zugriff (null)
   - `coachLinks/alice_coachBob`:
     - Status: `ACTIVE`
     - permissions: `{ calendar: true, activities: true, health: false }`
-  - `coachLinks/alice_eve`: Existiert nicht oder hat `{ calendar: false }`
+  - `coachLinks/alice_coachCharlie`:
+    - Status: `ACTIVE`
+    - permissions: `{ calendar: true, activities: false, health: false }`
+  - `coachLinks/alice_eve`: Existiert nicht oder hat `{ calendar: false, activities: false }`
 
 ## Testfälle
 
@@ -242,6 +247,36 @@ Sicherstellen, dass die implementierten Firestore Security Rules für alle Colle
   - **Aktion:** `unauth` versucht Vorlage zu löschen.
   - **Erwartet:** `PERMISSION_DENIED`.
 
+### 8. Collection `users/{userId}/aggregates/{date}` (Phase 10 – Auswertungen & Trainingsanalyse)
+
+#### 8.1 Read (Lesen)
+- **Athlet liest eigene vorberechnete Tagesaggregate:**
+  - **Aktion:** `aliceAuth` liest `/users/alice/aggregates/2026-10-13`.
+  - **Erwartet:** Erfolg (`isOwner(userId)`).
+- **Trainer mit aktiver `activities`-Freigabe liest Tagesaggregate des Athleten:**
+  - **Aktion:** `bobAuth` liest `/users/alice/aggregates/2026-10-13` (bei existierendem `coachLinks/alice_coachBob` mit `permissions.activities == true`).
+  - **Erwartet:** Erfolg (`isAuthenticated() && isCoachForActivities(userId)`).
+- **Trainer ohne `activities`-Freigabe versucht Tagesaggregate zu lesen:**
+  - **Aktion:** `charlieAuth` liest `/users/alice/aggregates/2026-10-13` (bei `coachLinks/alice_coachCharlie` mit `permissions.activities == false`).
+  - **Erwartet:** `PERMISSION_DENIED` (`isCoachForActivities` evaluiert zu `false`).
+- **Fremder ohne Verknüpfung versucht Tagesaggregate zu lesen:**
+  - **Aktion:** `eveAuth` liest `/users/alice/aggregates/2026-10-13` (kein `coachLinks/alice_eve` vorhanden).
+  - **Erwartet:** `PERMISSION_DENIED`.
+- **Unauthentifizierter versucht Tagesaggregate zu lesen:**
+  - **Aktion:** `unauth` liest `/users/alice/aggregates/2026-10-13`.
+  - **Erwartet:** `PERMISSION_DENIED`.
+
+#### 8.2 Write / Create / Update / Delete (Schreiben)
+- **Athlet versucht Aggregat-Dokument anzulegen oder zu manipulieren:**
+  - **Aktion:** `aliceAuth` versucht `/users/alice/aggregates/2026-10-13` zu erstellen, zu aktualisieren oder zu löschen.
+  - **Erwartet:** `PERMISSION_DENIED` (`allow write: if false`).
+- **Trainer versucht Aggregat-Dokument anzulegen oder zu manipulieren:**
+  - **Aktion:** `bobAuth` versucht `/users/alice/aggregates/2026-10-13` zu erstellen, zu verändern oder zu löschen.
+  - **Erwartet:** `PERMISSION_DENIED` (`allow write: if false`).
+- **Fremder / Unauthentifizierter versucht Schreibzugriff:**
+  - **Aktion:** `eveAuth` oder `unauth` versucht Schreibzugriff auf `/users/alice/aggregates/2026-10-13`.
+  - **Erwartet:** `PERMISSION_DENIED` (`allow write: if false`).
+
 ---
 
 ## Umsetzung
@@ -300,3 +335,21 @@ Durch `isValidWorkoutTemplate(request.resource.data)` in `create` UND `update` w
 - Kein "Update Bypass": Ein Nutzer kann nicht ein minimales gültiges Dokument anlegen und es anschließend per Update mit einem 1-MB-String oder bösartigen Daten überschreiben.
 - Begrenzung der Feldgrößen: `title` (max. 200 Zeichen), `sport` (max. 50 Zeichen), `description` (max. 5000 Zeichen), `tags` (max. 50 Elemente).
 - Strikt typisierte Enums: `visibility in ['PRIVATE', 'SHARED_WITH_MY_ATHLETES', 'PUBLIC']`. Unbekannte oder fehlerhafte Sichtbarkeitsstufen werden abgewiesen.
+
+### Theoretischer Beweis (Architektur-Check): Aggregat-Lesezugriff & Trainingsanalyse (Phase 10)
+
+**1. Vorberechnete Tagesaggregate statt massiver Client-Aggregation:**
+In Phase 10 beantwortet der Tab "Analyse" Fragestellungen wie Trainingszustand (Form-Ampel), wöchentliche Belastung vs. Plan, Sportverteilung und längerfristige Verläufe (CTL, ATL, TSB über 8 Wochen). Statt dass Endgeräte hunderte Einzelaktivitäten und hochfrequente Telemetriedaten herunterladen und on-device berechnen müssen, berechnet das Backend (Cloud Functions) die Werte deterministisch und speichert sie als kompakte Tagesdokumente unter `users/{userId}/aggregates/{localDate}`. Dies spart massiv Lese-Bandbreite, schont Mobilfunk-Datenvolumen und garantiert identische Kennzahlen auf allen Clients.
+
+**2. Granulare Berechtigungsprüfung über `coachLinks.permissions.activities`:**
+Die Aggregat-Daten leiten sich direkt aus den absolvierten Aktivitäten des Athleten ab. Im Berechtigungsmodell von ORBIT (`coachLinks/{athleteId}_{coachId}`) steuert das Feld `permissions.activities` die Einsicht in Aktivitäts- und Trainingsdaten. 
+Die Hilfsfunktion `isCoachForActivities(athleteId)` liest per `get()` das Verknüpfungsdokument `/coachLinks/$(athleteId + '_' + request.auth.uid)` und prüft `linkDoc.data.permissions.activities == true`.
+- Besitzt der Trainer die Freigabe, darf er die Aggregate lesen.
+- Fehlt die Freigabe (`activities == false`) oder existiert keine Verbindung, wird der Lesezugriff sofort verweigert.
+- Entzieht der Athlet dem Trainer das Recht, wirkt der Entzug im selben Moment für sämtliche historischen und zukünftigen Aggregate.
+
+**3. Striktes clientseitiges Schreibverbot (`allow write: if false`):**
+Metriken wie `dailyLoad`, `ctl`, `atl`, `tsb` und der Belastungsindex (`orbitScore`) dürfen keinesfalls durch Clients manipuliert werden (Schutz vor Verfälschung von Trainingsstatistiken oder fehlerhaften Berechnungsständen). Die Regel `allow write: if false;` stellt sicher, dass Schreibzugriffe exklusiv dem vertrauenswürdigen Backend vorbehalten sind (Cloud Functions mit Firebase Admin SDK, das die Sicherheitsregeln umgeht).
+
+**4. Performante Bereichsabfragen (Range Queries) in Subcollections:**
+Der Analyse-Tab fragt Aggregate über Zeitintervalle ab (z. B. `.where(FieldPath.documentId(), '>=', '2026-08-01')`). Da die Regel `allow read: if isOwner(userId) || (isAuthenticated() && isCoachForActivities(userId));` nur an die Pfadvariable `{userId}` und den statisch prüfbaren `coachLinks`-Dokumentpfad gekoppelt ist und keine dokumentenindividuellen Felder filtert, evaluiert Firestore die Autorisierung einheitlich für den gesamten Query-Pfad. Es entsteht kein "Rules are not filters"-Konflikt, und Trainer können die 8-Wochen-Verläufe ihrer Athleten in einer einzigen schnellen Subcollection-Abfrage laden.

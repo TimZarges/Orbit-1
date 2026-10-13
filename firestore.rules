@@ -20,6 +20,9 @@ service cloud.firestore {
     // Collection: plannedWorkouts/{workoutId}
     // Fields: athleteId, coachId, createdBy, localDate, sport, title, status, plannedDurationSec, ...
     //
+    // Subcollection: users/{uid}/aggregates/{date}
+    // Fields: dailyLoad, ctl, atl, tsb, orbitScore, metricsVersion
+    //
     // Collection: workoutTemplates/{templateId}
     // Fields: ownerId, visibility, sport, title, description, structure, tags, isFavorite, createdAt, updatedAt
     // ===============================================================
@@ -91,6 +94,11 @@ service cloud.firestore {
       return linkDoc != null && linkDoc.data.permissions.calendar == true;
     }
 
+    function isCoachForActivities(athleteId) {
+      let linkDoc = get(/databases/$(database)/documents/coachLinks/$(athleteId + '_' + request.auth.uid));
+      return linkDoc != null && linkDoc.data.permissions.activities == true;
+    }
+
     // ===============================================================
     // Security Rules
     // ===============================================================
@@ -127,7 +135,7 @@ service cloud.firestore {
       }
 
       match /aggregates/{date} {
-        allow read: if isOwner(userId);
+        allow read: if isOwner(userId) || (isAuthenticated() && isCoachForActivities(userId));
         allow write: if false; // Only Cloud Functions
       }
 

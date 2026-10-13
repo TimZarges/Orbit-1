@@ -1,6 +1,19 @@
 import 'package:flutter/material.dart';
 import '../../features/workout_builder/domain/workout_parser.dart';
 import '../../features/workout_builder/widgets/workout_profile_chart.dart';
+import '../../features/analysis/models/form_traffic_light.dart';
+import '../../features/analysis/models/weekly_load_summary.dart';
+import '../../features/analysis/models/consistency_summary.dart';
+import '../../features/analysis/models/sport_distribution.dart';
+import '../../features/analysis/models/zone_distribution.dart';
+import '../../features/analysis/domain/aggregates_calculator.dart';
+import '../../features/analysis/widgets/form_traffic_light_card.dart';
+import '../../features/analysis/widgets/weekly_load_card.dart';
+import '../../features/analysis/widgets/consistency_card.dart';
+import '../../features/analysis/widgets/sport_distribution_card.dart';
+import '../../features/analysis/widgets/zone_distribution_card.dart';
+import '../../features/analysis/widgets/weekly_load_trend_chart.dart';
+import '../../features/analysis/widgets/fitness_fatigue_trend_chart.dart';
 
 class WidgetGalleryScreen extends StatelessWidget {
   const WidgetGalleryScreen({super.key});
@@ -30,35 +43,8 @@ class WidgetGalleryScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 32),
-          Text('Tagesform (Readiness Card)', style: Theme.of(context).textTheme.headlineLarge),
-          const SizedBox(height: 16),
-          const Text('Die Tagesform-Karte passt sich der Erfahrungsstufe an und visualisiert Schlaf, Ruhepuls und HRV im Verhältnis zur 28-Tage-Basislinie.'),
-          const SizedBox(height: 12),
-          // Preview Card
-          const Card(
-            child: Padding(
-              padding: EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(Icons.check_circle_outline, color: Color(0xFF10B981)),
-                      SizedBox(width: 8),
-                      Text('Unauffällig (Normalbereich)', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF10B981))),
-                    ],
-                  ),
-                  SizedBox(height: 8),
-                  Text('Ruhepuls und HRV liegen im gewohnten persönlichen Bereich.'),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 32),
           Text('Workout Profil (Live-Balkengrafik)', style: Theme.of(context).textTheme.headlineLarge),
           const SizedBox(height: 16),
-          const Text('Live-Profilgrafik in Zonenfarben mit Unterstützung für bis zu 200 Intervallblöcke und verschachtelte Wiederholungen.'),
-          const SizedBox(height: 12),
           Builder(
             builder: (context) {
               const parser = WorkoutParser(sport: 'BIKE');
@@ -66,10 +52,93 @@ class WidgetGalleryScreen extends StatelessWidget {
               return WorkoutProfileChart(structure: result.structure, height: 100);
             },
           ),
+          const SizedBox(height: 32),
+          Text('Trainingsanalyse (Phase 10)', style: Theme.of(context).textTheme.headlineLarge),
+          const SizedBox(height: 16),
+
+          // 1. Form-Ampel
+          const FormTrafficLightCard(
+            form: FormTrafficLight(
+              status: FormStatus.wellLoaded,
+              ctl: 58,
+              atl: 68,
+              tsb: -10,
+              ratio: -0.17,
+              daysOfHistory: 42,
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // 2. Wochenbelastung
+          const WeeklyLoadCard(
+            summary: WeeklyLoadSummary(
+              actualLoad: 420,
+              plannedLoad: 450,
+              hasPlan: true,
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // 3. Konsistenz
+          const ConsistencyCard(
+            consistency: ConsistencySummary(
+              activeDays: 5,
+              totalDays: 7,
+              plannedDays: 5,
+              streakWeeks: 4,
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // 4. Sportverteilung
+          SportDistributionCard(
+            summary: SportDistributionSummary.fromDurations(const {
+              'BIKE': 14400,
+              'RUN': 7200,
+              'SWIM': 3600,
+              'STRENGTH': 2400,
+            }),
+          ),
+          const SizedBox(height: 16),
+
+          // 5. Zonenverteilung
+          ZoneDistributionCard(
+            summary: ZoneDistributionSummary.fromSeconds(const [
+              1800, 10800, 3600, 1800, 900, 300, 60,
+            ]),
+          ),
+          const SizedBox(height: 16),
+
+          // 6. 8-Wochen-Trend
+          const WeeklyLoadTrendChart(
+            points: [
+              WeeklyLoadTrendPoint(weekNumber: 1, weekLabel: 'W1', totalLoad: 280),
+              WeeklyLoadTrendPoint(weekNumber: 2, weekLabel: 'W2', totalLoad: 320),
+              WeeklyLoadTrendPoint(weekNumber: 3, weekLabel: 'W3', totalLoad: 350),
+              WeeklyLoadTrendPoint(weekNumber: 4, weekLabel: 'W4', totalLoad: 200),
+              WeeklyLoadTrendPoint(weekNumber: 5, weekLabel: 'W5', totalLoad: 380),
+              WeeklyLoadTrendPoint(weekNumber: 6, weekLabel: 'W6', totalLoad: 410),
+              WeeklyLoadTrendPoint(weekNumber: 7, weekLabel: 'W7', totalLoad: 440),
+              WeeklyLoadTrendPoint(weekNumber: 8, weekLabel: 'Aktuell', totalLoad: 420),
+            ],
+            trendDescription: 'Belastung in den letzten 8 Wochen moderat gestiegen (+18 %).',
+          ),
+          const SizedBox(height: 16),
+
+          // 7. CTL/ATL/TSB Verlauf
+          const FitnessFatigueTrendChart(
+            points: [
+              FitnessFatiguePoint(date: '2026-08-01', ctl: 40, atl: 45, tsb: -5),
+              FitnessFatiguePoint(date: '2026-08-15', ctl: 48, atl: 55, tsb: -7),
+              FitnessFatiguePoint(date: '2026-09-01', ctl: 52, atl: 62, tsb: -10),
+              FitnessFatiguePoint(date: '2026-09-15', ctl: 55, atl: 50, tsb: 5),
+              FitnessFatiguePoint(date: '2026-10-01', ctl: 58, atl: 68, tsb: -10),
+            ],
+          ),
+          const SizedBox(height: 32),
         ],
       ),
     );
-
   }
 }
 

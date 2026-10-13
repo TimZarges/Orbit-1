@@ -24,6 +24,18 @@
 - **Repo ist privat.** `google-services.json` darf (nach Rückfrage im Audit) committet werden. Service-Account-Schlüssel, Keystores, `.env` und Secrets nie.
 - **Autopilot-Modus** (`/phase-run`): STOPP-Punkte werden zu Checkpoints in `docs/CHECKPOINTS.md`, Branches werden gestapelt, harte Stopps nur bei Blockern, Irreversiblem, Regelverstoß, Audit-Befund oder wiederholtem Fehler. Zweck: maximale Selbstständigkeit bei sichtbaren Review-Schulden.
 
+### 2026-10-13: Form-Ampel, Informationsarchitektur & Trainingsanalyse (Phase 10)
+- **Kontext:** Der Tab „Analyse" soll in Sekunden verständliche Antworten liefern („Wie fit bin ich, wie belastet war die Woche, liege ich im Plan?") und nahtlos über drei Erfahrungsstufen mitwachsen.
+- **Entscheidung & Begründung:**
+  1. **Form-Ampel-Formel (`FormCalculator`):** Relatives Verhältnis $R = \frac{\text{TSB}}{\text{CTL}}$ (statt starrer Absolutwerte) mit Mindestdatenlage von $\ge 21$ Tagen und Mindest-CTL $\ge 10.0$. Vier physiologische Zustände: `veryTired` ($R < -0{,}30$), `wellLoaded` ($-0{,}30 \le R < -0{,}10$), `balanced` ($-0{,}10 \le R \le +0{,}15$), `fresh` ($R > +0{,}15$).
+  2. **Transparenz & Neutralität:** Ehrliche Angabe der Datenbasis („Basiert auf X Wochen Training"), keinerlei medizinischer Rat, keine Bevormundung („du musst"). Der ORBIT Score bleibt ausgeblendet, bis er separat freigegeben wird.
+  3. **Progressive Disclosure:**
+     - *Einfach:* Form-Ampel, Wochenbelastung vs. Plan (Balken mit Soll/Ist und Klartext-Abweichung), Konsistenz.
+     - *Fortgeschritten:* Zusätzlich Sportverteilung (Stapelbalken statt Torte), Zonenverteilung (Z1–Z7 mit Textlabels und Farbsehschwäche-Schutz), 8-Wochen-Trend.
+     - *Experte:* Zusätzlich CTL/ATL/TSB-Linienverlauf, Schwellenwerte und Fachkürzel via `TermResolver`.
+  4. **Performance & Datenschutz:** Tab lädt ausschließlich vorberechnete Tagesaggregate (`users/{uid}/aggregates/{date}`), keine speicherintensiven Rohaktivitäten oder Streams. Coach-Lesezugriff wird per Firestore Security Rule über `coachLinks.permissions.activities == true` gesichert.
+- **Alternativen:** Absolute TSB-Werte (hätten fälschlicherweise Profis mit hoher CTL und Einsteiger mit niedriger CTL gleichgestellt) oder Tortendiagramme (auf Mobilgeräten ungenau abzulesen).
+
 ### 2026-10-13: Workout-Struktur Schema v1 & Builder-Architektur (Phase 09)
 - **Kontext:** Schnelles, mobiles und fehlerarmes Erstellen strukturierter Einheiten per Text-Kurzeingabe oder grafischem Block-Editor sowie Speichern und Einplanen von Vorlagen.
 - **Entscheidung & Begründung:**

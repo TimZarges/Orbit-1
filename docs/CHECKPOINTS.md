@@ -26,6 +26,37 @@
 
 ## Einträge
 
+### [Phase 10] Analyse einfach (Ampel, Wochenbelastung, Erfahrungsstufen) · RISIKO-HOCH
+- **STOPP-Punkt/Anlass:** STOPP 1 aus Phasendatei (Wortlaut aller Texte, Schwellenwerte, Mindestdatenlage und Kartenprototyp).
+- **Entscheidung:**
+  1. **Form-Ampel-Logik (`FormCalculator`):**
+     - Relatives Verhältnis $R = \frac{\text{TSB}}{\text{CTL}}$ (unter Beachtung von $\text{CTL} \ge 10.0$).
+     - Mindestdatenlage: $\ge 21$ kontinuierliche Tage erforderlich, sonst Status `insufficientData` („Noch zu wenig Daten").
+     - Wenn $\text{CTL} < 10.0$: Status `lowBaseline` („Geringe Grundbelastung").
+     - Vier physiologische Zustände:
+       - `veryTired` ($R < -0{,}30$): „Sehr müde" / „High fatigue" (Warmes Bernstein/Orange, neutral ohne Alarmismus).
+       - `wellLoaded` ($-0{,}30 \le R < -0{,}10$): „Gut belastet" / „Productive" (Performance-Volt / Grün).
+       - `balanced` ($-0{,}10 \le R \le +0{,}15$): „Ausgeglichen" / „Balanced" (Deep Navy / Neutral Slate).
+       - `fresh` ($R > +0{,}15$): „Frisch" / „Fresh" (Cyan).
+     - Fußnote zur Datenbasis: Immer transparent ausgewiesen („Basiert auf X Wochen Training (Y Tagen)").
+     - Strikt sachlich: Keine zwingenden Handlungsanweisungen („du musst"), kein medizinischer Rat.
+     - Der ORBIT Score (0–100) wird in dieser Stufe noch nicht aktiv in der Ampel geschaltet, sondern nur TSB/CTL-Zustand und Datenbasis.
+  2. **Erfahrungsstufen-Architektur (§7a DESIGN.md):**
+     - *Einfach:* Form-Ampel, Wochenbelastung vs. Plan, Konsistenz (Alltagsbegriffe).
+     - *Fortgeschritten:* Zusätzlich Sportverteilung (horizontaler Stapelbalken statt Torte), Zonenverteilung (Z1–Z7), 8-Wochen-Trend.
+     - *Experte:* Zusätzlich CTL/ATL/TSB-Linienchart und Schwellenwert-Übersicht (Fachbegriffe: CTL, ATL, TSB, TSS).
+  3. **Wiederverwendbare Karten & Info-Icons:**
+     - Jede Kennzahl mit barrierefreiem Info-Icon und Bottom Sheet (`AnalysisInfoSheet`) für Begriffserklärungen und Formeln.
+     - Barrierefreiheit: Rot-Grün-Schwäche beachtet (Zonen Z1–Z7 immer mit Textlabels und Prozenten), Semantics-Labels für alle Charts.
+  4. **Firestore Security Rules:**
+     - Durch den Spezialisten `firestore-rules-author` erweitert: Verknüpfte Trainer mit `coachLinks.permissions.activities == true` dürfen vorberechnete Aggregate (`users/{userId}/aggregates/{date}`) lesen. Client-Schreibzugriff bleibt strikt verboten.
+  5. **Aktivitätsdetail (`ActivityDetailScreen`):**
+     - Sportartspezifische Kennzahlen über `TermResolver`, Zonenstreifen, Plan-Match-Badge und Hinweis auf das Cockpit in Phase 11.
+- **Alternative:** Absolute TSB-Schwellenwerte wie bei Fremdplattformen (hätte bei Athleten mit unterschiedlicher Fitness zu falschen Einschätzungen geführt).
+- **Begründung:** Maximale physiologische Validität bei individueller Anpassung und Schutz der Privatsphäre.
+- **Bitte prüfen:** Tab „Analyse" in der App-Navigation sowie Galerie (`/gallery`).
+- **Rückholen:** Branch `feature/phase-10-analysis-simple` verwerfen.
+
 ### [Phase 09] Workout Builder & Vorlagenbibliothek · RISIKO-MITTEL
 - **STOPP-Punkt/Anlass:** STOPP 1 aus Phasendatei (Schema v1 und Textgrammatik freigegeben)
 - **Entscheidung:**
