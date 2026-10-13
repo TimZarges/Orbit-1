@@ -3,8 +3,8 @@
 > Wird am Ende jeder Phase von Antigravity aktualisiert (`/phase-finish`). Kurz und ehrlich halten.
 
 ## Aktuell
-- Phase: 07 (Abgeschlossen) -> Phase 08 (Kalender und Soll-Ist)
-- Branch: feature/phase-07-health-data
+- Phase: 08 (Abgeschlossen) -> Phase 09 (Workout Builder & Bibliothek)
+- Branch: feature/phase-08-calendar
 
 ## Fertig
 - Phase 00 (Foundation): Abgeschlossen
@@ -26,11 +26,21 @@
   - Granularer Trainer-Schutz (`permissions.health == true`) in Rules und UI-Banner abgebildet.
   - DSGVO-Export und -Löschung (`recursiveDelete`) um `dailyMetrics` erweitert; `docs/PRIVACY.md` aktualisiert.
   - 30-Tage `HealthDemoSeeder` für sofortiges Testen und Demo-Modus bereitgestellt.
+- Phase 08 (Kalender und Soll-Ist-Abgleich):
+  - Datenmodell `PlannedWorkout` und Repository `PlannedWorkoutRepository` (CRUD, Verschieben, Bereichsabfragen, Status-Verwaltung) implementiert.
+  - Firestore Security Rules für `plannedWorkouts` durch den Spezialisten `firestore-rules-author` aktualisiert (Athleten-Rechte, Trainer-Berechtigungen über `permissions.calendar`, Identitätsbindung, atomarer Schutz gegen Fälschung).
+  - Cloud Function Trigger `onPlannedWorkoutWritten` zum automatischen Pflegen des denormalisierten `coachId`-Feldes bereitgestellt.
+  - Soll-Ist-Zuordnungsalgorithmus `MatchingEngine` (`matchActivityToPlan`) mit Sport-Match, Dauerplausibilität und Konfidenz-Scoring umgesetzt.
+  - Kalender-UI mit Wochen-, Monats- und Listenansicht (`CalendarScreen`), Tageskarten (`WorkoutCard`), Soll-Ist-Wochenzusammenfassung und „Training planen“-Dialog (`CreateWorkoutDialog`) gebaut.
+  - Interaktives `WorkoutDetailSheet` mit Aktionen (Auf morgen verschieben, Datum wählen, Erledigt/Übersprungen markieren, Verknüpfung mit Aktivität herstellen/lösen) integriert.
+  - Vollständiger Athleten-Kontext für Trainer (Öffnen des Kalenders eines Athleten im Coach-Modus).
+  - `CalendarDemoSeeder` für realistische Test- und Demo-Wochenpläne bereitgestellt.
 
 ## Offen / in Arbeit
-- Phase 08: Kalender und Soll-Ist (Planung, Zuordnung, Wochen-/Monats-/Listenansicht)
+- Phase 09: Workout Builder und Bibliothek (Text-Kurzeingabe, grafischer Struktur-Editor, Vorlagen)
 
 ## Bekannte Probleme
 - `build_runner` Konflikte durch `analyzer` Abhängigkeiten: Wir nutzen derzeit manuelle Models anstelle von `freezed`.
+
 
 

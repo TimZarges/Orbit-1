@@ -74,4 +74,18 @@
   4. **Trainer-Berechtigung:** Trainer-Lesezugriff auf `dailyMetrics` erfolgt strikt unter Prüfung von `coachLinks.permissions.health == true`.
 - **Begründung:** Verhindert Datenverlust bei sequentiellen Webhook-Zustellungen, wahrt höchste DSGVO-Standards (Art. 9) und erfüllt das Leitprinzip „einfach zuerst, sachlich und verlässlich".
 
+### 2026-10-13: Planungsmodell, Zuordnungslogik und Kalender-Rules (Phase 08)
+- **Kontext:** Geplante Einheiten (`plannedWorkouts`) werden von Athleten und Trainern erstellt und müssen mit absolvierten Aktivitäten (`activities`) abgeglichen werden.
+- **Entscheidung:**
+  1. **Planungsdatenmodell (`plannedWorkouts/{workoutId}`):** Enthält `athleteId`, `coachId` (denormalisiert), `createdBy`, `localDate`, `sport`, `title`, `plannedDurationSec`, `plannedDistanceM`, `plannedLoad`, `status` (`PLANNED` | `COMPLETED` | `SKIPPED`), `activityId`.
+  2. **Zuordnungsalgorithmus (`matchActivityToPlan`):**
+     - Kandidatenfilter: Gleicher `localDate`, kompatible Sportart, Dauerplausibilität ($0{,}5 \le \text{Dauer-Verhältnis} \le 2{,}0$).
+     - Scoring: Sport-Match (40 Pkt) + Dauernähe (bis 40 Pkt) + Titel/Distanz (bis 20 Pkt).
+     - Automatischer Match (`AUTO`): Genau ein Kandidat mit Score $\ge 70$.
+     - Uneindeutig: Verbleibt als `UNMATCHED`, UI bietet manuelle 1-Klick-Zuordnung.
+  3. **Rules-Architektur:** Athleten dürfen eigene Einheiten erstellen, Trainer dürfen für verknüpfte Athleten planen, wenn `coachLinks.permissions.calendar == true`.
+- **Begründung:** Gewährleistet klare Trennung von Plan und Realität (Grundprinzip 1), vermeidet fehlerhafte automatische Zuordnungen und ermöglicht kollaborative Trainingssteuerung für Trainer und Athleten.
+
+
+
 

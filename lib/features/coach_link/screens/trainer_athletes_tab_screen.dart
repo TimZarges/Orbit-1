@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'athlete_context_wrapper.dart';
-import '../../dashboard/screens/dashboard_screen.dart'; // Platzhalter für Athleten-Ansicht
+import '../../calendar/screens/calendar_screen.dart';
 
 class TrainerAthletesTabScreen extends ConsumerStatefulWidget {
   const TrainerAthletesTabScreen({super.key});
@@ -42,14 +42,12 @@ class _TrainerAthletesTabScreenState
         builder: (_) => AthleteContextWrapper(
           athleteId: athleteId,
           athleteName: name,
-          // Als Platzhalter öffnen wir das Dashboard im Kontext des Athleten
-          child: const Center(
-              child: Text(
-                  'Hier kommen später Kalender und Analyse des Athleten hin.')),
+          child: CalendarScreen(athleteId: athleteId),
         ),
       ),
     );
   }
+
 
   @override
   Widget build(BuildContext context) {

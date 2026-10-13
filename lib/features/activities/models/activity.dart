@@ -77,7 +77,8 @@ class Activity {
   final double distanceM;
   final ActivitySummary? summary;
   final ActivityProcessing? processing;
-  final List<ActivitySegment>? segments;
+  final String? plannedWorkoutId;
+  final String? matchStatus;
 
   Activity({
     required this.id,
@@ -91,6 +92,8 @@ class Activity {
     this.summary,
     this.processing,
     this.segments,
+    this.plannedWorkoutId,
+    this.matchStatus,
   });
 
   factory Activity.fromDocument(DocumentSnapshot doc) {
@@ -115,6 +118,9 @@ class Activity {
       segments: (data['segments'] as List<dynamic>?)
           ?.map((e) => ActivitySegment.fromMap(e as Map<String, dynamic>))
           .toList(),
+      plannedWorkoutId: data['plannedWorkoutId'] as String?,
+      matchStatus: data['matchStatus'] as String?,
     );
   }
 }
+

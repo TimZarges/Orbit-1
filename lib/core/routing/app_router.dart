@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/dashboard/screens/dashboard_screen.dart';
 import '../../features/profile/screens/profile_screen.dart';
+import '../../features/calendar/screens/calendar_screen.dart';
 import '../../features/profile/screens/thresholds_screen.dart';
 import '../../features/settings/screens/settings_screen.dart';
 import '../../features/integrations/screens/garmin_connection_screen.dart';
@@ -72,6 +73,10 @@ final goRouterProvider = Provider<GoRouter>((ref) {
             GoRoute(
               path: 'thresholds',
               builder: (context, state) => const ThresholdsScreen(),
+            ),
+            GoRoute(
+              path: 'calendar',
+              builder: (context, state) => const CalendarScreen(),
             ),
             GoRoute(
               path: 'settings',

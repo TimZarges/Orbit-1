@@ -6,6 +6,8 @@ import '../../coach_link/screens/athlete_coach_tab_screen.dart';
 import '../../coach_link/screens/trainer_athletes_tab_screen.dart';
 import '../../activities/screens/today_tab_screen.dart';
 
+import '../../calendar/screens/calendar_screen.dart';
+
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
 
@@ -23,6 +25,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
     final List<Widget> pages = [
       const TodayTabScreen(),
+      const CalendarScreen(),
       if (role == 'TRAINER')
         const TrainerAthletesTabScreen()
       else
@@ -30,48 +33,50 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     ];
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Orbit'),
-        actions: [
-          IconButton(
-            icon: const CircleAvatar(
-              radius: 16,
-              child: Icon(Icons.person, size: 16),
+      appBar: _currentIndex == 1
+          ? null
+          : AppBar(
+              title: const Text('Orbit'),
+              actions: [
+                IconButton(
+                  icon: const CircleAvatar(
+                    radius: 16,
+                    child: Icon(Icons.person, size: 16),
+                  ),
+                  onPressed: () {
+                    // Menü öffnen oder direkt zum Profil
+                    showMenu(
+                      context: context,
+                      position: const RelativeRect.fromLTRB(100, kToolbarHeight, 0, 0),
+                      items: [
+                        PopupMenuItem(
+                          value: 'profile',
+                          child: const Text('Profil'),
+                          onTap: () => context.go('/profile'),
+                        ),
+                        PopupMenuItem(
+                          value: 'thresholds',
+                          child: const Text('Schwellenwerte'),
+                          onTap: () => context.go('/thresholds'),
+                        ),
+                        PopupMenuItem(
+                          value: 'settings',
+                          child: const Text('Einstellungen'),
+                          onTap: () => context.go('/settings'),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              ],
             ),
-            onPressed: () {
-              // Menü öffnen oder direkt zum Profil
-              showMenu(
-                context: context,
-                position:
-                    const RelativeRect.fromLTRB(100, kToolbarHeight, 0, 0),
-                items: [
-                  PopupMenuItem(
-                    value: 'profile',
-                    child: const Text('Profil'),
-                    onTap: () => context.go('/profile'),
-                  ),
-                  PopupMenuItem(
-                    value: 'thresholds',
-                    child: const Text('Schwellenwerte'),
-                    onTap: () => context.go('/thresholds'),
-                  ),
-                  PopupMenuItem(
-                    value: 'settings',
-                    child: const Text('Einstellungen'),
-                    onTap: () => context.go('/settings'),
-                  ),
-                ],
-              );
-            },
-          ),
-        ],
-      ),
       body: pages[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (index) => setState(() => _currentIndex = index),
         items: [
           const BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Heute'),
+          const BottomNavigationBarItem(icon: Icon(Icons.calendar_month), label: 'Kalender'),
           BottomNavigationBarItem(
             icon: const Icon(Icons.group),
             label: role == 'TRAINER' ? 'Athleten' : 'Coach',
@@ -81,3 +86,4 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     );
   }
 }
+
