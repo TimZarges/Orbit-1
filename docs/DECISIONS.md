@@ -133,3 +133,19 @@
      - Die Übernahme eines Vorschlags schreibt einen neuen Eintrag in `thresholdHistory` mit `effectiveFrom = heute`. Bisherige Historie und Kennzahlen bleiben standardmäßig unverändert.
      - Eine Neuberechnung vergangener Einheiten (`recomputeMetrics`) erfolgt ausschließlich nach ausdrücklicher Bestätigung im Bestätigungsdialog mit transparentem Hinweis auf Tragweite und Dauer.
 - **Begründung:** Verhindert verfälschte Kennzahlen durch unzureichende Daten oder Pacing-Brüche, garantiert DSGVO-konforme Datenintegrität und schützt die Athleten-Autonomie.
+
+### 2026-10-13: Chat-Architektur, Aktivitäts-Share und Push-Infrastruktur (Phase 13)
+- **Kontext:** Echtzeit-Interaktion zwischen Athlet und Trainer, Versenden von Medien/Dateien, Teilen absolvierter Einheiten und FCM-Push-Benachrichtigungen.
+- **Entscheidung:**
+  1. **Chat-Datenmodell & Beendigungsverhalten:**
+     - Struktur: `chats/{athleteId}_{coachId}` mit Subcollection `messages`.
+     - Nach Beendigung/Widerruf der Verknüpfung (`status: "REVOKED"`): Der Chatverlauf bleibt für beide Parteien lesbar (Nachvollziehbarkeit des bisherigen Trainings), jedoch wird das Erstellen neuer Nachrichten per Firestore Security Rules (`isChatActive(chatId)`) strikt blockiert.
+  2. **Aktivitäts-Sharing als Momentaufnahme:**
+     - Beim Teilen einer Einheit im Chat (`type: "ACTIVITY_SHARE"`) wird ein statischer Snapshot (`ActivityShareSnapshot`) der Eckdaten (Titel, Sport, Datum, Dauer, Distanz, Ø Watt, Ø HF) in der Nachricht gespeichert.
+     - Das Teilen gewährt **keinen** zusätzlichen Datenzugriff auf die Rohdaten/Streams der Aktivität. Der Klick auf die Karte öffnet die Detailanalyse nur dann, wenn der Trainer ohnehin die Berechtigung `permissions.activities == true` besitzt.
+  3. **Nachrichtenlöschung (Soft-Delete):**
+     - Ein Absender kann eigene Nachrichten löschen. Die Nachricht wird auf `status: "DELETED"` gesetzt, Text und Anhänge werden unwiderruflich gelöscht und durch den Platzhalter „Diese Nachricht wurde gelöscht." ersetzt. Zugehörige Dateien in Cloud Storage werden freigegeben/gelöscht.
+  4. **Datensparsame Push-Benachrichtigungen & Ruhezeiten:**
+     - FCM-Pushs enthalten standardmäßig **keinen** Nachrichtentext und keine Gesundheitsdaten („Neue Nachricht von <Name>"). Eine Vorschau ist nur bei bewusster Aktivierung in den Einstellungen möglich.
+     - Während konfigurierter Ruhezeiten (`settings.quietHours`) werden Pushes serverseitig unterdrückt (Nachrichten verbleiben im Chat und im Unread-Badge). Ungültige oder abgemeldete Geräte-Tokens werden nach jedem Multicast-Versand automatisch bereinigt.
+- **Begründung:** Wahrung strenger DSGVO-Standards, Schutz vor unbefugtem Datenabfluss und störungsfreie Erholungsphasen für Athleten.

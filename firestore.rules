@@ -31,6 +31,21 @@ service cloud.firestore {
     //
     // Collection: workoutTemplates/{templateId}
     // Fields: ownerId, visibility, sport, title, description, structure, tags, isFavorite, createdAt, updatedAt
+    //
+    // Collection: chats/{chatId}
+    // Fields: athleteId, coachId, participants, lastMessage, updatedAt, unread, status
+    //
+    // Subcollection: chats/{chatId}/messages/{messageId}
+    // Fields: senderId, type, status, text, attachment, activityShare, createdAt
+    //
+    // Subcollection: chats/{chatId}/state/{uid}
+    // Fields: lastReadAt
+    //
+    // Subcollection: users/{uid}/devices/{deviceId}
+    // Fields: fcmToken, platform, appVersion, language, updatedAt
+    //
+    // Subcollection: users/{uid}/notificationState/{docId}
+    // Fields: nextReminderAtUtc, nextWeeklySummaryAtUtc
     // ===============================================================
 
     // ===============================================================
@@ -76,7 +91,7 @@ service cloud.firestore {
     function isValidUserUpdate() {
       // Must not change critical server-side fields
       let protectedFieldsUnchanged = areImmutableFieldsUnchanged([
-        'role', 'trainerVerified', 'coachId', 'uid', 'email', 'createdAt', 'metrics', 'metricsVersion'
+        'role', 'trainerVerified', 'coachId', 'uid', 'email', 'createdAt', 'metrics', 'metricsVersion', 'notificationState'
       ]);
       return isValidUserDoc(request.resource.data) && protectedFieldsUnchanged;
     }
@@ -113,6 +128,48 @@ service cloud.firestore {
         'sport', 'type', 'proposedValue', 'confidence', 'basis', 'createdAt'
       ]);
       return onlyStatusChanged && statusValid && protectedFieldsUnchanged;
+    }
+
+    function isChatParticipant(chatId) {
+      return isAuthenticated() && request.auth.uid in chatId.split('_');
+    }
+
+    function isChatActive(chatId) {
+      let chatPath = /databases/$(database)/documents/chats/$(chatId);
+      return exists(chatPath) && (!('status' in get(chatPath).data) || get(chatPath).data.status != 'REVOKED');
+    }
+
+    function isValidMessageCreate(data) {
+      let hasRequired = 'senderId' in data && 'type' in data && 'status' in data;
+      let typeOk = data.type in ['TEXT', 'IMAGE', 'FILE', 'ACTIVITY_SHARE'];
+      let statusOk = data.status == 'SENT';
+      let textOk = !('text' in data) || checkStringSize(data.text, 0, 10000);
+      let attachmentOk = !('attachment' in data) || data.attachment is map;
+      let activityShareOk = !('activityShare' in data) || data.activityShare is map;
+      return hasRequired && typeOk && statusOk && textOk && attachmentOk && activityShareOk;
+    }
+
+    function isValidMessageUpdate() {
+      let isSender = resource.data.senderId == request.auth.uid;
+      let notAlreadyDeleted = !('status' in resource.data) || resource.data.status != 'DELETED';
+      let isSoftDelete = request.resource.data.status == 'DELETED';
+      let immutableUnchanged = areImmutableFieldsUnchanged(['senderId', 'createdAt', 'type']);
+      let textOk = !('text' in request.resource.data) || checkStringSize(request.resource.data.text, 0, 10000);
+      return isSender && notAlreadyDeleted && isSoftDelete && immutableUnchanged && textOk;
+    }
+
+    function isValidChatState(data) {
+      let hasLastRead = 'lastReadAt' in data && data.lastReadAt is timestamp;
+      let sizeOk = data.keys().size() <= 5;
+      return hasLastRead && sizeOk;
+    }
+
+    function isValidDeviceDoc(data) {
+      let tokenOk = 'fcmToken' in data && checkStringSize(data.fcmToken, 1, 1000);
+      let platformOk = !('platform' in data) || checkStringSize(data.platform, 1, 50);
+      let appVersionOk = !('appVersion' in data) || checkStringSize(data.appVersion, 1, 50);
+      let languageOk = !('language' in data) || checkStringSize(data.language, 1, 20);
+      return tokenOk && platformOk && appVersionOk && languageOk;
     }
 
     // ===============================================================
@@ -168,6 +225,17 @@ service cloud.firestore {
       }
 
       match /integrationStatus/{provider} {
+        allow read: if isOwner(userId);
+        allow write: if false; // Only Cloud Functions
+      }
+
+      match /devices/{deviceId} {
+        allow read: if isOwner(userId);
+        allow create, update: if isOwner(userId) && isValidDeviceDoc(request.resource.data);
+        allow delete: if isOwner(userId);
+      }
+
+      match /notificationState/{docId} {
         allow read: if isOwner(userId);
         allow write: if false; // Only Cloud Functions
       }
@@ -234,6 +302,33 @@ service cloud.firestore {
         isValidWorkoutTemplate(request.resource.data);
       allow delete: if isAuthenticated() &&
         resource.data.ownerId == request.auth.uid;
+    }
+
+    match /chats/{chatId} {
+      allow read: if isAuthenticated() && (
+        isChatParticipant(chatId) ||
+        (resource != null && (resource.data.athleteId == request.auth.uid || resource.data.coachId == request.auth.uid))
+      );
+      allow write: if false; // Only Cloud Functions (erzeugt bei aktiver Verknüpfung, verwaltet lastMessage/unread)
+
+      match /messages/{messageId} {
+        allow read: if isChatParticipant(chatId);
+        allow create: if isChatParticipant(chatId) &&
+          isChatActive(chatId) &&
+          request.resource.data.senderId == request.auth.uid &&
+          isValidMessageCreate(request.resource.data);
+        allow update: if isChatParticipant(chatId) &&
+          isValidMessageUpdate();
+        allow delete: if false; // Ausschließlich Soft-Delete über update
+      }
+
+      match /state/{uid} {
+        allow read: if isChatParticipant(chatId);
+        allow create, update: if isChatParticipant(chatId) &&
+          isOwner(uid) &&
+          isValidChatState(request.resource.data);
+        allow delete: if false;
+      }
     }
   }
 }

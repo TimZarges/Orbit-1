@@ -1,14 +1,17 @@
-# Testplan für Firestore Security Rules (Phasen 01, 02, 08, 09, 10, 11 & 12)
+# Testplan für Firestore und Storage Security Rules (Phasen 01, 02, 08, 09, 10, 11, 12 & 13)
 
 ## Ziel
-Sicherstellen, dass die implementierten Firestore Security Rules für alle Collections (`users`, Subcollections inkl. `aggregates`, `bests` und `thresholdProposals`, `coachLinks`, `activities`, `plannedWorkouts` und `workoutTemplates`) robust sind und die geforderten Berechtigungen durchsetzen:
+Sicherstellen, dass die implementierten Firestore und Storage Security Rules für alle Collections (`users`, Subcollections inkl. `aggregates`, `bests`, `thresholdProposals`, `devices` und `notificationState`, `coachLinks`, `activities`, `plannedWorkouts`, `workoutTemplates` sowie `chats` mit `messages` und `state`) und Storage-Buckets robust sind und die geforderten Berechtigungen durchsetzen:
 - Default Deny an der Wurzel
 - Owner-Only & Authenticated Access
-- Schutz unveränderlicher Server- und Identitätsfelder (`athleteId`, `createdBy`, `ownerId`, `role`, etc.)
+- Schutz unveränderlicher Server- und Identitätsfelder (`athleteId`, `createdBy`, `ownerId`, `senderId`, `role`, etc.)
 - Granulare Trainer-Freigaben (`coachLinks.permissions.calendar`, `coachLinks.permissions.health`, `coachLinks.permissions.activities`, `coachLinks` Trainer-Vorlagen-Sharing)
 - Schutz vor Privilege Escalation, Identitätsfälschung, Resource Exhaustion/DoS und unbefugter Datenlöschung
 - Striktes Schreibverbot für vorberechnete Aggregate und Bestwerte (nur Cloud Functions)
 - Schwellenwert-Vorschläge (Phase 12): Ausschließlich serverseitige Erstellung, Status-Update ('ACCEPTED'/'REJECTED') streng auf den Athleten beschränkt, Unveränderlichkeit diagnostischer Parameter, Lesezugriff für Coach mit `activities`-Freigabe
+- Chat & Messaging (Phase 13): Zugriff ausschließlich für Chat-Teilnehmer (`isChatParticipant`), Erstellung neuer Nachrichten nur in aktiven Chats (`isChatActive`), Verbot von Hard-Deletes (`allow delete: if false`), striktes Soft-Delete-Modell ausschließlich durch den Sender, Unveränderlichkeit von Metadaten
+- Push-Infrastruktur & FCM (Phase 13): Registrierung von Geräte-Tokens (`users/{uid}/devices`) streng nutzergebunden, Scheduler-Zustand (`users/{uid}/notificationState`) unberührbar für Clients (nur Cloud Functions)
+- Cloud Storage Sicherheit (Phase 13): Begrenzung von Bildern (≤ 10 MB, `image/*`) und Dateien (≤ 25 MB), Verbot von Updates (Immutabilität), Berechtigung zum Löschen für Teilnehmer bei Soft-Deletes
 
 ## Setup
 - Die Tests werden gegen den lokalen **Firebase Emulator** ausgeführt.
@@ -372,6 +375,156 @@ Sicherstellen, dass die implementierten Firestore Security Rules für alle Colle
   - **Aktion:** `eveAuth` oder `unauth` versucht `/users/alice/thresholdProposals/prop1` zu löschen.
   - **Erwartet:** `PERMISSION_DENIED`.
 
+### 11. Chat & Push-Infrastruktur (Phase 13 – Chat, Push-Benachrichtigungen & Storage)
+
+#### 11.1 Collection `chats/{chatId}`
+- **11.1.1 Read (Teilnehmer):**
+  - **Aktion:** `aliceAuth` und `bobAuth` lesen `/chats/alice_coachBob`.
+  - **Erwartet:** Erfolg (`isChatParticipant(chatId)` ist für beide wahr).
+- **11.1.2 Read (Trainer Listenabfrage über Filter):**
+  - **Aktion:** `bobAuth` führt `db.collection('chats').where('coachId', '==', 'coachBob').get()` aus.
+  - **Erwartet:** Erfolg (Query-Alignment durch `resource.data.coachId == request.auth.uid`).
+- **11.1.3 Read (Athlet Listenabfrage über Filter):**
+  - **Aktion:** `aliceAuth` führt `db.collection('chats').where('athleteId', '==', 'alice').get()` aus.
+  - **Erwartet:** Erfolg (Query-Alignment durch `resource.data.athleteId == request.auth.uid`).
+- **11.1.4 Read (Fremder Nutzer):**
+  - **Aktion:** `eveAuth` liest `/chats/alice_coachBob`.
+  - **Erwartet:** `PERMISSION_DENIED` (`isChatParticipant` schlägt fehl).
+- **11.1.5 Read (Unauthentifizierter Zugriff):**
+  - **Aktion:** `unauth` liest `/chats/alice_coachBob`.
+  - **Erwartet:** `PERMISSION_DENIED`.
+- **11.1.6 Write / Create / Update / Delete (Client-Schreibverbot):**
+  - **Aktion:** `aliceAuth` oder `bobAuth` versucht `/chats/alice_coachBob` anzulegen, Felder wie `lastMessage` / `unread` zu verändern oder das Chat-Dokument zu löschen.
+  - **Erwartet:** `PERMISSION_DENIED` (`allow write: if false;`, Lifecycle und Aggregationen laufen strikt über Cloud Functions).
+
+#### 11.2 Subcollection `chats/{chatId}/messages/{messageId}`
+- **11.2.1 Read (Teilnehmer):**
+  - **Aktion:** `aliceAuth` und `bobAuth` lesen `/chats/alice_coachBob/messages/m1`.
+  - **Erwartet:** Erfolg (`isChatParticipant(chatId)`).
+- **11.2.2 Read (Fremder / Unauthentifizierter):**
+  - **Aktion:** `eveAuth` oder `unauth` liest `/chats/alice_coachBob/messages/m1`.
+  - **Erwartet:** `PERMISSION_DENIED`.
+- **11.2.3 Create (Gültige Textnachricht durch Sender in aktivem Chat):**
+  - **Aktion:** `aliceAuth` erstellt Dokument in `/chats/alice_coachBob/messages/m1` mit:
+    `{ senderId: 'alice', type: 'TEXT', status: 'SENT', text: 'Hallo Bob', createdAt: request.time }`.
+    Status des Chats ist `ACTIVE`.
+  - **Erwartet:** Erfolg (`isChatParticipant && isChatActive && senderId == auth.uid && isValidMessageCreate`).
+- **11.2.4 Create (Gültige Anhangs- und Aktivitäts-Nachrichten):**
+  - **Aktion:** `bobAuth` erstellt Nachricht mit `senderId: 'coachBob'`, `type: 'IMAGE'`, `status: 'SENT'`, `attachment: { path: 'chats/alice_coachBob/images/pic.jpg', size: 1024 }`.
+  - **Erwartet:** Erfolg.
+  - **Aktion:** `aliceAuth` erstellt Nachricht mit `senderId: 'alice'`, `type: 'ACTIVITY_SHARE'`, `status: 'SENT'`, `activityShare: { activityId: 'act1', snapshot: { distance: 10000 } }`.
+  - **Erwartet:** Erfolg.
+- **11.2.5 Create (Gefälschte Sender-ID):**
+  - **Aktion:** `aliceAuth` erstellt Nachricht mit `senderId: 'coachBob'`.
+  - **Erwartet:** `PERMISSION_DENIED` (`request.resource.data.senderId == request.auth.uid` schlägt fehl).
+- **11.2.6 Create in widerrufenem Chat (`REVOKED`):**
+  - **Aktion:** Verknüpfung wurde beendet, Chat hat `status: 'REVOKED'`. `aliceAuth` oder `bobAuth` versucht eine neue Nachricht zu erstellen.
+  - **Erwartet:** `PERMISSION_DENIED` (`isChatActive` schlägt fehl).
+- **11.2.7 Create durch Fremden:**
+  - **Aktion:** `eveAuth` versucht Nachricht in `/chats/alice_coachBob/messages/m_eve` anzulegen.
+  - **Erwartet:** `PERMISSION_DENIED` (`isChatParticipant` schlägt fehl).
+- **11.2.8 Create mit unzulässigem Initial-Status oder Typ:**
+  - **Aktion:** `aliceAuth` erstellt Nachricht mit `status: 'DELETED'` oder `type: 'SYSTEM_NOTIFICATION'`.
+  - **Erwartet:** `PERMISSION_DENIED` (`isValidMessageCreate` schlägt fehl).
+- **11.2.9 Create mit DoS-String (Überlanger Text):**
+  - **Aktion:** `aliceAuth` erstellt Nachricht mit Text > 10.000 Zeichen.
+  - **Erwartet:** `PERMISSION_DENIED` (`checkStringSize(..., 0, 10000)` schlägt fehl).
+- **11.2.10 Update (Gültiges Soft-Delete durch den Sender):**
+  - **Aktion:** `aliceAuth` aktualisiert Nachricht `m1` (ursprünglich `senderId: 'alice'`, `status: 'SENT'`):
+    setzt `status: 'DELETED'`. `senderId`, `createdAt` und `type` bleiben identisch.
+  - **Erwartet:** Erfolg (`isValidMessageUpdate`).
+- **11.2.11 Update (Fremdes Soft-Delete durch Empfänger oder Fremden):**
+  - **Aktion:** `bobAuth` oder `eveAuth` versucht Alices Nachricht `m1` auf `status: 'DELETED'` zu setzen.
+  - **Erwartet:** `PERMISSION_DENIED` (`resource.data.senderId == request.auth.uid` schlägt fehl).
+- **11.2.12 Update (Nachträgliches Editieren des Inhalts / Non-Goal):**
+  - **Aktion:** `aliceAuth` versucht bei `status: 'SENT'` den Text der Nachricht nachträglich zu editieren.
+  - **Erwartet:** `PERMISSION_DENIED` (`isSoftDelete: request.resource.data.status == 'DELETED'` erzwingt, dass Updates ausschließlich Soft-Deletes sind).
+- **11.2.13 Update (Wiederherstellung / Undelete gelöschter Nachrichten):**
+  - **Aktion:** `aliceAuth` versucht eine bereits mit `status: 'DELETED'` markierte Nachricht auf `status: 'SENT'` zurückzusetzen.
+  - **Erwartet:** `PERMISSION_DENIED` (`notAlreadyDeleted` schlägt fehl).
+- **11.2.14 Update (Manipulation unveränderlicher Identitätsfelder):**
+  - **Aktion:** `aliceAuth` versucht bei einem Soft-Delete `senderId` auf 'coachBob' zu ändern.
+  - **Erwartet:** `PERMISSION_DENIED` (`areImmutableFieldsUnchanged(['senderId', 'createdAt', 'type'])` schlägt fehl).
+- **11.2.15 Delete (Striktes Hard-Delete Verbot):**
+  - **Aktion:** `aliceAuth` oder `bobAuth` ruft `.delete()` auf `/chats/alice_coachBob/messages/m1` auf.
+  - **Erwartet:** `PERMISSION_DENIED` (`allow delete: if false;`).
+
+#### 11.3 Subcollection `chats/{chatId}/state/{uid}`
+- **11.3.1 Read (Teilnehmer):**
+  - **Aktion:** `aliceAuth` und `bobAuth` lesen `/chats/alice_coachBob/state/alice`.
+  - **Erwartet:** Erfolg (`isChatParticipant(chatId)`).
+- **11.3.2 Read (Fremder):**
+  - **Aktion:** `eveAuth` liest `/chats/alice_coachBob/state/alice`.
+  - **Erwartet:** `PERMISSION_DENIED`.
+- **11.3.3 Write (Eigener Gelesen-Status):**
+  - **Aktion:** `aliceAuth` schreibt in `/chats/alice_coachBob/state/alice` mit `{ lastReadAt: request.time }`.
+  - **Erwartet:** Erfolg (`isChatParticipant && isOwner(uid) && isValidChatState`).
+- **11.3.4 Write (Fremder Gelesen-Status / Manipulation des Gegenübers):**
+  - **Aktion:** `bobAuth` versucht in `/chats/alice_coachBob/state/alice` zu schreiben.
+  - **Erwartet:** `PERMISSION_DENIED` (`isOwner(uid)` schlägt fehl).
+- **11.3.5 Write (Ungültiges Schema / Payload-Injektion):**
+  - **Aktion:** `aliceAuth` schreibt ein Dokument ohne `lastReadAt` oder mit mehr als 5 Feldern.
+  - **Erwartet:** `PERMISSION_DENIED` (`isValidChatState` schlägt fehl).
+- **11.3.6 Delete (Löschverbot):**
+  - **Aktion:** `aliceAuth` versucht `/chats/alice_coachBob/state/alice` zu löschen.
+  - **Erwartet:** `PERMISSION_DENIED` (`allow delete: if false;`).
+
+#### 11.4 Subcollection `users/{uid}/devices/{deviceId}`
+- **11.4.1 Read/Write (Owner registriert eigenes Gerät):**
+  - **Aktion:** `aliceAuth` erstellt/aktualisiert `/users/alice/devices/dev1` mit:
+    `{ fcmToken: 'valid_token_xyz', platform: 'android', appVersion: '1.0.0', language: 'de' }`.
+  - **Erwartet:** Erfolg (`isOwner(userId) && isValidDeviceDoc`).
+- **11.4.2 Read/Write (Fremder oder Trainer):**
+  - **Aktion:** `bobAuth` oder `eveAuth` versucht `/users/alice/devices/dev1` zu lesen oder zu schreiben.
+  - **Erwartet:** `PERMISSION_DENIED` (`isOwner(userId)` schlägt fehl).
+- **11.4.3 Delete (Owner entfernt Gerät bei Logout):**
+  - **Aktion:** `aliceAuth` löscht `/users/alice/devices/dev1`.
+  - **Erwartet:** Erfolg (`isOwner(userId)`).
+- **11.4.4 Validation (DoS-Schutz bei überlangen Feldern):**
+  - **Aktion:** `aliceAuth` versucht ein Dokument mit `fcmToken` > 1.000 Zeichen anzulegen.
+  - **Erwartet:** `PERMISSION_DENIED` (`checkStringSize(..., 1, 1000)` schlägt fehl).
+
+#### 11.5 Subcollection `users/{uid}/notificationState/{docId}`
+- **11.5.1 Read (Owner):**
+  - **Aktion:** `aliceAuth` liest `/users/alice/notificationState/current`.
+  - **Erwartet:** Erfolg (`isOwner(userId)`).
+- **11.5.2 Read (Fremder / Coach):**
+  - **Aktion:** `bobAuth` oder `eveAuth` versucht `/users/alice/notificationState/current` zu lesen.
+  - **Erwartet:** `PERMISSION_DENIED`.
+- **11.5.3 Write (Striktes Client-Schreibverbot):**
+  - **Aktion:** `aliceAuth`, `bobAuth` oder `eveAuth` versucht `/users/alice/notificationState/current` zu schreiben oder zu löschen.
+  - **Erwartet:** `PERMISSION_DENIED` (`allow write: if false;`).
+
+#### 11.6 Cloud Storage: `chats/{chatId}` Medien & Anhänge
+- **11.6.1 Read (Teilnehmer für Bilder und Dateien):**
+  - **Aktion:** `aliceAuth` und `bobAuth` lesen aus `/chats/alice_coachBob/images/pic.jpg` und `/chats/alice_coachBob/files/plan.fit`.
+  - **Erwartet:** Erfolg (`isChatParticipant(chatId)`).
+- **11.6.2 Read (Fremder / Unauthentifizierter):**
+  - **Aktion:** `eveAuth` oder `unauth` liest aus `/chats/alice_coachBob/images/pic.jpg`.
+  - **Erwartet:** `PERMISSION_DENIED`.
+- **11.6.3 Create Bild (Teilnehmer, <= 10MB, Content-Type image/*):**
+  - **Aktion:** `aliceAuth` lädt 4 MB Bild mit `contentType: 'image/jpeg'` nach `/chats/alice_coachBob/images/photo.jpg` hoch.
+  - **Erwartet:** Erfolg.
+- **11.6.4 Create Bild (Limit überschritten oder falscher Dateityp):**
+  - **Aktion:** `aliceAuth` lädt 12 MB Bild nach `/chats/alice_coachBob/images/huge.jpg` hoch.
+  - **Erwartet:** `PERMISSION_DENIED` (`size <= 10 * 1024 * 1024` schlägt fehl).
+  - **Aktion:** `aliceAuth` lädt PDF nach `/chats/alice_coachBob/images/doc.pdf` mit `contentType: 'application/pdf'` hoch.
+  - **Erwartet:** `PERMISSION_DENIED` (`contentType.matches('image/.*')` schlägt fehl).
+- **11.6.5 Create Datei (Teilnehmer, <= 25MB):**
+  - **Aktion:** `bobAuth` lädt 15 MB FIT- oder PDF-Datei nach `/chats/alice_coachBob/files/plan.fit` hoch.
+  - **Erwartet:** Erfolg.
+  - **Aktion:** `bobAuth` lädt 28 MB Datei nach `/chats/alice_coachBob/files/big.fit` hoch.
+  - **Erwartet:** `PERMISSION_DENIED` (`size <= 25 * 1024 * 1024` schlägt fehl).
+- **11.6.6 Update (Strikte Immutabilität):**
+  - **Aktion:** `aliceAuth` oder `bobAuth` versucht eine existierende Datei oder ein Bild zu überschreiben.
+  - **Erwartet:** `PERMISSION_DENIED` (`allow update: if false;`).
+- **11.6.7 Delete (Anhangsbereinigung bei Soft-Delete):**
+  - **Aktion:** `aliceAuth` löscht `/chats/alice_coachBob/images/photo.jpg` nach Soft-Delete der Nachricht.
+  - **Erwartet:** Erfolg (`allow delete: if isChatParticipant(chatId);`).
+- **11.6.8 Delete durch Fremden:**
+  - **Aktion:** `eveAuth` versucht `/chats/alice_coachBob/images/photo.jpg` zu löschen.
+  - **Erwartet:** `PERMISSION_DENIED`.
+
 ---
 
 ## Umsetzung
@@ -487,5 +640,44 @@ Die Hilfsfunktion `isValidThresholdProposalUpdate()` erzwingt drei komplementär
 
 **5. Souveräne Datenbereinigung (`allow delete: if isOwner(userId)`):**
 Der Athlet behält die volle Souveränität über seinen Speicherplatz und seine Historie: Abgelehnte oder veraltete Vorschläge dürfen vom Athleten gelöscht werden (`isOwner(userId)`). Für Coaches oder Fremde ist das Löschen strikt unterbunden.
+
+### Theoretischer Beweis (Architektur-Check): Chat, Push-Infrastruktur & Storage (Phase 13)
+
+**1. Teilnehmer-Bindung ohne Firestore Document-Read-Overhead (`chatId.split('_')` und statisches Query-Matching):**
+- Durch die deterministische Namenskonvention `chatId = "{athleteId}_{coachId}"` kann die Autorisierung für Subcollections (`messages/{messageId}`, `state/{uid}`) und Storage-Pfade (`chats/{chatId}/*`) direkt anhand des Pfadnamens via `request.auth.uid in chatId.split('_')` erfolgen.
+- Es ist **kein** zusätzlicher `get()`-Aufruf auf das übergeordnete Chat-Dokument erforderlich. Dies spart Firestore Document Reads bei jedem Nachrichten- oder Attachment-Abruf und verhindert Read-Quota-Bottlenecks.
+- Für Root-Chat-Abfragen (`collection('chats')`) kombiniert die Regel `isChatParticipant(chatId) || (resource != null && (resource.data.athleteId == request.auth.uid || resource.data.coachId == request.auth.uid))` die Pfadauswertung mit denormalisierten Dokumentfeldern: So kann der Coach `collection('chats').where('coachId', '==', request.auth.uid)` und der Athlet `where('athleteId', '==', request.auth.uid)` performant und indexbasiert abfragen, ohne dass Firestore die Abfrage wegen Unentscheidbarkeit ("Rules are not filters") abweist.
+
+**2. Chat-Dokument-Lifecycle & Schreibschutz (`allow write: if false`):**
+- Das Chat-Dokument entsteht strikt serverseitig über Cloud Functions bei Annahme eines Einladungscodes bzw. Aktivierung der Trainer-Athleten-Verknüpfung (`coachLinks/{athleteId}_{coachId}`).
+- Metadaten wie `lastMessage`, `updatedAt` und ungelesene Nachrichten (`unread: { uid: count }`) werden transaktional von Functions verwaltet.
+- Das strikte Schreibverbot für Clients (`allow write: if false;`) verhindert, dass Nutzer unberechtigt Zähler manipulieren, Teilnehmer austauschen oder fremde Chats überschreiben.
+
+**3. Schutz nach Verknüpfungswiderruf (`REVOKED`) bei Erhalt des Lesezugriffs:**
+- Wird eine Verknüpfung zwischen Athlet und Trainer aufgelöst, setzt die Cloud Function den Status des Chats auf `status: 'REVOKED'`.
+- Beim Erstellen neuer Nachrichten verlangt die Hilfsfunktion `isChatActive(chatId)`:
+  `exists(chatPath) && (!('status' in get(chatPath).data) || get(chatPath).data.status != 'REVOKED')`.
+- Sobald der Status `REVOKED` ist, schlägt `isChatActive` fehl, sodass keine neuen Nachrichten mehr gepostet werden können.
+- Der Lesezugriff auf historische Nachrichten bleibt über `isChatParticipant(chatId)` intakt. Dies erfüllt die DSGVO- und Produktdokumentations-Anforderung (Aufbewahrung der Trainingskommunikation bei gleichzeitigem Stopp neuer Interaktionen).
+
+**4. Soft-Delete-Integrität & Verbot von Edit/Hard-Delete:**
+- **Identitätsbindung:** Eine Nachricht darf nur mit `senderId == request.auth.uid` erstellt werden.
+- **Kein Hard-Delete:** Hard-Deletes sind kategorisch gesperrt (`allow delete: if false;`).
+- **Ausschließliches Soft-Delete:** Ein Update ist ausschließlich dem ursprünglichen Absender gestattet (`resource.data.senderId == request.auth.uid`) und darf ausschließlich ein Soft-Delete ausführen: `request.resource.data.status == 'DELETED'`.
+- **Kein Nachträgliches Editieren:** Da `status == 'DELETED'` erzwungen wird, ist das Verfälschen von Nachrichtentexten bei bestehendem `SENT`-Status unmöglich (wichtiger Beweis für die Anforderung "Nachricht bearbeiten ist Non-Goal").
+- **Schutz vor Undelete:** Durch `resource.data.status != 'DELETED'` kann eine gelöschte Nachricht nicht reaktiviert werden.
+- **Unveränderliche Felder:** `areImmutableFieldsUnchanged(['senderId', 'createdAt', 'type'])` stellt sicher, dass Urheber und Erstellungszeitpunkt auch beim Soft-Delete revisionssicher erhalten bleiben.
+
+**5. Isolierter FCM-Token-Speicher & Schutz des Scheduler-Zustands:**
+- Geräte-Tokens liegen unter `users/{userId}/devices/{deviceId}`. Durch `isOwner(userId)` können sie ausschließlich vom authentifizierten Besitzer gelesen, angelegt, aktualisiert und bei Logout gelöscht werden. Dritte (Coaches, Fremde) haben keinerlei Einblick in fremde Geräte-Tokens (Schutz der Privatsphäre und Verhinderung von Push-Spoofing).
+- Der Scheduler-Status unter `users/{userId}/notificationState/{docId}` speichert vorberechnete Zeitpunkte (`nextReminderAtUtc`, `nextWeeklySummaryAtUtc`). Durch `allow read: if isOwner(userId); allow write: if false;` kann der Nutzer diesen einsehen, aber zu keinem Zeitpunkt manipulieren.
+
+**6. Cloud Storage Sicherheit (Anhänge, Dateitypen & Größenlimits):**
+- Chat-Medien sind strikt in `chats/{chatId}/images` und `chats/{chatId}/files` separiert.
+- Bilder sind auf `request.resource.size <= 10 * 1024 * 1024` (10 MB) und `request.resource.contentType.matches('image/.*')` beschränkt.
+- Dateien sind auf `request.resource.size <= 25 * 1024 * 1024` (25 MB) beschränkt.
+- **Immutabilität:** `allow update: if false;` verhindert das heimliche Überschreiben von hochgeladenen Dokumenten durch schädliche Payloads.
+- **Getrennte Delete-Erlaubnis:** Da `request.resource` bei Storage-Deletes `null` ist, führt eine kombinierte `write`-Regel mit Größenprüfung bei Löschungen zu Runtime-Errors. Durch die explizite Trennung in `allow create` und `allow delete: if isChatParticipant(chatId);` kann der Nutzer beim Soft-Delete einer Nachricht den Anhang in Storage sauber entfernen, ohne dass Sicherheitsprüfungen fehlschlagen.
+
 
 

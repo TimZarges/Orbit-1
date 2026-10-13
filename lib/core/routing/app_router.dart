@@ -16,6 +16,8 @@ import '../../features/workout_builder/screens/workout_builder_screen.dart';
 import '../../features/workout_builder/screens/workout_template_library_screen.dart';
 import '../../features/analysis/screens/analysis_tab_screen.dart';
 import '../../features/diagnostics/screens/diagnostics_screen.dart';
+import '../../features/chat/screens/chat_screen.dart';
+import '../../features/chat/screens/chat_list_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 final goRouterProvider = Provider<GoRouter>((ref) {
@@ -109,6 +111,23 @@ final goRouterProvider = Provider<GoRouter>((ref) {
                 sport: state.uri.queryParameters['sport'] ?? 'BIKE',
                 targetLocalDate: state.uri.queryParameters['date'],
               ),
+            ),
+            GoRoute(
+              path: 'chat/:chatId',
+              builder: (context, state) {
+                final chatId = state.pathParameters['chatId'] ?? '';
+                final athleteId = state.uri.queryParameters['athleteId'];
+                final name = state.uri.queryParameters['name'] ?? 'Coach';
+                return ChatScreen(
+                  chatId: chatId,
+                  athleteId: athleteId,
+                  otherUserName: name,
+                );
+              },
+            ),
+            GoRoute(
+              path: 'chats',
+              builder: (context, state) => const ChatListScreen(),
             ),
             GoRoute(
               path: 'settings',

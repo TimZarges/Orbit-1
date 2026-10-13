@@ -8,6 +8,10 @@ service firebase.storage {
       allow read, write: if false;
     }
 
+    function isChatParticipant(chatId) {
+      return request.auth != null && request.auth.uid in chatId.split('_');
+    }
+
     // FIT-Uploads der Athleten (max 25 MB)
     match /users/{userId}/fit/{fileName} {
       allow read: if request.auth != null && request.auth.uid == userId;
@@ -19,6 +23,34 @@ service firebase.storage {
     match /users/{userId}/streams/{fileName} {
       allow read: if request.auth != null && request.auth.uid == userId;
       allow write: if false;
+    }
+
+    // Chat-Bilder (max 10 MB, Content-Type image/*)
+    match /chats/{chatId}/images/{fileName} {
+      allow read: if isChatParticipant(chatId);
+      allow create: if isChatParticipant(chatId)
+                   && request.resource.size <= 10 * 1024 * 1024
+                   && request.resource.contentType.matches('image/.*');
+      allow update: if false;
+      allow delete: if isChatParticipant(chatId);
+    }
+
+    // Chat-Dateien (max 25 MB)
+    match /chats/{chatId}/files/{fileName} {
+      allow read: if isChatParticipant(chatId);
+      allow create: if isChatParticipant(chatId)
+                   && request.resource.size <= 25 * 1024 * 1024;
+      allow update: if false;
+      allow delete: if isChatParticipant(chatId);
+    }
+
+    // Chat-Anhänge (Fallback für generische Anhänge, max 25 MB)
+    match /chats/{chatId}/attachments/{fileName} {
+      allow read: if isChatParticipant(chatId);
+      allow create: if isChatParticipant(chatId)
+                   && request.resource.size <= 25 * 1024 * 1024;
+      allow update: if false;
+      allow delete: if isChatParticipant(chatId);
     }
   }
 }

@@ -3,8 +3,8 @@
 > Wird am Ende jeder Phase von Antigravity aktualisiert (`/phase-finish`). Kurz und ehrlich halten.
 
 ## Aktuell
-- Phase: 12 (Abgeschlossen) -> Phase 13 (Kommunikation & Benachrichtigungen)
-- Branch: feature/phase-12-diagnostics
+- Phase: 13 (Abgeschlossen) -> Phase 14 (Home & Dashboard)
+- Branch: feature/phase-13-chat-push
 
 ## Fertig
 - Phase 00 (Foundation): Abgeschlossen
@@ -19,26 +19,28 @@
 - Phase 09 (Workout Builder und Vorlagenbibliothek): Abgeschlossen
 - Phase 10 (Analyse einfach – Ampel, Wochenbelastung, Erfahrungsstufen): Abgeschlossen
 - Phase 11 (Analyse Cockpit – Telemetrie, Karte, Power-Kurve): Abgeschlossen
-- Phase 12 (Leistungsdiagnostik & Schwellenwert-Erkennung):
-  - Schätzmethoden je Sportart (`lib/features/diagnostics/domain/` & `functions/src/metrics/diagnostics.ts`):
-    - Rad: $0.95 \times \text{MMP}_{20\text{m}}$ mit Variabilitätsindex-Gating ($\text{VI} \le 1.05$ High, $1.05 < \text{VI} \le 1.12$ Medium, $> 1.15$ verworfen).
-    - Lauf: 30m Friel-Test mit LTHR (letzte 20m) und Schwellenpace, Prüfung auf stabiles HF-Plateau ($\text{StdDev} \le 4.0\text{ bpm}$).
-    - Schwimmen: 400m / 200m CSS-Test mit Berechnung der $\text{Pace}_{\text{CSS}} = (T_{400} - T_{200})/2$.
-    - Mindestdifferenzen ($\ge 3\text{ W}$, $\ge 2\text{ bpm}$, $\ge 5\text{ s/km}$, $\ge 1.0\text{ s/100m}$) verhindern Spam-Vorschläge bei insignifikanten Schwankungen.
-  - Vorschlagsmodell & Firestore Security Rules (`users/{uid}/thresholdProposals/{id}`):
-    - Clients dürfen ausschließlich das Feld `status` auf `ACCEPTED` oder `REJECTED` aktualisieren (`isValidThresholdProposalUpdate`).
-    - Lesezugriff für Athlet und Trainer mit `permissions.activities == true`.
-    - Neuer Schwellenwert gilt ab heute (`effectiveFrom = heute`), Historie bleibt standardmäßig unverändert.
-  - Transparenz & Bestätigung:
-    - „Warum?" Bottom-Sheet (`ThresholdExplanationSheet`) mit Datenpunkten, Konfidenz-Einordnung und Limitationen.
-    - Dialog (`RecomputeConfirmationDialog`) mit optionaler historischer Neuberechnung (`recomputeMetrics`).
-  - Geführte Feldtests (`GuidedTestCard`) für Rad, Lauf und Schwimmen mit 1-Klick-Einplanung im Kalender.
-  - Vollständiger Diagnostik-Screen (`DiagnosticsScreen`) mit Sportarten-Tabs, Verlaufsdiagramm (`ThresholdHistoryChart`) und Schwellenwert-Historie.
-  - Verknüpfung im Analyse-Tab (`ThresholdProgressCard`) mit Benachrichtigungs-Badge bei neuen Vorschlägen und im Dashboard-Avatarmenü.
-  - Erweiterung der Widget-Galerie (`/gallery`) und umfassende Unit-Tests.
+- Phase 12 (Leistungsdiagnostik & Schwellenwert-Erkennung): Abgeschlossen
+- Phase 13 (Chat und Push-Benachrichtigungen):
+  - Datenmodell & Security Rules (`chats/{athleteId}_{coachId}`, Subcollection `messages`, `state`):
+    - Teilnehmer-Validierung über `isChatParticipant(chatId)`.
+    - Schreibzugriff für Nachrichten erfordert aktiven Chat (`isChatActive(chatId)` blockiert nach Widerruf).
+    - Nachrichten-Updates ausschließlich für Soft-Delete durch den Sender (`status == 'DELETED'`), Hard-Delete strikt gesperrt.
+    - Storage Rules (`storage.rules`): Bildanhänge $\le 10\text{ MB}$, Dokumente $\le 25\text{ MB}$.
+  - Aktivitäts-Sharing (`ActivityShareSnapshot`):
+    - Übertragen einer Momentaufnahme absolvierter Trainingseinheiten im Chat ohne Erhöhung von Datenzugriffsrechten.
+  - Push-Infrastruktur & Cloud Functions (`functions/src/chat/` & `notifications/`):
+    - Trigger `onMessageCreated` aktualisiert `lastMessage` und `unreadCount` transaktional.
+    - Datensparsamer Multicast-Versand via FCM ohne sensible Gesundheitsdaten oder Nachrichtentexte.
+    - Automatische Unterdrückung während konfigurierter Ruhezeiten (`settings.quietHours`).
+    - Automatische Bereinigung ungültiger/abgemeldeter Endgeräte-Tokens (`users/{uid}/devices`).
+  - Mobile UI & Routing:
+    - `ChatScreen` mit Echtzeit-Stream, Paginierung, Datumstrennern, Eingabeleiste und Soft-Delete.
+    - `ChatListScreen` für Trainer-Postfach mit Suche und Unread-Zählern.
+    - Aufklärungsdialog vor Push-Berechtigungsanfrage (`NotificationService`).
+    - Erweiterung der Widget-Galerie (`/gallery`) und Integration im Coach-Tab sowie Dashboard.
 
 ## Offen / in Arbeit
-- Phase 13: Kommunikation & Benachrichtigungen (Chat, Aktivitäts-Share, FCM-Push, ruhige Stunden)
+- Phase 14: Home (Heute-Tab, Tageszusammenfassung, Quick Actions, Feedback)
 
 ## Bekannte Probleme
 - `build_runner` Konflikte durch `analyzer` Abhängigkeiten: Wir nutzen derzeit manuelle Models anstelle von `freezed`.

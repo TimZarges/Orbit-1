@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../auth/providers/user_provider.dart';
 import '../../coach_link/screens/athlete_coach_tab_screen.dart';
 import '../../coach_link/screens/trainer_athletes_tab_screen.dart';
@@ -49,6 +50,23 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           : AppBar(
               title: Text(_currentIndex == 0 ? 'Orbit' : titles[_currentIndex]),
               actions: [
+                IconButton(
+                  icon: const Icon(Icons.chat_bubble_outline),
+                  tooltip: 'Nachrichten',
+                  onPressed: () {
+                    if (isTrainer) {
+                      context.push('/chats');
+                    } else {
+                      final coachId = userDoc?['coachId'];
+                      if (coachId != null) {
+                        final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
+                        context.push('/chat/${uid}_$coachId?athleteId=$uid&name=Trainer');
+                      } else {
+                        setState(() => _currentIndex = 3); // Zur Coach-Seite wechseln
+                      }
+                    }
+                  },
+                ),
                 IconButton(
                   icon: const CircleAvatar(
                     radius: 16,

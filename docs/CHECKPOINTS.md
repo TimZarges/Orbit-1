@@ -26,6 +26,33 @@
 
 ## Einträge
 
+### [Phase 13] Chat und Push-Benachrichtigungen · RISIKO-HOCH
+- **STOPP-Punkt/Anlass:** STOPP 1 aus Phasendatei (Rules-Entwurf, Chat/Nachrichten-Modell, Verhalten nach Widerruf, Soft-Delete und Push-Datensparsamkeit).
+- **Entscheidung:**
+  1. **Chat-Datenmodell & Beendigungsverhalten:**
+     - `chats/{chatId}` (`{athleteId}_{coachId}`) mit Subcollection `messages/{messageId}` (`TEXT`, `IMAGE`, `FILE`, `ACTIVITY_SHARE`).
+     - Nach Beendigung der Trainer-Verknüpfung (`status: "REVOKED"`): Verlauf bleibt für beide lesbar, aber keine neuen Nachrichten (`isChatActive(chatId)` blockiert `create`).
+  2. **Firestore & Storage Security Rules (via `firestore-rules-author`):**
+     - Zugriff ausschließlich für authentifizierte Teilnehmer (`isChatParticipant(chatId)` via `split('_')`).
+     - Nachrichten-Erstellung nur bei `senderId == request.auth.uid`.
+     - Aktualisierung (`update`) ausschließlich für den Absender zum Zweck des Soft-Deletes (`status == 'DELETED'`), Hard-Delete gesperrt.
+     - Storage-Regeln (`storage.rules`): Bilder $\le 10\text{ MB}$ (`image/.*`), Dateien $\le 25\text{ MB}$.
+  3. **Aktivitäts-Sharing als Snapshot:**
+     - Momentaufnahme (`ActivityShareSnapshot`) der Eckdaten (Titel, Sport, Datum, Dauer, Distanz, Ø Watt, Ø HF). Gewährt keinen Zugriff auf vertrauliche Rohdaten/Streams.
+  4. **Datensparsame Push-Benachrichtigungen (FCM):**
+     - Standardmäßig ohne Nachrichtentext („Neue Nachricht von <Name>").
+     - Automatische Unterdrückung von Pushs während der vom Nutzer konfigurierten Ruhezeiten (`isQuietTime`).
+     - Automatische Bereinigung abgemeldeter/ungültiger Endgeräte-Tokens.
+     - Kontextbezogene Berechtigungsanfrage mit Aufklärungsdialog (`NotificationService`).
+  5. **UI & Routing:**
+     - `ChatScreen` mit Echtzeit-Streaming, Paginierung, Datumstrennern, Tastatur-/Scroll-Logik und Soft-Delete-Option.
+     - `ChatListScreen` für Trainer mit Suchleiste und Unread-Zählern.
+     - `ChatBubble` in der Widget-Galerie (`/gallery`) und Integration in `AthleteCoachTabScreen` sowie Dashboard AppBar.
+- **Alternative:** Direkte Speicherung von Nachrichten im Hauptdokument oder ungefilterte Push-Zustellung mit vollem Klartext und Gesundheitsdaten.
+- **Begründung:** Wahrung höchster DSGVO-Standards (Art. 6 & Art. 9), Vermeidung von DoS/Quota-Limits und Schutz der Trainingsruhe.
+- **Bitte prüfen:** Chat unter `/chat/:chatId` bzw. `/chats`, Galerie (`/gallery`) und `storage.rules`.
+- **Rückholen:** Branch `feature/phase-13-chat-push` verwerfen.
+
 ### [Phase 12] Leistungsdiagnostik & Schwellenwert-Vorschläge · RISIKO-HOCH
 - **STOPP-Punkt/Anlass:** STOPP 1 aus Phasendatei (Methodenpapier je Sportart, Berechnungsfaktoren und Konfidenz-Kriterien).
 - **Entscheidung:**

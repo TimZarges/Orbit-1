@@ -8,3 +8,5 @@ export * from "./auth";
 export * from "./coach";
 export * from './import/index';
 export * from "./calendar";
+export * from "./chat";
+export * from "./notifications";

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:go_router/go_router.dart';
+import '../../../core/design/app_colors.dart';
 import '../../auth/providers/user_provider.dart';
 
 class AthleteCoachTabScreen extends ConsumerWidget {
@@ -70,6 +73,23 @@ class AthleteCoachTabScreen extends ConsumerWidget {
                   // TODO: Dialog zur Bestätigung, dann revokeLink Function aufrufen
                 },
               ),
+            ),
+          ),
+          const SizedBox(height: 14),
+          ElevatedButton.icon(
+            onPressed: () {
+              final athleteId = FirebaseAuth.instance.currentUser?.uid ?? '';
+              final chatId = '${athleteId}_$coachId';
+              context.push('/chat/$chatId?athleteId=$athleteId&name=Trainer');
+            },
+            icon: const Icon(Icons.chat_bubble_outline),
+            label: const Text('Chat mit Trainer öffnen'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.volt,
+              foregroundColor: AppColors.navy,
+              elevation: 0,
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
           ),
           const SizedBox(height: 24),

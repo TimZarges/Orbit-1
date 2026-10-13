@@ -31,3 +31,11 @@ Wir nutzen Google Cloud (Firebase) als Hosting-Dienstleister. Die Datenverarbeit
 - **Vektor-Streckenführung:** Die interaktive Visualisierung absolvierter GPS-Streckenführungen erfolgt standardmäßig rein clientseitig (Offline / Vektor-Rendering). Hierbei werden keinerlei Daten oder IP-Adressen an externe Server übertragen.
 - **Externe Umgebungskarten (Kacheln):** Das Nachladen detaillierter Kartengrundlagen von Drittanbietern (z. B. OpenStreetMap / CARTO) erfordert eine ausdrückliche Opt-In-Einwilligung im Cockpit („Kartenkacheln laden“), da hierbei die IP-Adresse des Endgeräts verarbeitet wird. Die Einwilligung kann in den Einstellungen jederzeit widerrufen werden.
 
+## 7. Chat-Kommunikation und Push-Benachrichtigungen (DSGVO Art. 6 Abs. 1 lit. b & f)
+- **1:1-Chat zwischen Athlet und Trainer:** Nachrichten, Bilder und Anhänge sind strikt auf die beiden verknüpften Teilnehmer beschränkt (`chats/{athleteId}_{coachId}`). Das Teilen einer absolvierten Aktivität erzeugt lediglich eine statische Momentaufnahme (Snapshot) und gewährt dem Trainer keinen zusätzlichen Zugriff auf Rohdaten oder unberechtigte Analysen.
+- **Nachrichtenlöschung (Soft-Delete):** Ein Nutzer kann eigene gesendete Nachrichten nachträglich entfernen. Inhalt und Anhänge werden unwiderruflich gelöscht und durch einen neutralen Platzhalter („Diese Nachricht wurde gelöscht“) ersetzt.
+- **Datensparsame Push-Benachrichtigungen (FCM):**
+  - Standardmäßig enthalten Push-Mitteilungen keine Nachrichteninhalte oder vertraulichen Gesundheitsdaten („Neue Nachricht von <Name>“). Eine Inhalts-Vorschau erfolgt nur bei ausdrücklicher Aktivierung in den Einstellungen.
+  - Ruhezeiten: Während der vom Nutzer festgelegten Ruhezeiten werden Benachrichtigungen vollständig unterdrückt.
+  - Berechtigungen: Der Zugriff auf Gerätebenachrichtigungen (Android 13+ / iOS) wird erst im Kontext (z. B. nach Bestätigung einer Trainer-Verknüpfung) mit vorgeschalteter Erklärung angefragt.
+

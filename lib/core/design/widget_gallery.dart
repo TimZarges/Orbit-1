@@ -27,6 +27,8 @@ import '../../features/diagnostics/models/guided_test_info.dart';
 import '../../features/diagnostics/widgets/threshold_proposal_card.dart';
 import '../../features/diagnostics/widgets/guided_test_card.dart';
 import '../../features/diagnostics/widgets/threshold_history_chart.dart';
+import '../../features/chat/models/chat_message.dart';
+import '../../features/chat/widgets/chat_bubble.dart';
 
 class WidgetGalleryScreen extends StatelessWidget {
   const WidgetGalleryScreen({super.key});
@@ -271,6 +273,62 @@ class WidgetGalleryScreen extends StatelessWidget {
               ),
             ],
             type: ThresholdType.ftp,
+          ),
+          const SizedBox(height: 32),
+          Text('Chat & Nachrichten (Phase 13)', style: Theme.of(context).textTheme.headlineLarge),
+          const SizedBox(height: 16),
+          ChatBubble(
+            message: ChatMessage(
+              id: 'm1',
+              chatId: 'c1',
+              senderId: 'coach',
+              type: MessageType.text,
+              text: 'Hallo Tim! Die Intervalle gestern sahen technisch sehr stabil aus.',
+              createdAt: DateTime.now().subtract(const Duration(minutes: 15)),
+            ),
+            isMe: false,
+          ),
+          ChatBubble(
+            message: ChatMessage(
+              id: 'm2',
+              chatId: 'c1',
+              senderId: 'me',
+              type: MessageType.text,
+              text: 'Danke! Vor allem in Block 3 konnte ich den Druck gut halten.',
+              createdAt: DateTime.now().subtract(const Duration(minutes: 10)),
+            ),
+            isMe: true,
+          ),
+          ChatBubble(
+            message: ChatMessage(
+              id: 'm3',
+              chatId: 'c1',
+              senderId: 'me',
+              type: MessageType.activityShare,
+              activityShare: const ActivityShareSnapshot(
+                activityId: 'act_demo_1',
+                title: '4x4min Schwellenintervalle Rad',
+                sport: 'BIKE',
+                date: '13.10.2026',
+                durationSec: 3600,
+                distanceM: 32500,
+                avgPowerW: 275,
+                avgHr: 164,
+              ),
+              createdAt: DateTime.now().subtract(const Duration(minutes: 5)),
+            ),
+            isMe: true,
+          ),
+          ChatBubble(
+            message: ChatMessage(
+              id: 'm4',
+              chatId: 'c1',
+              senderId: 'me',
+              type: MessageType.text,
+              status: MessageStatus.deleted,
+              createdAt: DateTime.now().subtract(const Duration(minutes: 2)),
+            ),
+            isMe: true,
           ),
           const SizedBox(height: 32),
         ],
