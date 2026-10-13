@@ -14,6 +14,13 @@ import '../../features/analysis/widgets/sport_distribution_card.dart';
 import '../../features/analysis/widgets/zone_distribution_card.dart';
 import '../../features/analysis/widgets/weekly_load_trend_chart.dart';
 import '../../features/analysis/widgets/fitness_fatigue_trend_chart.dart';
+import 'dart:math';
+import '../../features/activities/models/activity_stream.dart';
+import '../../features/activities/models/power_duration_curve.dart';
+import '../../features/activities/widgets/telemetry_channel_chips.dart';
+import '../../features/activities/widgets/telemetry_chart_widget.dart';
+import '../../features/activities/widgets/telemetry_map_widget.dart';
+import '../../features/activities/widgets/power_duration_curve_widget.dart';
 
 class WidgetGalleryScreen extends StatelessWidget {
   const WidgetGalleryScreen({super.key});
@@ -134,6 +141,70 @@ class WidgetGalleryScreen extends StatelessWidget {
               FitnessFatiguePoint(date: '2026-09-15', ctl: 55, atl: 50, tsb: 5),
               FitnessFatiguePoint(date: '2026-10-01', ctl: 58, atl: 68, tsb: -10),
             ],
+          ),
+          const SizedBox(height: 32),
+
+          Text('Cockpit Telemetrie (Phase 11)', style: Theme.of(context).textTheme.headlineLarge),
+          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: const Color(0xFF0F172A),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Dark Cockpit Data Density (#0F172A)',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(color: Colors.white),
+                ),
+                const SizedBox(height: 16),
+                Builder(
+                  builder: (context) {
+                    final points = List.generate(120, (i) {
+                      return ActivityStreamPoint(
+                        timeSec: i * 10,
+                        power: 200.0 + (sin(i / 10) * 80),
+                        hr: 135.0 + (sin(i / 10) * 20),
+                        speedMps: 8.0 + (sin(i / 10) * 2),
+                        cadence: 88.0 + (sin(i / 5) * 5),
+                        altitudeM: 100.0 + (i * 2),
+                        lat: 50.11 + sin(i / 20) * 0.02,
+                        lng: 8.68 + cos(i / 20) * 0.03,
+                        distanceM: i * 80.0,
+                      );
+                    });
+
+                    return Column(
+                      children: [
+                        TelemetryChartWidget(
+                          points: points,
+                          activeChannels: const {
+                            TelemetryChannel.power,
+                            TelemetryChannel.heartRate,
+                            TelemetryChannel.altitude,
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        TelemetryMapWidget(points: points),
+                        const SizedBox(height: 16),
+                        const PowerDurationCurveWidget(
+                          curve: PowerDurationCurve(
+                            points: [
+                              PowerDurationPoint(durationSec: 5, activityWatts: 620, allTimeBestWatts: 600),
+                              PowerDurationPoint(durationSec: 60, activityWatts: 380, seasonBestWatts: 360),
+                              PowerDurationPoint(durationSec: 300, activityWatts: 295, allTimeBestWatts: 310),
+                              PowerDurationPoint(durationSec: 1200, activityWatts: 260, allTimeBestWatts: 270),
+                            ],
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              ],
+            ),
           ),
           const SizedBox(height: 32),
         ],

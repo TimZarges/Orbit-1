@@ -1,13 +1,13 @@
-# Testplan für Firestore Security Rules (Phasen 01, 02, 08, 09 & 10)
+# Testplan für Firestore Security Rules (Phasen 01, 02, 08, 09, 10 & 11)
 
 ## Ziel
-Sicherstellen, dass die implementierten Firestore Security Rules für alle Collections (`users`, Subcollections inkl. `aggregates`, `coachLinks`, `activities`, `plannedWorkouts` und `workoutTemplates`) robust sind und die geforderten Berechtigungen durchsetzen:
+Sicherstellen, dass die implementierten Firestore Security Rules für alle Collections (`users`, Subcollections inkl. `aggregates` und `bests`, `coachLinks`, `activities`, `plannedWorkouts` und `workoutTemplates`) robust sind und die geforderten Berechtigungen durchsetzen:
 - Default Deny an der Wurzel
 - Owner-Only & Authenticated Access
 - Schutz unveränderlicher Server- und Identitätsfelder (`athleteId`, `createdBy`, `ownerId`, `role`, etc.)
 - Granulare Trainer-Freigaben (`coachLinks.permissions.calendar`, `coachLinks.permissions.health`, `coachLinks.permissions.activities`, `coachLinks` Trainer-Vorlagen-Sharing)
 - Schutz vor Privilege Escalation, Identitätsfälschung, Resource Exhaustion/DoS und unbefugter Datenlöschung
-- Striktes Schreibverbot für vorberechnete Aggregate (nur Cloud Functions)
+- Striktes Schreibverbot für vorberechnete Aggregate und Bestwerte (nur Cloud Functions)
 
 ## Setup
 - Die Tests werden gegen den lokalen **Firebase Emulator** ausgeführt.
@@ -277,6 +277,36 @@ Sicherstellen, dass die implementierten Firestore Security Rules für alle Colle
   - **Aktion:** `eveAuth` oder `unauth` versucht Schreibzugriff auf `/users/alice/aggregates/2026-10-13`.
   - **Erwartet:** `PERMISSION_DENIED` (`allow write: if false`).
 
+### 9. Collection `users/{userId}/bests/{sport}` (Phase 11 – Analyse Cockpit: Bestwerte & Power-Kurve)
+
+#### 9.1 Read (Lesen)
+- **Athlet liest eigene Bestwerte:**
+  - **Aktion:** `aliceAuth` liest `/users/alice/bests/cycling`.
+  - **Erwartet:** Erfolg (`isOwner(userId)`).
+- **Trainer mit aktiver `activities`-Freigabe liest Bestwerte des Athleten:**
+  - **Aktion:** `bobAuth` liest `/users/alice/bests/cycling` (bei existierendem `coachLinks/alice_coachBob` mit `permissions.activities == true`).
+  - **Erwartet:** Erfolg (`isAuthenticated() && isCoachForActivities(userId)`).
+- **Trainer ohne `activities`-Freigabe versucht Bestwerte zu lesen:**
+  - **Aktion:** `charlieAuth` liest `/users/alice/bests/cycling` (bei `coachLinks/alice_coachCharlie` mit `permissions.activities == false`).
+  - **Erwartet:** `PERMISSION_DENIED` (`isCoachForActivities` evaluiert zu `false`).
+- **Fremder ohne Verknüpfung versucht Bestwerte zu lesen:**
+  - **Aktion:** `eveAuth` liest `/users/alice/bests/cycling` (kein `coachLinks/alice_eve` vorhanden).
+  - **Erwartet:** `PERMISSION_DENIED`.
+- **Unauthentifizierter versucht Bestwerte zu lesen:**
+  - **Aktion:** `unauth` liest `/users/alice/bests/cycling`.
+  - **Erwartet:** `PERMISSION_DENIED`.
+
+#### 9.2 Write / Create / Update / Delete (Schreiben)
+- **Athlet versucht Bestwert-Dokument anzulegen oder zu manipulieren:**
+  - **Aktion:** `aliceAuth` versucht `/users/alice/bests/cycling` zu erstellen, zu aktualisieren oder zu löschen.
+  - **Erwartet:** `PERMISSION_DENIED` (`allow write: if false`).
+- **Trainer versucht Bestwert-Dokument anzulegen oder zu manipulieren:**
+  - **Aktion:** `bobAuth` versucht `/users/alice/bests/cycling` zu erstellen, zu verändern oder zu löschen.
+  - **Erwartet:** `PERMISSION_DENIED` (`allow write: if false`).
+- **Fremder / Unauthentifizierter versucht Schreibzugriff:**
+  - **Aktion:** `eveAuth` oder `unauth` versucht Schreibzugriff auf `/users/alice/bests/cycling`.
+  - **Erwartet:** `PERMISSION_DENIED` (`allow write: if false`).
+
 ---
 
 ## Umsetzung
@@ -353,3 +383,18 @@ Metriken wie `dailyLoad`, `ctl`, `atl`, `tsb` und der Belastungsindex (`orbitSco
 
 **4. Performante Bereichsabfragen (Range Queries) in Subcollections:**
 Der Analyse-Tab fragt Aggregate über Zeitintervalle ab (z. B. `.where(FieldPath.documentId(), '>=', '2026-08-01')`). Da die Regel `allow read: if isOwner(userId) || (isAuthenticated() && isCoachForActivities(userId));` nur an die Pfadvariable `{userId}` und den statisch prüfbaren `coachLinks`-Dokumentpfad gekoppelt ist und keine dokumentenindividuellen Felder filtert, evaluiert Firestore die Autorisierung einheitlich für den gesamten Query-Pfad. Es entsteht kein "Rules are not filters"-Konflikt, und Trainer können die 8-Wochen-Verläufe ihrer Athleten in einer einzigen schnellen Subcollection-Abfrage laden.
+
+### Theoretischer Beweis (Architektur-Check): Bestwerte & Power-Dauer-Kurve (Phase 11)
+
+**1. Ausschließliche serverseitige Pflege (Schutz vor Rekord-Manipulation):**
+In Phase 11 visualisiert das Analyse-Cockpit Bestwerte wie die Power-Dauer-Kurve (Mean-Maximal-Power für 1s bis 4h) und Bestzeiten je Distanz (Allzeit und aktuelle Saison). Da diese Kennzahlen als Grundlage für Trainingsentscheidungen, Schwellenwert-Vorschläge und Leistungsvergleiche dienen, dürfen sie keinesfalls durch Clients manipuliert oder gefälscht werden können. Die Regel `allow write: if false;` stellt sicher, dass Schreibzugriffe strikt dem vertrauenswürdigen Backend (Cloud Functions mit Firebase Admin SDK, das die Sicherheitsregeln umgeht) vorbehalten sind.
+
+**2. Granulare Autorisierung über `coachLinks.permissions.activities`:**
+Bestwerte aggregieren die Spitzenleistungen aus den absolvierten Aktivitäten des Athleten. Im DSGVO-konformen Berechtigungsmodell von ORBIT (`coachLinks/{athleteId}_{coachId}`) schützt das Flag `permissions.activities` die Einsicht in Aktivitäts- und Trainingsdaten. Die Hilfsfunktion `isCoachForActivities(athleteId)` liest per `get()` das Verknüpfungsdokument `/coachLinks/$(athleteId + '_' + request.auth.uid)` und prüft `linkDoc.data.permissions.activities == true`.
+- Hat der Athlet dem Trainer das Recht erteilt, kann der Trainer die Bestwerte einsehen (`isAuthenticated() && isCoachForActivities(userId)`).
+- Ohne Freigabe oder bei getrennter Verbindung wird der Lesezugriff sofort abgewiesen.
+- Ein Entzug der Berechtigung durch den Athleten wird in Echtzeit ohne Cache-Verzögerung wirksam.
+
+**3. Performanter Lesezugriff ohne "Rules are not filters"-Konflikt:**
+Bestwerte sind nach Sportart modularisiert (`users/{userId}/bests/{sport}`). Sowohl gezielte Einzeldokument-Abfragen (z. B. `doc('users/alice/bests/cycling').get()`) als auch Collection-Abfragen über alle Sportarten des Athleten (`collection('users/alice/bests').get()`) sind uneingeschränkt möglich. Da die Autorisierungsbedingung ausschließlich an den Pfadparameter `{userId}` und den statisch prüfbaren `coachLinks`-Pfad gebunden ist und keine dokumenteninternen Felder voraussetzt, evaluiert Firestore die Leseerlaubnis konsistent auf Collection-Ebene.
+

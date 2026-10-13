@@ -7,6 +7,7 @@ import '../../../core/metrics/term_resolver.dart';
 import '../../auth/providers/user_provider.dart';
 import '../models/activity.dart';
 import '../providers/activity_actions_provider.dart';
+import 'activity_cockpit_screen.dart';
 
 class ActivityDetailScreen extends ConsumerWidget {
   final Activity activity;
@@ -287,31 +288,38 @@ class ActivityDetailScreen extends ConsumerWidget {
               const SizedBox(height: 24),
             ],
 
-            // Disabled More Details mit Tooltip
+            // Cockpit Button
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppColors.techGrey,
+                color: const Color(0xFF0F172A),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.cardBorder),
+                border: Border.all(color: const Color(0xFF334155)),
               ),
               child: Column(
                 children: [
                   ElevatedButton.icon(
-                    onPressed: null,
-                    icon: const Icon(Icons.analytics_outlined),
-                    label: const Text('Mehr Details (Cockpit)'),
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => ActivityCockpitScreen(activity: activity),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.analytics_outlined, color: AppColors.navy),
+                    label: const Text('Analyse-Cockpit öffnen'),
                     style: ElevatedButton.styleFrom(
-                      disabledBackgroundColor: AppColors.cardBorder,
-                      disabledForegroundColor: Colors.grey.shade600,
+                      backgroundColor: AppColors.accentVolt,
+                      foregroundColor: AppColors.navy,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                     ),
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Detaillierte Telemetrie-Kurven, Karte, Rundenzeiten und Power-Duration-Kurve folgen in Phase 11.',
+                    'Telemetrie mit Kanalwahl, synchroner GPS-Strecke und Power-Duration-Kurve.',
                     textAlign: TextAlign.center,
-                    style: AppTypography.label.copyWith(color: Colors.grey.shade600),
+                    style: AppTypography.label.copyWith(color: Colors.white70),
                   ),
                 ],
               ),

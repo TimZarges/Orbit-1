@@ -26,6 +26,29 @@
 
 ## Einträge
 
+### [Phase 11] Analyse Cockpit (Telemetrie, Karte, Power-Kurve) · RISIKO-MITTEL
+- **STOPP-Punkt/Anlass:** STOPP 1 (Technik, Karte, Einwilligung, Performance-Ziele) & STOPP 2 (Performance-Nachweis vor Feinschliff).
+- **Entscheidung:**
+  1. **Chart-Technik & LTTB-Downsampling (`LttbDownsampler`):**
+     - Reduktion hochauflösender Zeitreihen (bis zu 36.000 Punkte bei 10h-Aktivitäten) auf 400 Anzeigepunkte für flüssige 60 FPS ($\le 16\text{ ms}$ Frame-Zeit) bei voller Erhaltung markanter Spitzen und Intervalle.
+  2. **Interaktives Scrubbing & Kartensynchronisation:**
+     - Long-Press-to-Scrub mit vertikaler Leitlinie und HUD über dem Finger (`TelemetryChartWidget`). Verhindert Konflikte mit vertikalem Page-Scroll.
+     - Synchrone Positionierung des voltfarbenen Markers auf der GPS-Streckenkarte (`TelemetryMapWidget`).
+     - Umschaltung zwischen Zeit- und Distanzachse sowie Vollbildmodus im Querformat.
+  3. **DSGVO & Karten-Kacheln (`docs/PRIVACY.md`):**
+     - Die GPS-Routenführung wird primär als reine Vektorgrafik offline gerendert (keine Weitergabe von IP-Adressen an externe Server).
+     - Das Laden externer Kacheln erfordert ein ausdrückliches Opt-In über einen Einwilligungsdialog.
+  4. **Power-Duration-Kurve & Bestwerte (`users/{uid}/bests/{sport}`):**
+     - Logarithmisch skalierte Kurve der aktuellen Einheit im Vergleich zu Saison- und Allzeit-Bestwerten (`PowerDurationCurveWidget`).
+     - Neue Bestleistungen werden mit „PR"-Badges in Volt-Fläche mit Navy-Text hervorgehoben (Volt-Regel).
+     - Cloud Functions pflegen `allTimeMmp` und `seasonMmp` (1s bis 60m) serverseitig; Firestore Rules gewähren Lesezugriff für Athlet und berechtigte Trainer (`permissions.activities == true`).
+  5. **Isolate-Dekodierung & Lazy Loading:**
+     - `StreamDecoder` dekodiert und entpackt GZIP-Streams in einem Hintergrund-Isolate, um den UI-Thread frei von JSON-Parsing-Last zu halten.
+- **Alternative:** Rendering aller Rohdatenpunkte mit `fl_chart` oder Google Maps SDK (hohe Latenzen, Memory-Spikes und IP-Tracking).
+- **Begründung:** Höchste Performance auf Mittelklasse-Android-Geräten, intuitive Bedienbarkeit und vollständige DSGVO-Konformität.
+- **Bitte prüfen:** Aktivitätsdetailansicht -> „Analyse-Cockpit öffnen" sowie Widget-Galerie (`/gallery`).
+- **Rückholen:** Branch `feature/phase-11-analysis-cockpit` verwerfen.
+
 ### [Phase 10] Analyse einfach (Ampel, Wochenbelastung, Erfahrungsstufen) · RISIKO-HOCH
 - **STOPP-Punkt/Anlass:** STOPP 1 aus Phasendatei (Wortlaut aller Texte, Schwellenwerte, Mindestdatenlage und Kartenprototyp).
 - **Entscheidung:**

@@ -27,3 +27,7 @@ Wir verarbeiten folgende Daten:
 ## 5. Auftragsverarbeiter und Datentransfer
 Wir nutzen Google Cloud (Firebase) als Hosting-Dienstleister. Die Datenverarbeitung findet ausschließlich in der Region `europe-west3` (Frankfurt) statt.
 
+## 6. Kartendienste und externe Kacheln (DSGVO Art. 6 Abs. 1 lit. a)
+- **Vektor-Streckenführung:** Die interaktive Visualisierung absolvierter GPS-Streckenführungen erfolgt standardmäßig rein clientseitig (Offline / Vektor-Rendering). Hierbei werden keinerlei Daten oder IP-Adressen an externe Server übertragen.
+- **Externe Umgebungskarten (Kacheln):** Das Nachladen detaillierter Kartengrundlagen von Drittanbietern (z. B. OpenStreetMap / CARTO) erfordert eine ausdrückliche Opt-In-Einwilligung im Cockpit („Kartenkacheln laden“), da hierbei die IP-Adresse des Endgeräts verarbeitet wird. Die Einwilligung kann in den Einstellungen jederzeit widerrufen werden.
+

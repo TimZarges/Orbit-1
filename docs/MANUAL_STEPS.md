@@ -22,6 +22,12 @@
 | ☐ | Nach Freigabe: Consumer-Key/Secret im Secret Manager hinterlegen, Webhook-URLs im Garmin-Portal eintragen. | 06 |
 | ☐ | `assetlinks.json` für Android App Links hosten (Domain nötig, z. B. über Firebase Hosting) und Fingerprints eintragen. | 06 |
 
+## Performance und Tests
+| ☐ | Aufgabe | Wann |
+|---|---|---|
+| ☐ | Telemetrie- und Scrubbing-Performance im Profile-Mode auf einem physischen Mittelklasse-Android-Gerät prüfen: 60 FPS Ziel-Framezeit, kein Jank bei synchroner Kartenführung. | 11 |
+
+
 ## Recht und Datenschutz
 | ☐ | Aufgabe | Wann |
 |---|---|---|

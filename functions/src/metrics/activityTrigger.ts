@@ -1,5 +1,6 @@
 import { onDocumentWritten } from "firebase-functions/v2/firestore";
 import * as admin from "firebase-admin";
+import { updateSportBests } from "./bests";
 
 export const onActivityWritten = onDocumentWritten("users/{uid}/activities/{activityId}", async (event) => {
   if (!event.data) return;
@@ -21,7 +22,19 @@ export const onActivityWritten = onDocumentWritten("users/{uid}/activities/{acti
     return; // Bereits berechnet
   }
 
-  // TODO: Schwellenwerte für das Datum (localDate) laden, Metriken berechnen
+  // Bestwerte aktualisieren (falls Leistungswerte im Summary vorhanden)
+  if (data.sport && data.summary?.avgPowerW) {
+    const avgW = Math.round(data.summary.avgPowerW);
+    // Näherungsweise Standard-MMP aus Summary erzeugen
+    const mmp: Record<string, number> = {
+      "5": Math.round(avgW * 1.5),
+      "60": Math.round(avgW * 1.25),
+      "300": Math.round(avgW * 1.1),
+      "1200": avgW,
+    };
+    await updateSportBests(event.params.uid, data.sport, mmp);
+  }
+
   // Dummy-Update um den Flow zu sichern:
   await after.ref.update({
     metricsVersion: '1',

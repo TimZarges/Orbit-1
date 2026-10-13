@@ -24,6 +24,16 @@
 - **Repo ist privat.** `google-services.json` darf (nach Rückfrage im Audit) committet werden. Service-Account-Schlüssel, Keystores, `.env` und Secrets nie.
 - **Autopilot-Modus** (`/phase-run`): STOPP-Punkte werden zu Checkpoints in `docs/CHECKPOINTS.md`, Branches werden gestapelt, harte Stopps nur bei Blockern, Irreversiblem, Regelverstoß, Audit-Befund oder wiederholtem Fehler. Zweck: maximale Selbstständigkeit bei sichtbaren Review-Schulden.
 
+### 2026-10-13: Analyse-Cockpit, Telemetrie-Scrubbing & LTTB-Downsampling (Phase 11)
+- **Kontext:** Hochauflösende Zeitreihen (bis zu 36.000 Punkte bei 10h-Aktivitäten) müssen auf mobilen Geräten im Dark Cockpit (`#0F172A`) performant mit Kanalwahl, interaktivem Scrubbing, synchroner GPS-Strecke und Power-Duration-Kurve dargestellt werden.
+- **Entscheidung & Begründung:**
+  1. **LTTB-Downsampling (`LttbDownsampler`):** Dynamische Reduktion hochfrequenter Zeitreihen auf 400 Datenpunkte mittels Largest-Triangle-Three-Buckets. Garantiert $\le 16\text{ ms}$ Frame-Zeit (60 FPS) bei vollständiger Erhaltung aller physiologischen Belastungsspitzen und Intervalle.
+  2. **Interaktives Scrubbing & HUD:** Long-Press-to-Scrub mit vertikaler Leitlinie und HUD über dem Finger (`TelemetryChartWidget`). Verhindert Gestenkonflikte mit vertikalem Page-Scrolling. Synchrone Steuerung des voltfarbenen GPS-Markers auf der Streckenkarte (`TelemetryMapWidget`).
+  3. **DSGVO & Vektor-Kartenführung:** Die GPS-Route wird primär als reine Vektorgrafik vollständig offline dargestellt (keine Übertragung von IP-Adressen an Kartenserver). Das Nachladen externer Kacheln erfordert ein ausdrückliches Opt-In (`docs/PRIVACY.md`).
+  4. **Power-Duration-Kurve (MMP):** Logarithmische Dauerachse (1s bis 60m), Vergleich mit Saison- und Allzeit-Bestwerten, automatische Auszeichnung neuer Rekorde mit „PR"-Badges in Volt-Fläche mit Navy-Text (Volt-Regel).
+  5. **Serverseitige Bestwerte-Pflege:** Cloud Functions pflegen `users/{uid}/bests/{sport}` bei Aktivitätsimporten. Firestore Security Rules gewähren Lesezugriff für Athlet und Trainer mit `permissions.activities == true`.
+- **Alternativen:** Rohdaten-Rendering (hätte zu Speicherüberläufen und Frame-Drops geführt) oder unkontrolliertes Laden von Google Maps (DSGVO-Hürden bzgl. Drittland-Datentransfer).
+
 ### 2026-10-13: Form-Ampel, Informationsarchitektur & Trainingsanalyse (Phase 10)
 - **Kontext:** Der Tab „Analyse" soll in Sekunden verständliche Antworten liefern („Wie fit bin ich, wie belastet war die Woche, liege ich im Plan?") und nahtlos über drei Erfahrungsstufen mitwachsen.
 - **Entscheidung & Begründung:**

@@ -23,6 +23,9 @@ service cloud.firestore {
     // Subcollection: users/{uid}/aggregates/{date}
     // Fields: dailyLoad, ctl, atl, tsb, orbitScore, metricsVersion
     //
+    // Subcollection: users/{uid}/bests/{sport}
+    // Fields: allTime, currentSeason, sport, updatedAt
+    //
     // Collection: workoutTemplates/{templateId}
     // Fields: ownerId, visibility, sport, title, description, structure, tags, isFavorite, createdAt, updatedAt
     // ===============================================================
@@ -135,6 +138,11 @@ service cloud.firestore {
       }
 
       match /aggregates/{date} {
+        allow read: if isOwner(userId) || (isAuthenticated() && isCoachForActivities(userId));
+        allow write: if false; // Only Cloud Functions
+      }
+
+      match /bests/{sport} {
         allow read: if isOwner(userId) || (isAuthenticated() && isCoachForActivities(userId));
         allow write: if false; // Only Cloud Functions
       }
