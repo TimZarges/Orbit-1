@@ -22,8 +22,23 @@
 - **Mechanik:** Abruf historischer Daten ist über einen asynchronen Backfill-Request möglich. Der Endpunkt liefert typischerweise ein `HTTP 202 (Accepted)`. Die eigentlichen historischen Daten kommen dann häppchenweise über den Webhook rein.
 - **Limitationen:** Nicht beliebig weit in die Vergangenheit möglich (oft auf wenige Wochen oder Monate nach Genehmigung beschränkt).
 
-## Zusammenfassung für Phase 06
-Da kein Entwickler-Secret vorhanden ist, implementieren wir einen **simulierten ProviderConnector** (`mockGarminConnector`) und eine simulierte Webhook-Verarbeitung, die exakt das Verhalten der Garmin-Architektur spiegelt:
-- Asynchroner Verbindungsfluss.
-- Empfang von Webhooks (JSON-Payload nach `webhookEvents`).
-- Firestore-Trigger verarbeitet die Daten.
+## Health API (Daily Metrics & Wellness)
+- **Garmin Health Push-Payloads:**
+  - `dailies`: Liefert `calendarDate`, `restingHeartRateInBeatsPerMinute`, `averageStressLevel`, `totalSteps`, `timeOffsetInSeconds`.
+  - `sleeps`: Liefert `calendarDate`, `durationInSeconds` (Netto-Schlafdauer), `overallSleepScore.value` (falls vom Gerät unterstützt, sonst `null`).
+  - `hrv`: Liefert `calendarDate`, `lastNightAvg` (nächtlicher rMSSD in ms), `weeklyAvg`.
+  - `bodyBattery`: Kann aus Dailies oder Body Battery Summary bezogen werden (`charged`, `drained`, End-of-day Wert).
+- **ORBIT-Zielschema (`users/{uid}/dailyMetrics/{localDate}`):**
+  - `localDate`: Format `yyyy-MM-dd`, ermittelt anhand `calendarDate` bzw. `timeOffsetInSeconds` des Benutzers.
+  - `sleepSeconds`: `durationInSeconds` aus `sleeps`.
+  - `sleepScore`: 0–100 (optional).
+  - `restingHrBpm`: `restingHeartRateInBeatsPerMinute` aus `dailies`.
+  - `hrvMs`: `lastNightAvg` aus `hrv` (rMSSD in Millisekunden).
+  - `stress`: `averageStressLevel` (0–100, optional).
+  - `steps`: `totalSteps` (optional).
+  - `bodyBattery`: 0–100 (optional).
+  - `source`: `"GARMIN"` | `"DEMO"`.
+  - `updatedAt`: Firestore Timestamp.
+- **Idempotenz & Merge:**
+  - Da Garmin `dailies`, `sleeps` und `hrv` in separaten Webhook-Aufrufen oder Teillieferungen pushen kann, werden Aktualisierungen auf `users/{uid}/dailyMetrics/{localDate}` immer per **Firestore Upsert mit `merge: true`** zusammengeführt. Keine bestehenden Messwerte werden überschrieben, wenn die Folgezustellung das jeweilige Feld nicht enthält.
+

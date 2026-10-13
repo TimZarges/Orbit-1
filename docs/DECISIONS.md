@@ -65,9 +65,13 @@
   6. **Umgang mit langen Pausen:** Pausen > 30s (z.B. Ampel, Kaffeepause) setzen das 30s-Fenster zurück (verhindern Verzerrung durch extrem lange Null-Phasen im Moving Average).
 - **Alternativen:** TRIMP statt hrTSS (weniger vergleichbar mit Rad-TSS), simple Durchschnitts-Pace statt rTSS.
 
-### 2026-10-11: Garmin OAuth 1.0a Start mit Vorbereitung auf 2.0 & url_launcher
-- **Kontext:** Garmin Connect Developer Portal verlangt für die Neuregistrierung aktuell noch den OAuth 1.0a Authorization Flow (3-legged OAuth). Zugleich kündigt Garmin die Abschaltung von OAuth 1.0a für Ende 2026 an.
-- **Entscheidung:** Wir implementieren den Authorization Flow mit OAuth 1.0a (HMAC-SHA1 Signierung via `oauth-1.0a`), speichern aber alle Identifikatoren ausschließlich über die permanente `garminUserId` und halten die Token-Struktur dual-fähig (`version: "OAUTH1" | "OAUTH2"`). Für das Öffnen der Garmin-Authentifizierungsseite im Browser wird `url_launcher` als Dependency hinzugefügt.
-- **Begründung:** Erlaubt sofortige Funktion mit den bestehenden Garmin-Credentials, ohne dass beim bevorstehenden Wechsel auf OAuth 2.0 Aktivitäten oder Nutzerdaten angefasst werden müssen. `url_launcher` ist der Standard-Flutter-Weg für externe OAuth-Web-Redirects.
-- **Alternativen:** Reines OAuth 2.0 (wird von Garmins aktuellem Produktiv-Portal noch nicht für alle Apps als Einstieg akzeptiert).
+### 2026-10-13: Health-Daten & Tagesform-Aggregation (Phase 07)
+- **Kontext:** Garmin Health Webhooks pushen Dailies (Ruhepuls, Schritte), Sleeps (Dauer, Schlaf-Score) und HRV (rMSSD) asynchron und zu unterschiedlichen Zeitpunkten.
+- **Entscheidung:**
+  1. **Schema & Zusammenführung:** `users/{uid}/dailyMetrics/{localDate}` wird per Firestore-Upsert (`merge: true`) befüllt. Fehlende Felder (z. B. wenn der Nutzer kein Garmin mit Schlaf-Tracking oder HRV trägt) bleiben `null`/weggelassen und werden von der UI tolerant ausgeblendet.
+  2. **Basislinie:** 28-Tage-Mittelwert/Median für Ruhepuls und HRV mit Mindestdatenlage von 14 Tagen. Liegen weniger als 14 Tage vor, zeigt ORBIT den Status „Aufbau der Basislinie" statt einer möglicherweise irreführenden Ampelbewertung.
+  3. **Wortwahl & Neutralität:** Streng sachliche, sportwissenschaftliche Begriffe (Tagesform: Normalbereich, leichte Abweichung, deutliche Abweichung). Keine Heilsversprechen oder Diagnosen.
+  4. **Trainer-Berechtigung:** Trainer-Lesezugriff auf `dailyMetrics` erfolgt strikt unter Prüfung von `coachLinks.permissions.health == true`.
+- **Begründung:** Verhindert Datenverlust bei sequentiellen Webhook-Zustellungen, wahrt höchste DSGVO-Standards (Art. 9) und erfüllt das Leitprinzip „einfach zuerst, sachlich und verlässlich".
+
 

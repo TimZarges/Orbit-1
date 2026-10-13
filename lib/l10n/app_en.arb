@@ -11,5 +11,24 @@
   "infoTerm_maxHr": "Maximum Heart Rate (Max-HR)",
   "infoTerm_maxHr_desc": "The highest heart rate your heart can reach during maximum effort.",
   "infoTerm_restingHr": "Resting Heart Rate",
-  "infoTerm_restingHr_desc": "Your heart rate in a state of absolute rest. A low resting heart rate is often a sign of good aerobic fitness."
+  "infoTerm_restingHr_desc": "Your heart rate in a state of absolute rest. A low resting heart rate is often a sign of good aerobic fitness.",
+  "readiness_title": "Daily Readiness",
+  "readiness_building_baseline": "Building Baseline",
+  "readiness_building_baseline_desc": "ORBIT requires at least 14 days of data to reliably determine your personal normal range.",
+  "readiness_normal": "Normal",
+  "readiness_normal_desc": "Resting heart rate and HRV are within your typical personal range.",
+  "readiness_slight_deviation": "Slight Deviation",
+  "readiness_slight_deviation_desc": "Individual values slightly deviate from your 28-day baseline. Pay attention to how you feel and ensure adequate recovery.",
+  "readiness_noticeable_deviation": "Noticeable Deviation",
+  "readiness_noticeable_deviation_desc": "Resting heart rate or HRV deviate noticeably from your normal range. Prioritize recovery; consult a physician if you experience persistent symptoms or feel unwell.",
+  "readiness_no_data": "No Health Data Yet",
+  "readiness_no_data_desc": "Connect your Garmin account or enable demo data to see your daily readiness.",
+  "readiness_coach_no_permission": "Health Permission Required",
+  "readiness_coach_no_permission_desc": "The athlete has not enabled health data sharing with their coach.",
+  "health_resting_hr": "Resting HR",
+  "health_hrv": "HRV",
+  "health_sleep": "Sleep",
+  "health_info_title": "About Daily Readiness",
+  "health_info_disclaimer": "Note: Daily readiness is a sports science guideline for training and recovery. It does not constitute medical advice or a treatment recommendation."
 }
+

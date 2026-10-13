@@ -11,5 +11,24 @@
   "infoTerm_maxHr": "Maximale Herzfrequenz (Max-HF)",
   "infoTerm_maxHr_desc": "Die höchste Herzfrequenz, die dein Herz bei maximaler Anstrengung erreichen kann.",
   "infoTerm_restingHr": "Ruhepuls",
-  "infoTerm_restingHr_desc": "Deine Herzfrequenz im absoluten Ruhezustand. Ein niedriger Ruhepuls ist oft ein Zeichen für gute aerobe Fitness."
+  "infoTerm_restingHr_desc": "Deine Herzfrequenz im absoluten Ruhezustand. Ein niedriger Ruhepuls ist oft ein Zeichen für gute aerobe Fitness.",
+  "readiness_title": "Tagesform",
+  "readiness_building_baseline": "Basislinie im Aufbau",
+  "readiness_building_baseline_desc": "ORBIT benötigt mindestens 14 Tage Messwerte, um deinen persönlichen Normalbereich verlässlich zu bestimmen.",
+  "readiness_normal": "Unauffällig",
+  "readiness_normal_desc": "Ruhepuls und HRV liegen im gewohnten persönlichen Bereich.",
+  "readiness_slight_deviation": "Leichte Abweichung",
+  "readiness_slight_deviation_desc": "Einzelne Werte weichen leicht von deiner 28-Tage-Basislinie ab. Achte auf dein Körpergefühl und ausreichende Regeneration.",
+  "readiness_noticeable_deviation": "Deutliche Abweichung",
+  "readiness_noticeable_deviation_desc": "Ruhepuls oder HRV weichen merklich von deinem Normalbereich ab. Erholung beachten; bei anhaltenden Beschwerden oder Unwohlsein ärztlichen Rat einholen.",
+  "readiness_no_data": "Noch keine Health-Daten",
+  "readiness_no_data_desc": "Verbinde dein Garmin-Konto oder aktiviere die Demo-Daten, um deine Tagesform zu sehen.",
+  "readiness_coach_no_permission": "Health-Freigabe erforderlich",
+  "readiness_coach_no_permission_desc": "Der Athlet hat die Weitergabe seiner Gesundheitsdaten aktuell nicht freigegeben.",
+  "health_resting_hr": "Ruhepuls",
+  "health_hrv": "HRV",
+  "health_sleep": "Schlaf",
+  "health_info_title": "Über die Tagesform",
+  "health_info_disclaimer": "Hinweis: Die Tagesform ist eine sportwissenschaftliche Orientierungshilfe zur Trainingssteuerung und Erholung. Sie stellt keine medizinische Diagnose oder Behandlungsempfehlung dar."
 }
+

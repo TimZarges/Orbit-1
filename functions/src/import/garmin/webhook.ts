@@ -55,8 +55,6 @@ export const processGarminWebhook = onDocumentCreated("webhookEvents/{docId}", a
 
     if (payload.deregistrations) {
       for (const dereg of payload.deregistrations) {
-        // userId aus Garmin muss auf unsere UID gemappt werden.
-        // Dafür müssten wir die Users nach userId suchen (Requires Index oder Mapping)
         await handleDeregistration(dereg.userId);
       }
     }
@@ -64,6 +62,25 @@ export const processGarminWebhook = onDocumentCreated("webhookEvents/{docId}", a
     if (payload.activityDetails) {
       for (const _act of payload.activityDetails) {
         // Activity laden und parsen...
+      }
+    }
+
+    // Health-Daten verarbeiten (Dailies, Sleeps, HRV)
+    if (Array.isArray(payload.dailies)) {
+      for (const daily of payload.dailies) {
+        await handleDailyMetrics(daily, "daily");
+      }
+    }
+
+    if (Array.isArray(payload.sleeps)) {
+      for (const sleep of payload.sleeps) {
+        await handleDailyMetrics(sleep, "sleep");
+      }
+    }
+
+    if (Array.isArray(payload.hrv)) {
+      for (const hrvItem of payload.hrv) {
+        await handleDailyMetrics(hrvItem, "hrv");
       }
     }
 
@@ -79,6 +96,71 @@ export const processGarminWebhook = onDocumentCreated("webhookEvents/{docId}", a
     });
   }
 });
+
+/**
+ * Verarbeitet eingehende Health-Objekte von Garmin und führt sie per Upsert zusammen.
+ */
+async function handleDailyMetrics(item: any, type: "daily" | "sleep" | "hrv") {
+  const garminUserId = item.userId;
+  if (!garminUserId) return;
+
+  const db = admin.firestore();
+  const statusDocs = await db.collectionGroup("integrationStatus")
+    .where("garminUserId", "==", garminUserId)
+    .limit(1)
+    .get();
+
+  if (statusDocs.empty) {
+    console.warn(`No user found for garminUserId: ${garminUserId}`);
+    return;
+  }
+
+  const uid = statusDocs.docs[0].ref.parent.parent?.id;
+  if (!uid) return;
+
+  const localDate = item.calendarDate;
+  if (!localDate || typeof localDate !== "string") {
+    console.warn(`Missing or invalid calendarDate in Garmin ${type} item`);
+    return;
+  }
+
+  const updateData: Record<string, any> = {
+    source: "GARMIN",
+    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+  };
+
+  if (type === "daily") {
+    if (typeof item.restingHeartRateInBeatsPerMinute === "number") {
+      updateData.restingHrBpm = item.restingHeartRateInBeatsPerMinute;
+    }
+    if (typeof item.averageStressLevel === "number") {
+      updateData.stress = item.averageStressLevel;
+    }
+    const steps = item.steps ?? item.totalSteps;
+    if (typeof steps === "number") {
+      updateData.steps = steps;
+    }
+    if (typeof item.bodyBatteryChargedValue === "number" || typeof item.bodyBattery === "number") {
+      updateData.bodyBattery = item.bodyBattery ?? item.bodyBatteryChargedValue;
+    }
+  } else if (type === "sleep") {
+    if (typeof item.durationInSeconds === "number") {
+      updateData.sleepSeconds = item.durationInSeconds;
+    }
+    const sleepScore = item.overallSleepScore?.value ?? item.sleepScore;
+    if (typeof sleepScore === "number") {
+      updateData.sleepScore = sleepScore;
+    }
+  } else if (type === "hrv") {
+    const hrvValue = item.lastNightAvg ?? item.hrv;
+    if (typeof hrvValue === "number") {
+      updateData.hrvMs = hrvValue;
+    }
+  }
+
+  // Idempotenter Upsert (Merge): Bestehende Felder des Tages bleiben erhalten
+  await db.collection("users").doc(uid).collection("dailyMetrics").doc(localDate).set(updateData, { merge: true });
+}
 
 async function handleDeregistration(garminUserId: string) {
   const db = admin.firestore();

@@ -74,13 +74,13 @@ export const deleteAccount = onCall(async (request) => {
     throw new HttpsError("unauthenticated", "User must be logged in.");
   }
 
-  const userRef = admin.firestore().collection("users").doc(uid);
+  const db = admin.firestore();
+  const userRef = db.collection("users").doc(uid);
   
-  // Recursively delete not supported via simple API in client SDK, but Admin SDK can do batch deletes.
-  // Using simple delete for prototype:
-  await userRef.delete();
+  // Rekursives Löschen aller Daten & Subcollections (inkl. dailyMetrics, Art. 17 DSGVO)
+  await db.recursiveDelete(userRef);
 
-  // Delete Auth User
+  // Firebase Auth Nutzer löschen
   await admin.auth().deleteUser(uid);
 
   return { success: true };
@@ -92,8 +92,28 @@ export const exportAccount = onCall(async (request) => {
     throw new HttpsError("unauthenticated", "User must be logged in.");
   }
 
-  const userRef = admin.firestore().collection("users").doc(uid);
-  const doc = await userRef.get();
+  const db = admin.firestore();
+  const userRef = db.collection("users").doc(uid);
+  const userDoc = await userRef.get();
   
-  return { data: doc.data() };
+  // Health-Daten (dailyMetrics, Art. 20 DSGVO Datenübertragbarkeit)
+  const dailyMetricsSnapshot = await userRef.collection("dailyMetrics").get();
+  const dailyMetrics: Record<string, any> = {};
+  dailyMetricsSnapshot.forEach((doc) => {
+    dailyMetrics[doc.id] = doc.data();
+  });
+
+  // Schwellenwert-Historie
+  const thresholdSnapshot = await userRef.collection("thresholdHistory").get();
+  const thresholdHistory: Record<string, any> = {};
+  thresholdSnapshot.forEach((doc) => {
+    thresholdHistory[doc.id] = doc.data();
+  });
+
+  return {
+    userData: userDoc.data() || {},
+    dailyMetrics,
+    thresholdHistory,
+  };
 });
+

@@ -7,6 +7,8 @@ import '../providers/activities_provider.dart';
 import 'activity_detail_screen.dart';
 import '../providers/activity_upload_provider.dart';
 import '../models/activity.dart';
+import '../../coach_link/providers/athlete_context_provider.dart';
+import '../../health/widgets/readiness_card.dart';
 
 class TodayTabScreen extends ConsumerWidget {
   const TodayTabScreen({super.key});
@@ -43,70 +45,81 @@ class TodayTabScreen extends ConsumerWidget {
 
   Widget _buildEmptyState(
       BuildContext context, WidgetRef ref, ActivityUploadState uploadState) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.directions_run,
+    final athleteId = ref.watch(currentAthleteIdProvider);
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          ReadinessCard(athleteId: athleteId),
+          const SizedBox(height: 24),
+          const Center(
+            child: Icon(Icons.directions_run,
                 size: 64, color: AppColors.navyLight),
-            const SizedBox(height: 16),
-            const Text(
+          ),
+          const SizedBox(height: 16),
+          const Center(
+            child: Text(
               'Noch keine Aktivitäten',
               style: AppTypography.headline,
             ),
-            const SizedBox(height: 8),
-            const Text(
+          ),
+          const SizedBox(height: 8),
+          const Center(
+            child: Text(
               'Verbinde dein Konto oder lade eine FIT-Datei hoch, um zu starten.',
               style: AppTypography.body,
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 32),
-            ElevatedButton.icon(
-              onPressed: null, // Disabled für Phase 06
-              icon: const Icon(Icons.sync),
-              label: const Text('Garmin verbinden (folgt)'),
+          ),
+          const SizedBox(height: 24),
+          OutlinedButton.icon(
+            onPressed: uploadState.isUploading
+                ? null
+                : () =>
+                    ref.read(activityUploadProvider.notifier).pickAndUpload(),
+            icon: uploadState.isUploading
+                ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2))
+                : const Icon(Icons.upload_file),
+            label: const Text('FIT-Datei importieren'),
+          ),
+          if (uploadState.error != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 16),
+              child: Text(uploadState.error!,
+                  style: const TextStyle(color: Colors.red)),
             ),
-            const SizedBox(height: 16),
-            OutlinedButton.icon(
-              onPressed: uploadState.isUploading
-                  ? null
-                  : () =>
-                      ref.read(activityUploadProvider.notifier).pickAndUpload(),
-              icon: uploadState.isUploading
-                  ? const SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(strokeWidth: 2))
-                  : const Icon(Icons.upload_file),
-              label: const Text('FIT-Datei importieren'),
-            ),
-            if (uploadState.error != null)
-              Padding(
-                padding: const EdgeInsets.only(top: 16),
-                child: Text(uploadState.error!,
-                    style: const TextStyle(color: Colors.red)),
-              ),
-          ],
-        ),
+        ],
       ),
     );
   }
 
   Widget _buildActivitiesList(BuildContext context, List<Activity> activities,
       ActivityUploadState uploadState, WidgetRef ref) {
+    final athleteId = ref.watch(currentAthleteIdProvider);
+    final totalCount = activities.length + 1 + (uploadState.isUploading ? 1 : 0);
+
     return ListView.builder(
-      itemCount: activities.length + (uploadState.isUploading ? 1 : 0),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      itemCount: totalCount,
       itemBuilder: (context, index) {
-        if (uploadState.isUploading && index == 0) {
+        if (index == 0) {
+          return ReadinessCard(athleteId: athleteId);
+        }
+
+        if (uploadState.isUploading && index == 1) {
           return const ListTile(
             leading: CircularProgressIndicator(),
             title: Text('Datei wird hochgeladen und verarbeitet...'),
           );
         }
 
-        final activity = activities[index - (uploadState.isUploading ? 1 : 0)];
+        final activityIndex = index - 1 - (uploadState.isUploading ? 1 : 0);
+        final activity = activities[activityIndex];
         return _ActivityCard(activity: activity);
       },
     );
