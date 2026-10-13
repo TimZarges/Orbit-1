@@ -118,6 +118,18 @@
   3. **Rules-Architektur:** Athleten dürfen eigene Einheiten erstellen, Trainer dürfen für verknüpfte Athleten planen, wenn `coachLinks.permissions.calendar == true`.
 - **Begründung:** Gewährleistet klare Trennung von Plan und Realität (Grundprinzip 1), vermeidet fehlerhafte automatische Zuordnungen und ermöglicht kollaborative Trainingssteuerung für Trainer und Athleten.
 
-
-
-
+### 2026-10-13: Leistungsdiagnostik & Schwellenwert-Vorschläge (Phase 12)
+- **Kontext:** Erkennung veränderter Schwellenwerte (FTP, LTHR, Schwellenpace, CSS) aus regulären Trainingsdaten oder geführten Feldtests.
+- **Entscheidung:**
+  1. **Schätzmethoden je Sportart:**
+     - **Rad-FTP:** $0.95 \times \text{MMP}_{20\text{m}}$. Variabilitätsindex (VI) dient als Konfidenz-Gate ($\text{VI} \le 1.05 \rightarrow \text{HIGH}$, $1.05 < \text{VI} \le 1.12 \rightarrow \text{MEDIUM}$, $> 1.15 \rightarrow$ verworfen wegen ungleichmäßiger Pacing-Struktur). Min-Delta $\ge 3\text{ W}$ oder $\ge 1.5\%$.
+     - **Lauf (LTHR & Schwellenpace):** 30-Minuten-Dauerlauftest (Friel). LTHR = Durchschnittspuls der letzten 20 Minuten, Schwellenpace = 30-Minuten-Durchschnittstempo. HF-Plateau-Prüfung über Standardabweichung ($\text{StdDev} \le 4.0\text{ bpm} \rightarrow \text{HIGH}$, $> 8.0\text{ bpm} \rightarrow$ verworfen). Min-Delta $\ge 2\text{ bpm}$ bzw. $\ge 5\text{ s/km}$.
+     - **Schwimmen (CSS):** 400m / 200m Zeitschwimmen. $\text{CSS} = (400 - 200) / (T_{400} - T_{200})$, $\text{Pace}_{\text{CSS}} = (T_{400} - T_{200}) / 2\text{ s/100m}$. Min-Delta $\ge 1.0\text{ s/100m}$.
+  2. **Athleten-Souveränität & Berechtigungsmodell:**
+     - Nur der Athlet selbst darf Schwellenwert-Vorschläge annehmen oder ablehnen (`status in ['ACCEPTED', 'REJECTED']`).
+     - In der Trainer-Ansicht sind Vorschläge und Historie bei vorhandener Aktivitäten-Freigabe (`coachLinks.permissions.activities == true`) lesbar, aber nicht übernehmbar.
+     - Schreibzugriff auf `thresholdProposals` durch Clients ist ausschließlich auf das Feld `status` beschränkt (`affectedKeys().hasOnly(['status'])`). Alle physiologischen Berechnungsfelder sind unveränderlich.
+  3. **Wirkung & Vergangenheitsneuberechnung:**
+     - Die Übernahme eines Vorschlags schreibt einen neuen Eintrag in `thresholdHistory` mit `effectiveFrom = heute`. Bisherige Historie und Kennzahlen bleiben standardmäßig unverändert.
+     - Eine Neuberechnung vergangener Einheiten (`recomputeMetrics`) erfolgt ausschließlich nach ausdrücklicher Bestätigung im Bestätigungsdialog mit transparentem Hinweis auf Tragweite und Dauer.
+- **Begründung:** Verhindert verfälschte Kennzahlen durch unzureichende Daten oder Pacing-Brüche, garantiert DSGVO-konforme Datenintegrität und schützt die Athleten-Autonomie.

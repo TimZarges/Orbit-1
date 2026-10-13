@@ -1,13 +1,14 @@
-# Testplan für Firestore Security Rules (Phasen 01, 02, 08, 09, 10 & 11)
+# Testplan für Firestore Security Rules (Phasen 01, 02, 08, 09, 10, 11 & 12)
 
 ## Ziel
-Sicherstellen, dass die implementierten Firestore Security Rules für alle Collections (`users`, Subcollections inkl. `aggregates` und `bests`, `coachLinks`, `activities`, `plannedWorkouts` und `workoutTemplates`) robust sind und die geforderten Berechtigungen durchsetzen:
+Sicherstellen, dass die implementierten Firestore Security Rules für alle Collections (`users`, Subcollections inkl. `aggregates`, `bests` und `thresholdProposals`, `coachLinks`, `activities`, `plannedWorkouts` und `workoutTemplates`) robust sind und die geforderten Berechtigungen durchsetzen:
 - Default Deny an der Wurzel
 - Owner-Only & Authenticated Access
 - Schutz unveränderlicher Server- und Identitätsfelder (`athleteId`, `createdBy`, `ownerId`, `role`, etc.)
 - Granulare Trainer-Freigaben (`coachLinks.permissions.calendar`, `coachLinks.permissions.health`, `coachLinks.permissions.activities`, `coachLinks` Trainer-Vorlagen-Sharing)
 - Schutz vor Privilege Escalation, Identitätsfälschung, Resource Exhaustion/DoS und unbefugter Datenlöschung
 - Striktes Schreibverbot für vorberechnete Aggregate und Bestwerte (nur Cloud Functions)
+- Schwellenwert-Vorschläge (Phase 12): Ausschließlich serverseitige Erstellung, Status-Update ('ACCEPTED'/'REJECTED') streng auf den Athleten beschränkt, Unveränderlichkeit diagnostischer Parameter, Lesezugriff für Coach mit `activities`-Freigabe
 
 ## Setup
 - Die Tests werden gegen den lokalen **Firebase Emulator** ausgeführt.
@@ -307,6 +308,70 @@ Sicherstellen, dass die implementierten Firestore Security Rules für alle Colle
   - **Aktion:** `eveAuth` oder `unauth` versucht Schreibzugriff auf `/users/alice/bests/cycling`.
   - **Erwartet:** `PERMISSION_DENIED` (`allow write: if false`).
 
+### 10. Collection `users/{userId}/thresholdProposals/{proposalId}` (Phase 12 – Leistungsdiagnostik: Schwellenwert-Vorschläge)
+
+#### 10.1 Read (Lesen)
+- **Athlet liest eigene Schwellenwert-Vorschläge:**
+  - **Aktion:** `aliceAuth` liest `/users/alice/thresholdProposals/prop1`.
+  - **Erwartet:** Erfolg (`isOwner(userId)`).
+- **Trainer mit aktiver `activities`-Freigabe liest Schwellenwert-Vorschläge des Athleten:**
+  - **Aktion:** `bobAuth` liest `/users/alice/thresholdProposals/prop1` (bei existierendem `coachLinks/alice_coachBob` mit `permissions.activities == true`).
+  - **Erwartet:** Erfolg (`isAuthenticated() && isCoachForActivities(userId)`).
+- **Trainer ohne `activities`-Freigabe versucht Schwellenwert-Vorschläge zu lesen:**
+  - **Aktion:** `charlieAuth` liest `/users/alice/thresholdProposals/prop1` (bei `coachLinks/alice_coachCharlie` mit `permissions.activities == false`).
+  - **Erwartet:** `PERMISSION_DENIED` (`isCoachForActivities` evaluiert zu `false`).
+- **Fremder ohne Verknüpfung versucht Schwellenwert-Vorschläge zu lesen:**
+  - **Aktion:** `eveAuth` liest `/users/alice/thresholdProposals/prop1` (kein `coachLinks/alice_eve` vorhanden).
+  - **Erwartet:** `PERMISSION_DENIED`.
+- **Unauthentifizierter versucht Schwellenwert-Vorschläge zu lesen:**
+  - **Aktion:** `unauth` liest `/users/alice/thresholdProposals/prop1`.
+  - **Erwartet:** `PERMISSION_DENIED`.
+
+#### 10.2 Create (Anlegen)
+- **Athlet versucht Schwellenwert-Vorschlag selbst anzulegen:**
+  - **Aktion:** `aliceAuth` versucht `/users/alice/thresholdProposals/prop1` anzulegen.
+  - **Erwartet:** `PERMISSION_DENIED` (`allow create: if false`, Vorschläge werden ausschließlich serverseitig via Cloud Functions generiert).
+- **Trainer versucht Schwellenwert-Vorschlag im Client anzulegen:**
+  - **Aktion:** `bobAuth` versucht `/users/alice/thresholdProposals/prop1` anzulegen.
+  - **Erwartet:** `PERMISSION_DENIED` (`allow create: if false`).
+- **Fremder / Unauthentifizierter versucht Vorschlag anzulegen:**
+  - **Aktion:** `eveAuth` oder `unauth` versucht `/users/alice/thresholdProposals/prop1` anzulegen.
+  - **Erwartet:** `PERMISSION_DENIED` (`allow create: if false`).
+
+#### 10.3 Update (Ändern / Statusentscheidung)
+- **Athlet übernimmt Vorschlag (`status: 'ACCEPTED'`):**
+  - **Aktion:** `aliceAuth` aktualisiert `/users/alice/thresholdProposals/prop1` und setzt ausschließlich `status: 'ACCEPTED'`. Alle anderen Felder (`sport`, `type`, `proposedValue`, `confidence`, `basis`, `createdAt`) bleiben identisch.
+  - **Erwartet:** Erfolg (`isOwner(userId) && isValidThresholdProposalUpdate()`).
+- **Athlet lehnt Vorschlag ab (`status: 'REJECTED'`):**
+  - **Aktion:** `aliceAuth` aktualisiert `/users/alice/thresholdProposals/prop1` und setzt ausschließlich `status: 'REJECTED'`. Alle anderen Felder bleiben unverändert.
+  - **Erwartet:** Erfolg (`isOwner(userId) && isValidThresholdProposalUpdate()`).
+- **Athlet versucht unzulässigen Status zu setzen:**
+  - **Aktion:** `aliceAuth` aktualisiert Dokument mit `status: 'PENDING'` oder `status: 'INVALID_STATUS'`.
+  - **Erwartet:** `PERMISSION_DENIED` (`status in ['ACCEPTED', 'REJECTED']` schlägt fehl).
+- **Athlet versucht diagnostische Daten oder den vorgeschlagenen Wert zu manipulieren:**
+  - **Aktion:** `aliceAuth` ändert `proposedValue` (z. B. von 250 auf 350) oder manipuliert `sport`, `type`, `confidence`, `basis` oder `createdAt`.
+  - **Erwartet:** `PERMISSION_DENIED` (`affectedKeys().hasOnly(['status'])` und `areImmutableFieldsUnchanged` schlagen fehl).
+- **Athlet versucht neue/unbekannte Felder einzuschleusen (Payload-Injektion):**
+  - **Aktion:** `aliceAuth` setzt `status: 'ACCEPTED'` und fügt ein zusätzliches Feld `customField: 123` hinzu.
+  - **Erwartet:** `PERMISSION_DENIED` (`affectedKeys().hasOnly(['status'])` schlägt fehl).
+- **Trainer versucht Status des Athleten zu entscheiden:**
+  - **Aktion:** `bobAuth` versucht `status: 'ACCEPTED'` in `/users/alice/thresholdProposals/prop1` zu setzen.
+  - **Erwartet:** `PERMISSION_DENIED` (Nur der Athlet `isOwner(userId)` besitzt Entscheidungshoheit).
+- **Fremder / Unauthentifizierter versucht Update:**
+  - **Aktion:** `eveAuth` oder `unauth` versucht `/users/alice/thresholdProposals/prop1` zu aktualisieren.
+  - **Erwartet:** `PERMISSION_DENIED`.
+
+#### 10.4 Delete (Löschen)
+- **Athlet löscht eigenen Schwellenwert-Vorschlag:**
+  - **Aktion:** `aliceAuth` löscht `/users/alice/thresholdProposals/prop1`.
+  - **Erwartet:** Erfolg (`isOwner(userId)`).
+- **Trainer versucht Schwellenwert-Vorschlag des Athleten zu löschen:**
+  - **Aktion:** `bobAuth` versucht `/users/alice/thresholdProposals/prop1` zu löschen.
+  - **Erwartet:** `PERMISSION_DENIED` (`isOwner(userId)` schlägt fehl).
+- **Fremder / Unauthentifizierter versucht Vorschlag zu löschen:**
+  - **Aktion:** `eveAuth` oder `unauth` versucht `/users/alice/thresholdProposals/prop1` zu löschen.
+  - **Erwartet:** `PERMISSION_DENIED`.
+
 ---
 
 ## Umsetzung
@@ -397,4 +462,30 @@ Bestwerte aggregieren die Spitzenleistungen aus den absolvierten Aktivitäten de
 
 **3. Performanter Lesezugriff ohne "Rules are not filters"-Konflikt:**
 Bestwerte sind nach Sportart modularisiert (`users/{userId}/bests/{sport}`). Sowohl gezielte Einzeldokument-Abfragen (z. B. `doc('users/alice/bests/cycling').get()`) als auch Collection-Abfragen über alle Sportarten des Athleten (`collection('users/alice/bests').get()`) sind uneingeschränkt möglich. Da die Autorisierungsbedingung ausschließlich an den Pfadparameter `{userId}` und den statisch prüfbaren `coachLinks`-Pfad gebunden ist und keine dokumenteninternen Felder voraussetzt, evaluiert Firestore die Leseerlaubnis konsistent auf Collection-Ebene.
+
+### Theoretischer Beweis (Architektur-Check): Schwellenwert-Vorschläge & Athleten-Entscheidungshoheit (Phase 12)
+
+**1. Ausschließliche serverseitige Erstellung (`allow create: if false`):**
+In Phase 12 ermittelt das Backend über wissenschaftliche Schätzmethoden (Critical Power, MMP-Muster, CSS, Schwellen-Pace/HF) relevante Leistungsveränderungen und speichert diese als Vorschläge unter `users/{userId}/thresholdProposals/{proposalId}` ab.
+Da fehlerhafte oder manipulierte Schwellenwerte die Berechnung aller Trainingsmetriken (TSS, IF, Zonen, CTL/ATL/TSB) verfälschen würden, ist das Anlegen neuer Vorschläge für alle Clients ausnahmslos gesperrt. Vorschläge können ausschließlich über vertrauenswürdige Cloud Functions (Firebase Admin SDK) erzeugt werden.
+
+**2. Granulare Coach-Einsicht über `coachLinks.permissions.activities`:**
+Trainer benötigen zur Trainingssteuerung und Beurteilung des Leistungsstandes Einblick in die Schwellenwert-Historie und aktuelle Vorschläge ihrer Athleten. Da Schwellenwert-Vorschläge auf den Trainingsaktivitäten des Athleten basieren, ist der Lesezugriff an das DSGVO-Berechtigungsflag `permissions.activities` gekoppelt:
+`allow read: if isOwner(userId) || (isAuthenticated() && isCoachForActivities(userId));`
+- Besitzt der verknüpfte Trainer die Aktivitätsfreigabe, kann er die Vorschläge einsehen (`isCoachForActivities` evaluiert via `get()` auf `/coachLinks/$(userId)_$(auth.uid)` zu `true`).
+- Fehlt die Freigabe oder existiert keine aktive Verbindung, wird der Lesezugriff sofort abgewiesen.
+- Entzieht der Athlet die Berechtigung, verliert der Coach im selben Moment die Leserechte.
+
+**3. Strikte Athleten-Souveränität bei Entscheidungen (`isOwner(userId)`):**
+Gemäß der Produktphilosophie von ORBIT und den Vorgaben für Phase 12 („Nur der Athlet entscheidet") ist ein Update ausschließlich dem Athleten selbst erlaubt (`isOwner(userId)`). Ein Coach kann den Vorschlag zwar sehen, hat jedoch keinerlei Schreib- oder Entscheidungsrechte über den Status (`bobAuth` -> `PERMISSION_DENIED`).
+
+**4. Validator Function Pattern & mathematische Feldintegrität bei Updates:**
+Die Hilfsfunktion `isValidThresholdProposalUpdate()` erzwingt drei komplementäre Sicherheitsprüfungen bei Statusänderungen:
+- **Exklusive Feldmutation:** `request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])` stellt sicher, dass der Diff des Dokuments maximal das Feld `status` umfasst. Es ist unmöglich, andere Felder zu aktualisieren, zu entfernen oder neue Felder (z. B. Payload-Injektionen oder Privilegien-Flags) hinzuzufügen.
+- **Zustandsraum-Validierung:** `request.resource.data.status in ['ACCEPTED', 'REJECTED']` beschränkt die Statusaktualisierung strikt auf die beiden fachlich gültigen Endzustände. Ein Rücksetzen auf `PENDING` oder beliebige Freitexte wird abgewiesen.
+- **Explizite Immutabilität diagnostischer Daten:** `areImmutableFieldsUnchanged(['sport', 'type', 'proposedValue', 'confidence', 'basis', 'createdAt'])` schützt die wissenschaftlichen Kernparameter (insb. den berechneten Schwellenwert `proposedValue` und dessen Datenbasis `basis`) redundant vor jeder Modifikation.
+
+**5. Souveräne Datenbereinigung (`allow delete: if isOwner(userId)`):**
+Der Athlet behält die volle Souveränität über seinen Speicherplatz und seine Historie: Abgelehnte oder veraltete Vorschläge dürfen vom Athleten gelöscht werden (`isOwner(userId)`). Für Coaches oder Fremde ist das Löschen strikt unterbunden.
+
 

@@ -205,7 +205,7 @@ class AnalysisTabScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 16),
 
-          const ThresholdProgressCard(),
+          ThresholdProgressCard(athleteId: widget.athleteId),
           const SizedBox(height: 16),
         ],
 

@@ -26,6 +26,30 @@
 
 ## Einträge
 
+### [Phase 12] Leistungsdiagnostik & Schwellenwert-Vorschläge · RISIKO-HOCH
+- **STOPP-Punkt/Anlass:** STOPP 1 aus Phasendatei (Methodenpapier je Sportart, Berechnungsfaktoren und Konfidenz-Kriterien).
+- **Entscheidung:**
+  1. **Schätzmethoden je Sportart (`lib/features/diagnostics/domain/`):**
+     - **Rad-FTP:** $0.95 \times \text{MMP}_{20\text{m}}$ mit Pacing-Prüfung über den Variabilitätsindex: $\text{VI} \le 1.05$ (HIGH), $1.05 < \text{VI} \le 1.12$ (MEDIUM), $\text{VI} > 1.15$ verworfen. Mindeständerung $\ge 3\text{ W}$ oder $\ge 1.5\%$.
+     - **Lauf (LTHR & Schwellenpace):** 30-minütiger Testlauf (Friel). LTHR = 20-minütiger Enddurchschnitt, Pace = 30-minütiger Gesamtdurchschnitt. Stabilitätsprüfung über Puls-Standardabweichung ($\text{StdDev} \le 4.0\text{ bpm} \rightarrow \text{HIGH}$, $> 8.0\text{ bpm} \rightarrow$ verworfen). Mindeständerung $\ge 2\text{ bpm}$ bzw. $\ge 5\text{ s/km}$.
+     - **Schwimmen (CSS):** 400m / 200m Zeitschwimmen. $\text{CSS} = (400 - 200)/(T_{400} - T_{200})$. CSS-Pace pro 100m = $(T_{400} - T_{200})/2$. Mindeständerung $\ge 1.0\text{ s/100m}$.
+  2. **Vorschlags-Workflow & Athleten-Souveränität:**
+     - Vorschläge werden serverseitig in `users/{uid}/thresholdProposals/{id}` mit Status `PENDING` angelegt.
+     - Firestore Security Rules (erstellt via `firestore-rules-author`): Clients dürfen nur das Feld `status` auf `ACCEPTED` oder `REJECTED` ändern. Berechnungsgrundlagen, Werte und Konfidenzen sind unveränderlich geschützt.
+     - Trainer mit Aktivitäten-Freigabe dürfen Vorschläge einsehen, aber nicht übernehmen.
+  3. **Wirkung & Vergangenheitsneuberechnung:**
+     - Übernahme erzeugt einen neuen `thresholdHistory`-Eintrag mit `effectiveFrom = heute`. Die bisherigen Einheiten bleiben standardmäßig unberührt.
+     - Optionale Vergangenheitsneuberechnung (`recomputeMetrics`) kann über den Bestätigungsdialog explizit angewählt werden.
+  4. **Geführte Feldtests (`GuidedTestCard`):**
+     - Vorlagenbasierte Tests für 20m Rad-FTP, 30m Lauf-Test und 400m/200m CSS mit Sicherheits- und Gesundheitshinweisen. Button „In Kalender einplanen" erzeugt strukturierte `plannedWorkouts`.
+  5. **UI & Diagnose-Cockpit:**
+     - `DiagnosticsScreen` mit Sportarten-Tabs (Rad, Lauf, Schwimmen), aktueller Schwelle, Vorschlagskarten (`ThresholdProposalCard`), Verlaufs-Chart (`ThresholdHistoryChart`) und „Warum?" Bottom-Sheet (`ThresholdExplanationSheet`).
+     - `ThresholdProgressCard` im Analyse-Tab ist interaktiv angebunden und signalisiert neue Vorschläge.
+- **Alternative:** Automatisches Anpassen von Schwellenwerten im Hintergrund ohne Bestätigung (hätte zu unerwarteten Trainingszonensprüngen und Verfälschungen historischer Kennzahlen geführt).
+- **Begründung:** Höchste physiologische Transparenz, Schutz vor Überlastung, Wahrung des Athleten-Primats und DSGVO-Konformität.
+- **Bitte prüfen:** `DiagnosticsScreen` unter `/diagnostics`, Vorschlagskarten und „Warum?"-Modal in der Galerie (`/gallery`).
+- **Rückholen:** Branch `feature/phase-12-diagnostics` verwerfen.
+
 ### [Phase 11] Analyse Cockpit (Telemetrie, Karte, Power-Kurve) · RISIKO-MITTEL
 - **STOPP-Punkt/Anlass:** STOPP 1 (Technik, Karte, Einwilligung, Performance-Ziele) & STOPP 2 (Performance-Nachweis vor Feinschliff).
 - **Entscheidung:**

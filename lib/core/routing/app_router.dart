@@ -15,6 +15,8 @@ import '../../features/auth/providers/user_provider.dart';
 import '../../features/workout_builder/screens/workout_builder_screen.dart';
 import '../../features/workout_builder/screens/workout_template_library_screen.dart';
 import '../../features/analysis/screens/analysis_tab_screen.dart';
+import '../../features/diagnostics/screens/diagnostics_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 final goRouterProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authStateChangesProvider);
@@ -76,6 +78,15 @@ final goRouterProvider = Provider<GoRouter>((ref) {
             GoRoute(
               path: 'thresholds',
               builder: (context, state) => const ThresholdsScreen(),
+            ),
+            GoRoute(
+              path: 'diagnostics',
+              builder: (context, state) {
+                final athleteId = state.uri.queryParameters['athleteId'] ??
+                    FirebaseAuth.instance.currentUser?.uid ??
+                    '';
+                return DiagnosticsScreen(athleteId: athleteId);
+              },
             ),
             GoRoute(
               path: 'calendar',

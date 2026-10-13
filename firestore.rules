@@ -26,6 +26,9 @@ service cloud.firestore {
     // Subcollection: users/{uid}/bests/{sport}
     // Fields: allTime, currentSeason, sport, updatedAt
     //
+    // Subcollection: users/{uid}/thresholdProposals/{proposalId}
+    // Fields: sport, type, proposedValue, confidence, basis, status, createdAt
+    //
     // Collection: workoutTemplates/{templateId}
     // Fields: ownerId, visibility, sport, title, description, structure, tags, isFavorite, createdAt, updatedAt
     // ===============================================================
@@ -102,6 +105,16 @@ service cloud.firestore {
       return linkDoc != null && linkDoc.data.permissions.activities == true;
     }
 
+    function isValidThresholdProposalUpdate() {
+      let affected = request.resource.data.diff(resource.data).affectedKeys();
+      let onlyStatusChanged = affected.hasOnly(['status']);
+      let statusValid = request.resource.data.status in ['ACCEPTED', 'REJECTED'];
+      let protectedFieldsUnchanged = areImmutableFieldsUnchanged([
+        'sport', 'type', 'proposedValue', 'confidence', 'basis', 'createdAt'
+      ]);
+      return onlyStatusChanged && statusValid && protectedFieldsUnchanged;
+    }
+
     // ===============================================================
     // Security Rules
     // ===============================================================
@@ -145,6 +158,13 @@ service cloud.firestore {
       match /bests/{sport} {
         allow read: if isOwner(userId) || (isAuthenticated() && isCoachForActivities(userId));
         allow write: if false; // Only Cloud Functions
+      }
+
+      match /thresholdProposals/{proposalId} {
+        allow read: if isOwner(userId) || (isAuthenticated() && isCoachForActivities(userId));
+        allow create: if false; // Only Cloud Functions
+        allow update: if isOwner(userId) && isValidThresholdProposalUpdate();
+        allow delete: if isOwner(userId);
       }
 
       match /integrationStatus/{provider} {

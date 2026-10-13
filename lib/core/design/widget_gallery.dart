@@ -21,6 +21,12 @@ import '../../features/activities/widgets/telemetry_channel_chips.dart';
 import '../../features/activities/widgets/telemetry_chart_widget.dart';
 import '../../features/activities/widgets/telemetry_map_widget.dart';
 import '../../features/activities/widgets/power_duration_curve_widget.dart';
+import '../../features/diagnostics/models/threshold_proposal.dart';
+import '../../features/diagnostics/models/threshold_entry.dart';
+import '../../features/diagnostics/models/guided_test_info.dart';
+import '../../features/diagnostics/widgets/threshold_proposal_card.dart';
+import '../../features/diagnostics/widgets/guided_test_card.dart';
+import '../../features/diagnostics/widgets/threshold_history_chart.dart';
 
 class WidgetGalleryScreen extends StatelessWidget {
   const WidgetGalleryScreen({super.key});
@@ -205,6 +211,66 @@ class WidgetGalleryScreen extends StatelessWidget {
                 ),
               ],
             ),
+          ),
+          const SizedBox(height: 32),
+          Text('Leistungsdiagnostik & Schwellenwerte (Phase 12)', style: Theme.of(context).textTheme.headlineLarge),
+          const SizedBox(height: 16),
+          ThresholdProposalCard(
+            proposal: ThresholdProposal(
+              id: 'prop_demo_1',
+              athleteId: 'demo',
+              sport: 'BIKE',
+              type: ThresholdType.ftp,
+              proposedValue: 268.0,
+              currentValue: 255.0,
+              delta: 13.0,
+              deltaPercent: 5.1,
+              confidence: ConfidenceLevel.high,
+              basis: const [
+                '20-Minuten-Bestwert: 282 W am 12.10.2026',
+                'Pacing-Gleichmäßigkeit: VI = 1.03',
+              ],
+              explanationDe: 'Basierend auf deinem 20-Minuten-Bestwert von 282 W vom 12.10. ergibt sich ein neuer FTP von 268 W (+13 W, +5.1 %).',
+              explanationEn: 'Based on your 20-min peak of 282 W, your estimated FTP is 268 W (+13 W).',
+              createdAt: DateTime.now(),
+            ),
+            onAccept: () {},
+            onReject: () {},
+          ),
+          const SizedBox(height: 16),
+          GuidedTestCard(
+            testInfo: GuidedTestInfo.standardTests.first,
+            onSchedule: () {},
+          ),
+          const SizedBox(height: 16),
+          ThresholdHistoryChart(
+            entries: [
+              ThresholdEntry(
+                id: '1',
+                effectiveFrom: '2026-05-01',
+                ftpW: 240.0,
+                createdAt: DateTime(2026, 5, 1),
+              ),
+              ThresholdEntry(
+                id: '2',
+                effectiveFrom: '2026-07-15',
+                ftpW: 250.0,
+                createdAt: DateTime(2026, 7, 15),
+              ),
+              ThresholdEntry(
+                id: '3',
+                effectiveFrom: '2026-09-01',
+                ftpW: 258.0,
+                createdAt: DateTime(2026, 9, 1),
+              ),
+              ThresholdEntry(
+                id: '4',
+                effectiveFrom: '2026-10-13',
+                ftpW: 268.0,
+                createdAt: DateTime(2026, 10, 13),
+              ),
+            ],
+            type: ThresholdType.ftp,
           ),
           const SizedBox(height: 32),
         ],

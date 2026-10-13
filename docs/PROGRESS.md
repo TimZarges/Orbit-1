@@ -3,8 +3,8 @@
 > Wird am Ende jeder Phase von Antigravity aktualisiert (`/phase-finish`). Kurz und ehrlich halten.
 
 ## Aktuell
-- Phase: 11 (Abgeschlossen) -> Phase 12 (Leistungsdiagnostik & Schwellenwert-Erkennung)
-- Branch: feature/phase-11-analysis-cockpit
+- Phase: 12 (Abgeschlossen) -> Phase 13 (Kommunikation & Benachrichtigungen)
+- Branch: feature/phase-12-diagnostics
 
 ## Fertig
 - Phase 00 (Foundation): Abgeschlossen
@@ -18,20 +18,27 @@
 - Phase 08 (Kalender und Soll-Ist-Abgleich): Abgeschlossen
 - Phase 09 (Workout Builder und Vorlagenbibliothek): Abgeschlossen
 - Phase 10 (Analyse einfach – Ampel, Wochenbelastung, Erfahrungsstufen): Abgeschlossen
-- Phase 11 (Analyse Cockpit – Telemetrie, Karte, Power-Kurve):
-  - Dark Cockpit Theme (`#0F172A`) mit hoher Datendichte und Signal-Tokens gemäß `DESIGN.md` §3.2.
-  - LTTB-Downsampling Engine (`LttbDownsampler`): Reduziert 1-Hz-Streams von bis zu 36.000 Datenpunkten (10h-Aktivität) auf 400 Punkte für 60 FPS bei voller Erhaltung markanter Spitzen und Intervalle.
-  - Interaktives Scrubbing: Long-Press-to-Scrub (`TelemetryChartWidget`) mit haptischem Klick, vertikaler Leitlinie und über dem Finger schwebendem HUD. Umschalter Zeit- vs. Distanzachse sowie Querformat-Vollbildmodus.
-  - Synchrone GPS-Streckenkarte (`TelemetryMapWidget`): Reine Offline-Vektorgrafik der Route mit Start-/Ziel-Pins und synchron wanderndem voltfarbenen Scrubbing-Marker.
-  - DSGVO-Kartenkonzept: Reines Offline-Vektorrendering standardmäßig, Opt-In-Einwilligung mit Hinweistext vor dem Laden externer Kacheln (`docs/PRIVACY.md`).
-  - Power-Duration-Kurve (`PowerDurationCurveWidget`): Logarithmisch skalierte Mean-Maximal-Power (1s bis 60m), Vergleich mit Saison- und Allzeit-Bestwerten, automatische Auszeichnung neuer Rekorde mit „PR"-Badges in Volt-Fläche mit Navy-Text.
-  - Backend Bestwerte (`users/{uid}/bests/{sport}`): Serverseitige Berechnung in Cloud Functions Trigger (`functions/src/metrics/bests.ts`).
-  - Firestore Security Rules: Autorisierter Lesezugriff auf `bests` für Athleten und berechtigte Trainer (`permissions.activities == true`) durch den Spezialisten `firestore-rules-author` erstellt und im Testplan dokumentiert.
-  - Asynchroner Isolate-Decoder (`StreamDecoder`) zur Entlastung des UI-Threads bei großen JSON-/GZIP-Payloads.
-  - Integration in `ActivityDetailScreen` („Analyse-Cockpit öffnen") und Erweiterung der Widget-Galerie (`/gallery`).
+- Phase 11 (Analyse Cockpit – Telemetrie, Karte, Power-Kurve): Abgeschlossen
+- Phase 12 (Leistungsdiagnostik & Schwellenwert-Erkennung):
+  - Schätzmethoden je Sportart (`lib/features/diagnostics/domain/` & `functions/src/metrics/diagnostics.ts`):
+    - Rad: $0.95 \times \text{MMP}_{20\text{m}}$ mit Variabilitätsindex-Gating ($\text{VI} \le 1.05$ High, $1.05 < \text{VI} \le 1.12$ Medium, $> 1.15$ verworfen).
+    - Lauf: 30m Friel-Test mit LTHR (letzte 20m) und Schwellenpace, Prüfung auf stabiles HF-Plateau ($\text{StdDev} \le 4.0\text{ bpm}$).
+    - Schwimmen: 400m / 200m CSS-Test mit Berechnung der $\text{Pace}_{\text{CSS}} = (T_{400} - T_{200})/2$.
+    - Mindestdifferenzen ($\ge 3\text{ W}$, $\ge 2\text{ bpm}$, $\ge 5\text{ s/km}$, $\ge 1.0\text{ s/100m}$) verhindern Spam-Vorschläge bei insignifikanten Schwankungen.
+  - Vorschlagsmodell & Firestore Security Rules (`users/{uid}/thresholdProposals/{id}`):
+    - Clients dürfen ausschließlich das Feld `status` auf `ACCEPTED` oder `REJECTED` aktualisieren (`isValidThresholdProposalUpdate`).
+    - Lesezugriff für Athlet und Trainer mit `permissions.activities == true`.
+    - Neuer Schwellenwert gilt ab heute (`effectiveFrom = heute`), Historie bleibt standardmäßig unverändert.
+  - Transparenz & Bestätigung:
+    - „Warum?" Bottom-Sheet (`ThresholdExplanationSheet`) mit Datenpunkten, Konfidenz-Einordnung und Limitationen.
+    - Dialog (`RecomputeConfirmationDialog`) mit optionaler historischer Neuberechnung (`recomputeMetrics`).
+  - Geführte Feldtests (`GuidedTestCard`) für Rad, Lauf und Schwimmen mit 1-Klick-Einplanung im Kalender.
+  - Vollständiger Diagnostik-Screen (`DiagnosticsScreen`) mit Sportarten-Tabs, Verlaufsdiagramm (`ThresholdHistoryChart`) und Schwellenwert-Historie.
+  - Verknüpfung im Analyse-Tab (`ThresholdProgressCard`) mit Benachrichtigungs-Badge bei neuen Vorschlägen und im Dashboard-Avatarmenü.
+  - Erweiterung der Widget-Galerie (`/gallery`) und umfassende Unit-Tests.
 
 ## Offen / in Arbeit
-- Phase 12: Leistungsdiagnostik & Schwellenwert-Erkennung (FTP-, LTHR- & CSS-Schätzung aus Aktivitäten, Konfidenz-Modell, Übernahme-Workflow)
+- Phase 13: Kommunikation & Benachrichtigungen (Chat, Aktivitäts-Share, FCM-Push, ruhige Stunden)
 
 ## Bekannte Probleme
 - `build_runner` Konflikte durch `analyzer` Abhängigkeiten: Wir nutzen derzeit manuelle Models anstelle von `freezed`.

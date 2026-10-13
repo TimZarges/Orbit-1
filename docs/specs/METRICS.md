@@ -41,7 +41,9 @@ Vorschlag als Ausgangspunkt: Tageswert = Verhältnis der Tagesbelastung zur pers
 
 ## Ergänzung B: Schwellenwert-Schätzung (Phase 12, am STOPP freigegeben)
 Methoden werden in der Phase begründet, hier die Anforderungen:
-- **Rad-FTP:** aus bester Mittelleistung (z. B. 20 min) innerhalb eines definierten Zeitfensters mit dokumentiertem Faktor, oder aus einem Critical-Power-Modell. Mindestanzahl harter Einheiten und Datenqualität prüfen.
-- **Lauf:** Schwellen-HF und Schwellenpace aus länger anhaltenden maximalen Anstrengungen. **Schwimmen:** CSS aus 400 m/200 m (oder gleichwertigen Bestleistungen).
-- Jeder Vorschlag hat: Wert, Veränderung zum aktuellen Wert, **Konfidenz** (hoch/mittel/niedrig), **Datenbasis** (welche Einheiten, welcher Zeitraum) und eine verständliche Erklärung. Bei niedriger Datenlage **kein** Vorschlag.
-- **Nie automatisch übernehmen.** Übernahme erzeugt einen neuen `thresholdHistory`-Eintrag mit `effectiveFrom = heute`.
+- **Rad-FTP:** aus bester Mittelleistung (20 min) mit Faktor 0.95: $\text{FTP} = 0.95 \times \text{MMP}_{20\text{m}}$. Pacing-Prüfung über Variabilitätsindex: $\text{VI} \le 1.05$ (HIGH), $1.05 < \text{VI} \le 1.12$ (MEDIUM), $\text{VI} > 1.15$ verworfen. Mindestdifferenz: $\ge 3\text{ W}$ oder $\ge 1.5\%$.
+- **Lauf:** 30-Minuten-Feldtest (Friel). LTHR = Durchschnitts-HF der letzten 20 Minuten, Schwellenpace = 30-Minuten-Durchschnittstempo. HF-Plateau-Prüfung: $\text{StdDev} \le 4.0\text{ bpm}$ (HIGH), $> 8.0\text{ bpm}$ verworfen. Mindestdifferenz: $\ge 2\text{ bpm}$ bzw. $\ge 5\text{ s/km}$.
+- **Schwimmen:** 400 m / 200 m Zeitschwimmen. $\text{CSS} = (400 - 200) / (T_{400} - T_{200})$, $\text{Pace}_{\text{CSS}} = (T_{400} - T_{200}) / 2\text{ s/100m}$. Mindestdifferenz: $\ge 1.0\text{ s/100m}$.
+- Jeder Vorschlag hat: Wert, Veränderung zum aktuellen Wert, **Konfidenz** (hoch/mittel/niedrig), **Datenbasis** (welche Einheiten, welcher Zeitraum) und eine verständliche Erklärung. Bei dünner Datenlage **kein** Vorschlag.
+- **Nie automatisch übernehmen.** Übernahme erzeugt einen neuen `thresholdHistory`-Eintrag mit `effectiveFrom = heute`. Optionale historische Neuberechnung per `recomputeMetrics` nur auf expliziten Wunsch des Athleten.
+
