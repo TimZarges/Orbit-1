@@ -33,7 +33,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   void _finishOnboarding() async {
     try {
-      final functions = FirebaseFunctions.instance;
+      final functions = FirebaseFunctions.instanceFor(region: 'europe-west3');
       await functions.httpsCallable('setInitialRole').call({
         'role': _selectedRole ?? 'ATHLETE',
         'profile': {

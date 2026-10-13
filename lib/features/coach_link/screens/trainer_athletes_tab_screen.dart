@@ -20,8 +20,9 @@ class _TrainerAthletesTabScreenState
   Future<void> _generateInvite() async {
     setState(() => _isLoading = true);
     try {
-      final result =
-          await FirebaseFunctions.instance.httpsCallable('createInvite').call();
+      final result = await FirebaseFunctions.instanceFor(region: 'europe-west3')
+          .httpsCallable('createInvite')
+          .call();
       setState(() {
         _inviteCode = result.data['code'];
       });

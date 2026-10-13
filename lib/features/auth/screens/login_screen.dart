@@ -59,31 +59,60 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: Image.asset(
+                'assets/images/logo.png',
+                width: 90,
+                height: 90,
+                errorBuilder: (context, error, stackTrace) => const Icon(
+                  Icons.fitness_center,
+                  size: 64,
+                  color: Color(0xFF001F47),
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'ORBIT',
+              style: TextStyle(
+                fontSize: 26,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 2.0,
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+            ),
+            const SizedBox(height: 32),
             TextField(
               controller: _emailController,
-              decoration: const InputDecoration(labelText: 'E-Mail'),
+              decoration: const InputDecoration(
+                labelText: 'E-Mail',
+              ),
               keyboardType: TextInputType.emailAddress,
             ),
             const SizedBox(height: 16),
             TextField(
               controller: _passwordController,
-              decoration: const InputDecoration(labelText: 'Passwort'),
+              decoration: const InputDecoration(
+                labelText: 'Passwort',
+              ),
               obscureText: true,
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 24),
             if (_isLoading)
               const CircularProgressIndicator()
             else
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   ElevatedButton(
                     onPressed: _login,
                     child: const Text('Anmelden'),
                   ),
-                  TextButton(
+                  const SizedBox(height: 12),
+                  OutlinedButton(
                     onPressed: _register,
-                    child: const Text('Registrieren (Emulator)'),
+                    child: const Text('Konto erstellen (Registrieren)'),
                   ),
                 ],
               ),

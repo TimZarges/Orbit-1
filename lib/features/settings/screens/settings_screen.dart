@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:orbit/features/settings/providers/settings_provider.dart';
 import 'package:orbit/features/settings/models/app_settings.dart';
 import 'package:orbit/core/metrics/term_resolver.dart';
@@ -112,6 +113,19 @@ class SettingsScreen extends ConsumerWidget {
                 }
               },
             ),
+          ),
+
+          const Divider(),
+
+          // Externe Verbindungen
+          ListTile(
+            leading: const Icon(Icons.sync_alt),
+            title: const Text('Verbindungen (Garmin)'),
+            subtitle: const Text('Garmin Connect verknüpfen oder verwalten'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () {
+              context.go('/settings/garmin');
+            },
           ),
 
           const Divider(),

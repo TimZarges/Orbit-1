@@ -64,3 +64,10 @@
   5. **NP (Glättung & Nullwerte):** 30-Sekunden gleitender Durchschnitt. Datenlücken < 30s werden als 0-Watt gewertet (verhindert das künstliche "Schönrechnen" bei Tretpausen).
   6. **Umgang mit langen Pausen:** Pausen > 30s (z.B. Ampel, Kaffeepause) setzen das 30s-Fenster zurück (verhindern Verzerrung durch extrem lange Null-Phasen im Moving Average).
 - **Alternativen:** TRIMP statt hrTSS (weniger vergleichbar mit Rad-TSS), simple Durchschnitts-Pace statt rTSS.
+
+### 2026-10-11: Garmin OAuth 1.0a Start mit Vorbereitung auf 2.0 & url_launcher
+- **Kontext:** Garmin Connect Developer Portal verlangt für die Neuregistrierung aktuell noch den OAuth 1.0a Authorization Flow (3-legged OAuth). Zugleich kündigt Garmin die Abschaltung von OAuth 1.0a für Ende 2026 an.
+- **Entscheidung:** Wir implementieren den Authorization Flow mit OAuth 1.0a (HMAC-SHA1 Signierung via `oauth-1.0a`), speichern aber alle Identifikatoren ausschließlich über die permanente `garminUserId` und halten die Token-Struktur dual-fähig (`version: "OAUTH1" | "OAUTH2"`). Für das Öffnen der Garmin-Authentifizierungsseite im Browser wird `url_launcher` als Dependency hinzugefügt.
+- **Begründung:** Erlaubt sofortige Funktion mit den bestehenden Garmin-Credentials, ohne dass beim bevorstehenden Wechsel auf OAuth 2.0 Aktivitäten oder Nutzerdaten angefasst werden müssen. `url_launcher` ist der Standard-Flutter-Weg für externe OAuth-Web-Redirects.
+- **Alternativen:** Reines OAuth 2.0 (wird von Garmins aktuellem Produktiv-Portal noch nicht für alle Apps als Einstieg akzeptiert).
+

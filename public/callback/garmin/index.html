@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ORBIT - Garmin Autorisierung</title>
+    <style>
+        :root {
+            --navy: #001F47;
+            --volt: #CDFB17;
+            --bg: #0F172A;
+            --card: #1E293B;
+            --text: #F8FAFC;
+            --muted: #94A3B8;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            text-align: center;
+            padding: 2rem 1rem;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+        .box {
+            background: var(--card);
+            border: 1px solid #334155;
+            border-radius: 20px;
+            padding: 2.5rem 2rem;
+            max-width: 480px;
+            width: 100%;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+        }
+        .logo {
+            max-width: 90px;
+            border-radius: 18px;
+            margin-bottom: 1.5rem;
+        }
+        h2 {
+            margin: 0 0 0.5rem 0;
+            color: #FFFFFF;
+            font-size: 1.6rem;
+        }
+        p {
+            color: var(--muted);
+            line-height: 1.5;
+            font-size: 0.95rem;
+            margin: 0.5rem 0 1.5rem 0;
+        }
+        .code-container {
+            background: #0B1120;
+            border: 2px dashed #475569;
+            border-radius: 12px;
+            padding: 1.2rem;
+            margin: 1.5rem 0;
+        }
+        .code-label {
+            font-size: 0.8rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.5rem;
+        }
+        .code-value {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--volt);
+            letter-spacing: 2px;
+            word-break: break-all;
+            user-select: all;
+        }
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-top: 1.5rem;
+        }
+        .btn {
+            display: block;
+            border: none;
+            border-radius: 12px;
+            padding: 0.9rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        .btn-primary {
+            background-color: var(--volt);
+            color: var(--navy);
+        }
+        .btn-primary:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+        .btn-secondary {
+            background-color: #334155;
+            color: #FFFFFF;
+        }
+        .btn-secondary:hover {
+            background-color: #475569;
+        }
+        .alert-success {
+            color: #4ADE80;
+            font-weight: 600;
+            margin-top: 0.5rem;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <img src="/logo.png" alt="ORBIT Logo" class="logo">
+        <div id="success-view" style="display: none;">
+            <h2>Garmin Login erfolgreich!</h2>
+            <p>Dein Bestätigungscode (oauth_verifier) wurde generiert:</p>
+            
+            <div class="code-container">
+                <div class="code-label">Bestätigungscode</div>
+                <div id="verifier-display" class="code-value">------</div>
+            </div>
+
+            <div id="copy-status" class="alert-success">✓ In die Zwischenablage kopiert!</div>
+
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="copyVerifier()">Code kopieren</button>
+                <button class="btn btn-secondary" onclick="returnToOrbit()">Tab schließen & zu ORBIT zurückkehren</button>
+            </div>
+        </div>
+
+        <div id="no-code-view">
+            <h2>Fast fertig!</h2>
+            <p>Es wurde noch kein Bestätigungscode übergeben. Wenn du den Login bei Garmin gestartet hast, wirst du automatisch hierher weitergeleitet.</p>
+            <div class="btn-group">
+                <button class="btn btn-secondary" onclick="returnToOrbit()">Zurück zu ORBIT</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const verifier = urlParams.get('oauth_verifier');
+        const token = urlParams.get('oauth_token');
+
+        function returnToOrbit() {
+            if (verifier) {
+                try { navigator.clipboard.writeText(verifier); } catch(e) {}
+            }
+            if (window.opener && !window.opener.closed) {
+                try {
+                    window.opener.focus();
+                    window.close();
+                    return;
+                } catch (e) {}
+            }
+            window.location.href = 'http://localhost:3000/#/settings/garmin' + (verifier ? '?oauth_verifier=' + encodeURIComponent(verifier) : '');
+        }
+
+        if (verifier) {
+            document.getElementById('no-code-view').style.display = 'none';
+            document.getElementById('success-view').style.display = 'block';
+            document.getElementById('verifier-display').innerText = verifier;
+
+            // Link zur lokalen Web-App mit Parametern bestücken
+            const returnUrl = 'http://localhost:3000/settings/garmin?oauth_verifier=' + encodeURIComponent(verifier) + (token ? '&oauth_token=' + encodeURIComponent(token) : '');
+            document.getElementById('orbit-app-btn').href = returnUrl;
+
+            // PostMessage an Opener senden (falls in Popup/Tab geöffnet)
+            try {
+                if (window.opener) {
+                    window.opener.postMessage({
+                        type: 'GARMIN_AUTH_CALLBACK',
+                        oauthVerifier: verifier,
+                        oauthToken: token
+                    }, '*');
+                }
+            } catch (e) {}
+
+            // BroadcastChannel senden
+            try {
+                if ('BroadcastChannel' in window) {
+                    const bc = new BroadcastChannel('orbit_garmin_auth');
+                    bc.postMessage({ oauthVerifier: verifier, oauthToken: token });
+                }
+            } catch (e) {}
+        }
+
+        function copyVerifier() {
+            if (!verifier) return;
+            navigator.clipboard.writeText(verifier).then(() => {
+                const status = document.getElementById('copy-status');
+                status.style.display = 'block';
+                setTimeout(() => { status.style.display = 'none'; }, 3000);
+            }).catch(err => {
+                alert('Code: ' + verifier);
+            });
+        }
+    </script>
+</body>
+</html>

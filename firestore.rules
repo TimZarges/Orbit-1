@@ -70,7 +70,7 @@ service cloud.firestore {
     }
 
     function isCoachForHealth(userId) {
-      let linkDoc = get(/databases/$(database)/documents/coachLinks/$(userId)_$(request.auth.uid));
+      let linkDoc = get(/databases/$(database)/documents/coachLinks/$(userId + '_' + request.auth.uid));
       return linkDoc != null && linkDoc.data.permissions.health == true;
     }
 
@@ -108,6 +108,20 @@ service cloud.firestore {
         allow create, update: if isOwner(userId); // Prototype for now
         allow delete: if isOwner(userId);
       }
+
+      match /aggregates/{date} {
+        allow read: if isOwner(userId);
+        allow write: if false; // Only Cloud Functions
+      }
+
+      match /integrationStatus/{provider} {
+        allow read: if isOwner(userId);
+        allow write: if false; // Only Cloud Functions
+      }
+    }
+
+    match /webhookEvents/{eventId} {
+      allow read, write: if false; // Only server-side
     }
 
     match /coachLinks/{linkId} {

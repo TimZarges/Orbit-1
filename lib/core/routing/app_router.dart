@@ -5,6 +5,7 @@ import '../../features/dashboard/screens/dashboard_screen.dart';
 import '../../features/profile/screens/profile_screen.dart';
 import '../../features/profile/screens/thresholds_screen.dart';
 import '../../features/settings/screens/settings_screen.dart';
+import '../../features/integrations/screens/garmin_connection_screen.dart';
 import '../design/widget_gallery.dart';
 import '../../features/auth/screens/login_screen.dart';
 import '../../features/onboarding/screens/onboarding_screen.dart';
@@ -75,6 +76,15 @@ final goRouterProvider = Provider<GoRouter>((ref) {
             GoRoute(
               path: 'settings',
               builder: (context, state) => const SettingsScreen(),
+              routes: [
+                GoRoute(
+                  path: 'garmin',
+                  builder: (context, state) => GarminConnectionScreen(
+                    initialVerifier: state.uri.queryParameters['oauth_verifier'],
+                    initialToken: state.uri.queryParameters['oauth_token'],
+                  ),
+                ),
+              ],
             ),
           ]),
       GoRoute(

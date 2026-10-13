@@ -12,10 +12,12 @@ import 'core/design/app_theme.dart';
 import 'core/routing/app_router.dart';
 import 'package:orbit/l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_web_plugins/url_strategy.dart';
 import 'features/settings/providers/settings_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  usePathUrlStrategy();
   
   try {
     if (Firebase.apps.isEmpty) {
@@ -23,12 +25,13 @@ void main() async {
         options: DefaultFirebaseOptions.currentPlatform,
       );
 
-      if (kDebugMode) {
+      const useEmulators = bool.fromEnvironment('USE_FIREBASE_EMULATOR', defaultValue: false);
+      if (useEmulators) {
         const localHostString = 'localhost';
         FirebaseFirestore.instance.useFirestoreEmulator(localHostString, 8081);
         await FirebaseAuth.instance.useAuthEmulator(localHostString, 9099);
         FirebaseStorage.instance.useStorageEmulator(localHostString, 9199);
-        FirebaseFunctions.instance.useFunctionsEmulator(localHostString, 5001);
+        FirebaseFunctions.instanceFor(region: 'europe-west3').useFunctionsEmulator(localHostString, 5001);
       }
     }
   } catch (e) {
