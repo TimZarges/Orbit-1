@@ -52,7 +52,7 @@ class MultiAthleteGridController {
         plannedDurationSec: workout.plannedDurationSec,
         plannedDistanceM: workout.plannedDistanceM,
         plannedLoad: workout.plannedLoad,
-        status: PlannedWorkoutStatus.planned,
+        status: 'PLANNED',
         createdAt: now,
         updatedAt: now,
       );

@@ -49,4 +49,65 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get infoTerm_restingHr_desc =>
       'Your heart rate in a state of absolute rest. A low resting heart rate is often a sign of good aerobic fitness.';
+
+  @override
+  String get readiness_title => 'Daily Readiness';
+
+  @override
+  String get readiness_building_baseline => 'Building Baseline';
+
+  @override
+  String get readiness_building_baseline_desc =>
+      'ORBIT requires at least 14 days of data to reliably determine your personal normal range.';
+
+  @override
+  String get readiness_normal => 'Normal';
+
+  @override
+  String get readiness_normal_desc =>
+      'Resting heart rate and HRV are within your typical personal range.';
+
+  @override
+  String get readiness_slight_deviation => 'Slight Deviation';
+
+  @override
+  String get readiness_slight_deviation_desc =>
+      'Individual values slightly deviate from your 28-day baseline. Pay attention to how you feel and ensure adequate recovery.';
+
+  @override
+  String get readiness_noticeable_deviation => 'Noticeable Deviation';
+
+  @override
+  String get readiness_noticeable_deviation_desc =>
+      'Resting heart rate or HRV deviate noticeably from your normal range. Prioritize recovery; consult a physician if you experience persistent symptoms or feel unwell.';
+
+  @override
+  String get readiness_no_data => 'No Health Data Yet';
+
+  @override
+  String get readiness_no_data_desc =>
+      'Connect your Garmin account or enable demo data to see your daily readiness.';
+
+  @override
+  String get readiness_coach_no_permission => 'Health Permission Required';
+
+  @override
+  String get readiness_coach_no_permission_desc =>
+      'The athlete has not enabled health data sharing with their coach.';
+
+  @override
+  String get health_resting_hr => 'Resting HR';
+
+  @override
+  String get health_hrv => 'HRV';
+
+  @override
+  String get health_sleep => 'Sleep';
+
+  @override
+  String get health_info_title => 'About Daily Readiness';
+
+  @override
+  String get health_info_disclaimer =>
+      'Note: Daily readiness is a sports science guideline for training and recovery. It does not constitute medical advice or a treatment recommendation.';
 }

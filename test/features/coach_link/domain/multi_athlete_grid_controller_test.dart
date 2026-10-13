@@ -19,7 +19,7 @@ void main() {
         title: '2h Grundlagenausdauer',
         plannedDurationSec: 7200,
         plannedLoad: 90.0,
-        status: PlannedWorkoutStatus.planned,
+        status: 'PLANNED',
         createdAt: DateTime(2026, 10, 1),
       );
     });

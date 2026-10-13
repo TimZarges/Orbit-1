@@ -29,7 +29,7 @@ class _PrivacySettingsSheetState extends State<PrivacySettingsSheet> {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Datenexport (JSON) wird vorbereitet und per E-Mail bereitgestellt.'),
-        backgroundColor: AppColors.green,
+        backgroundColor: Color(0xFF10B981),
       ),
     );
   }
@@ -54,12 +54,12 @@ class _PrivacySettingsSheetState extends State<PrivacySettingsSheet> {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text('Löschungsanfrage eingereicht. Dein Konto wird deaktiviert.'),
-                  backgroundColor: AppColors.red,
+                  backgroundColor: Color(0xFFEF4444),
                 ),
               );
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.red,
+              backgroundColor: const Color(0xFFEF4444),
               foregroundColor: Colors.white,
             ),
             child: const Text('Endgültig löschen'),
@@ -78,7 +78,7 @@ class _PrivacySettingsSheetState extends State<PrivacySettingsSheet> {
       builder: (context, scrollController) {
         return Container(
           decoration: const BoxDecoration(
-            color: AppColors.cardDark,
+            color: Color(0xFF0F172A),
             borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
           ),
           child: Column(
@@ -90,7 +90,7 @@ class _PrivacySettingsSheetState extends State<PrivacySettingsSheet> {
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: AppColors.textTertiaryDark,
+                    color: const Color(0xFF64748B),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -119,12 +119,12 @@ class _PrivacySettingsSheetState extends State<PrivacySettingsSheet> {
                       'Gesundheitsdaten (Art. 9 DSGVO) wie Herzfrequenz, Schlaf und HRV werden nur mit '
                       'deiner ausdrücklichen Einwilligung verarbeitet.',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: AppColors.textSecondaryDark,
+                            color: const Color(0xFF94A3B8),
                             height: 1.4,
                           ),
                     ),
                     const SizedBox(height: 24),
-                    const Divider(color: AppColors.borderDark),
+                    const Divider(color: Color(0xFF1E293B)),
                     const SizedBox(height: 12),
 
                     // Recht auf Datenübertragbarkeit
@@ -133,7 +133,7 @@ class _PrivacySettingsSheetState extends State<PrivacySettingsSheet> {
                       leading: Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: AppColors.surfaceDark,
+                          color: const Color(0xFF1E293B),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: const Icon(Icons.download_outlined, color: AppColors.volt),
@@ -142,7 +142,7 @@ class _PrivacySettingsSheetState extends State<PrivacySettingsSheet> {
                           style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
                       subtitle: const Text(
                         'Maschinenlesbarer Export deiner Profildaten, Aktivitäten und Messwerte als JSON.',
-                        style: TextStyle(color: AppColors.textSecondaryDark, fontSize: 13),
+                        style: TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
                       ),
                       trailing: _exporting
                           ? const SizedBox(
@@ -150,12 +150,12 @@ class _PrivacySettingsSheetState extends State<PrivacySettingsSheet> {
                               height: 20,
                               child: CircularProgressIndicator(strokeWidth: 2),
                             )
-                          : const Icon(Icons.chevron_right, color: AppColors.textTertiaryDark),
+                          : const Icon(Icons.chevron_right, color: Color(0xFF64748B)),
                       onTap: _exporting ? null : _triggerExport,
                     ),
 
                     const SizedBox(height: 12),
-                    const Divider(color: AppColors.borderDark),
+                    const Divider(color: Color(0xFF1E293B)),
                     const SizedBox(height: 12),
 
                     // Server & Speicherort Info
@@ -164,22 +164,22 @@ class _PrivacySettingsSheetState extends State<PrivacySettingsSheet> {
                       leading: Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: AppColors.surfaceDark,
+                          color: const Color(0xFF1E293B),
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: const Icon(Icons.shield_outlined, color: AppColors.accentBlue),
+                        child: const Icon(Icons.shield_outlined, color: Color(0xFF0EA5E9)),
                       ),
                       title: const Text('Speicherort & Sicherheit',
                           style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
                       subtitle: const Text(
                         'Hosting: Google Cloud Frankfurt (europe-west3). Ende-zu-Ende verschlüsselte '
                         'Tokens in Google Secret Manager.',
-                        style: TextStyle(color: AppColors.textSecondaryDark, fontSize: 13),
+                        style: TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
                       ),
                     ),
 
                     const SizedBox(height: 12),
-                    const Divider(color: AppColors.borderDark),
+                    const Divider(color: Color(0xFF1E293B)),
                     const SizedBox(height: 12),
 
                     // Recht auf Vergessenwerden / Löschung
@@ -188,18 +188,18 @@ class _PrivacySettingsSheetState extends State<PrivacySettingsSheet> {
                       leading: Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: AppColors.red.withOpacity(0.15),
+                          color: const Color(0x26EF4444),
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: const Icon(Icons.delete_forever_outlined, color: AppColors.red),
+                        child: const Icon(Icons.delete_forever_outlined, color: Color(0xFFEF4444)),
                       ),
                       title: const Text('Konto und Daten löschen (Art. 17 DSGVO)',
-                          style: TextStyle(color: AppColors.red, fontWeight: FontWeight.w600)),
+                          style: TextStyle(color: Color(0xFFEF4444), fontWeight: FontWeight.w600)),
                       subtitle: const Text(
                         'Unwiderrufliche Löschung aller Trainings-, Gesundheits- und Profildaten.',
-                        style: TextStyle(color: AppColors.textSecondaryDark, fontSize: 13),
+                        style: TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
                       ),
-                      trailing: const Icon(Icons.chevron_right, color: AppColors.red),
+                      trailing: const Icon(Icons.chevron_right, color: Color(0xFFEF4444)),
                       onTap: _confirmDeleteAccount,
                     ),
 
@@ -208,7 +208,7 @@ class _PrivacySettingsSheetState extends State<PrivacySettingsSheet> {
                       onPressed: () => Navigator.of(context).pop(),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: Colors.white,
-                        side: const BorderSide(color: AppColors.borderDark),
+                        side: const BorderSide(color: Color(0xFF1E293B)),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         padding: const EdgeInsets.symmetric(vertical: 14),
                       ),

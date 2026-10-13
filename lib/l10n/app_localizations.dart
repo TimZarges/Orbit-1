@@ -169,6 +169,114 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Deine Herzfrequenz im absoluten Ruhezustand. Ein niedriger Ruhepuls ist oft ein Zeichen für gute aerobe Fitness.'**
   String get infoTerm_restingHr_desc;
+
+  /// No description provided for @readiness_title.
+  ///
+  /// In de, this message translates to:
+  /// **'Tagesform'**
+  String get readiness_title;
+
+  /// No description provided for @readiness_building_baseline.
+  ///
+  /// In de, this message translates to:
+  /// **'Basislinie im Aufbau'**
+  String get readiness_building_baseline;
+
+  /// No description provided for @readiness_building_baseline_desc.
+  ///
+  /// In de, this message translates to:
+  /// **'ORBIT benötigt mindestens 14 Tage Messwerte, um deinen persönlichen Normalbereich verlässlich zu bestimmen.'**
+  String get readiness_building_baseline_desc;
+
+  /// No description provided for @readiness_normal.
+  ///
+  /// In de, this message translates to:
+  /// **'Unauffällig'**
+  String get readiness_normal;
+
+  /// No description provided for @readiness_normal_desc.
+  ///
+  /// In de, this message translates to:
+  /// **'Ruhepuls und HRV liegen im gewohnten persönlichen Bereich.'**
+  String get readiness_normal_desc;
+
+  /// No description provided for @readiness_slight_deviation.
+  ///
+  /// In de, this message translates to:
+  /// **'Leichte Abweichung'**
+  String get readiness_slight_deviation;
+
+  /// No description provided for @readiness_slight_deviation_desc.
+  ///
+  /// In de, this message translates to:
+  /// **'Einzelne Werte weichen leicht von deiner 28-Tage-Basislinie ab. Achte auf dein Körpergefühl und ausreichende Regeneration.'**
+  String get readiness_slight_deviation_desc;
+
+  /// No description provided for @readiness_noticeable_deviation.
+  ///
+  /// In de, this message translates to:
+  /// **'Deutliche Abweichung'**
+  String get readiness_noticeable_deviation;
+
+  /// No description provided for @readiness_noticeable_deviation_desc.
+  ///
+  /// In de, this message translates to:
+  /// **'Ruhepuls oder HRV weichen merklich von deinem Normalbereich ab. Erholung beachten; bei anhaltenden Beschwerden oder Unwohlsein ärztlichen Rat einholen.'**
+  String get readiness_noticeable_deviation_desc;
+
+  /// No description provided for @readiness_no_data.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch keine Health-Daten'**
+  String get readiness_no_data;
+
+  /// No description provided for @readiness_no_data_desc.
+  ///
+  /// In de, this message translates to:
+  /// **'Verbinde dein Garmin-Konto oder aktiviere die Demo-Daten, um deine Tagesform zu sehen.'**
+  String get readiness_no_data_desc;
+
+  /// No description provided for @readiness_coach_no_permission.
+  ///
+  /// In de, this message translates to:
+  /// **'Health-Freigabe erforderlich'**
+  String get readiness_coach_no_permission;
+
+  /// No description provided for @readiness_coach_no_permission_desc.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Athlet hat die Weitergabe seiner Gesundheitsdaten aktuell nicht freigegeben.'**
+  String get readiness_coach_no_permission_desc;
+
+  /// No description provided for @health_resting_hr.
+  ///
+  /// In de, this message translates to:
+  /// **'Ruhepuls'**
+  String get health_resting_hr;
+
+  /// No description provided for @health_hrv.
+  ///
+  /// In de, this message translates to:
+  /// **'HRV'**
+  String get health_hrv;
+
+  /// No description provided for @health_sleep.
+  ///
+  /// In de, this message translates to:
+  /// **'Schlaf'**
+  String get health_sleep;
+
+  /// No description provided for @health_info_title.
+  ///
+  /// In de, this message translates to:
+  /// **'Über die Tagesform'**
+  String get health_info_title;
+
+  /// No description provided for @health_info_disclaimer.
+  ///
+  /// In de, this message translates to:
+  /// **'Hinweis: Die Tagesform ist eine sportwissenschaftliche Orientierungshilfe zur Trainingssteuerung und Erholung. Sie stellt keine medizinische Diagnose oder Behandlungsempfehlung dar.'**
+  String get health_info_disclaimer;
 }
 
 class _AppLocalizationsDelegate

@@ -17,13 +17,12 @@ class LttbDownsampler {
     }
 
     final sampled = <ActivityStreamPoint>[];
-    sampled.length = threshold;
 
     // Bucket-Größe für die mittleren Punkte
     final every = (data.length - 2) / (threshold - 2);
 
     int a = 0; // Zuletzt ausgewählter Punkt
-    sampled[0] = data[a];
+    sampled.add(data[a]);
 
     for (int i = 0; i < threshold - 2; i++) {
       // 1. Berechne den Mittelwert des nächsten Buckets (Bucket C)
@@ -72,12 +71,12 @@ class LttbDownsampler {
         }
       }
 
-      sampled[i + 1] = data[maxAreaIndex];
+      sampled.add(data[maxAreaIndex]);
       a = maxAreaIndex; // Nächster Referenzpunkt
     }
 
     // Letzten Punkt exakt übernehmen
-    sampled[threshold - 1] = data.last;
+    sampled.add(data.last);
 
     return sampled;
   }

@@ -31,6 +31,7 @@ void main() {
           localDate: '2026-10-10',
           sport: 'RUN',
           title: 'Lauf',
+          plannedDurationSec: 3600,
           plannedLoad: 70.0,
         ),
         PlannedWorkout(
@@ -40,6 +41,7 @@ void main() {
           localDate: '2026-10-11',
           sport: 'BIKE',
           title: 'Rad',
+          plannedDurationSec: 3600,
           plannedLoad: 70.0,
         ),
       ];
