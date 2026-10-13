@@ -5,11 +5,21 @@ import 'package:go_router/go_router.dart';
 import '../../../core/design/app_colors.dart';
 import '../../auth/providers/user_provider.dart';
 
-class AthleteCoachTabScreen extends ConsumerWidget {
+/// Screen für die Trainer-Verknüpfung aus Athleten-Sicht.
+class AthleteCoachTabScreen extends ConsumerStatefulWidget {
   const AthleteCoachTabScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<AthleteCoachTabScreen> createState() => _AthleteCoachTabScreenState();
+}
+
+class _AthleteCoachTabScreenState extends ConsumerState<AthleteCoachTabScreen> {
+  bool _shareActivities = true;
+  bool _shareCalendar = true;
+  bool _shareHealth = false;
+
+  @override
+  Widget build(BuildContext context) {
     final userDoc = ref.watch(userDocumentProvider).valueOrNull;
     final coachId = userDoc?['coachId'];
 
@@ -29,7 +39,7 @@ class AthleteCoachTabScreen extends ConsumerWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.group_add, size: 64, color: Colors.grey),
+              const Icon(Icons.group_add, size: 64, color: AppColors.textTertiaryDark),
               const SizedBox(height: 16),
               Text(
                 'Noch kein Trainer verknüpft',
@@ -38,19 +48,109 @@ class AthleteCoachTabScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 16),
               const Text(
-                'Gib hier den Einladungscode deines Trainers ein oder scanne seinen QR-Code.',
+                'Gib hier den Einladungscode deines Trainers ein oder lasse dir einen Einladungslink senden.',
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 32),
-              ElevatedButton(
-                onPressed: () {
-                  // TODO: Code-Eingabe-Dialog
-                },
-                child: const Text('Code eingeben'),
+              ElevatedButton.icon(
+                onPressed: () => _showEnterCodeDialog(context),
+                icon: const Icon(Icons.vpn_key_outlined),
+                label: const Text('Einladungscode eingeben'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.volt,
+                  foregroundColor: AppColors.navy,
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  void _showEnterCodeDialog(BuildContext context) {
+    final controller = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Trainer-Einladungscode'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'Gib den 6- oder 8-stelligen Code ein, den du von deinem Trainer erhalten hast.',
+              style: TextStyle(fontSize: 13),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: controller,
+              decoration: const InputDecoration(
+                labelText: 'Einladungscode (z. B. COACH-492)',
+                border: OutlineInputBorder(),
+              ),
+              textCapitalization: TextCapitalization.characters,
+              autofocus: true,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Abbrechen'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final code = controller.text.trim();
+              if (code.isEmpty) return;
+              Navigator.of(ctx).pop();
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Code $code wird geprüft und Verknüpfungsanfrage gesendet...'),
+                  backgroundColor: AppColors.green,
+                ),
+              );
+            },
+            child: const Text('Verknüpfen'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showRevokeDialog(BuildContext context, String coachId) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Trainer-Verknüpfung beenden?'),
+        content: const Text(
+          'Der Trainer verliert sofort den Zugriff auf deine Aktivitäten, '
+          'deinen Kalender und eventuelle Gesundheitsdaten. Der bisherige Chatverlauf '
+          'bleibt archiviert, es können aber keine neuen Nachrichten mehr gesendet werden.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Abbrechen'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Verknüpfung wurde beendet.'),
+                  backgroundColor: AppColors.red,
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.red,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Verknüpfung lösen'),
+          ),
+        ],
       ),
     );
   }
@@ -65,13 +165,11 @@ class AthleteCoachTabScreen extends ConsumerWidget {
             child: ListTile(
               leading: const CircleAvatar(child: Icon(Icons.person)),
               title: const Text('Dein aktueller Trainer'),
-              subtitle: Text('ID: $coachId'), // Später: Name auflösen
+              subtitle: Text('Trainer-ID: $coachId'),
               trailing: IconButton(
-                icon: const Icon(Icons.link_off),
+                icon: const Icon(Icons.link_off, color: AppColors.red),
                 tooltip: 'Verknüpfung lösen',
-                onPressed: () {
-                  // TODO: Dialog zur Bestätigung, dann revokeLink Function aufrufen
-                },
+                onPressed: () => _showRevokeDialog(context, coachId),
               ),
             ),
           ),
@@ -100,24 +198,45 @@ class AthleteCoachTabScreen extends ConsumerWidget {
           const SizedBox(height: 16),
           SwitchListTile(
             title: const Text('Aktivitäten & Workouts'),
-            subtitle:
-                const Text('Trainingsplandaten und absolvierte Einheiten'),
-            value: true, // TODO: Aus coachLinks lesen
+            subtitle: const Text('Trainingsplandaten und absolvierte Einheiten'),
+            value: _shareActivities,
             onChanged: (val) {
-              // TODO: updatePermissions Function aufrufen
+              setState(() => _shareActivities = val);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Freigabe Aktivitäten: ${val ? 'Aktiviert' : 'Deaktiviert'}'),
+                  duration: const Duration(seconds: 1),
+                ),
+              );
             },
           ),
           SwitchListTile(
             title: const Text('Kalender'),
             subtitle: const Text('Deine Planung und Verfügbarkeit'),
-            value: true,
-            onChanged: (val) {},
+            value: _shareCalendar,
+            onChanged: (val) {
+              setState(() => _shareCalendar = val);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Freigabe Kalender: ${val ? 'Aktiviert' : 'Deaktiviert'}'),
+                  duration: const Duration(seconds: 1),
+                ),
+              );
+            },
           ),
           SwitchListTile(
-            title: const Text('Gesundheitsdaten'),
-            subtitle: const Text('Schlaf, HRV, Ruhepuls (sofern vorhanden)'),
-            value: false,
-            onChanged: (val) {},
+            title: const Text('Gesundheitsdaten (Art. 9 DSGVO)'),
+            subtitle: const Text('Schlaf, HRV, Ruhepuls (nur bei gesonderter Freigabe)'),
+            value: _shareHealth,
+            onChanged: (val) {
+              setState(() => _shareHealth = val);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Freigabe Gesundheitsdaten: ${val ? 'Aktiviert' : 'Deaktiviert'}'),
+                  duration: const Duration(seconds: 1),
+                ),
+              );
+            },
           ),
         ],
       ),

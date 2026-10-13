@@ -26,6 +26,48 @@
 
 ## Einträge
 
+### [Phase 16] Release-Freigabe & Launch-Readiness · RISIKO-HOCH
+- **STOPP-Punkt/Anlass:** STOPP 2 aus Phasendatei (Abschlussbericht, Release-Freigabe-Checkliste, App-Bundle & Store-Dokumentation).
+- **Entscheidung:**
+  1. **Release-Bereitschaft hergestellt:**
+     - Android Release Flavor konfiguriert (`app.orbit.training`, Proguard/R8 aktiv via `proguard-rules.pro`, minimale Berechtigungen im Manifest).
+     - Upload-Signierung über `key.properties` entkoppelt und außerhalb von Git abgesichert.
+     - Debug-Funktionen (Galerie, Seed, Benchmark) sind im Release-Modus gesperrt.
+  2. **Vollständige Store- & Betriebs-Unterlagen:**
+     - Store-Listings (de/en) und Screenshot-Plan in `docs/release/STORE_LISTING.md`.
+     - DSFA und TOMs in `docs/release/DSFA.md`.
+     - Data Safety Fragebogen in `docs/release/DATA_SAFETY.md`.
+     - Release-Checkliste & Notfall-Rollback-Plan in `docs/release/CHECKLIST.md`.
+     - Garmin-Produktionsantrag in `docs/release/GARMIN_REVIEW.md`.
+     - iOS Vorbereitung (Apple Sign-In & APNs) in `docs/release/IOS_PREP.md`.
+  3. **Projekt-Abschluss:**
+     - `README.md` und `docs/ARCHITECTURE.md` auf Release-Stand v1.0 aktualisiert.
+     - `docs/PROGRESS.md` abgeschlossen.
+- **Alternative:** Manuelle, ungeordnete Veröffentlichung ohne Schutz- und Rollback-Konzepte.
+- **Begründung:** Höchste Stabilität, rechtliche Absicherung bei Gesundheitsdaten und reibungslose Store-Genehmigung.
+- **Bitte prüfen:** `docs/release/*`, `README.md` und Android-Konfiguration.
+- **Rückholen:** Branch `feature/phase-16-release` verwerfen.
+
+### [Phase 16] Restschulden, Sicherheits-Audit & Datenschutz · RISIKO-HOCH
+- **STOPP-Punkt/Anlass:** STOPP 1 aus Phasendatei (Bericht über Restschulden, offene Punkte, Secret-Scan und Datenschutz-Dokumente).
+- **Entscheidung:**
+  1. **Restschulden & TODOs bereinigt (`docs/release/OPEN_ITEMS.md`):**
+     - FIT-Sportmapping in `functions/src/import/fitParser.ts` auf alle Standard-Sportarten erweitert.
+     - `PrivacySettingsSheet` (`lib/features/settings/widgets/privacy_settings_sheet.dart`) erstellt und in `SettingsScreen` verdrahtet (DSGVO-Rechte, Datenexport als JSON, Kontolöschungs-Option).
+     - Schwellenwert-Anpassungsdialog in `ThresholdsScreen` implementiert mit Verlinkung zur Diagnostik.
+     - `AthleteCoachTabScreen` um Code-Eingabe-Dialog, Bestätigungsdialog zur Verknüpfungstrennung und Berechtigungsschalter erweitert.
+     - Automatisierter Lokalisierungstest (`test/core/localization/localization_completeness_test.dart`) sichert 100% ARB-Deckung zwischen de und en.
+  2. **Sicherheits-Audit (`docs/release/SECURITY_AUDIT.md`):**
+     - Secret Scan fehlerfrei (keine privaten Schlüssel, Service-Account-JSONs oder OAuth-Client-Secrets im Repo).
+     - App Check Staged-Rollout-Plan (Monitoring $\rightarrow$ Staging $\rightarrow$ Enforcement) definiert.
+     - Budget-Alarme für Google Cloud Console festgelegt.
+  3. **Datenschutz-Abschluss (Art. 17 DSGVO Erfordernis):**
+     - Statische Account-Löschungsseite `web/delete-account.html` für Google Play Richtlinie erstellt.
+- **Alternative:** Ignorieren von TODOs und fehlende Lösch-Webseite (führt zu Play Store Ablehnung).
+- **Begründung:** Gewährleistung der Store-Konformität und vollständige Schließung aller Restschulden vor dem Release.
+- **Bitte prüfen:** `docs/release/OPEN_ITEMS.md`, `docs/release/SECURITY_AUDIT.md`, `web/delete-account.html`.
+- **Rückholen:** Branch `feature/phase-16-release` verwerfen.
+
 ### [Phase 15] Coach-Desktop und Web · RISIKO-HOCH
 - **STOPP-Punkt/Anlass:** STOPP 1 aus Phasendatei (Funktionsumfang des Coach-Dashboards, Web-Entscheidungen, O(1) Performance-Ziele bei 25+ Athleten).
 - **Entscheidung:**

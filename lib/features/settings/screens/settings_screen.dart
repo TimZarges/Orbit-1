@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:orbit/features/settings/providers/settings_provider.dart';
 import 'package:orbit/features/settings/models/app_settings.dart';
+import 'package:orbit/features/settings/widgets/privacy_settings_sheet.dart';
 import 'package:orbit/core/metrics/term_resolver.dart';
 
 class SettingsScreen extends ConsumerWidget {
@@ -134,9 +135,10 @@ class SettingsScreen extends ConsumerWidget {
           ListTile(
             leading: const Icon(Icons.privacy_tip),
             title: const Text('Datenschutz'),
-            subtitle: const Text('Gesundheitsdaten widerrufen, Datenexport'),
+            subtitle: const Text('Gesundheitsdaten widerrufen, Datenexport, DSGVO'),
+            trailing: const Icon(Icons.chevron_right),
             onTap: () {
-              // TODO: Zu Datenschutz-Details navigieren
+              PrivacySettingsSheet.show(context);
             },
           ),
         ],

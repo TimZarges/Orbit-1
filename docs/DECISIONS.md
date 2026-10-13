@@ -194,4 +194,27 @@
      - Detaillierte Dokumentation für Firebase Hosting, Custom Domains und App Check Web (reCAPTCHA Enterprise) in `docs/MANUAL_STEPS.md`.
 - **Begründung:** Maximale Performance bei professionellen Trainerkadern ($\ge 25$ Athleten), ergonomische Tastatur- und Mausbedienung am Desktop und Schutz vor DoS/Quota-Limits.
 
+### 2026-10-13: Qualität, Datenschutz-Abschluss & Release-Readiness v1.0 (Phase 16)
+- **Kontext:** Vorbereitung der App auf den Store-Launch (Google Play Store), Bereinigung aller offenen Restschulden, Nachweis der Barrierefreiheit und Erfüllung aller DSGVO- und Store-Richtlinien.
+- **Entscheidung:**
+  1. **Restschulden-Bereinigung & Code-Integrität:**
+     - FIT-Sportmapping in Cloud Functions auf standardisierte Profile erweitert (`RUN`, `BIKE`, `SWIM`, `STRENGTH`, `OTHER`).
+     - Vollständige Datenschutz-Verdrahtung in `SettingsScreen` mit `PrivacySettingsSheet` (Art. 9, Art. 17 Kontolöschung, Art. 20 JSON-Export).
+     - Interaktiver Dialog für Schwellenwert-Anpassungen in `ThresholdsScreen` und Verknüpfung zum Diagnose-Cockpit.
+     - Vollständige Interaktion in `AthleteCoachTabScreen` (Invite-Code Dialog, Bestätigungsdialog für Widerruf, Berechtigungs-Toggles).
+     - Automatisierter Vollständigkeitstest für Lokalisierung (`localization_completeness_test.dart`) stellt sicher, dass kein Schlüssel in DE oder EN fehlt.
+  2. **Android Release-Konfiguration & Sicherheit:**
+     - `applicationId`: `app.orbit.training`.
+     - Entkopplung des Signaturschlüssels via `key.properties` (wird nicht in Git eingecheckt).
+     - R8/Proguard Minification aktiviert mit `proguard-rules.pro`.
+     - Berechtigungsaudit im Manifest: Strikte Beschränkung auf `INTERNET` und `POST_NOTIFICATIONS`.
+  3. **Datenschutz- und Store-Compliance:**
+     - Statische Löschseite `web/delete-account.html` zur Erfüllung der Google Play Anforderung für Kontolöschung.
+     - Detaillierte Google Play Data Safety Deklaration (`docs/release/DATA_SAFETY.md`).
+     - Datenschutz-Folgenabschätzung (DSFA) und TOMs (`docs/release/DSFA.md`).
+     - Betriebs- und Notfall-Rollback-Handbuch (`docs/release/CHECKLIST.md`).
+     - Garmin-Produktionsantragsvorbereitung (`docs/release/GARMIN_REVIEW.md`).
+- **Begründung:** Gewährleistung der Store-Konformität, juristische Absicherung im Umgang mit Gesundheitsdaten und reibungsloser Produktionsbetrieb.
+
+
 

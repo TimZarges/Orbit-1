@@ -48,8 +48,20 @@ export async function parseFitAndSave(
   const localDate = date.toISOString().split('T')[0]; 
   const utcOffsetMinutes = 0; // Better: extract from device settings or profile timezone
   
-  // Basic mapping
-  const sport = 'OTHER'; // TODO: proper mapping based on session.sport
+  // Robust sport mapping based on FIT Profile sport enum or string
+  let sport = 'OTHER';
+  const rawSport = typeof session.sport === 'string' ? session.sport.toLowerCase() : session.sport;
+  if (rawSport === 1 || rawSport === 'running' || rawSport === 'run') {
+    sport = 'RUN';
+  } else if (rawSport === 2 || rawSport === 'cycling' || rawSport === 'biking' || rawSport === 'bike') {
+    sport = 'BIKE';
+  } else if (rawSport === 5 || rawSport === 'swimming' || rawSport === 'swim') {
+    sport = 'SWIM';
+  } else if (rawSport === 11 || rawSport === 'training' || rawSport === 'strength_training' || rawSport === 'fitness_equipment') {
+    sport = 'STRENGTH';
+  } else {
+    sport = 'OTHER';
+  }
   
   // Collect streams
   const streams = {

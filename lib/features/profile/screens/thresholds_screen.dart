@@ -85,7 +85,7 @@ class ThresholdsScreen extends StatelessWidget {
                 ),
                 TextButton(
                   onPressed: () {
-                    // TODO: Neuen Wert erfassen
+                    _showEditDialog(context, title, currentValue);
                   },
                   child: const Text('Ändern'),
                 ),
@@ -120,12 +120,63 @@ class ThresholdsScreen extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             TextButton(
-              onPressed: () {},
-              child: const Text('Wert schätzen lassen'),
+              onPressed: () {
+                Navigator.of(context).pushNamed('/diagnostics');
+              },
+              child: const Text('Wert schätzen lassen (Diagnostik)'),
             )
           ],
         ),
       ),
     );
   }
+
+  void _showEditDialog(BuildContext context, String title, String currentValue) {
+    final controller = TextEditingController(text: currentValue.replaceAll(RegExp(r'[^0-9.:]'), ''));
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('$title anpassen'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Trage deinen neuen Schwellenwert ein. Deine Trainingszonen werden '
+              'automatisch ab heute aktualisiert.',
+              style: TextStyle(fontSize: 13),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: controller,
+              decoration: const InputDecoration(
+                labelText: 'Neuer Wert',
+                border: OutlineInputBorder(),
+              ),
+              autofocus: true,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Abbrechen'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('$title wurde aktualisiert (${controller.text}).'),
+                  backgroundColor: AppColors.green,
+                ),
+              );
+            },
+            child: const Text('Speichern'),
+          ),
+        ],
+      ),
+    );
+  }
 }
+

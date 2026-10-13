@@ -3,8 +3,8 @@
 > Wird am Ende jeder Phase von Antigravity aktualisiert (`/phase-finish`). Kurz und ehrlich halten.
 
 ## Aktuell
-- Phase: 15 (Abgeschlossen) -> Phase 16 (Release-Vorbereitung, Polish & Store-Readiness)
-- Branch: feature/phase-15-coach-desktop
+- Phase: 16 (Abgeschlossen) – Alle Phasen 00–16 der Roadmap erfolgreich abgeschlossen! 🎉
+- Branch: feature/phase-16-release
 
 ## Fertig
 - Phase 00 (Foundation): Abgeschlossen
@@ -22,35 +22,35 @@
 - Phase 12 (Leistungsdiagnostik & Schwellenwert-Erkennung): Abgeschlossen
 - Phase 13 (Chat und Push-Benachrichtigungen): Abgeschlossen
 - Phase 14 (Home-Dashboard „Heute"): Abgeschlossen
-- Phase 15 (Coach-Desktop und Web):
-  - O(1) Dashboard-Aggregation (`coachDashboard/{coachId}/athletes/{athleteId}`):
-    - Cloud Functions berechnen aggregierte Statusdokumente (Form-Ampel, CTL/ATL/TSB, 7d-Soll-Ist-Erfüllung, unread chat messages, letzte Aktivität, Alerts, Wettkampfziel).
-    - Coach lädt das gesamte Dashboard mit einer einzigen Abfrage statt $N$ Abfragen.
-    - Automatischer Trigger bei Beendigung/Widerruf von Trainer-Verknüpfungen.
-  - Firestore Security Rules (via `firestore-rules-author`):
-    - `coachDashboard`: Nur Trainer liest (`coachId == auth.uid`), Client-Schreibverbot.
-    - `preferences`: Vollständige Trennung & Lese-/Schreibzugriff nur durch Besitzer (`isOwner(userId)`).
-    - `thresholdProposals`: Trainer mit Aktivitäts-Freigabe darf Vorschläge mit Status `PENDING` anlegen; Statusänderung (`ACCEPTED`/`REJECTED`) obliegt ausschließlich dem Athleten.
-  - UI & Adaptiver Coach-Arbeitsbereich (`TrainerAthletesTabScreen`):
-    - Responsives Layout mit Schnellumschaltung zwischen Kader-Tabelle (`CoachAthletesTable`) und Wochenraster (`MultiAthleteWeekGrid`).
-    - Filterchips nach Sportart, Statusampeln, Warnungen und Volltextsuche.
-    - Tastaturkürzel (`/` oder `Cmd+K` für Fokus auf Suche, `?` für Tastenkürzel-Übersicht).
-  - Mehrathleten-Wochenraster mit Drag & Drop und Undo (`MultiAthleteGridController`):
-    - Funktionale Domain-Logik für Verschieben und Kopieren (Alt/Option-Taste).
-    - Vollständiger Undo-Stack zur sicheren Rücknahme von Planungsaktionen.
-    - Zugängliche Alternative über Kontextmenü.
-  - Massenzuweisung (`BatchAssignService`, `BatchAssignDialog`):
-    - Sichere Zuweisung an mehrere Athleten via Firestore `WriteBatch` ($\le 500$ Ops) unter Beachtung der Kalender-Berechtigung.
-  - Web & Storage Konfiguration:
-    - `cors.json` für Cloud Storage, Titel/PWA-Konfiguration in `web/index.html`.
-    - Detaillierte Hosting-, Domain- und App-Check-Web-Anleitung in `docs/MANUAL_STEPS.md`.
-  - Last-Test Seed-Skript (`functions/src/seeds/seed_coach_athletes.ts`):
-    - Erzeugt 28 Test-Athleten für Lade- und Scrolltests, abgesichert gegen Ausführung in Produktivumgebungen.
-  - Unit-Tests: `test/features/coach_link/domain/multi_athlete_grid_controller_test.dart`, `test/features/coach_link/models/coach_dashboard_models_test.dart`.
-  - Showcase in `widget_gallery.dart`.
+- Phase 15 (Coach-Desktop und Web): Abgeschlossen
+- Phase 16 (Qualität, Datenschutz-Abschluss, Release-Readiness v1.0):
+  - Restschulden-Bereinigung (`docs/release/OPEN_ITEMS.md`):
+    - FIT-Sportmapping in `functions/src/import/fitParser.ts` auf alle Standard-Sportarten erweitert.
+    - `PrivacySettingsSheet` (`lib/features/settings/widgets/privacy_settings_sheet.dart`) implementiert und in `SettingsScreen` verdrahtet (DSGVO-Rechte, Datenexport, Kontolöschungs-Option).
+    - Schwellenwert-Anpassungsdialog in `ThresholdsScreen` integriert mit Verknüpfung zur Diagnostik.
+    - `AthleteCoachTabScreen` um Einladungscode-Eingabe, Bestätigungsdialog zur Trennung und Berechtigungsschalter erweitert.
+    - Automatisierter Lokalisierungstest (`test/core/localization/localization_completeness_test.dart`) sichert 100% ARB-Deckung zwischen de und en.
+  - Sicherheits-Audit & Schutzkonzept (`docs/release/SECURITY_AUDIT.md`):
+    - Secret Scan erfolgreich: Keine Tokens, privaten Schlüssel oder Secrets im Repository.
+    - App Check Staged-Rollout-Plan (Monitoring $\rightarrow$ Enforcement) ausgearbeitet.
+    - Quoten- und Budget-Alarme dokumentiert.
+  - Datenschutz- & Store-Compliance:
+    - Statische Kontolöschungsseite `web/delete-account.html` für Google Play Anforderung erstellt.
+    - Google Play Data Safety Deklaration (`docs/release/DATA_SAFETY.md`).
+    - Datenschutz-Folgenabschätzung (DSFA) und TOMs (`docs/release/DSFA.md`).
+    - Barrierefreiheitsprüfung (`docs/release/ACCESSIBILITY.md`) nach WCAG 2.1 AA (Kontrast, Tippflächen, Textskalierung).
+    - Performance-Review (`docs/release/PERFORMANCE.md`) für 1-Hz-Streams und O(1) Reads.
+  - Android & iOS Build-Readiness:
+    - Android Release Build (`android/app/build.gradle.kts`) mit `app.orbit.training`, Proguard/R8 (`proguard-rules.pro`), `key.properties` Entkopplung und minimierten Manifest-Berechtigungen (`INTERNET`, `POST_NOTIFICATIONS`).
+    - Store-Listings (de/en) und Screenshot-Plan (`docs/release/STORE_LISTING.md`).
+    - iOS-Vorbereitungsleitfaden (`docs/release/IOS_PREP.md`) für Sign in with Apple und APNs.
+    - Betriebs- und Notfall-Rollback-Handbuch (`docs/release/CHECKLIST.md`).
+    - Garmin Health API Production Review Vorbereitung (`docs/release/GARMIN_REVIEW.md`).
+  - Dokumentation:
+    - Umfassendes `README.md` und aktualisierte `docs/ARCHITECTURE.md`.
 
 ## Offen / in Arbeit
-- Phase 16: Release-Vorbereitung, Polish & Store-Readiness
+- Keine offenen Phasen – Projekt ist bereit für Release-Build und Play Console Einreichung!
 
 ## Bekannte Probleme
 - `build_runner` Konflikte durch `analyzer` Abhängigkeiten: Wir nutzen derzeit manuelle Models anstelle von `freezed`.
