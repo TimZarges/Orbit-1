@@ -68,10 +68,11 @@
 - **Begründung:** Der Flutter-Client muss nicht die Last des Parsings tragen. Der Client lädt die rohen Dateien nur hoch und zeigt die serverseitig aufbereiteten, gesampelten Metriken an. Das hält die App leichtgewichtig und zentralisiert die Logik.
 - **Alternativen:** Client-seitiges Parsing (führt zu hohem RAM-Bedarf und großen App-Binaries).
 
-### 2026-10-08: Karten-Bibliothek (Spike S2)
+### 2026-10-08: Karten-Bibliothek (Spike S2 & Revision Phase 11)
 - **Kontext:** Wahl der Map-Library für GPS-Routen im Cockpit.
-- **Entscheidung:** Nutzung von `flutter_map` mit datenschutzkonformen Tiles statt `google_maps_flutter`.
-- **Begründung:** Gesundheitsdaten und IP-Übertragungen an Google erfordern hohe DSGVO-Hürden. `flutter_map` bietet ausreichende Performance für unsere Polylines und lässt sich gut in den Dark Mode integrieren.
+- **Entscheidung:** Ursprünglich Evaluierung von `flutter_map`. In Phase 11 revidiert zugunsten eines vollständig autarken Offline-Vektorgrafik-Renderers (`TelemetryMapWidget` via `CustomPainter`) ohne externe Tile-Server-Abhängigkeit.
+- **Begründung:** Gesundheitsdaten und IP-Übertragungen an externe Kachelserver erfordern hohe DSGVO-Hürden. Die Vektor-Polyline rendert offline bei 60 FPS ohne Netzwerkverkehr. Kacheln können bei Bedarf über Opt-In aktiviert werden.
+- **Alternativen:** `google_maps_flutter` (verworfen wegen Drittland-Datentransfer) oder `flutter_map` mit OSM-Tiles (Netzwerk- und Caching-Overhead).
 
 ### 2026-10-08: Chart-Bibliothek (Spike S1)
 - **Kontext:** Performance von Telemetrie-Charts bei >7.000 Datenpunkten.
@@ -216,5 +217,46 @@
      - Garmin-Produktionsantragsvorbereitung (`docs/release/GARMIN_REVIEW.md`).
 - **Begründung:** Gewährleistung der Store-Konformität, juristische Absicherung im Umgang mit Gesundheitsdaten und reibungsloser Produktionsbetrieb.
 
+### 2026-10-08: [Rekonstruktion] Phase 01: Auth-Architektur & DSGVO-Rollenmodell
+- **Kontext:** Registrierung und Login von Athleten und Trainern mit DSGVO-konformer Rollentrennung und Manipulationsschutz.
+- **Entscheidung & Begründung:**
+  1. Login ausschließlich über Firebase Auth mit E-Mail und Passwort im ersten Schritt (`auth_provider.dart`).
+  2. Strikt serverseitige Rollenvergabe: Das Feld `role` kann vom Client niemals direkt in Firestore geschrieben werden (`firestore.rules:87-100`). Stattdessen setzt die Cloud Function `setInitialRole` (`functions/src/auth.ts:8`) die Rolle atomar im Firestore-Nutzerdokument und als Firebase Custom User Claim (`setCustomUserClaims`).
+  3. Festhalten von Art. 9 DSGVO-Einwilligungen mit ISO8601-Zeitstempel und Schemaversion (`consents.healthData`, `consents.privacyVersion`).
+  4. Bereitstellung serverseitiger Funktionen für Kontolöschung (`deleteAccount` mit `recursiveDelete`) und DSGVO-Datenexport (`exportAccount`).
+- **Alternativen:** Direkter Schreibzugriff des Clients auf das Nutzerdokument mit Rollenangabe (verworfen wegen Privilege-Escalation-Gefahr).
 
+### 2026-10-08: [Rekonstruktion] Phase 02: Inverse Coach-Verknüpfung & Granulare Freigaben
+- **Kontext:** Sichere Verbindung zwischen Trainer und Athlet ohne unkontrollierte Offenlegung sensibler Daten.
+- **Entscheidung & Begründung:**
+  1. Inverses Einladungsmodell: Trainer erzeugen einen 8-stelligen Hex-Code (`createInvite`, `functions/src/coach.ts:13`) in der Collection `invites/{code}` mit 7 Tagen Gültigkeit.
+  2. Annahme ausschließlich durch den Athleten via Cloud Function `redeemInvite` (`functions/src/coach.ts:37`) in einer Firestore-Transaktion.
+  3. Granulares 3-Säulen-Rechtemodell in `coachLinks/{athleteId}_{coachId}`: `permissions: { calendar: bool, activities: bool, health: bool }`. Bei Annahme ist `health` standardmäßig `false` (Art. 9 DSGVO).
+  4. Firestore Security Rules sperren Client-Schreibzugriffe auf `coachLinks` komplett (`allow write: if false;`).
+- **Alternativen:** Direkte Einladung per E-Mail-Suche (verworfen wegen PII-Offenlegung in Suchanfragen).
 
+### 2026-10-08: [Rekonstruktion] Phase 03: Profil, Einstellungen & Unveränderliche Schwellenwert-Historie
+- **Kontext:** Verwaltung von Athletenprofilen, Einheiten und Schwellenwerten (FTP, LTHR, CSS, Pace).
+- **Entscheidung & Begründung:**
+  1. Trennung von Stammdaten (`users/{uid}`) und Schwellenwerten: Schwellenwerte werden in einer chronologischen Subcollection `users/{uid}/thresholdHistory/{id}` mit `effectiveFrom` gespeichert (`DATA_MODEL.md:38`).
+  2. Immutabilitäts-Prinzip: Änderungen an Schwellenwerten wirken nur für zukünftige Einheiten. Historische Aktivitäten behalten ihren `thresholdsSnapshot`.
+  3. Automatische Berechnung von 7 Trainingszonen nach Coggan (Power) und 5 Herzfrequenzzonen im Client (`training_zones_model.dart`).
+- **Alternativen:** Überschreiben der aktuellen Schwellenwerte im Nutzerdokument (hätte historische Belastungswerte verfälscht).
+
+### 2026-10-08: [Rekonstruktion] Phase 04: Server-seitiger FIT-Import & Speicheroptimierung
+- **Kontext:** Import hochfrequenter FIT-Dateien (bis zu 25 MB) ohne Überlastung des mobilen Clients oder Firestore.
+- **Entscheidung & Begründung:**
+  1. Client lädt Rohdateien direkt in Firebase Storage hoch (`users/{uid}/fit/{activityId}.fit`).
+  2. Parsing serverseitig in Node.js via `@garmin/fitsdk` mit dynamischem ESM-Import (`functions/src/import/fitParser.ts`).
+  3. Resampling aller Sensorströme auf 1 Hz und komprimiertes Speichern als `users/{uid}/streams/{activityId}.json.gz` im Cloud Storage, um das Firestore 1-MB-Dokumentenlimit nicht zu verletzen.
+  4. Hauptdokument in der Root-Collection `activities/{activityId}` speichert nur Zusammenfassungswerte und den Pfad zum Stream.
+- **Alternativen:** Clientseitiges FIT-Parsing in Dart (verworfen wegen hohem RAM-Bedarf und App-Größe).
+
+### 2026-10-13: [Rekonstruktion] Phase 06: Garmin Connect OAuth 1.0a & Provider-Schicht
+- **Kontext:** Automatische Synchronisation von Aktivitäten und Health-Daten direkt von Garmin.
+- **Entscheidung & Begründung:**
+  1. 3-Wege OAuth 1.0a Flow mit HMAC-SHA1-Signierung (`functions/src/import/garmin/auth.ts`).
+  2. Speicherung der Garmin User-Tokens in `users/{uid}/private/integrations/garmin`, durch Security Rules für Clients unlesbar gesperrt.
+  3. Trennung des öffentlichen Status in `users/{uid}/integrationStatus/garmin` für die UI-Anzeige (`state: CONNECTED`).
+  4. Bereitstellung eines öffentlichen Webhook-Endpunkts (`garminWebhook`) zur Entgegennahme von Push-Benachrichtigungen.
+- **Alternativen:** Direkter Token-Austausch über den mobilen Client (verworfen, da OAuth 1.0a Client Secrets erfordert, die niemals in die App kompiliert werden dürfen).

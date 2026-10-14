@@ -50,10 +50,11 @@
     - Umfassendes `README.md` und aktualisierte `docs/ARCHITECTURE.md`.
 
 ## Offen / in Arbeit
-- Keine offenen Phasen – Projekt ist bereit für Release-Build und Play Console Einreichung!
+- Keine offenen Phasen – Projekt ist bereit für Release-Build und Beta/Play Console Einreichung!
 
-## Bekannte Probleme
-- `build_runner` Konflikte durch `analyzer` Abhängigkeiten: Wir nutzen derzeit manuelle Models anstelle von `freezed`.
-
-
-
+## Stand der Qualitäts- und Beta-Bereinigung
+- Flutter Analyze: 0 Fehler, 0 Warnungen (`flutter analyze`).
+- Flutter Tests: 103 von 103 Tests bestanden (100% grün).
+- Cloud Functions: 17 von 17 Tests bestanden, TypeScript kompilierbar, Storage-Trigger und Metrics-Export vollständig verdrahtet.
+- Baseline-Report und TODO-Inventar: `docs/beta/BASELINE.md` und `docs/beta/TODO_INVENTORY.md`.
+- ADR-Log: Alle Entscheidungen inkl. rekonstruierter ADRs 01–04 und 06 in `docs/DECISIONS.md`.
