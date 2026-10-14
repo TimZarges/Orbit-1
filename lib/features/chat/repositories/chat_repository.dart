@@ -31,7 +31,9 @@ class ChatRepository {
         .where('coachId', isEqualTo: uid)
         .snapshots()
         .map((snapshot) {
-      final list = snapshot.docs.map((doc) => ChatConversation.fromDocument(doc)).toList();
+      final list = snapshot.docs
+          .map((doc) => ChatConversation.fromDocument(doc))
+          .toList();
       list.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
       return list;
     });
@@ -47,7 +49,9 @@ class ChatRepository {
         .limit(limit)
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs.map((doc) => ChatMessage.fromDocument(doc, chatId)).toList();
+      return snapshot.docs
+          .map((doc) => ChatMessage.fromDocument(doc, chatId))
+          .toList();
     });
   }
 
@@ -63,7 +67,8 @@ class ChatRepository {
     ActivityShareSnapshot? activityShare,
   }) async {
     final now = DateTime.now();
-    final messageDoc = _firestore.collection('chats').doc(chatId).collection('messages').doc();
+    final messageDoc =
+        _firestore.collection('chats').doc(chatId).collection('messages').doc();
 
     final message = ChatMessage(
       id: messageDoc.id,

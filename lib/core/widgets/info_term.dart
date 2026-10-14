@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:orbit/l10n/app_localizations.dart';
 
 /// Ein wiederverwendbarer Info-Icon-Baustein, der bei Klick einen Bottom Sheet
 /// mit Erklärtexten (z.B. für FTP, CTL) öffnet.

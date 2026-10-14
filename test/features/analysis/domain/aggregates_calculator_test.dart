@@ -111,9 +111,12 @@ void main() {
 
     test('calculate8WeekTrend und describeWeeklyTrend', () {
       final points = [
-        const WeeklyLoadTrendPoint(weekNumber: 1, weekLabel: 'W1', totalLoad: 200),
-        const WeeklyLoadTrendPoint(weekNumber: 2, weekLabel: 'W2', totalLoad: 250),
-        const WeeklyLoadTrendPoint(weekNumber: 3, weekLabel: 'W3', totalLoad: 280),
+        const WeeklyLoadTrendPoint(
+            weekNumber: 1, weekLabel: 'W1', totalLoad: 200),
+        const WeeklyLoadTrendPoint(
+            weekNumber: 2, weekLabel: 'W2', totalLoad: 250),
+        const WeeklyLoadTrendPoint(
+            weekNumber: 3, weekLabel: 'W3', totalLoad: 280),
       ];
 
       final desc = AggregatesCalculator.describeWeeklyTrend(points);

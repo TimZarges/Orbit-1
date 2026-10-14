@@ -73,7 +73,9 @@ class ReadinessEvaluation {
 
     if (!baseline.hasSufficientData) {
       return ReadinessEvaluation(
-        status: baseline.dataPointsCount == 0 ? ReadinessStatus.noData : ReadinessStatus.buildingBaseline,
+        status: baseline.dataPointsCount == 0
+            ? ReadinessStatus.noData
+            : ReadinessStatus.buildingBaseline,
         baseline: baseline,
         todayMetrics: today,
       );
@@ -92,7 +94,8 @@ class ReadinessEvaluation {
 
     double? sleepDeltaHours;
     if (today.sleepSeconds != null && baseline.meanSleepSeconds != null) {
-      sleepDeltaHours = (today.sleepSeconds! - baseline.meanSleepSeconds!) / 3600.0;
+      sleepDeltaHours =
+          (today.sleepSeconds! - baseline.meanSleepSeconds!) / 3600.0;
     }
 
     // Klassifikation anhand von Ruhepuls und HRV
@@ -109,7 +112,9 @@ class ReadinessEvaluation {
     }
 
     // 2. HRV-Bewertung (abgefallene HRV = vegetative Belastung)
-    if (hrvDelta != null && baseline.medianHrv != null && baseline.medianHrv! > 0) {
+    if (hrvDelta != null &&
+        baseline.medianHrv != null &&
+        baseline.medianHrv! > 0) {
       final hrvDropRatio = -hrvDelta / baseline.medianHrv!;
       final hrvStd = baseline.stdHrv ?? (baseline.medianHrv! * 0.15);
 

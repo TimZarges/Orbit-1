@@ -58,7 +58,8 @@ class FitnessFatigueTrendChart extends StatelessWidget {
                     const SizedBox(width: 8),
                     Text(
                       'CTL / ATL / TSB Verlauf',
-                      style: AppTypography.title.copyWith(color: AppColors.navy),
+                      style:
+                          AppTypography.title.copyWith(color: AppColors.navy),
                     ),
                   ],
                 ),
@@ -80,7 +81,8 @@ class FitnessFatigueTrendChart extends StatelessWidget {
                 ),
                 _LegendItem(
                   color: const Color(0xFF0EA5E9), // Cyan / Frische
-                  label: 'TSB ${(latest.tsb >= 0 ? "+${latest.tsb.round()}" : latest.tsb.round().toString())}',
+                  label:
+                      'TSB ${(latest.tsb >= 0 ? "+${latest.tsb.round()}" : latest.tsb.round().toString())}',
                 ),
               ],
             ),

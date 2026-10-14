@@ -62,7 +62,8 @@ class AnalysisInfoSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final title = customTitle ?? (term != null ? TermResolver.resolve(term!, level) : 'Information');
+    final title = customTitle ??
+        (term != null ? TermResolver.resolve(term!, level) : 'Information');
     final desc = customDescription ?? _getDescription(term);
     final form = formula ?? _getFormula(term);
 
@@ -88,7 +89,8 @@ class AnalysisInfoSheet extends StatelessWidget {
             const SizedBox(height: 12),
             Text(
               desc,
-              style: AppTypography.body.copyWith(color: AppColors.navy, height: 1.4),
+              style: AppTypography.body
+                  .copyWith(color: AppColors.navy, height: 1.4),
             ),
             if (form != null) ...[
               const SizedBox(height: 16),
@@ -103,9 +105,13 @@ class AnalysisInfoSheet extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Formel / Berechnung:', style: AppTypography.label.copyWith(color: Colors.grey.shade600)),
+                    Text('Formel / Berechnung:',
+                        style: AppTypography.label
+                            .copyWith(color: Colors.grey.shade600)),
                     const SizedBox(height: 4),
-                    Text(form, style: AppTypography.bodySmall.copyWith(fontFamily: 'monospace')),
+                    Text(form,
+                        style: AppTypography.bodySmall
+                            .copyWith(fontFamily: 'monospace')),
                   ],
                 ),
               ),
@@ -119,7 +125,8 @@ class AnalysisInfoSheet extends StatelessWidget {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.navy,
                   foregroundColor: AppColors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
                 ),
                 child: const Text('Verstanden'),
               ),

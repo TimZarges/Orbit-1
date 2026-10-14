@@ -16,12 +16,14 @@ class EditRaceGoalSheet extends StatefulWidget {
     required this.onSaved,
   });
 
-  static Future<void> show(BuildContext context, {RaceGoal? initialGoal, required VoidCallback onSaved}) {
+  static Future<void> show(BuildContext context,
+      {RaceGoal? initialGoal, required VoidCallback onSaved}) {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => EditRaceGoalSheet(initialGoal: initialGoal, onSaved: onSaved),
+      builder: (ctx) =>
+          EditRaceGoalSheet(initialGoal: initialGoal, onSaved: onSaved),
     );
   }
 
@@ -38,8 +40,10 @@ class _EditRaceGoalSheetState extends State<EditRaceGoalSheet> {
   @override
   void initState() {
     super.initState();
-    _titleController = TextEditingController(text: widget.initialGoal?.title ?? '');
-    _selectedDate = widget.initialGoal?.date ?? DateTime.now().add(const Duration(days: 90)).toString().split(' ')[0];
+    _titleController =
+        TextEditingController(text: widget.initialGoal?.title ?? '');
+    _selectedDate = widget.initialGoal?.date ??
+        DateTime.now().add(const Duration(days: 90)).toString().split(' ')[0];
     _selectedDistance = widget.initialGoal?.distance ?? 'Mitteldistanz';
   }
 
@@ -114,7 +118,8 @@ class _EditRaceGoalSheetState extends State<EditRaceGoalSheet> {
             const SizedBox(height: 16),
             Text(
               'Saisonziel festlegen',
-              style: AppTypography.title.copyWith(fontSize: 18, color: AppColors.navy),
+              style: AppTypography.title
+                  .copyWith(fontSize: 18, color: AppColors.navy),
             ),
             const SizedBox(height: 16),
 
@@ -126,7 +131,9 @@ class _EditRaceGoalSheetState extends State<EditRaceGoalSheet> {
                 hintText: 'z. B. Ironman 70.3 Kraichgau',
                 filled: true,
                 fillColor: AppColors.lightBackground,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none),
               ),
             ),
             const SizedBox(height: 14),
@@ -136,18 +143,21 @@ class _EditRaceGoalSheetState extends State<EditRaceGoalSheet> {
               onTap: () async {
                 final picked = await showDatePicker(
                   context: context,
-                  initialDate: DateTime.tryParse(_selectedDate) ?? DateTime.now().add(const Duration(days: 90)),
+                  initialDate: DateTime.tryParse(_selectedDate) ??
+                      DateTime.now().add(const Duration(days: 90)),
                   firstDate: DateTime.now(),
                   lastDate: DateTime.now().add(const Duration(days: 730)),
                 );
                 if (picked != null) {
                   setState(() {
-                    _selectedDate = '${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}';
+                    _selectedDate =
+                        '${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}';
                   });
                 }
               },
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
                 decoration: BoxDecoration(
                   color: AppColors.lightBackground,
                   borderRadius: BorderRadius.circular(12),
@@ -155,8 +165,11 @@ class _EditRaceGoalSheetState extends State<EditRaceGoalSheet> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Datum: $_selectedDate', style: AppTypography.body.copyWith(color: AppColors.navy)),
-                    const Icon(Icons.calendar_month, size: 20, color: AppColors.navy),
+                    Text('Datum: $_selectedDate',
+                        style:
+                            AppTypography.body.copyWith(color: AppColors.navy)),
+                    const Icon(Icons.calendar_month,
+                        size: 20, color: AppColors.navy),
                   ],
                 ),
               ),
@@ -170,15 +183,22 @@ class _EditRaceGoalSheetState extends State<EditRaceGoalSheet> {
                 labelText: 'Distanz / Kategorie',
                 filled: true,
                 fillColor: AppColors.lightBackground,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none),
               ),
               items: const [
                 DropdownMenuItem(value: 'Sprint', child: Text('Sprintdistanz')),
-                DropdownMenuItem(value: 'Olympisch', child: Text('Olympische Distanz')),
-                DropdownMenuItem(value: 'Mitteldistanz', child: Text('Mitteldistanz (70.3)')),
-                DropdownMenuItem(value: 'Langdistanz', child: Text('Langdistanz (Ironman)')),
+                DropdownMenuItem(
+                    value: 'Olympisch', child: Text('Olympische Distanz')),
+                DropdownMenuItem(
+                    value: 'Mitteldistanz',
+                    child: Text('Mitteldistanz (70.3)')),
+                DropdownMenuItem(
+                    value: 'Langdistanz', child: Text('Langdistanz (Ironman)')),
                 DropdownMenuItem(value: 'Marathon', child: Text('Marathon')),
-                DropdownMenuItem(value: 'Halbmarathon', child: Text('Halbmarathon')),
+                DropdownMenuItem(
+                    value: 'Halbmarathon', child: Text('Halbmarathon')),
                 DropdownMenuItem(value: 'Sonstige', child: Text('Sonstige')),
               ],
               onChanged: (val) => setState(() => _selectedDistance = val),
@@ -194,14 +214,19 @@ class _EditRaceGoalSheetState extends State<EditRaceGoalSheet> {
                   backgroundColor: AppColors.volt,
                   foregroundColor: AppColors.navy,
                   padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
                   elevation: 0,
                 ),
                 child: _isSaving
-                    ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2))
                     : Text(
                         'Ziel speichern',
-                        style: AppTypography.body.copyWith(fontWeight: FontWeight.bold, color: AppColors.navy),
+                        style: AppTypography.body.copyWith(
+                            fontWeight: FontWeight.bold, color: AppColors.navy),
                       ),
               ),
             ),

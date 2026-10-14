@@ -63,7 +63,8 @@ class AppTheme {
         color: AppColors.white,
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(AppSpacing.cardRadius)),
+          borderRadius:
+              BorderRadius.all(Radius.circular(AppSpacing.cardRadius)),
           side: BorderSide(color: AppColors.cardBorder, width: 1),
         ),
       ),
@@ -71,7 +72,8 @@ class AppTheme {
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.navy,
           foregroundColor: AppColors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
           textStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
         ),
@@ -80,7 +82,8 @@ class AppTheme {
         style: OutlinedButton.styleFrom(
           foregroundColor: AppColors.navy,
           side: const BorderSide(color: AppColors.navy, width: 1.5),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
           textStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
         ),
@@ -89,7 +92,8 @@ class AppTheme {
         filled: true,
         fillColor: AppColors.white,
         labelStyle: const TextStyle(color: Color(0xFF475569)),
-        floatingLabelStyle: const TextStyle(color: AppColors.navy, fontWeight: FontWeight.w600),
+        floatingLabelStyle:
+            const TextStyle(color: AppColors.navy, fontWeight: FontWeight.w600),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: AppColors.cardBorder),
@@ -169,7 +173,8 @@ class AppTheme {
         color: Color(0xFF1E293B),
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(AppSpacing.cardRadius)),
+          borderRadius:
+              BorderRadius.all(Radius.circular(AppSpacing.cardRadius)),
           side: BorderSide(color: Color(0xFF334155), width: 1),
         ),
       ),
@@ -177,7 +182,8 @@ class AppTheme {
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.volt,
           foregroundColor: AppColors.navy,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
           textStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
         ),
@@ -186,7 +192,8 @@ class AppTheme {
         style: OutlinedButton.styleFrom(
           foregroundColor: AppColors.volt,
           side: const BorderSide(color: AppColors.volt, width: 1.5),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
           textStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
         ),
@@ -195,7 +202,8 @@ class AppTheme {
         filled: true,
         fillColor: const Color(0xFF1E293B),
         labelStyle: const TextStyle(color: Color(0xFF94A3B8)),
-        floatingLabelStyle: const TextStyle(color: AppColors.volt, fontWeight: FontWeight.w600),
+        floatingLabelStyle:
+            const TextStyle(color: AppColors.volt, fontWeight: FontWeight.w600),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: Color(0xFF334155)),

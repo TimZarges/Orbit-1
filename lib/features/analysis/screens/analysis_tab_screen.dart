@@ -4,7 +4,6 @@ import '../../../core/design/app_colors.dart';
 import '../../../core/design/app_typography.dart';
 import '../../../core/metrics/term_resolver.dart';
 import '../../auth/providers/user_provider.dart';
-import '../models/analysis_timeframe.dart';
 import '../providers/analysis_providers.dart';
 import '../widgets/analysis_timeframe_selector.dart';
 import '../widgets/form_traffic_light_card.dart';
@@ -35,14 +34,17 @@ class AnalysisTabScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // Wenn athleteId übergeben wurde, setzen wir den Override
-    if (athleteId != null && athleteId != ref.watch(analysisAthleteIdOverrideProvider)) {
+    if (athleteId != null &&
+        athleteId != ref.watch(analysisAthleteIdOverrideProvider)) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         ref.read(analysisAthleteIdOverrideProvider.notifier).state = athleteId;
       });
     }
 
     final userDoc = ref.watch(userDocumentProvider).valueOrNull;
-    final expLevelStr = (userDoc?['profile'] is Map ? userDoc?['profile']['experienceLevel'] : null) as String?;
+    final profile = userDoc?['profile'];
+    final expLevelStr =
+        (profile is Map ? profile['experienceLevel'] : null) as String?;
 
     final ExperienceLevel experienceLevel;
     if (expLevelStr == 'EXPERT') {
@@ -72,11 +74,13 @@ class AnalysisTabScreen extends ConsumerWidget {
               if (athleteName != null && athleteName!.isNotEmpty) ...[
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                   decoration: BoxDecoration(
                     color: AppColors.navy.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.navy.withValues(alpha: 0.2)),
+                    border: Border.all(
+                        color: AppColors.navy.withValues(alpha: 0.2)),
                   ),
                   child: Row(
                     children: [
@@ -99,7 +103,8 @@ class AnalysisTabScreen extends ConsumerWidget {
               AnalysisTimeframeSelector(
                 selected: selectedTimeframe,
                 onSelected: (tf) {
-                  ref.read(selectedAnalysisTimeframeProvider.notifier).state = tf;
+                  ref.read(selectedAnalysisTimeframeProvider.notifier).state =
+                      tf;
                 },
               ),
               const SizedBox(height: 16),
@@ -108,7 +113,8 @@ class AnalysisTabScreen extends ConsumerWidget {
               analysisAsync.when(
                 data: (data) => _buildContent(context, data, experienceLevel),
                 loading: () => _buildLoadingSkeleton(),
-                error: (err, stack) => _buildErrorCard(context, ref, err.toString()),
+                error: (err, stack) =>
+                    _buildErrorCard(context, ref, err.toString()),
               ),
             ],
           ),
@@ -178,7 +184,8 @@ class AnalysisTabScreen extends ConsumerWidget {
         const SizedBox(height: 16),
 
         // 4. Sportverteilung (ab Fortgeschritten)
-        if (level == ExperienceLevel.advanced || level == ExperienceLevel.expert) ...[
+        if (level == ExperienceLevel.advanced ||
+            level == ExperienceLevel.expert) ...[
           SportDistributionCard(
             summary: data.sportDistribution,
           ),
@@ -204,8 +211,7 @@ class AnalysisTabScreen extends ConsumerWidget {
             points: data.fitnessFatiguePoints,
           ),
           const SizedBox(height: 16),
-
-          ThresholdProgressCard(athleteId: widget.athleteId),
+          ThresholdProgressCard(athleteId: athleteId),
           const SizedBox(height: 16),
         ],
 
@@ -254,7 +260,8 @@ class AnalysisTabScreen extends ConsumerWidget {
           const SizedBox(height: 12),
           Text('Fehler beim Laden der Analyse', style: AppTypography.title),
           const SizedBox(height: 8),
-          Text(error, style: AppTypography.bodySmall, textAlign: TextAlign.center),
+          Text(error,
+              style: AppTypography.bodySmall, textAlign: TextAlign.center),
           const SizedBox(height: 16),
           ElevatedButton.icon(
             onPressed: () => ref.invalidate(analysisStateProvider),
@@ -280,13 +287,15 @@ class AnalysisTabScreen extends ConsumerWidget {
       ),
       child: Column(
         children: [
-          Icon(Icons.query_stats, size: 48, color: AppColors.navy.withValues(alpha: 0.4)),
+          Icon(Icons.query_stats,
+              size: 48, color: AppColors.navy.withValues(alpha: 0.4)),
           const SizedBox(height: 16),
           Text('Noch keine Trainingsdaten', style: AppTypography.title),
           const SizedBox(height: 8),
           Text(
             'Sobald du Aktivitäten importierst oder Garmin verbindest, werden hier deine Form-Ampel, Belastung und Trends berechnet.',
-            style: AppTypography.bodySmall.copyWith(color: Colors.grey.shade600),
+            style:
+                AppTypography.bodySmall.copyWith(color: Colors.grey.shade600),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 20),

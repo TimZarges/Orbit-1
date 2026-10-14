@@ -45,18 +45,21 @@ class RaceCountdownCard extends StatelessWidget {
                       color: AppColors.techGrey,
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: Icon(Icons.emoji_events_outlined, size: 18, color: AppColors.navy),
+                    child: Icon(Icons.emoji_events_outlined,
+                        size: 18, color: AppColors.navy),
                   ),
                   const SizedBox(width: 8),
                   Text(
                     'Saisonziel',
-                    style: AppTypography.label.copyWith(color: Colors.grey.shade600),
+                    style: AppTypography.label
+                        .copyWith(color: Colors.grey.shade600),
                   ),
                 ],
               ),
               if (onEdit != null)
                 IconButton(
-                  icon: const Icon(Icons.edit_outlined, size: 18, color: Colors.grey),
+                  icon: const Icon(Icons.edit_outlined,
+                      size: 18, color: Colors.grey),
                   onPressed: onEdit,
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),
@@ -98,7 +101,8 @@ class RaceCountdownCard extends StatelessWidget {
               const Spacer(),
               Text(
                 raceGoal.date,
-                style: AppTypography.label.copyWith(color: Colors.grey.shade500),
+                style:
+                    AppTypography.label.copyWith(color: Colors.grey.shade500),
               ),
             ],
           ),

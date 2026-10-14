@@ -34,13 +34,15 @@ void main() {
       final result = LttbDownsampler.downsample(input, 50);
       expect(result.length, equals(50));
 
-      final maxPowerInSample = result.map((p) => p.power ?? 0.0).fold(0.0, (a, b) => a > b ? a : b);
+      final maxPowerInSample =
+          result.map((p) => p.power ?? 0.0).fold(0.0, (a, b) => a > b ? a : b);
       expect(maxPowerInSample, equals(850.0));
     });
 
     test('performant bei 36.000 Datenpunkten (10h Aktivität)', () {
       final input = List.generate(36000, (i) {
-        return ActivityStreamPoint(timeSec: i, power: 220.0 + (i % 20), hr: 140.0);
+        return ActivityStreamPoint(
+            timeSec: i, power: 220.0 + (i % 20), hr: 140.0);
       });
 
       final stopwatch = Stopwatch()..start();

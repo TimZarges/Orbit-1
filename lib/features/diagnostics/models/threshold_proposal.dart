@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import '../../../core/design/app_colors.dart';
 
 enum ThresholdType {
   ftp,
@@ -112,7 +111,9 @@ class ThresholdProposal {
         break;
     }
 
-    final basisList = (data['basis'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [];
+    final basisList =
+        (data['basis'] as List<dynamic>?)?.map((e) => e.toString()).toList() ??
+            [];
 
     return ThresholdProposal(
       id: doc.id,

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../../core/design/app_colors.dart';
 import '../../../core/design/app_typography.dart';
 import '../../analysis/models/zone_distribution.dart';
 
@@ -33,7 +32,9 @@ class ZoneDetailWidget extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(title, style: AppTypography.title.copyWith(color: Colors.white, fontSize: 16)),
+              Text(title,
+                  style: AppTypography.title
+                      .copyWith(color: Colors.white, fontSize: 16)),
               Text(
                 'Gesamt ${_formatTotal(summary.totalDurationSec)}',
                 style: TextStyle(color: Colors.grey.shade400, fontSize: 12),
@@ -77,19 +78,26 @@ class ZoneDetailWidget extends StatelessWidget {
                       ),
                       child: Text(
                         zone.zoneLabel,
-                        style: TextStyle(color: zone.color, fontSize: 10, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                            color: zone.color,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold),
                       ),
                     ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         zone.nameDe,
-                        style: TextStyle(color: Colors.grey.shade300, fontSize: 12),
+                        style: TextStyle(
+                            color: Colors.grey.shade300, fontSize: 12),
                       ),
                     ),
                     Text(
                       '${zone.formattedDuration} (${zone.percent.round()}%)',
-                      style: TextStyle(color: Colors.grey.shade400, fontSize: 11, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                          color: Colors.grey.shade400,
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),

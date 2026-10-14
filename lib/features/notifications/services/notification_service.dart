@@ -9,6 +9,9 @@ class NotificationService {
   NotificationService({NotificationRepository? repository})
       : _repository = repository ?? NotificationRepository();
 
+  /// Zugriff auf das zugrundeliegende NotificationRepository.
+  NotificationRepository get repository => _repository;
+
   /// Fragt die Push-Berechtigung im Kontext an (z. B. nach Trainer-Verknüpfung oder beim ersten Chat).
   /// Zeigt vorher eine verständliche Erklärung gemäß DESIGN.md §8.
   static Future<bool> requestPermissionInContext(
@@ -21,7 +24,8 @@ class NotificationService {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Row(
           children: [
-            const Icon(Icons.notifications_active_outlined, color: Color(0xFF0F172A), size: 24),
+            const Icon(Icons.notifications_active_outlined,
+                color: Color(0xFF0F172A), size: 24),
             const SizedBox(width: 10),
             const Expanded(
               child: Text(
@@ -64,7 +68,8 @@ class NotificationService {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Nicht jetzt', style: TextStyle(color: Colors.grey)),
+            child:
+                const Text('Nicht jetzt', style: TextStyle(color: Colors.grey)),
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(ctx).pop(true),
@@ -72,11 +77,13 @@ class NotificationService {
               backgroundColor: const Color(0xFFCDFB17), // Volt
               foregroundColor: const Color(0xFF0F172A), // Navy
               elevation: 0,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
             ),
             child: const Text(
               'Aktivieren',
-              style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
+              style: TextStyle(
+                  fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
             ),
           ),
         ],
@@ -87,7 +94,8 @@ class NotificationService {
   }
 
   /// Verarbeitet eingehende Deep Links aus Notification Clicks.
-  static void handleNotificationClick(BuildContext context, Map<String, dynamic> data) {
+  static void handleNotificationClick(
+      BuildContext context, Map<String, dynamic> data) {
     final type = data['type'] as String?;
     switch (type) {
       case 'CHAT':

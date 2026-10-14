@@ -35,7 +35,8 @@ class _TelemetryMapWidgetState extends State<TelemetryMapWidget> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF1E293B),
-        title: const Text('Externe Kartenkacheln laden?', style: TextStyle(color: Colors.white)),
+        title: const Text('Externe Kartenkacheln laden?',
+            style: TextStyle(color: Colors.white)),
         content: const Text(
           'Beim Laden von Umgebungskarten wird deine IP-Adresse an den Kartenanbieter übertragen. '
           'Deine Streckenführung bleibt auch ohne externe Kacheln vollständig interaktiv.',
@@ -44,7 +45,8 @@ class _TelemetryMapWidgetState extends State<TelemetryMapWidget> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Abbrechen', style: TextStyle(color: Colors.white54)),
+            child: const Text('Abbrechen',
+                style: TextStyle(color: Colors.white54)),
           ),
           ElevatedButton(
             onPressed: () {
@@ -64,7 +66,8 @@ class _TelemetryMapWidgetState extends State<TelemetryMapWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final gpsPoints = widget.points.where((p) => p.lat != null && p.lng != null).toList();
+    final gpsPoints =
+        widget.points.where((p) => p.lat != null && p.lng != null).toList();
 
     if (gpsPoints.isEmpty) {
       return Container(
@@ -78,11 +81,13 @@ class _TelemetryMapWidgetState extends State<TelemetryMapWidget> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.location_off_outlined, color: Colors.grey.shade600, size: 32),
+            Icon(Icons.location_off_outlined,
+                color: Colors.grey.shade600, size: 32),
             const SizedBox(height: 8),
             Text(
               'Keine GPS-Strecke erfasst (Indoor / Rolle)',
-              style: AppTypography.bodySmall.copyWith(color: Colors.grey.shade400),
+              style:
+                  AppTypography.bodySmall.copyWith(color: Colors.grey.shade400),
             ),
           ],
         ),
@@ -123,7 +128,8 @@ class _TelemetryMapWidgetState extends State<TelemetryMapWidget> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.route, size: 14, color: AppColors.accentVolt),
+                  const Icon(Icons.route,
+                      size: 14, color: AppColors.accentVolt),
                   const SizedBox(width: 6),
                   Text(
                     'GPS-Strecke (${(gpsPoints.last.distanceM / 1000).toStringAsFixed(1)} km)',
@@ -145,7 +151,8 @@ class _TelemetryMapWidgetState extends State<TelemetryMapWidget> {
               onTap: _requestTileConsent,
               borderRadius: BorderRadius.circular(8),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(
                   color: const Color(0xFF1E293B).withValues(alpha: 0.9),
                   borderRadius: BorderRadius.circular(8),
@@ -157,13 +164,18 @@ class _TelemetryMapWidgetState extends State<TelemetryMapWidget> {
                     Icon(
                       _tilesEnabled ? Icons.layers : Icons.layers_outlined,
                       size: 14,
-                      color: _tilesEnabled ? AppColors.accentVolt : Colors.white70,
+                      color:
+                          _tilesEnabled ? AppColors.accentVolt : Colors.white70,
                     ),
                     const SizedBox(width: 6),
                     Text(
-                      _tilesEnabled ? 'Kartenkacheln aktiv' : 'Kartenkacheln laden',
+                      _tilesEnabled
+                          ? 'Kartenkacheln aktiv'
+                          : 'Kartenkacheln laden',
                       style: AppTypography.label.copyWith(
-                        color: _tilesEnabled ? AppColors.accentVolt : Colors.white70,
+                        color: _tilesEnabled
+                            ? AppColors.accentVolt
+                            : Colors.white70,
                         fontSize: 11,
                       ),
                     ),
@@ -218,7 +230,8 @@ class _RoutePainter extends CustomPainter {
 
     Offset toOffset(double lat, double lng) {
       final x = offsetX + (lng - minLng) * scale;
-      final y = size.height - (offsetY + (lat - minLat) * scale); // Invertierte Y-Achse
+      final y = size.height -
+          (offsetY + (lat - minLat) * scale); // Invertierte Y-Achse
       return Offset(x, y);
     }
 
@@ -271,10 +284,13 @@ class _RoutePainter extends CustomPainter {
     canvas.drawCircle(finishPt, 3, Paint()..color = Colors.white);
 
     // Synchrone Scrubbing-Position (Volt-Marker)
-    if (scrubPoint != null && scrubPoint!.lat != null && scrubPoint!.lng != null) {
+    if (scrubPoint != null &&
+        scrubPoint!.lat != null &&
+        scrubPoint!.lng != null) {
       final scrubPt = toOffset(scrubPoint!.lat!, scrubPoint!.lng!);
       // Pulsierender Außenkreis
-      canvas.drawCircle(scrubPt, 10, Paint()..color = AppColors.accentVolt.withValues(alpha: 0.4));
+      canvas.drawCircle(scrubPt, 10,
+          Paint()..color = AppColors.accentVolt.withValues(alpha: 0.4));
       // Kern
       canvas.drawCircle(scrubPt, 5, Paint()..color = AppColors.accentVolt);
       canvas.drawCircle(scrubPt, 2, Paint()..color = AppColors.navy);

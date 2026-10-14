@@ -35,7 +35,8 @@ class ThresholdEntry {
       thresholdHrBpm: (data['thresholdHrBpm'] as num?)?.toDouble(),
       maxHrBpm: (data['maxHrBpm'] as num?)?.toDouble(),
       restingHrBpm: (data['restingHrBpm'] as num?)?.toDouble(),
-      runThresholdPaceSecPerKm: (data['runThresholdPaceSecPerKm'] as num?)?.toDouble(),
+      runThresholdPaceSecPerKm:
+          (data['runThresholdPaceSecPerKm'] as num?)?.toDouble(),
       swimCssSecPer100m: (data['swimCssSecPer100m'] as num?)?.toDouble(),
       source: data['source'] as String? ?? 'MANUAL',
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
@@ -49,7 +50,8 @@ class ThresholdEntry {
       if (thresholdHrBpm != null) 'thresholdHrBpm': thresholdHrBpm,
       if (maxHrBpm != null) 'maxHrBpm': maxHrBpm,
       if (restingHrBpm != null) 'restingHrBpm': restingHrBpm,
-      if (runThresholdPaceSecPerKm != null) 'runThresholdPaceSecPerKm': runThresholdPaceSecPerKm,
+      if (runThresholdPaceSecPerKm != null)
+        'runThresholdPaceSecPerKm': runThresholdPaceSecPerKm,
       if (swimCssSecPer100m != null) 'swimCssSecPer100m': swimCssSecPer100m,
       'source': source,
       'createdAt': Timestamp.fromDate(createdAt),
@@ -75,7 +77,8 @@ class ThresholdEntry {
       thresholdHrBpm: thresholdHrBpm ?? this.thresholdHrBpm,
       maxHrBpm: maxHrBpm ?? this.maxHrBpm,
       restingHrBpm: restingHrBpm ?? this.restingHrBpm,
-      runThresholdPaceSecPerKm: runThresholdPaceSecPerKm ?? this.runThresholdPaceSecPerKm,
+      runThresholdPaceSecPerKm:
+          runThresholdPaceSecPerKm ?? this.runThresholdPaceSecPerKm,
       swimCssSecPer100m: swimCssSecPer100m ?? this.swimCssSecPer100m,
       source: source ?? this.source,
       createdAt: createdAt ?? this.createdAt,

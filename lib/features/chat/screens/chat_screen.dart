@@ -64,8 +64,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               radius: 18,
               backgroundColor: AppColors.techGrey,
               child: Text(
-                widget.otherUserName.isNotEmpty ? widget.otherUserName[0].toUpperCase() : 'C',
-                style: AppTypography.title.copyWith(fontSize: 16, color: AppColors.navy),
+                widget.otherUserName.isNotEmpty
+                    ? widget.otherUserName[0].toUpperCase()
+                    : 'C',
+                style: AppTypography.title
+                    .copyWith(fontSize: 16, color: AppColors.navy),
               ),
             ),
             const SizedBox(width: 10),
@@ -75,13 +78,16 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 children: [
                   Text(
                     widget.otherUserName,
-                    style: AppTypography.title.copyWith(fontSize: 16, color: AppColors.navy),
+                    style: AppTypography.title
+                        .copyWith(fontSize: 16, color: AppColors.navy),
                   ),
                   Text(
                     isRevoked ? 'Verbindung beendet' : 'Verbunden',
                     style: AppTypography.label.copyWith(
                       fontSize: 11,
-                      color: isRevoked ? Colors.red.shade400 : const Color(0xFF10B981),
+                      color: isRevoked
+                          ? Colors.red.shade400
+                          : const Color(0xFF10B981),
                     ),
                   ),
                 ],
@@ -101,16 +107,19 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.chat_bubble_outline, size: 48, color: Colors.grey.shade300),
+                        Icon(Icons.chat_bubble_outline,
+                            size: 48, color: Colors.grey.shade300),
                         const SizedBox(height: 12),
                         Text(
                           'Noch keine Nachrichten.',
-                          style: AppTypography.body.copyWith(color: Colors.grey.shade500),
+                          style: AppTypography.body
+                              .copyWith(color: Colors.grey.shade500),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           'Schreibe deinem Coach oder teile eine Einheit.',
-                          style: AppTypography.label.copyWith(color: Colors.grey.shade400),
+                          style: AppTypography.label
+                              .copyWith(color: Colors.grey.shade400),
                         ),
                       ],
                     ),
@@ -132,7 +141,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                       showDateHeader = true;
                     } else {
                       final prevMessage = messages[index + 1];
-                      if (!_isSameDay(message.createdAt, prevMessage.createdAt)) {
+                      if (!_isSameDay(
+                          message.createdAt, prevMessage.createdAt)) {
                         showDateHeader = true;
                       }
                     }
@@ -213,7 +223,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     } else if (_isSameDay(date, now.subtract(const Duration(days: 1)))) {
       label = 'Gestern';
     } else {
-      label = '${date.day.toString().padLeft(2, '0')}.${date.month.toString().padLeft(2, '0')}.${date.year}';
+      label =
+          '${date.day.toString().padLeft(2, '0')}.${date.month.toString().padLeft(2, '0')}.${date.year}';
     }
 
     return Padding(
@@ -227,7 +238,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           ),
           child: Text(
             label,
-            style: AppTypography.label.copyWith(fontSize: 11, color: Colors.grey.shade600),
+            style: AppTypography.label
+                .copyWith(fontSize: 11, color: Colors.grey.shade600),
           ),
         ),
       ),

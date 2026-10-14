@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import '../../../core/design/app_colors.dart';
 import '../../calendar/models/planned_workout.dart';
 import '../../calendar/repositories/planned_workout_repository.dart';
@@ -66,7 +65,8 @@ class _WorkoutTemplateLibraryScreenState
         children: [
           // Suchleiste
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
@@ -146,11 +146,13 @@ class _WorkoutTemplateLibraryScreenState
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.fitness_center_outlined, size: 48, color: Colors.grey.shade400),
+                          Icon(Icons.fitness_center_outlined,
+                              size: 48, color: Colors.grey.shade400),
                           const SizedBox(height: 12),
                           const Text(
                             'Keine Vorlagen gefunden',
-                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 16),
                           ),
                           const SizedBox(height: 6),
                           const Text(
@@ -166,7 +168,8 @@ class _WorkoutTemplateLibraryScreenState
                             ),
                             icon: const Icon(Icons.download),
                             label: const Text('20 Startvorlagen laden'),
-                            onPressed: () => _seedInitialTemplates(effectiveUserId),
+                            onPressed: () =>
+                                _seedInitialTemplates(effectiveUserId),
                           ),
                         ],
                       ),
@@ -175,7 +178,8 @@ class _WorkoutTemplateLibraryScreenState
                 }
 
                 return ListView.separated(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16.0, vertical: 8.0),
                   itemCount: templates.length,
                   separatorBuilder: (_, __) => const SizedBox(height: 12),
                   itemBuilder: (context, index) {
@@ -194,14 +198,16 @@ class _WorkoutTemplateLibraryScreenState
         icon: const Icon(Icons.add),
         label: const Text('Neues Workout'),
         onPressed: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (_) => WorkoutBuilderScreen(
-                athleteId: widget.athleteId,
-                targetLocalDate: widget.targetLocalDate,
-              ),
-            ),
-          ).then((_) => setState(() {}));
+          Navigator.of(context)
+              .push(
+                MaterialPageRoute(
+                  builder: (_) => WorkoutBuilderScreen(
+                    athleteId: widget.athleteId,
+                    targetLocalDate: widget.targetLocalDate,
+                  ),
+                ),
+              )
+              .then((_) => setState(() {}));
         },
       ),
     );
@@ -241,7 +247,8 @@ class _WorkoutTemplateLibraryScreenState
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: sportColor.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(6),
@@ -260,26 +267,31 @@ class _WorkoutTemplateLibraryScreenState
                 Expanded(
                   child: Text(
                     template.title,
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 15),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 IconButton(
                   icon: Icon(
-                    template.isFavorite ? Icons.favorite : Icons.favorite_border,
+                    template.isFavorite
+                        ? Icons.favorite
+                        : Icons.favorite_border,
                     color: template.isFavorite ? Colors.red : Colors.grey,
                     size: 20,
                   ),
                   onPressed: () async {
-                    await _repository.toggleFavorite(template.id, template.isFavorite);
+                    await _repository.toggleFavorite(
+                        template.id, template.isFavorite);
                     setState(() {});
                   },
                 ),
               ],
             ),
 
-            if (template.description != null && template.description!.isNotEmpty) ...[
+            if (template.description != null &&
+                template.description!.isNotEmpty) ...[
               const SizedBox(height: 4),
               Text(
                 template.description!,
@@ -309,14 +321,16 @@ class _WorkoutTemplateLibraryScreenState
                 spacing: 6,
                 children: template.tags.map((tag) {
                   return Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(
                       color: Colors.grey.shade100,
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
                       tag,
-                      style: const TextStyle(fontSize: 10, color: Colors.black54),
+                      style:
+                          const TextStyle(fontSize: 10, color: Colors.black54),
                     ),
                   );
                 }).toList(),
@@ -330,18 +344,21 @@ class _WorkoutTemplateLibraryScreenState
               children: [
                 OutlinedButton.icon(
                   icon: const Icon(Icons.edit_outlined, size: 16),
-                  label: const Text('Bearbeiten', style: TextStyle(fontSize: 12)),
+                  label:
+                      const Text('Bearbeiten', style: TextStyle(fontSize: 12)),
                   onPressed: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => WorkoutBuilderScreen(
-                          sport: template.sport,
-                          initialStructure: template.structure,
-                          athleteId: widget.athleteId,
-                          targetLocalDate: widget.targetLocalDate,
-                        ),
-                      ),
-                    ).then((_) => setState(() {}));
+                    Navigator.of(context)
+                        .push(
+                          MaterialPageRoute(
+                            builder: (_) => WorkoutBuilderScreen(
+                              sport: template.sport,
+                              initialStructure: template.structure,
+                              athleteId: widget.athleteId,
+                              targetLocalDate: widget.targetLocalDate,
+                            ),
+                          ),
+                        )
+                        .then((_) => setState(() {}));
                   },
                 ),
                 const SizedBox(width: 8),
@@ -395,7 +412,9 @@ class _WorkoutTemplateLibraryScreenState
     final now = DateTime.now();
     final pickedDate = await showDatePicker(
       context: context,
-      initialDate: widget.targetLocalDate != null ? DateTime.parse(widget.targetLocalDate!) : now,
+      initialDate: widget.targetLocalDate != null
+          ? DateTime.parse(widget.targetLocalDate!)
+          : now,
       firstDate: now.subtract(const Duration(days: 30)),
       lastDate: now.add(const Duration(days: 365)),
     );
@@ -429,7 +448,8 @@ class _WorkoutTemplateLibraryScreenState
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('"${template.title}" für $localDateStr eingeplant!')),
+        SnackBar(
+            content: Text('"${template.title}" für $localDateStr eingeplant!')),
       );
       Navigator.of(context).pop();
     }

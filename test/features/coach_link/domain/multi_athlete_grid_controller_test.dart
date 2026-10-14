@@ -24,7 +24,8 @@ void main() {
       );
     });
 
-    test('Moving a workout changes targetAthleteId and targetDate with same ID', () {
+    test('Moving a workout changes targetAthleteId and targetDate with same ID',
+        () {
       final moved = controller.handleDrop(
         workout: testWorkout,
         targetAthleteId: 'ath2',

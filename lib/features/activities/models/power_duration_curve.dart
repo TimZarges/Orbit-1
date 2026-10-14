@@ -21,11 +21,16 @@ class PowerDurationPoint {
 
   /// Gibt an, ob dieser Wert einen neuen Allzeit-Rekord darstellt.
   bool get isAllTimePR =>
-      allTimeBestWatts != null && activityWatts > allTimeBestWatts! && activityWatts > 0;
+      allTimeBestWatts != null &&
+      activityWatts > allTimeBestWatts! &&
+      activityWatts > 0;
 
   /// Gibt an, ob dieser Wert einen neuen Saison-Rekord darstellt.
   bool get isSeasonPR =>
-      !isAllTimePR && seasonBestWatts != null && activityWatts > seasonBestWatts! && activityWatts > 0;
+      !isAllTimePR &&
+      seasonBestWatts != null &&
+      activityWatts > seasonBestWatts! &&
+      activityWatts > 0;
 
   /// Lesbare Dauer (z. B. „5s", „1m", „5m", „20m", „1h").
   String get formattedDuration {

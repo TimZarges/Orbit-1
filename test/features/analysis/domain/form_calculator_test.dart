@@ -46,7 +46,8 @@ void main() {
       expect(result.ratio, closeTo(-0.40, 0.001));
     });
 
-    test('berechnet wellLoaded wenn TSB/CTL zwischen -0.30 und -0.10 liegt', () {
+    test('berechnet wellLoaded wenn TSB/CTL zwischen -0.30 und -0.10 liegt',
+        () {
       // CTL = 50, ATL = 60 => TSB = -10 => Ratio = -10 / 50 = -0.20
       final result = calculator.calculate(
         ctl: 50.0,

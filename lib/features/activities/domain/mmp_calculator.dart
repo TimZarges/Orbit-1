@@ -1,4 +1,3 @@
-import 'dart:math';
 import '../models/activity_stream.dart';
 import '../models/power_duration_curve.dart';
 import '../models/activity_bests.dart';
@@ -7,7 +6,17 @@ import '../models/activity_bests.dart';
 class MmpCalculator {
   /// Standard-Dauern in Sekunden: 1s, 5s, 15s, 30s, 1m, 2m, 5m, 10m, 20m, 30m, 60m.
   static const List<int> defaultDurationsSec = [
-    1, 5, 15, 30, 60, 120, 300, 600, 1200, 1800, 3600,
+    1,
+    5,
+    15,
+    30,
+    60,
+    120,
+    300,
+    600,
+    1200,
+    1800,
+    3600,
   ];
 
   /// Berechnet die besten Durchschnittsleistungen über die definierten Intervalle.

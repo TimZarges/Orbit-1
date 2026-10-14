@@ -47,7 +47,8 @@ class DailyMetrics {
   });
 
   /// Schlafdauer in Stunden als Dezimalwert.
-  double? get sleepHours => sleepSeconds != null ? sleepSeconds! / 3600.0 : null;
+  double? get sleepHours =>
+      sleepSeconds != null ? sleepSeconds! / 3600.0 : null;
 
   /// Formatierte Schlafdauer (z. B. "7h 45m").
   String get formattedSleepDuration {
@@ -58,7 +59,8 @@ class DailyMetrics {
   }
 
   /// Erstellt ein [DailyMetrics]-Objekt aus einem Firestore-Dokument.
-  factory DailyMetrics.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
+  factory DailyMetrics.fromFirestore(
+      DocumentSnapshot<Map<String, dynamic>> doc) {
     final data = doc.data() ?? {};
     return DailyMetrics.fromMap(doc.id, data);
   }
@@ -98,7 +100,9 @@ class DailyMetrics {
       'steps': steps,
       'bodyBattery': bodyBattery,
       'source': source,
-      'updatedAt': updatedAt != null ? Timestamp.fromDate(updatedAt!) : FieldValue.serverTimestamp(),
+      'updatedAt': updatedAt != null
+          ? Timestamp.fromDate(updatedAt!)
+          : FieldValue.serverTimestamp(),
     };
   }
 }

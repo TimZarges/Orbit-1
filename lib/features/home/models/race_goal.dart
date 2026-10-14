@@ -1,10 +1,9 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 /// Wettkampfziel eines Athleten.
 class RaceGoal {
   final String title;
   final String date; // Format: YYYY-MM-DD
-  final String? distance; // z. B. "Olympisch", "Mitteldistanz", "Langdistanz", "Marathon"
+  final String?
+      distance; // z. B. "Olympisch", "Mitteldistanz", "Langdistanz", "Marathon"
   final String? targetTime; // z. B. "4:30:00"
 
   const RaceGoal({
@@ -37,7 +36,8 @@ class RaceGoal {
     try {
       final parts = date.split('-');
       if (parts.length != 3) return 0;
-      final target = DateTime(int.parse(parts[0]), int.parse(parts[1]), int.parse(parts[2]));
+      final target = DateTime(
+          int.parse(parts[0]), int.parse(parts[1]), int.parse(parts[2]));
       final now = DateTime.now();
       final today = DateTime(now.year, now.month, now.day);
       return target.difference(today).inDays;

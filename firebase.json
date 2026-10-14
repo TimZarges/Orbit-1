@@ -16,6 +16,10 @@
       {
         "source": "/datenschutz",
         "destination": "/privacy/index.html"
+      },
+      {
+        "source": "/delete-account",
+        "destination": "/delete-account.html"
       }
     ]
   },

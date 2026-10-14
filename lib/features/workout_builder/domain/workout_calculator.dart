@@ -135,10 +135,12 @@ class WorkoutCalculator {
           final pace = (step.intensity as SwimPaceIntensity).secPer100m;
           singleDurationSec = ((singleDistanceM / 100.0) * pace).round();
         } else if (step.intensity is CssOffsetIntensity) {
-          final offset = (step.intensity as CssOffsetIntensity).offsetSecPer100m;
+          final offset =
+              (step.intensity as CssOffsetIntensity).offsetSecPer100m;
           if (thresholds.cssSecPer100m != null) {
             final effectivePace = thresholds.cssSecPer100m! + offset;
-            singleDurationSec = ((singleDistanceM / 100.0) * effectivePace).round();
+            singleDurationSec =
+                ((singleDistanceM / 100.0) * effectivePace).round();
             final paceMin = thresholds.cssSecPer100m! ~/ 60;
             final paceSec = thresholds.cssSecPer100m! % 60;
             assumptions.add(
@@ -165,7 +167,8 @@ class WorkoutCalculator {
             warnings.add(
               'Keine Lauf-Schwellenpace hinterlegt: Dauer für ${singleDistanceM}m Lauf geschätzt mit 5:00/km.',
             );
-            singleDurationSec = ((singleDistanceM / 100.0) * 30).round(); // 5:00/km = 300s/km
+            singleDurationSec =
+                ((singleDistanceM / 100.0) * 30).round(); // 5:00/km = 300s/km
           }
         } else {
           // Fallback
@@ -177,13 +180,15 @@ class WorkoutCalculator {
       }
 
       // 2. Zonenzuordnung
-      final targetZone = _resolveIntensityToZone(step.intensity, structure.sport);
+      final targetZone =
+          _resolveIntensityToZone(step.intensity, structure.sport);
       zonesMap[targetZone] = (zonesMap[targetZone] ?? 0) + stepDuration;
 
       // 3. Geschätzter TSS / ORBIT Score
       final intensityFactor = _resolveIntensityFactor(step.intensity);
       if (stepDuration > 0 && intensityFactor > 0) {
-        final stepTss = (stepDuration * intensityFactor * intensityFactor) / 3600.0 * 100.0;
+        final stepTss =
+            (stepDuration * intensityFactor * intensityFactor) / 3600.0 * 100.0;
         totalTss += stepTss;
       }
     }

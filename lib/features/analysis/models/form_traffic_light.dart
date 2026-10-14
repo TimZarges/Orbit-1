@@ -147,7 +147,8 @@ class FormTrafficLight {
   Color get statusColor {
     switch (status) {
       case FormStatus.veryTired:
-        return const Color(0xFFDD6B20); // Warmes Amber/Orange (neutral statt Alarm-Rot)
+        return const Color(
+            0xFFDD6B20); // Warmes Amber/Orange (neutral statt Alarm-Rot)
       case FormStatus.wellLoaded:
         return AppColors.volt; // Performance Volt / Grün
       case FormStatus.balanced:

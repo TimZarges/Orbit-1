@@ -34,7 +34,8 @@ class WorkoutBlockEditorSheet extends ConsumerWidget {
             children: [
               // Sheet Header mit Drag-Handle und Schließen-Button
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 16.0, vertical: 12.0),
                 child: Row(
                   children: [
                     Container(
@@ -48,7 +49,8 @@ class WorkoutBlockEditorSheet extends ConsumerWidget {
                     const Spacer(),
                     Text(
                       'Block-Editor (${blocks.length} Blöcke)',
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 16),
                     ),
                     const Spacer(),
                     IconButton(
@@ -72,7 +74,8 @@ class WorkoutBlockEditorSheet extends ConsumerWidget {
                       )
                     : ListView.separated(
                         controller: scrollController,
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16.0, vertical: 12.0),
                         itemCount: blocks.length,
                         separatorBuilder: (_, __) => const SizedBox(height: 10),
                         itemBuilder: (context, index) {
@@ -92,7 +95,8 @@ class WorkoutBlockEditorSheet extends ConsumerWidget {
               // Untere Aktionsleiste: Neuer Block
               SafeArea(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16.0, vertical: 12.0),
                   child: Row(
                     children: [
                       Expanded(
@@ -189,7 +193,9 @@ class WorkoutBlockEditorSheet extends ConsumerWidget {
     required WorkoutBuilderNotifier notifier,
     required String sport,
   }) {
-    final zoneNum = step.intensity is ZoneIntensity ? (step.intensity as ZoneIntensity).low : 2;
+    final zoneNum = step.intensity is ZoneIntensity
+        ? (step.intensity as ZoneIntensity).low
+        : 2;
     final color = AppColors.zoneColor(zoneNum);
 
     return Card(
@@ -207,7 +213,8 @@ class WorkoutBlockEditorSheet extends ConsumerWidget {
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: color.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(6),
@@ -225,7 +232,8 @@ class WorkoutBlockEditorSheet extends ConsumerWidget {
                 const SizedBox(width: 8),
                 Text(
                   '${step.target.formattedDisplay} ${step.intensity.formattedDisplay}',
-                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                  style: const TextStyle(
+                      fontWeight: FontWeight.w600, fontSize: 14),
                 ),
                 const Spacer(),
 
@@ -233,13 +241,17 @@ class WorkoutBlockEditorSheet extends ConsumerWidget {
                 IconButton(
                   icon: const Icon(Icons.arrow_upward, size: 18),
                   tooltip: 'Nach oben verschieben',
-                  onPressed: index > 0 ? () => notifier.moveBlock(index, index - 1) : null,
+                  onPressed: index > 0
+                      ? () => notifier.moveBlock(index, index - 1)
+                      : null,
                   visualDensity: VisualDensity.compact,
                 ),
                 IconButton(
                   icon: const Icon(Icons.arrow_downward, size: 18),
                   tooltip: 'Nach unten verschieben',
-                  onPressed: index < totalBlocks - 1 ? () => notifier.moveBlock(index, index + 1) : null,
+                  onPressed: index < totalBlocks - 1
+                      ? () => notifier.moveBlock(index, index + 1)
+                      : null,
                   visualDensity: VisualDensity.compact,
                 ),
                 IconButton(
@@ -249,7 +261,8 @@ class WorkoutBlockEditorSheet extends ConsumerWidget {
                   visualDensity: VisualDensity.compact,
                 ),
                 IconButton(
-                  icon: const Icon(Icons.delete_outline, size: 18, color: Colors.red),
+                  icon: const Icon(Icons.delete_outline,
+                      size: 18, color: Colors.red),
                   tooltip: 'Löschen',
                   onPressed: () => notifier.deleteBlock(index),
                   visualDensity: VisualDensity.compact,
@@ -261,7 +274,8 @@ class WorkoutBlockEditorSheet extends ConsumerWidget {
             // Stepper für Dauer/Distanz
             Row(
               children: [
-                const Text('Ziel: ', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                const Text('Ziel: ',
+                    style: TextStyle(fontSize: 12, color: Colors.grey)),
                 if (step.target.isDuration) ...[
                   IconButton(
                     icon: const Icon(Icons.remove_circle_outline, size: 20),
@@ -278,7 +292,8 @@ class WorkoutBlockEditorSheet extends ConsumerWidget {
                   ),
                   Text(
                     step.target.formattedDisplay,
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 13),
                   ),
                   IconButton(
                     icon: const Icon(Icons.add_circle_outline, size: 20),
@@ -305,7 +320,8 @@ class WorkoutBlockEditorSheet extends ConsumerWidget {
                   ),
                   Text(
                     step.target.formattedDisplay,
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 13),
                   ),
                   IconButton(
                     icon: const Icon(Icons.add_circle_outline, size: 20),
@@ -324,8 +340,10 @@ class WorkoutBlockEditorSheet extends ConsumerWidget {
                 // In Wiederholung umschließen
                 TextButton.icon(
                   icon: const Icon(Icons.repeat, size: 16),
-                  label: const Text('Als 4x Serie', style: TextStyle(fontSize: 12)),
-                  onPressed: () => notifier.wrapBlockInRepeat(index, repeatCount: 4),
+                  label: const Text('Als 4x Serie',
+                      style: TextStyle(fontSize: 12)),
+                  onPressed: () =>
+                      notifier.wrapBlockInRepeat(index, repeatCount: 4),
                 ),
               ],
             ),
@@ -347,7 +365,8 @@ class WorkoutBlockEditorSheet extends ConsumerWidget {
       decoration: BoxDecoration(
         color: AppColors.cockpit.withValues(alpha: 0.03),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.navy.withValues(alpha: 0.3), width: 1.5),
+        border: Border.all(
+            color: AppColors.navy.withValues(alpha: 0.3), width: 1.5),
       ),
       padding: const EdgeInsets.all(12.0),
       child: Column(
@@ -357,7 +376,8 @@ class WorkoutBlockEditorSheet extends ConsumerWidget {
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color: AppColors.navy,
                   borderRadius: BorderRadius.circular(6),
@@ -378,7 +398,8 @@ class WorkoutBlockEditorSheet extends ConsumerWidget {
                 icon: const Icon(Icons.remove, size: 18),
                 onPressed: repeat.count > 2
                     ? () {
-                        final updated = repeat.copyWith(count: repeat.count - 1);
+                        final updated =
+                            repeat.copyWith(count: repeat.count - 1);
                         _replaceStepInStructure(notifier, index, updated);
                       }
                     : null,
@@ -392,7 +413,8 @@ class WorkoutBlockEditorSheet extends ConsumerWidget {
                 icon: const Icon(Icons.add, size: 18),
                 onPressed: repeat.count < 99
                     ? () {
-                        final updated = repeat.copyWith(count: repeat.count + 1);
+                        final updated =
+                            repeat.copyWith(count: repeat.count + 1);
                         _replaceStepInStructure(notifier, index, updated);
                       }
                     : null,
@@ -409,7 +431,8 @@ class WorkoutBlockEditorSheet extends ConsumerWidget {
                 visualDensity: VisualDensity.compact,
               ),
               IconButton(
-                icon: const Icon(Icons.delete_outline, size: 18, color: Colors.red),
+                icon: const Icon(Icons.delete_outline,
+                    size: 18, color: Colors.red),
                 tooltip: 'Löschen',
                 onPressed: () => notifier.deleteBlock(index),
                 visualDensity: VisualDensity.compact,
@@ -425,7 +448,8 @@ class WorkoutBlockEditorSheet extends ConsumerWidget {
                 padding: const EdgeInsets.only(left: 12.0, top: 4.0),
                 child: Row(
                   children: [
-                    const Icon(Icons.subdirectory_arrow_right, size: 16, color: Colors.grey),
+                    const Icon(Icons.subdirectory_arrow_right,
+                        size: 16, color: Colors.grey),
                     const SizedBox(width: 4),
                     Text(
                       '${child.role.displayNameDe}: ${child.target.formattedDisplay} ${child.intensity.formattedDisplay}',
@@ -447,16 +471,6 @@ class WorkoutBlockEditorSheet extends ConsumerWidget {
     int index,
     WorkoutBlock newBlock,
   ) {
-    final currentBlocks = notifier.state.structure?.blocks ?? [];
-    if (index < 0 || index >= currentBlocks.length) return;
-
-    final updated = List<WorkoutBlock>.from(currentBlocks)..[index] = newBlock;
-    notifier.updateStructure(
-      WorkoutStructure(
-        schemaVersion: 1,
-        sport: notifier.state.sport,
-        blocks: updated,
-      ),
-    );
+    notifier.replaceBlock(index, newBlock);
   }
 }

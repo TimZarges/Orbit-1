@@ -22,7 +22,8 @@ class DailyRingWidget extends StatefulWidget {
   State<DailyRingWidget> createState() => _DailyRingWidgetState();
 }
 
-class _DailyRingWidgetState extends State<DailyRingWidget> with SingleTickerProviderStateMixin {
+class _DailyRingWidgetState extends State<DailyRingWidget>
+    with SingleTickerProviderStateMixin {
   late AnimationController _animController;
   late Animation<double> _animation;
 
@@ -39,7 +40,8 @@ class _DailyRingWidgetState extends State<DailyRingWidget> with SingleTickerProv
   @override
   void didUpdateWidget(DailyRingWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.actualLoad != widget.actualLoad || oldWidget.targetLoad != widget.targetLoad) {
+    if (oldWidget.actualLoad != widget.actualLoad ||
+        oldWidget.targetLoad != widget.targetLoad) {
       _setupAnimation();
     }
   }
@@ -47,7 +49,9 @@ class _DailyRingWidgetState extends State<DailyRingWidget> with SingleTickerProv
   void _setupAnimation() {
     final targetProgress = widget.isRestDay
         ? 1.0
-        : (widget.targetLoad > 0 ? (widget.actualLoad / widget.targetLoad).clamp(0.0, 1.5) : (widget.actualLoad > 0 ? 1.0 : 0.0));
+        : (widget.targetLoad > 0
+            ? (widget.actualLoad / widget.targetLoad).clamp(0.0, 1.5)
+            : (widget.actualLoad > 0 ? 1.0 : 0.0));
 
     _animation = Tween<double>(begin: 0.0, end: targetProgress).animate(
       CurvedAnimation(parent: _animController, curve: Curves.easeOutCubic),
@@ -65,7 +69,11 @@ class _DailyRingWidgetState extends State<DailyRingWidget> with SingleTickerProv
   Widget build(BuildContext context) {
     final disableAnimations = MediaQuery.of(context).disableAnimations;
     final progress = disableAnimations
-        ? (widget.isRestDay ? 1.0 : (widget.targetLoad > 0 ? widget.actualLoad / widget.targetLoad : 0.0))
+        ? (widget.isRestDay
+            ? 1.0
+            : (widget.targetLoad > 0
+                ? widget.actualLoad / widget.targetLoad
+                : 0.0))
         : _animation.value;
 
     final semanticsText = widget.isRestDay
@@ -107,7 +115,8 @@ class _DailyRingWidgetState extends State<DailyRingWidget> with SingleTickerProv
       return Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.battery_charging_full_rounded, color: AppColors.volt, size: 28),
+          Icon(Icons.battery_charging_full_rounded,
+              color: AppColors.volt, size: 28),
           const SizedBox(height: 4),
           Text(
             'Ruhetag',
@@ -128,13 +137,17 @@ class _DailyRingWidgetState extends State<DailyRingWidget> with SingleTickerProv
       );
     }
 
-    final pct = widget.targetLoad > 0 ? ((widget.actualLoad / widget.targetLoad) * 100).round() : 0;
+    final pct = widget.targetLoad > 0
+        ? ((widget.actualLoad / widget.targetLoad) * 100).round()
+        : 0;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          widget.targetLoad > 0 ? '${widget.actualLoad.round()} / ${widget.targetLoad.round()}' : '${widget.actualLoad.round()}',
+          widget.targetLoad > 0
+              ? '${widget.actualLoad.round()} / ${widget.targetLoad.round()}'
+              : '${widget.actualLoad.round()}',
           style: AppTypography.headline.copyWith(
             color: AppColors.white,
             fontWeight: FontWeight.bold,
@@ -195,6 +208,7 @@ class _DailyRingPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _DailyRingPainter oldDelegate) {
-    return oldDelegate.progress != progress || oldDelegate.isRestDay != isRestDay;
+    return oldDelegate.progress != progress ||
+        oldDelegate.isRestDay != isRestDay;
   }
 }

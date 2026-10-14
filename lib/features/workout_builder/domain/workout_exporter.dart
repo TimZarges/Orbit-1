@@ -17,11 +17,13 @@ class PlaceholderWorkoutExporter implements WorkoutExporter {
 
   @override
   Future<List<int>> exportToFit(WorkoutStructure structure) async {
-    throw UnimplementedError('FIT-Export wird in einer späteren Phase umgesetzt.');
+    throw UnimplementedError(
+        'FIT-Export wird in einer späteren Phase umgesetzt.');
   }
 
   @override
   Future<String> exportToZwo(WorkoutStructure structure) async {
-    throw UnimplementedError('ZWO-Export wird in einer späteren Phase umgesetzt.');
+    throw UnimplementedError(
+        'ZWO-Export wird in einer späteren Phase umgesetzt.');
   }
 }

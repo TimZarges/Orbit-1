@@ -15,10 +15,12 @@ class GarminConnectionScreen extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<GarminConnectionScreen> createState() => _GarminConnectionScreenState();
+  ConsumerState<GarminConnectionScreen> createState() =>
+      _GarminConnectionScreenState();
 }
 
-class _GarminConnectionScreenState extends ConsumerState<GarminConnectionScreen> {
+class _GarminConnectionScreenState
+    extends ConsumerState<GarminConnectionScreen> {
   bool _isLoading = false;
   String? _pendingOauthToken;
   final TextEditingController _verifierController = TextEditingController();
@@ -44,7 +46,8 @@ class _GarminConnectionScreenState extends ConsumerState<GarminConnectionScreen>
   Future<void> _connectGarmin() async {
     setState(() => _isLoading = true);
     try {
-      final oauthToken = await ref.read(garminServiceProvider).startGarminAuth();
+      final oauthToken =
+          await ref.read(garminServiceProvider).startGarminAuth();
       if (mounted) {
         setState(() {
           _pendingOauthToken = oauthToken;
@@ -82,7 +85,8 @@ class _GarminConnectionScreenState extends ConsumerState<GarminConnectionScreen>
             backgroundColor: Color(0xFF10B981),
             content: Text(
               'Erfolgreich mit Garmin verbunden! Daten werden jetzt synchronisiert.',
-              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              style:
+                  TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
             ),
           ),
         );
@@ -118,7 +122,8 @@ class _GarminConnectionScreenState extends ConsumerState<GarminConnectionScreen>
             child: const Text('Abbrechen'),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red.shade700),
+            style:
+                ElevatedButton.styleFrom(backgroundColor: Colors.red.shade700),
             onPressed: () => Navigator.pop(ctx, true),
             child: const Text('Trennen', style: TextStyle(color: Colors.white)),
           ),
@@ -133,7 +138,8 @@ class _GarminConnectionScreenState extends ConsumerState<GarminConnectionScreen>
         if (mounted) {
           setState(() => _isLoading = false);
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Garmin-Verbindung wurde erfolgreich getrennt.')),
+            const SnackBar(
+                content: Text('Garmin-Verbindung wurde erfolgreich getrennt.')),
           );
         }
       } catch (e) {
@@ -156,7 +162,8 @@ class _GarminConnectionScreenState extends ConsumerState<GarminConnectionScreen>
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             backgroundColor: Color(0xFF0EA5E9),
-            content: Text('Historischer Import (30 Tage) wurde bei Garmin angefordert!'),
+            content: Text(
+                'Historischer Import (30 Tage) wurde bei Garmin angefordert!'),
           ),
         );
       }
@@ -204,7 +211,8 @@ class _GarminConnectionScreenState extends ConsumerState<GarminConnectionScreen>
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                   side: BorderSide(
-                    color: isDark ? const Color(0xFF334155) : AppColors.cardBorder,
+                    color:
+                        isDark ? const Color(0xFF334155) : AppColors.cardBorder,
                     width: 1.5,
                   ),
                 ),
@@ -266,7 +274,8 @@ class _GarminConnectionScreenState extends ConsumerState<GarminConnectionScreen>
                                         ? const Color(0xFF10B981)
                                         : (_pendingOauthToken != null
                                             ? const Color(0xFFF59E0B)
-                                            : theme.colorScheme.onSurfaceVariant),
+                                            : theme
+                                                .colorScheme.onSurfaceVariant),
                                   ),
                                 ),
                               ],
@@ -288,13 +297,16 @@ class _GarminConnectionScreenState extends ConsumerState<GarminConnectionScreen>
                     color: isDark ? const Color(0xFF1E293B) : Colors.white,
                     borderRadius: BorderRadius.circular(14),
                     border: Border.all(
-                      color: isDark ? const Color(0xFF334155) : AppColors.cardBorder,
+                      color: isDark
+                          ? const Color(0xFF334155)
+                          : AppColors.cardBorder,
                     ),
                   ),
                   child: Column(
                     children: [
                       ListTile(
-                        leading: const Icon(Icons.sync, color: Color(0xFF10B981)),
+                        leading:
+                            const Icon(Icons.sync, color: Color(0xFF10B981)),
                         title: Text(
                           'Automatische Synchronisation aktiv',
                           style: TextStyle(
@@ -306,7 +318,8 @@ class _GarminConnectionScreenState extends ConsumerState<GarminConnectionScreen>
                           status.garminUserId != null
                               ? 'Garmin ID: ${status.garminUserId}'
                               : 'Neue Aktivitäten werden automatisch importiert',
-                          style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
+                          style: TextStyle(
+                              color: theme.colorScheme.onSurfaceVariant),
                         ),
                       ),
                       if (status.isBackfillInProgress) ...[
@@ -326,7 +339,8 @@ class _GarminConnectionScreenState extends ConsumerState<GarminConnectionScreen>
                           ),
                           subtitle: Text(
                             'Deine Aktivitäten der letzten 30 Tage werden geladen.',
-                            style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
+                            style: TextStyle(
+                                color: theme.colorScheme.onSurfaceVariant),
                           ),
                         ),
                       ],
@@ -338,7 +352,9 @@ class _GarminConnectionScreenState extends ConsumerState<GarminConnectionScreen>
 
                 // Backfill Button
                 OutlinedButton.icon(
-                  onPressed: _isLoading || status.isBackfillInProgress ? null : _triggerBackfill,
+                  onPressed: _isLoading || status.isBackfillInProgress
+                      ? null
+                      : _triggerBackfill,
                   icon: const Icon(Icons.history),
                   label: const Text('Letzte 30 Tage nachladen (Backfill)'),
                 ),
@@ -376,7 +392,8 @@ class _GarminConnectionScreenState extends ConsumerState<GarminConnectionScreen>
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
                       : const Icon(Icons.link),
-                  label: Text(_isLoading ? 'Wird geöffnet...' : 'Mit Garmin verbinden'),
+                  label: Text(
+                      _isLoading ? 'Wird geöffnet...' : 'Mit Garmin verbinden'),
                 ),
 
                 // Bestätigungscode Eingabebereich
@@ -387,7 +404,9 @@ class _GarminConnectionScreenState extends ConsumerState<GarminConnectionScreen>
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                     side: BorderSide(
-                      color: isDark ? const Color(0xFF334155) : AppColors.cardBorder,
+                      color: isDark
+                          ? const Color(0xFF334155)
+                          : AppColors.cardBorder,
                       width: 1.5,
                     ),
                   ),
@@ -398,7 +417,8 @@ class _GarminConnectionScreenState extends ConsumerState<GarminConnectionScreen>
                       children: [
                         Row(
                           children: [
-                            const Icon(Icons.vpn_key_outlined, size: 22, color: Color(0xFF0EA5E9)),
+                            const Icon(Icons.vpn_key_outlined,
+                                size: 22, color: Color(0xFF0EA5E9)),
                             const SizedBox(width: 10),
                             Text(
                               'Bestätigungscode eingeben',
@@ -435,7 +455,8 @@ class _GarminConnectionScreenState extends ConsumerState<GarminConnectionScreen>
                               ? const SizedBox(
                                   width: 20,
                                   height: 20,
-                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                  child:
+                                      CircularProgressIndicator(strokeWidth: 2),
                                 )
                               : const Text('Verbindung abschließen'),
                         ),

@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../calendar/models/planned_workout.dart';
 import '../../workout_builder/models/workout_template.dart';
 
 /// Ergebnis der Massenzuweisung von Trainingseinheiten.
@@ -41,7 +40,11 @@ class BatchAssignService {
     // Batches in Chunks von maximal 450 aufteilen
     const chunkSize = 450;
     for (var i = 0; i < athleteIds.length; i += chunkSize) {
-      final chunk = athleteIds.sublist(i, i + chunkSize > athleteIds.length ? athleteIds.length : i + chunkSize);
+      final chunk = athleteIds.sublist(
+          i,
+          i + chunkSize > athleteIds.length
+              ? athleteIds.length
+              : i + chunkSize);
       final batch = _firestore.batch();
 
       for (final athleteId in chunk) {
@@ -56,10 +59,9 @@ class BatchAssignService {
             'localDate': targetLocalDate,
             'sport': template.sport,
             'title': template.title,
-            'description': template.description,
-            'structure': template.structure?.toMap(),
-            'plannedDurationSec': template.structure?.totalDurationSec ?? 3600,
-            'plannedLoad': template.structure?.estimatedTss ?? 50.0,
+            'structure': template.structure.toJson(),
+            'plannedDurationSec': 3600,
+            'plannedLoad': 50.0,
             'status': 'PLANNED',
             'createdAt': Timestamp.fromDate(now),
             'updatedAt': Timestamp.fromDate(now),

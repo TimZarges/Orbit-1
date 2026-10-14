@@ -54,9 +54,11 @@ class ChatBubble extends StatelessWidget {
     return Align(
       alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
       child: GestureDetector(
-        onLongPress: isMe && onDelete != null ? () => _showContextMenu(context) : null,
+        onLongPress:
+            isMe && onDelete != null ? () => _showContextMenu(context) : null,
         child: Container(
-          constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.78),
+          constraints: BoxConstraints(
+              maxWidth: MediaQuery.of(context).size.width * 0.78),
           margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           decoration: BoxDecoration(
@@ -71,17 +73,24 @@ class ChatBubble extends StatelessWidget {
             ],
           ),
           child: Column(
-            crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+            crossAxisAlignment:
+                isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
               // Content je nach Typ
-              if (message.type == MessageType.image) _buildImageContent(context),
-              if (message.type == MessageType.file) _buildFileContent(context, textColor),
-              if (message.type == MessageType.activityShare) _buildActivityContent(context),
-              if (message.text != null && message.text!.isNotEmpty && message.type != MessageType.activityShare)
+              if (message.type == MessageType.image)
+                _buildImageContent(context),
+              if (message.type == MessageType.file)
+                _buildFileContent(context, textColor),
+              if (message.type == MessageType.activityShare)
+                _buildActivityContent(context),
+              if (message.text != null &&
+                  message.text!.isNotEmpty &&
+                  message.type != MessageType.activityShare)
                 Text(
                   message.text!,
-                  style: AppTypography.body.copyWith(color: textColor, fontSize: 15),
+                  style: AppTypography.body
+                      .copyWith(color: textColor, fontSize: 15),
                 ),
               const SizedBox(height: 4),
 
@@ -93,7 +102,9 @@ class ChatBubble extends StatelessWidget {
                     _formatTime(message.createdAt),
                     style: AppTypography.label.copyWith(
                       fontSize: 10,
-                      color: isMe ? AppColors.white.withValues(alpha: 0.7) : Colors.grey.shade600,
+                      color: isMe
+                          ? AppColors.white.withValues(alpha: 0.7)
+                          : Colors.grey.shade600,
                     ),
                   ),
                   if (isMe) ...[
@@ -104,11 +115,13 @@ class ChatBubble extends StatelessWidget {
                         height: 10,
                         child: CircularProgressIndicator(
                           strokeWidth: 1.5,
-                          valueColor: AlwaysStoppedAnimation<Color>(AppColors.white.withValues(alpha: 0.7)),
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                              AppColors.white.withValues(alpha: 0.7)),
                         ),
                       )
                     else if (message.status == MessageStatus.failed)
-                      const Icon(Icons.error_outline, size: 12, color: Color(0xFFEF4444))
+                      const Icon(Icons.error_outline,
+                          size: 12, color: Color(0xFFEF4444))
                     else
                       Icon(
                         Icons.done_all,
@@ -139,7 +152,8 @@ class ChatBubble extends StatelessWidget {
             return Container(
               height: 180,
               color: Colors.black12,
-              child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+              child: const Center(
+                  child: CircularProgressIndicator(strokeWidth: 2)),
             );
           },
           errorBuilder: (ctx, err, _) => Container(
@@ -165,7 +179,8 @@ class ChatBubble extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.insert_drive_file_outlined, size: 24, color: isMe ? AppColors.volt : AppColors.navy),
+            Icon(Icons.insert_drive_file_outlined,
+                size: 24, color: isMe ? AppColors.volt : AppColors.navy),
             const SizedBox(width: 10),
             Flexible(
               child: Column(
@@ -203,7 +218,8 @@ class ChatBubble extends StatelessWidget {
     if (share == null) return const SizedBox.shrink();
 
     return InkWell(
-      onTap: onActivityTap != null ? () => onActivityTap!(share.activityId) : null,
+      onTap:
+          onActivityTap != null ? () => onActivityTap!(share.activityId) : null,
       borderRadius: BorderRadius.circular(12),
       child: Container(
         margin: const EdgeInsets.only(bottom: 6),
@@ -224,7 +240,8 @@ class ChatBubble extends StatelessWidget {
                     color: AppColors.techGrey,
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Icon(_getSportIcon(share.sport), size: 16, color: AppColors.navy),
+                  child: Icon(_getSportIcon(share.sport),
+                      size: 16, color: AppColors.navy),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
@@ -235,11 +252,13 @@ class ChatBubble extends StatelessWidget {
                         share.title,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: AppTypography.title.copyWith(fontSize: 14, color: AppColors.navy),
+                        style: AppTypography.title
+                            .copyWith(fontSize: 14, color: AppColors.navy),
                       ),
                       Text(
                         share.date,
-                        style: AppTypography.label.copyWith(fontSize: 11, color: Colors.grey.shade600),
+                        style: AppTypography.label.copyWith(
+                            fontSize: 11, color: Colors.grey.shade600),
                       ),
                     ],
                   ),
@@ -254,9 +273,11 @@ class ChatBubble extends StatelessWidget {
                 if (share.distanceM > 0)
                   _StatItem(label: 'Distanz', value: share.formattedDistance),
                 if (share.avgPowerW != null && share.avgPowerW! > 0)
-                  _StatItem(label: 'Ø Watt', value: '${share.avgPowerW!.round()} W'),
+                  _StatItem(
+                      label: 'Ø Watt', value: '${share.avgPowerW!.round()} W'),
                 if (share.avgHr != null && share.avgHr! > 0)
-                  _StatItem(label: 'Ø HF', value: '${share.avgHr!.round()} bpm'),
+                  _StatItem(
+                      label: 'Ø HF', value: '${share.avgHr!.round()} bpm'),
               ],
             ),
             const SizedBox(height: 8),
@@ -297,7 +318,8 @@ class ChatBubble extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               ListTile(
-                leading: const Icon(Icons.delete_outline, color: Color(0xFFEF4444)),
+                leading:
+                    const Icon(Icons.delete_outline, color: Color(0xFFEF4444)),
                 title: Text(
                   'Nachricht löschen',
                   style: AppTypography.body.copyWith(
@@ -353,8 +375,14 @@ class _StatItem extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: AppTypography.label.copyWith(fontSize: 10, color: Colors.grey.shade500)),
-        Text(value, style: AppTypography.body.copyWith(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.navy)),
+        Text(label,
+            style: AppTypography.label
+                .copyWith(fontSize: 10, color: Colors.grey.shade500)),
+        Text(value,
+            style: AppTypography.body.copyWith(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: AppColors.navy)),
       ],
     );
   }

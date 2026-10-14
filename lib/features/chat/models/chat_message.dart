@@ -157,7 +157,8 @@ class ChatMessage {
 
     ActivityShareSnapshot? share;
     if (data['activityShare'] != null && data['activityShare'] is Map) {
-      share = ActivityShareSnapshot.fromMap(Map<String, dynamic>.from(data['activityShare'] as Map));
+      share = ActivityShareSnapshot.fromMap(
+          Map<String, dynamic>.from(data['activityShare'] as Map));
     }
 
     return ChatMessage(
@@ -177,9 +178,25 @@ class ChatMessage {
   }
 
   Map<String, dynamic> toMap() {
+    final String typeStr;
+    switch (type) {
+      case MessageType.text:
+        typeStr = 'TEXT';
+        break;
+      case MessageType.image:
+        typeStr = 'IMAGE';
+        break;
+      case MessageType.file:
+        typeStr = 'FILE';
+        break;
+      case MessageType.activityShare:
+        typeStr = 'ACTIVITY_SHARE';
+        break;
+    }
+
     return {
       'senderId': senderId,
-      'type': type.name.toUpperCase(),
+      'type': typeStr,
       if (text != null) 'text': text,
       if (mediaUrl != null) 'mediaUrl': mediaUrl,
       if (fileName != null) 'fileName': fileName,

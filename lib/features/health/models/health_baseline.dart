@@ -39,7 +39,8 @@ class HealthBaseline {
   });
 
   /// Durchschnittliche Schlafdauer in Stunden.
-  double? get meanSleepHours => meanSleepSeconds != null ? meanSleepSeconds! / 3600.0 : null;
+  double? get meanSleepHours =>
+      meanSleepSeconds != null ? meanSleepSeconds! / 3600.0 : null;
 
   /// Erzeugt eine leere Basislinie (keine Daten vorhanden).
   factory HealthBaseline.empty() {
@@ -82,7 +83,8 @@ class HealthBaseline {
         .toList();
 
     // Anzahl der Tage mit mindestens einem relevanten Vitalwert
-    final validDaysCount = history.where((m) => m.restingHrBpm != null || m.hrvMs != null).length;
+    final validDaysCount =
+        history.where((m) => m.restingHrBpm != null || m.hrvMs != null).length;
     final sufficient = validDaysCount >= 14;
 
     return HealthBaseline(
@@ -120,7 +122,8 @@ class HealthBaseline {
   static double? _calculateStdDev(List<double> values) {
     if (values.length < 2) return null;
     final mean = _calculateMean(values)!;
-    final sumSquaredDiff = values.map((x) => math.pow(x - mean, 2)).reduce((a, b) => a + b);
+    final sumSquaredDiff =
+        values.map((x) => math.pow(x - mean, 2)).reduce((a, b) => a + b);
     return math.sqrt(sumSquaredDiff / (values.length - 1));
   }
 }

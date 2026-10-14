@@ -16,7 +16,8 @@ final analysisRepositoryProvider = Provider<AnalysisRepository>((ref) {
 });
 
 /// Aktuell ausgewählter Analyse-Zeitraum (Woche, Monat, Saison).
-final selectedAnalysisTimeframeProvider = StateProvider<AnalysisTimeframe>((ref) {
+final selectedAnalysisTimeframeProvider =
+    StateProvider<AnalysisTimeframe>((ref) {
   return AnalysisTimeframe.week;
 });
 
@@ -63,7 +64,8 @@ class AnalysisViewState {
 }
 
 /// Lädt und berechnet alle Daten für den Analyse-Tab.
-final analysisStateProvider = FutureProvider.autoDispose<AnalysisViewState>((ref) async {
+final analysisStateProvider =
+    FutureProvider.autoDispose<AnalysisViewState>((ref) async {
   final athleteId = ref.watch(effectiveAnalysisAthleteIdProvider);
   final timeframe = ref.watch(selectedAnalysisTimeframeProvider);
   final repository = ref.watch(analysisRepositoryProvider);
@@ -113,8 +115,9 @@ final analysisStateProvider = FutureProvider.autoDispose<AnalysisViewState>((ref
 
   // Prüfen, ob Demo-Modus aktiv ist oder ob die Collection noch leer ist
   final userDoc = ref.watch(userDocumentProvider).valueOrNull;
-  final isDemoMode = (userDoc?['demo'] is Map && userDoc?['demo']['enabled'] == true) ||
-      aggregates.isEmpty;
+  final isDemoMode =
+      (userDoc?['demo'] is Map && userDoc?['demo']['enabled'] == true) ||
+          aggregates.isEmpty;
 
   bool isDemo = false;
   if (aggregates.isEmpty && isDemoMode) {
@@ -142,7 +145,8 @@ final analysisStateProvider = FutureProvider.autoDispose<AnalysisViewState>((ref
   );
 
   // Slice für den aktiven Zeitraum
-  final activeAggregates = aggregates.where((a) => a.localDate.compareTo(startStr) >= 0).toList();
+  final activeAggregates =
+      aggregates.where((a) => a.localDate.compareTo(startStr) >= 0).toList();
 
   // Soll-Ist Belastung
   final weeklyLoad = AggregatesCalculator.calculateWeeklyLoad(
@@ -158,10 +162,12 @@ final analysisStateProvider = FutureProvider.autoDispose<AnalysisViewState>((ref
   );
 
   // Sportverteilung
-  final sportDist = AggregatesCalculator.calculateSportDistribution(activeAggregates);
+  final sportDist =
+      AggregatesCalculator.calculateSportDistribution(activeAggregates);
 
   // Zonenverteilung
-  final zoneDist = AggregatesCalculator.calculateZoneDistribution(activeAggregates);
+  final zoneDist =
+      AggregatesCalculator.calculateZoneDistribution(activeAggregates);
 
   // 8-Wochen-Trend
   final sortedDesc = List<DailyAggregate>.from(aggregates)
@@ -170,7 +176,8 @@ final analysisStateProvider = FutureProvider.autoDispose<AnalysisViewState>((ref
   final trendDesc = AggregatesCalculator.describeWeeklyTrend(trendPoints);
 
   // Fitness / Fatigue Zeitreihe
-  final fitnessPoints = AggregatesCalculator.calculateFitnessFatiguePoints(aggregates);
+  final fitnessPoints =
+      AggregatesCalculator.calculateFitnessFatiguePoints(aggregates);
 
   return AnalysisViewState(
     timeframe: timeframe,
@@ -204,10 +211,14 @@ AnalysisViewState _buildEmptyState(AnalysisTimeframe timeframe) {
       ratio: 0,
       daysOfHistory: 0,
     ),
-    weeklyLoad: const WeeklyLoadSummary(actualLoad: 0, plannedLoad: 0, hasPlan: false),
-    consistency: const ConsistencySummary(activeDays: 0, totalDays: 7, plannedDays: 0, streakWeeks: 0),
-    sportDistribution: const SportDistributionSummary(items: [], totalDurationSec: 0),
-    zoneDistribution: const ZoneDistributionSummary(zones: [], totalDurationSec: 0),
+    weeklyLoad:
+        const WeeklyLoadSummary(actualLoad: 0, plannedLoad: 0, hasPlan: false),
+    consistency: const ConsistencySummary(
+        activeDays: 0, totalDays: 7, plannedDays: 0, streakWeeks: 0),
+    sportDistribution:
+        const SportDistributionSummary(items: [], totalDurationSec: 0),
+    zoneDistribution:
+        const ZoneDistributionSummary(zones: [], totalDurationSec: 0),
     weeklyTrend: const [],
     weeklyTrendDescription: 'Noch keine Daten vorhanden.',
     fitnessFatiguePoints: const [],

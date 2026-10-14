@@ -88,24 +88,31 @@ class WorkoutTemplate {
       'visibility': visibility,
       'sport': sport.toUpperCase(),
       'title': title,
-      if (description != null && description!.isNotEmpty) 'description': description,
+      if (description != null && description!.isNotEmpty)
+        'description': description,
       'structure': structure.toJson(),
       'tags': tags,
       'isFavorite': isFavorite,
-      'createdAt': createdAt != null ? Timestamp.fromDate(createdAt!) : FieldValue.serverTimestamp(),
+      'createdAt': createdAt != null
+          ? Timestamp.fromDate(createdAt!)
+          : FieldValue.serverTimestamp(),
       'updatedAt': FieldValue.serverTimestamp(),
     };
   }
 
   /// Erstellt eine Vorlage aus einem Firestore-Dokument.
-  factory WorkoutTemplate.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
+  factory WorkoutTemplate.fromFirestore(
+      DocumentSnapshot<Map<String, dynamic>> doc) {
     final data = doc.data() ?? {};
     final rawStructure = data['structure'] as Map<String, dynamic>? ?? {};
     final struct = rawStructure.isNotEmpty
         ? WorkoutStructure.migrateStructure(rawStructure)
-        : WorkoutStructure(sport: data['sport'] as String? ?? 'BIKE', blocks: const []);
+        : WorkoutStructure(
+            sport: data['sport'] as String? ?? 'BIKE', blocks: const []);
 
-    final tagsList = (data['tags'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [];
+    final tagsList =
+        (data['tags'] as List<dynamic>?)?.map((e) => e.toString()).toList() ??
+            [];
 
     return WorkoutTemplate(
       id: doc.id,

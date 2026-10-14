@@ -65,7 +65,8 @@ sealed class WorkoutIntensity {
       case 'FREE':
         return const FreeIntensity();
       default:
-        throw FormatException('Unbekannter Intensitätstyp (kind): $kind ($json)');
+        throw FormatException(
+            'Unbekannter Intensitätstyp (kind): $kind ($json)');
     }
   }
 }
@@ -78,9 +79,10 @@ class ZoneIntensity extends WorkoutIntensity {
   const ZoneIntensity({
     required this.low,
     required this.high,
-  }) : assert(low >= 1 && low <= 7, 'low Zone muss zwischen 1 und 7 liegen'),
-       assert(high >= 1 && high <= 7, 'high Zone muss zwischen 1 und 7 liegen'),
-       assert(low <= high, 'low Zone muss <= high Zone sein');
+  })  : assert(low >= 1 && low <= 7, 'low Zone muss zwischen 1 und 7 liegen'),
+        assert(
+            high >= 1 && high <= 7, 'high Zone muss zwischen 1 und 7 liegen'),
+        assert(low <= high, 'low Zone muss <= high Zone sein');
 
   /// Convenience-Konstruktor für Ein-Zonen-Vorgabe (z. B. nur Z2).
   const ZoneIntensity.single(int zone) : this(low: zone, high: zone);
@@ -93,10 +95,10 @@ class ZoneIntensity extends WorkoutIntensity {
 
   @override
   Map<String, dynamic> toJson() => {
-    'kind': kind,
-    'low': low,
-    'high': high,
-  };
+        'kind': kind,
+        'low': low,
+        'high': high,
+      };
 
   @override
   bool operator ==(Object other) =>
@@ -121,8 +123,8 @@ class PctFtpIntensity extends WorkoutIntensity {
   const PctFtpIntensity({
     required this.low,
     required this.high,
-  }) : assert(low > 0, 'low %FTP muss > 0 sein'),
-       assert(high >= low, 'high %FTP muss >= low sein');
+  })  : assert(low > 0, 'low %FTP muss > 0 sein'),
+        assert(high >= low, 'high %FTP muss >= low sein');
 
   const PctFtpIntensity.single(int pct) : this(low: pct, high: pct);
 
@@ -134,10 +136,10 @@ class PctFtpIntensity extends WorkoutIntensity {
 
   @override
   Map<String, dynamic> toJson() => {
-    'kind': kind,
-    'low': low,
-    'high': high,
-  };
+        'kind': kind,
+        'low': low,
+        'high': high,
+      };
 
   @override
   bool operator ==(Object other) =>
@@ -162,8 +164,8 @@ class PctLthrIntensity extends WorkoutIntensity {
   const PctLthrIntensity({
     required this.low,
     required this.high,
-  }) : assert(low > 0, 'low %LTHR muss > 0 sein'),
-       assert(high >= low, 'high %LTHR muss >= low sein');
+  })  : assert(low > 0, 'low %LTHR muss > 0 sein'),
+        assert(high >= low, 'high %LTHR muss >= low sein');
 
   const PctLthrIntensity.single(int pct) : this(low: pct, high: pct);
 
@@ -171,14 +173,15 @@ class PctLthrIntensity extends WorkoutIntensity {
   String get kind => 'PCT_LTHR';
 
   @override
-  String get formattedDisplay => low == high ? '$low% LTHR' : '$low-$high% LTHR';
+  String get formattedDisplay =>
+      low == high ? '$low% LTHR' : '$low-$high% LTHR';
 
   @override
   Map<String, dynamic> toJson() => {
-    'kind': kind,
-    'low': low,
-    'high': high,
-  };
+        'kind': kind,
+        'low': low,
+        'high': high,
+      };
 
   @override
   bool operator ==(Object other) =>
@@ -215,9 +218,9 @@ class PaceIntensity extends WorkoutIntensity {
 
   @override
   Map<String, dynamic> toJson() => {
-    'kind': kind,
-    'secPerKm': secPerKm,
-  };
+        'kind': kind,
+        'secPerKm': secPerKm,
+      };
 
   @override
   bool operator ==(Object other) =>
@@ -253,9 +256,9 @@ class SwimPaceIntensity extends WorkoutIntensity {
 
   @override
   Map<String, dynamic> toJson() => {
-    'kind': kind,
-    'secPer100m': secPer100m,
-  };
+        'kind': kind,
+        'secPer100m': secPer100m,
+      };
 
   @override
   bool operator ==(Object other) =>
@@ -292,9 +295,9 @@ class CssOffsetIntensity extends WorkoutIntensity {
 
   @override
   Map<String, dynamic> toJson() => {
-    'kind': kind,
-    'offsetSecPer100m': offsetSecPer100m,
-  };
+        'kind': kind,
+        'offsetSecPer100m': offsetSecPer100m,
+      };
 
   @override
   bool operator ==(Object other) =>
@@ -322,8 +325,8 @@ class FreeIntensity extends WorkoutIntensity {
 
   @override
   Map<String, dynamic> toJson() => {
-    'kind': kind,
-  };
+        'kind': kind,
+      };
 
   @override
   bool operator ==(Object other) =>

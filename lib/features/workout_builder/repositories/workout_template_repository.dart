@@ -22,30 +22,30 @@ class WorkoutTemplateRepository {
         .where('ownerId', isEqualTo: userId)
         .snapshots()
         .asyncMap((snapshot) async {
-          final userTemplates = snapshot.docs
+      final userTemplates = snapshot.docs
+          .map((doc) => WorkoutTemplate.fromFirestore(doc))
+          .toList();
+
+      // Falls ein Trainer zugewiesen ist, geteilte Trainer-Vorlagen laden
+      if (coachId != null && coachId.isNotEmpty) {
+        try {
+          final coachSnapshot = await _collection
+              .where('ownerId', isEqualTo: coachId)
+              .where('visibility', isEqualTo: 'SHARED_WITH_MY_ATHLETES')
+              .get();
+
+          final coachTemplates = coachSnapshot.docs
               .map((doc) => WorkoutTemplate.fromFirestore(doc))
               .toList();
 
-          // Falls ein Trainer zugewiesen ist, geteilte Trainer-Vorlagen laden
-          if (coachId != null && coachId.isNotEmpty) {
-            try {
-              final coachSnapshot = await _collection
-                  .where('ownerId', isEqualTo: coachId)
-                  .where('visibility', isEqualTo: 'SHARED_WITH_MY_ATHLETES')
-                  .get();
-
-              final coachTemplates = coachSnapshot.docs
-                  .map((doc) => WorkoutTemplate.fromFirestore(doc))
-                  .toList();
-
-              return [...userTemplates, ...coachTemplates];
-            } catch (_) {
-              return userTemplates;
-            }
-          }
-
+          return [...userTemplates, ...coachTemplates];
+        } catch (_) {
           return userTemplates;
-        });
+        }
+      }
+
+      return userTemplates;
+    });
   }
 
   /// Lädt Vorlagen einmalig mit optionalen Filtern (Sportart, Suchbegriff, Favoriten).
@@ -59,9 +59,8 @@ class WorkoutTemplateRepository {
     final query = _collection.where('ownerId', isEqualTo: userId);
     final snapshot = await query.get();
 
-    var templates = snapshot.docs
-        .map((doc) => WorkoutTemplate.fromFirestore(doc))
-        .toList();
+    var templates =
+        snapshot.docs.map((doc) => WorkoutTemplate.fromFirestore(doc)).toList();
 
     // Trainer-Vorlagen ergänzen
     if (coachId != null && coachId.isNotEmpty) {
@@ -129,10 +128,8 @@ class WorkoutTemplateRepository {
 
   /// Befüllt die Vorlagenbibliothek initial mit den 20 Startvorlagen, falls noch keine existieren.
   Future<int> seedInitialTemplatesIfEmpty(String userId) async {
-    final existing = await _collection
-        .where('ownerId', isEqualTo: userId)
-        .limit(1)
-        .get();
+    final existing =
+        await _collection.where('ownerId', isEqualTo: userId).limit(1).get();
 
     if (existing.docs.isNotEmpty) {
       return 0; // Bereits Vorlagen vorhanden

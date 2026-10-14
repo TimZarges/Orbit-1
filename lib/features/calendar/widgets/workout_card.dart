@@ -42,7 +42,8 @@ class WorkoutCard extends StatelessWidget {
     }
 
     final cardBg = isDark ? const Color(0xFF1E293B) : Colors.white;
-    final cardBorder = isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0);
+    final cardBorder =
+        isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0);
 
     return InkWell(
       onTap: onTap,
@@ -60,7 +61,6 @@ class WorkoutCard extends StatelessWidget {
             left: BorderSide(color: sportColor, width: 4),
           ),
         ),
-
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -80,13 +80,16 @@ class WorkoutCard extends StatelessWidget {
                   Text(
                     workout.localDate,
                     style: theme.textTheme.labelSmall?.copyWith(
-                      color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                      color: isDark
+                          ? const Color(0xFF94A3B8)
+                          : const Color(0xFF64748B),
                     ),
                   ),
                 ],
                 const Spacer(),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
                     color: statusBadgeColor.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(6),
@@ -125,7 +128,9 @@ class WorkoutCard extends StatelessWidget {
                   workout.formattedDuration,
                   style: theme.textTheme.bodySmall?.copyWith(
                     fontWeight: FontWeight.w600,
-                    color: isDark ? const Color(0xFFCBD5E1) : const Color(0xFF475569),
+                    color: isDark
+                        ? const Color(0xFFCBD5E1)
+                        : const Color(0xFF475569),
                   ),
                 ),
                 if (workout.formattedDistance != null) ...[
@@ -133,7 +138,9 @@ class WorkoutCard extends StatelessWidget {
                   Text(
                     workout.formattedDistance!,
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                      color: isDark
+                          ? const Color(0xFF94A3B8)
+                          : const Color(0xFF64748B),
                     ),
                   ),
                 ],
@@ -142,7 +149,9 @@ class WorkoutCard extends StatelessWidget {
                   Text(
                     '${workout.plannedLoad!.toStringAsFixed(0)} TSS',
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                      color: isDark
+                          ? const Color(0xFF94A3B8)
+                          : const Color(0xFF64748B),
                     ),
                   ),
                 ],

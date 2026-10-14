@@ -20,7 +20,8 @@ class FormTrafficLightCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Semantics(
       container: true,
-      label: 'Form-Ampel: Zustand ${form.titleDe}. ${form.descriptionDe}. ${form.dataBasisTextDe}.',
+      label:
+          'Form-Ampel: Zustand ${form.titleDe}. ${form.descriptionDe}. ${form.dataBasisTextDe}.',
       child: Container(
         decoration: BoxDecoration(
           color: AppColors.white,
@@ -48,7 +49,8 @@ class FormTrafficLightCard extends StatelessWidget {
                     const SizedBox(width: 8),
                     Text(
                       'Form-Ampel',
-                      style: AppTypography.title.copyWith(color: AppColors.navy),
+                      style:
+                          AppTypography.title.copyWith(color: AppColors.navy),
                     ),
                   ],
                 ),
@@ -56,9 +58,12 @@ class FormTrafficLightCard extends StatelessWidget {
                   button: true,
                   label: 'Information zur Form-Ampel anzeigen',
                   child: IconButton(
-                    icon: const Icon(Icons.info_outline, size: 20, color: Colors.grey),
-                    constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
-                    onPressed: () => AnalysisInfoSheet.showFormTrafficLight(context),
+                    icon: const Icon(Icons.info_outline,
+                        size: 20, color: Colors.grey),
+                    constraints:
+                        const BoxConstraints(minWidth: 48, minHeight: 48),
+                    onPressed: () =>
+                        AnalysisInfoSheet.showFormTrafficLight(context),
                   ),
                 ),
               ],
@@ -69,11 +74,13 @@ class FormTrafficLightCard extends StatelessWidget {
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
                     color: form.statusColor.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: form.statusColor.withValues(alpha: 0.4)),
+                    border: Border.all(
+                        color: form.statusColor.withValues(alpha: 0.4)),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -112,22 +119,27 @@ class FormTrafficLightCard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   _MetricColumn(
-                    label: TermResolver.resolve(MetricTerm.ctl, experienceLevel),
+                    label:
+                        TermResolver.resolve(MetricTerm.ctl, experienceLevel),
                     value: form.ctl.round().toString(),
                     term: MetricTerm.ctl,
                     level: experienceLevel,
                   ),
                   Container(width: 1, height: 32, color: AppColors.cardBorder),
                   _MetricColumn(
-                    label: TermResolver.resolve(MetricTerm.atl, experienceLevel),
+                    label:
+                        TermResolver.resolve(MetricTerm.atl, experienceLevel),
                     value: form.atl.round().toString(),
                     term: MetricTerm.atl,
                     level: experienceLevel,
                   ),
                   Container(width: 1, height: 32, color: AppColors.cardBorder),
                   _MetricColumn(
-                    label: TermResolver.resolve(MetricTerm.tsb, experienceLevel),
-                    value: (form.tsb >= 0 ? '+${form.tsb.round()}' : '${form.tsb.round()}'),
+                    label:
+                        TermResolver.resolve(MetricTerm.tsb, experienceLevel),
+                    value: (form.tsb >= 0
+                        ? '+${form.tsb.round()}'
+                        : '${form.tsb.round()}'),
                     term: MetricTerm.tsb,
                     level: experienceLevel,
                     highlightColor: form.statusColor,
@@ -140,7 +152,8 @@ class FormTrafficLightCard extends StatelessWidget {
             // Fußnote: Datenbasis
             Row(
               children: [
-                Icon(Icons.history_outlined, size: 14, color: Colors.grey.shade600),
+                Icon(Icons.history_outlined,
+                    size: 14, color: Colors.grey.shade600),
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(
@@ -178,7 +191,8 @@ class _MetricColumn extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () => AnalysisInfoSheet.showTerm(context, term: term, level: level),
+      onTap: () =>
+          AnalysisInfoSheet.showTerm(context, term: term, level: level),
       borderRadius: BorderRadius.circular(8),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),

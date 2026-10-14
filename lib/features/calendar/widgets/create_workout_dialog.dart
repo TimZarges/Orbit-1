@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../core/design/app_colors.dart';
-import '../../../core/design/app_spacing.dart';
 import '../../workout_builder/screens/workout_builder_screen.dart';
 import '../../workout_builder/screens/workout_template_library_screen.dart';
 import '../../auth/providers/auth_provider.dart';
@@ -10,7 +9,8 @@ import '../models/planned_workout.dart';
 import '../providers/calendar_provider.dart';
 
 /// Öffnet das Formular zur Schnelleingabe einer neuen geplanten Trainingseinheit.
-Future<void> showCreateWorkoutDialog(BuildContext context, {required String athleteId, DateTime? initialDate}) {
+Future<void> showCreateWorkoutDialog(BuildContext context,
+    {required String athleteId, DateTime? initialDate}) {
   return showModalBottomSheet(
     context: context,
     isScrollControlled: true,
@@ -21,7 +21,8 @@ Future<void> showCreateWorkoutDialog(BuildContext context, {required String athl
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
       ),
-      child: CreateWorkoutDialog(athleteId: athleteId, initialDate: initialDate),
+      child:
+          CreateWorkoutDialog(athleteId: athleteId, initialDate: initialDate),
     ),
   );
 }
@@ -37,7 +38,8 @@ class CreateWorkoutDialog extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<CreateWorkoutDialog> createState() => _CreateWorkoutDialogState();
+  ConsumerState<CreateWorkoutDialog> createState() =>
+      _CreateWorkoutDialogState();
 }
 
 class _CreateWorkoutDialogState extends ConsumerState<CreateWorkoutDialog> {
@@ -72,7 +74,8 @@ class _CreateWorkoutDialogState extends ConsumerState<CreateWorkoutDialog> {
       _sport = sport;
       if (sport == 'RUN') _titleController.text = 'Lauf Dauerlauf GA1';
       if (sport == 'BIKE') _titleController.text = 'Rad Grundlagenausdauer GA1';
-      if (sport == 'SWIM') _titleController.text = 'Schwimmen Technik & Ausdauer';
+      if (sport == 'SWIM')
+        _titleController.text = 'Schwimmen Technik & Ausdauer';
       if (sport == 'STRENGTH') _titleController.text = 'Stabi & Krafttraining';
       if (sport == 'OTHER') _titleController.text = 'Regeneration & Yoga';
     });
@@ -97,7 +100,8 @@ class _CreateWorkoutDialogState extends ConsumerState<CreateWorkoutDialog> {
                 children: [
                   Text(
                     'Training planen',
-                    style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                    style: theme.textTheme.titleLarge
+                        ?.copyWith(fontWeight: FontWeight.bold),
                   ),
                   IconButton(
                     icon: const Icon(Icons.close),
@@ -108,16 +112,23 @@ class _CreateWorkoutDialogState extends ConsumerState<CreateWorkoutDialog> {
               const SizedBox(height: 14),
 
               // Sportart-Auswahl
-              Text('Sportart', style: theme.textTheme.labelMedium?.copyWith(fontWeight: FontWeight.bold)),
+              Text('Sportart',
+                  style: theme.textTheme.labelMedium
+                      ?.copyWith(fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
               Wrap(
                 spacing: 8,
                 children: [
-                  _sportChip('RUN', 'Laufen', Icons.directions_run, AppColors.sportRun),
-                  _sportChip('BIKE', 'Rad', Icons.directions_bike, AppColors.sportBike),
-                  _sportChip('SWIM', 'Schwimmen', Icons.pool, AppColors.sportSwim),
-                  _sportChip('STRENGTH', 'Kraft', Icons.fitness_center, AppColors.sportStrength),
-                  _sportChip('OTHER', 'Sonstiges', Icons.sports, AppColors.navyLight),
+                  _sportChip('RUN', 'Laufen', Icons.directions_run,
+                      AppColors.sportRun),
+                  _sportChip('BIKE', 'Rad', Icons.directions_bike,
+                      AppColors.sportBike),
+                  _sportChip(
+                      'SWIM', 'Schwimmen', Icons.pool, AppColors.sportSwim),
+                  _sportChip('STRENGTH', 'Kraft', Icons.fitness_center,
+                      AppColors.sportStrength),
+                  _sportChip(
+                      'OTHER', 'Sonstiges', Icons.sports, AppColors.navyLight),
                 ],
               ),
               const SizedBox(height: 16),
@@ -127,7 +138,8 @@ class _CreateWorkoutDialogState extends ConsumerState<CreateWorkoutDialog> {
                 contentPadding: EdgeInsets.zero,
                 leading: const Icon(Icons.calendar_today),
                 title: const Text('Datum'),
-                subtitle: Text(DateFormat('EEEE, dd. MMMM yyyy', 'de').format(_selectedDate)),
+                subtitle: Text(DateFormat('EEEE, dd. MMMM yyyy', 'de')
+                    .format(_selectedDate)),
                 trailing: TextButton(
                   onPressed: () async {
                     final picked = await showDatePicker(
@@ -151,7 +163,9 @@ class _CreateWorkoutDialogState extends ConsumerState<CreateWorkoutDialog> {
                   labelText: 'Titel der Einheit',
                   border: OutlineInputBorder(),
                 ),
-                validator: (val) => val == null || val.trim().isEmpty ? 'Bitte Titel eingeben' : null,
+                validator: (val) => val == null || val.trim().isEmpty
+                    ? 'Bitte Titel eingeben'
+                    : null,
               ),
               const SizedBox(height: 14),
 
@@ -168,7 +182,8 @@ class _CreateWorkoutDialogState extends ConsumerState<CreateWorkoutDialog> {
                       ),
                       validator: (val) {
                         final parsed = int.tryParse(val ?? '');
-                        if (parsed == null || parsed <= 0) return 'Gültige Dauer angeben';
+                        if (parsed == null || parsed <= 0)
+                          return 'Gültige Dauer angeben';
                         return null;
                       },
                     ),
@@ -177,7 +192,8 @@ class _CreateWorkoutDialogState extends ConsumerState<CreateWorkoutDialog> {
                   Expanded(
                     child: TextFormField(
                       controller: _distanceKmController,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      keyboardType:
+                          const TextInputType.numberWithOptions(decimal: true),
                       decoration: const InputDecoration(
                         labelText: 'Distanz (km, opt.)',
                         border: OutlineInputBorder(),
@@ -196,15 +212,21 @@ class _CreateWorkoutDialogState extends ConsumerState<CreateWorkoutDialog> {
                   border: OutlineInputBorder(),
                 ),
                 items: const [
-                  DropdownMenuItem(value: 'EASY', child: Text('Locker / Erholung (Z1-Z2)')),
-                  DropdownMenuItem(value: 'MODERATE', child: Text('Moderat / GA1 (Z2-Z3)')),
-                  DropdownMenuItem(value: 'HARD', child: Text('Hart / Tempo / Schwelle (Z4)')),
-                  DropdownMenuItem(value: 'INTERVALS', child: Text('Intervalle / HIIT (Z5+)')),
+                  DropdownMenuItem(
+                      value: 'EASY', child: Text('Locker / Erholung (Z1-Z2)')),
+                  DropdownMenuItem(
+                      value: 'MODERATE', child: Text('Moderat / GA1 (Z2-Z3)')),
+                  DropdownMenuItem(
+                      value: 'HARD',
+                      child: Text('Hart / Tempo / Schwelle (Z4)')),
+                  DropdownMenuItem(
+                      value: 'INTERVALS',
+                      child: Text('Intervalle / HIIT (Z5+)')),
                 ],
-                onChanged: (val) => setState(() => _intensity = val ?? 'MODERATE'),
+                onChanged: (val) =>
+                    setState(() => _intensity = val ?? 'MODERATE'),
               ),
               const SizedBox(height: 14),
-
 
               // Beschreibung
               TextFormField(
@@ -223,7 +245,8 @@ class _CreateWorkoutDialogState extends ConsumerState<CreateWorkoutDialog> {
                   Expanded(
                     child: OutlinedButton.icon(
                       icon: const Icon(Icons.library_books_outlined, size: 16),
-                      label: const Text('Aus Vorlage', style: TextStyle(fontSize: 12)),
+                      label: const Text('Aus Vorlage',
+                          style: TextStyle(fontSize: 12)),
                       onPressed: () {
                         Navigator.pop(context);
                         Navigator.push(
@@ -231,7 +254,8 @@ class _CreateWorkoutDialogState extends ConsumerState<CreateWorkoutDialog> {
                           MaterialPageRoute(
                             builder: (_) => WorkoutTemplateLibraryScreen(
                               athleteId: widget.athleteId,
-                              targetLocalDate: DateFormat('yyyy-MM-dd').format(_selectedDate),
+                              targetLocalDate: DateFormat('yyyy-MM-dd')
+                                  .format(_selectedDate),
                             ),
                           ),
                         );
@@ -242,7 +266,8 @@ class _CreateWorkoutDialogState extends ConsumerState<CreateWorkoutDialog> {
                   Expanded(
                     child: OutlinedButton.icon(
                       icon: const Icon(Icons.construction_outlined, size: 16),
-                      label: const Text('Im Builder bauen', style: TextStyle(fontSize: 12)),
+                      label: const Text('Im Builder bauen',
+                          style: TextStyle(fontSize: 12)),
                       onPressed: () {
                         Navigator.pop(context);
                         Navigator.push(
@@ -251,7 +276,8 @@ class _CreateWorkoutDialogState extends ConsumerState<CreateWorkoutDialog> {
                             builder: (_) => WorkoutBuilderScreen(
                               sport: _sport,
                               athleteId: widget.athleteId,
-                              targetLocalDate: DateFormat('yyyy-MM-dd').format(_selectedDate),
+                              targetLocalDate: DateFormat('yyyy-MM-dd')
+                                  .format(_selectedDate),
                             ),
                           ),
                         );
@@ -269,8 +295,12 @@ class _CreateWorkoutDialogState extends ConsumerState<CreateWorkoutDialog> {
                   padding: const EdgeInsets.symmetric(vertical: 14),
                 ),
                 child: _isSaving
-                    ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                    : const Text('Einheit speichern', style: TextStyle(fontSize: 16)),
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2))
+                    : const Text('Einheit speichern',
+                        style: TextStyle(fontSize: 16)),
               ),
             ],
           ),
@@ -299,9 +329,11 @@ class _CreateWorkoutDialogState extends ConsumerState<CreateWorkoutDialog> {
 
     setState(() => _isSaving = true);
     try {
-      final currentUid = ref.read(authStateChangesProvider).valueOrNull?.uid ?? '';
+      final currentUid =
+          ref.read(authStateChangesProvider).valueOrNull?.uid ?? '';
       final durationMin = int.parse(_durationMinutesController.text.trim());
-      final distanceKm = double.tryParse(_distanceKmController.text.trim().replaceAll(',', '.'));
+      final distanceKm = double.tryParse(
+          _distanceKmController.text.trim().replaceAll(',', '.'));
       final dateStr = DateFormat('yyyy-MM-dd').format(_selectedDate);
 
       // Grobe TSS-Schätzung für die Planung (z. B. 50 TSS/h bei Moderat)
@@ -317,7 +349,9 @@ class _CreateWorkoutDialogState extends ConsumerState<CreateWorkoutDialog> {
         localDate: dateStr,
         sport: _sport,
         title: _titleController.text.trim(),
-        description: _descriptionController.text.trim().isNotEmpty ? _descriptionController.text.trim() : null,
+        description: _descriptionController.text.trim().isNotEmpty
+            ? _descriptionController.text.trim()
+            : null,
         plannedDurationSec: durationMin * 60,
         plannedDistanceM: distanceKm != null ? distanceKm * 1000 : null,
         plannedLoad: loadEst,
@@ -331,7 +365,8 @@ class _CreateWorkoutDialogState extends ConsumerState<CreateWorkoutDialog> {
       if (mounted) {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Trainingseinheit erfolgreich geplant!')),
+          const SnackBar(
+              content: Text('Trainingseinheit erfolgreich geplant!')),
         );
       }
     } catch (e) {

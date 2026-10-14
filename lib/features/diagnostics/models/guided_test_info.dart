@@ -28,7 +28,8 @@ class GuidedTestInfo {
           sport: 'BIKE',
           titleDe: '20-Minuten-FTP-Test',
           titleEn: '20-Minute FTP Test',
-          subtitleDe: 'Klassischer Feldtest zur Ermittlung der funktionellen Schwellenleistung.',
+          subtitleDe:
+              'Klassischer Feldtest zur Ermittlung der funktionellen Schwellenleistung.',
           durationMinutes: 60,
           protocolDe:
               '1. 20 min lockeres Einfahren mit 3x 1 min schneller Trittfrequenz (>100 rpm)\n'
@@ -50,15 +51,14 @@ class GuidedTestInfo {
           sport: 'RUN',
           titleDe: '30-Minuten-Lauftest',
           titleEn: '30-Minute Run Threshold Test',
-          subtitleDe: 'Ermittelt deine Schwellen-Herzfrequenz (LTHR) und Schwellenpace.',
+          subtitleDe:
+              'Ermittelt deine Schwellen-Herzfrequenz (LTHR) und Schwellenpace.',
           durationMinutes: 55,
-          protocolDe:
-              '1. 15 min lockeres Einlaufen mit 3 Steigerungsläufen\n'
+          protocolDe: '1. 15 min lockeres Einlaufen mit 3 Steigerungsläufen\n'
               '2. 30 min maximales, gleichmäßiges Lauftempo (flache Strecke oder Bahn)\n'
               '3. 10 min Auslaufen\n\n'
               'Berechnung: Durchschnittspuls der letzten 20 Minuten = LTHR. Durchschnittstempo über 30 min = Schwellenpace.',
-          protocolEn:
-              '1. 15 min easy warmup with 3 strides\n'
+          protocolEn: '1. 15 min easy warmup with 3 strides\n'
               '2. 30 min all-out steady tempo\n'
               '3. 10 min cooldown\n\n'
               'Calculation: Average heart rate of the final 20 minutes = LTHR. Average pace = Threshold Pace.',
@@ -70,7 +70,8 @@ class GuidedTestInfo {
           sport: 'SWIM',
           titleDe: '400m / 200m CSS-Test',
           titleEn: '400m / 200m Critical Swim Speed Test',
-          subtitleDe: 'Der Goldstandard zur Berechnung der anaeroben Schwimmschwelle.',
+          subtitleDe:
+              'Der Goldstandard zur Berechnung der anaeroben Schwimmschwelle.',
           durationMinutes: 45,
           protocolDe:
               '1. 400 m lockeres Einschwimmen (inkl. 4x 50 m Steigerung)\n'
@@ -78,8 +79,7 @@ class GuidedTestInfo {
               '3. 10–15 min lockeres Ausschwimmen / aktive Pause\n'
               '4. 200 m All-Out auf Zeit (Zeit exakt stoppen)\n\n'
               'Formel: CSS = (400 - 200) / (T400 - T200) m/s.',
-          protocolEn:
-              '1. 400 m easy warmup\n'
+          protocolEn: '1. 400 m easy warmup\n'
               '2. 400 m time trial all-out\n'
               '3. 10–15 min active recovery\n'
               '4. 200 m time trial all-out\n\n'

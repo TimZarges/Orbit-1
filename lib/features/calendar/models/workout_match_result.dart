@@ -24,7 +24,8 @@ class WorkoutMatchResult {
     this.candidateRankings = const [],
   });
 
-  bool get isAutoMatch => status == WorkoutMatchStatus.autoMatch && matchedWorkout != null;
+  bool get isAutoMatch =>
+      status == WorkoutMatchStatus.autoMatch && matchedWorkout != null;
   bool get isAmbiguous => status == WorkoutMatchStatus.ambiguous;
   bool get isNoMatch => status == WorkoutMatchStatus.noMatch;
 }

@@ -135,7 +135,8 @@ class SettingsScreen extends ConsumerWidget {
           ListTile(
             leading: const Icon(Icons.privacy_tip),
             title: const Text('Datenschutz'),
-            subtitle: const Text('Gesundheitsdaten widerrufen, Datenexport, DSGVO'),
+            subtitle:
+                const Text('Gesundheitsdaten widerrufen, Datenexport, DSGVO'),
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
               PrivacySettingsSheet.show(context);

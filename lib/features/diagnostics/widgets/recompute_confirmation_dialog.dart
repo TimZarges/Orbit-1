@@ -17,10 +17,12 @@ class RecomputeConfirmationDialog extends StatefulWidget {
   });
 
   @override
-  State<RecomputeConfirmationDialog> createState() => _RecomputeConfirmationDialogState();
+  State<RecomputeConfirmationDialog> createState() =>
+      _RecomputeConfirmationDialogState();
 }
 
-class _RecomputeConfirmationDialogState extends State<RecomputeConfirmationDialog> {
+class _RecomputeConfirmationDialogState
+    extends State<RecomputeConfirmationDialog> {
   bool _recomputePastWorkouts = false;
 
   @override
@@ -37,8 +39,9 @@ class _RecomputeConfirmationDialogState extends State<RecomputeConfirmationDialo
             decoration: BoxDecoration(
               color: AppColors.techGrey,
               shape: BoxShape.circle,
-            ],
-            child: Icon(Icons.check_circle_outline, color: AppColors.navy, size: 24),
+            ),
+            child: Icon(Icons.check_circle_outline,
+                color: AppColors.navy, size: 24),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -68,12 +71,14 @@ class _RecomputeConfirmationDialogState extends State<RecomputeConfirmationDialo
               ),
               child: Row(
                 children: [
-                  Icon(Icons.calendar_today_outlined, size: 18, color: Colors.grey.shade600),
+                  Icon(Icons.calendar_today_outlined,
+                      size: 18, color: Colors.grey.shade600),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       'Gültig ab heute. Bestehende Vergangenheitsdaten bleiben standardmäßig unangetastet.',
-                      style: AppTypography.label.copyWith(color: Colors.grey.shade700),
+                      style: AppTypography.label
+                          .copyWith(color: Colors.grey.shade700),
                     ),
                   ),
                 ],
@@ -84,7 +89,8 @@ class _RecomputeConfirmationDialogState extends State<RecomputeConfirmationDialo
             const SizedBox(height: 12),
             Text(
               'Vergangene Einheiten neu berechnen?',
-              style: AppTypography.title.copyWith(fontSize: 15, color: AppColors.navy),
+              style: AppTypography.title
+                  .copyWith(fontSize: 15, color: AppColors.navy),
             ),
             const SizedBox(height: 4),
             Text(
@@ -110,7 +116,8 @@ class _RecomputeConfirmationDialogState extends State<RecomputeConfirmationDialo
               ),
               subtitle: Text(
                 'Standardmäßig deaktiviert, um historische Verläufe stabil zu halten.',
-                style: AppTypography.label.copyWith(color: Colors.grey.shade500),
+                style:
+                    AppTypography.label.copyWith(color: Colors.grey.shade500),
               ),
               activeColor: AppColors.navy,
             ),
@@ -131,7 +138,8 @@ class _RecomputeConfirmationDialogState extends State<RecomputeConfirmationDialo
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.volt,
             foregroundColor: AppColors.navy,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             elevation: 0,
           ),

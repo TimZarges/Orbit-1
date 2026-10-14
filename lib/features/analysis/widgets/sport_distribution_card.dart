@@ -20,7 +20,8 @@ class SportDistributionCard extends StatelessWidget {
 
     return Semantics(
       container: true,
-      label: 'Sportarten-Verteilung: ${summary.items.map((i) => '${i.labelDe}: ${i.formattedDuration} (${i.percent.round()} %)').join(', ')}',
+      label:
+          'Sportarten-Verteilung: ${summary.items.map((i) => '${i.labelDe}: ${i.formattedDuration} (${i.percent.round()} %)').join(', ')}',
       child: Container(
         decoration: BoxDecoration(
           color: AppColors.white,

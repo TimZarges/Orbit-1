@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/dashboard/screens/dashboard_screen.dart';
@@ -136,7 +135,8 @@ final goRouterProvider = Provider<GoRouter>((ref) {
                 GoRoute(
                   path: 'garmin',
                   builder: (context, state) => GarminConnectionScreen(
-                    initialVerifier: state.uri.queryParameters['oauth_verifier'],
+                    initialVerifier:
+                        state.uri.queryParameters['oauth_verifier'],
                     initialToken: state.uri.queryParameters['oauth_token'],
                   ),
                 ),

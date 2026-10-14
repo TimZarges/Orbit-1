@@ -58,4 +58,26 @@ class AppColors {
   static const Color sportRun = Color(0xFF10B981);
   static const Color sportStrength = Color(0xFF64748B);
   static const Color sportMulti = navy;
+
+  // Aliase & Komfort-Getter
+  static const Color background = Color(0xFF0A0F1D);
+  static const Color backgroundLight = Color(0xFFF8FAFC);
+  static const Color accentVolt = volt;
+  static const Color techGrey = Color(0xFF64748B);
+  static const Color lightBackground = Color(0xFFF8FAFC);
+  static const Color cardDark = Color(0xFF0F172A);
+  static const Color borderDark = Color(0xFF1E293B);
+  static const Color textSecondaryDark = Color(0xFF94A3B8);
+  static const Color textTertiaryDark = Color(0xFF64748B);
+  static const Color surfaceDark = Color(0xFF1E293B);
+  static const Color green = Color(0xFF10B981);
+  static const Color red = Color(0xFFEF4444);
+  static const Color accentBlue = Color(0xFF0EA5E9);
+  static const Color zone1 = z1;
+  static const Color zone2 = z2;
+  static const Color zone3 = z3;
+  static const Color zone4 = z4;
+  static const Color zone5 = z5;
+  static const Color zone6 = z6;
+  static const Color zone7 = z7;
 }

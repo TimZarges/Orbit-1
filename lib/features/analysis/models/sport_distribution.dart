@@ -83,7 +83,8 @@ class SportDistributionSummary {
     required this.totalDurationSec,
   });
 
-  factory SportDistributionSummary.fromDurations(Map<String, double> durations) {
+  factory SportDistributionSummary.fromDurations(
+      Map<String, double> durations) {
     final total = durations.values.fold(0.0, (sum, d) => sum + d);
     if (total <= 0) {
       return const SportDistributionSummary(items: [], totalDurationSec: 0);

@@ -22,9 +22,8 @@ class WorkoutStructure {
   });
 
   /// Maximale Verschachtelungstiefe der Blöcke (max. 3 erlaubt).
-  int get maxDepth => blocks.isEmpty
-      ? 0
-      : blocks.map((b) => b.depth).fold(0, math.max);
+  int get maxDepth =>
+      blocks.isEmpty ? 0 : blocks.map((b) => b.depth).fold(0, math.max);
 
   /// Gesamtzahl der Einzelschritte nach Multiplikation aller Wiederholungen (max. 200).
   int get totalStepsCount => blocks.isEmpty
@@ -51,7 +50,8 @@ class WorkoutStructure {
     }
 
     if (maxDepth > 3) {
-      errors.add('Maximale Verschachtelungstiefe überschritten ($maxDepth > 3).');
+      errors
+          .add('Maximale Verschachtelungstiefe überschritten ($maxDepth > 3).');
     }
 
     if (totalStepsCount > 200) {
@@ -78,7 +78,8 @@ class WorkoutStructure {
     for (final block in list) {
       if (block is RepeatBlock) {
         if (block.count < 2 || block.count > 99) {
-          errors.add('Wiederholungsanzahl muss zwischen 2 und 99 liegen (ist: ${block.count}).');
+          errors.add(
+              'Wiederholungsanzahl muss zwischen 2 und 99 liegen (ist: ${block.count}).');
         }
         if (block.blocks.isEmpty) {
           errors.add('Wiederholungsblock darf nicht leer sein.');
@@ -126,7 +127,11 @@ class WorkoutStructure {
     // Intensitätswerte
     switch (step.intensity) {
       case final ZoneIntensity z:
-        if (z.low < 1 || z.low > 7 || z.high < 1 || z.high > 7 || z.low > z.high) {
+        if (z.low < 1 ||
+            z.low > 7 ||
+            z.high < 1 ||
+            z.high > 7 ||
+            z.low > z.high) {
           errors.add('Ungültiger Zonenbereich: Z${z.low}-Z${z.high}.');
         }
       case final PctFtpIntensity f:
@@ -163,7 +168,8 @@ class WorkoutStructure {
   static WorkoutStructure migrateStructure(Map<String, dynamic> raw) {
     final version = raw['schemaVersion'];
     if (version == null) {
-      throw const FormatException('Fehlendes Feld "schemaVersion" im Workout-Dokument.');
+      throw const FormatException(
+          'Fehlendes Feld "schemaVersion" im Workout-Dokument.');
     }
     if (version is! num || version.toInt() != 1) {
       throw FormatException(
@@ -187,10 +193,10 @@ class WorkoutStructure {
 
   /// Konvertiert in das Schema-JSON (Schema v1).
   Map<String, dynamic> toJson() => {
-    'schemaVersion': schemaVersion,
-    'sport': sport.toUpperCase(),
-    'blocks': blocks.map((b) => b.toJson()).toList(),
-  };
+        'schemaVersion': schemaVersion,
+        'sport': sport.toUpperCase(),
+        'blocks': blocks.map((b) => b.toJson()).toList(),
+      };
 
   /// Deserialisiert eine [WorkoutStructure] aus Schema-JSON.
   factory WorkoutStructure.fromJson(Map<String, dynamic> json) {

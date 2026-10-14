@@ -53,7 +53,8 @@ class FtpEstimator {
     if (twentyMinMmp < minPlausibleFtp || twentyMinMmp > maxPlausibleFtp) {
       return const FtpEstimationResult(
         hasProposal: false,
-        reasonForNoProposal: '20-Minuten-Leistung außerhalb des physiologisch plausiblen Bereichs (50–600 W).',
+        reasonForNoProposal:
+            '20-Minuten-Leistung außerhalb des physiologisch plausiblen Bereichs (50–600 W).',
       );
     }
 
@@ -65,7 +66,8 @@ class FtpEstimator {
     if (vi > 1.15) {
       return const FtpEstimationResult(
         hasProposal: false,
-        reasonForNoProposal: 'Pacing zu ungleichmäßig (Variabilitätsindex > 1.15). Eine 20-Minuten-FTP-Schätzung erfordert konstanten Druck auf dem Pedal.',
+        reasonForNoProposal:
+            'Pacing zu ungleichmäßig (Variabilitätsindex > 1.15). Eine 20-Minuten-FTP-Schätzung erfordert konstanten Druck auf dem Pedal.',
       );
     }
 
@@ -83,7 +85,8 @@ class FtpEstimator {
       if (delta.abs() < minDeltaWatt && deltaPercent.abs() < minDeltaPercent) {
         return FtpEstimationResult(
           hasProposal: false,
-          reasonForNoProposal: 'Leistungsänderung liegt unter der Relevanzschwelle (< 3 W und < 1.5 %). Aktueller FTP bleibt stabil.',
+          reasonForNoProposal:
+              'Leistungsänderung liegt unter der Relevanzschwelle (< 3 W und < 1.5 %). Aktueller FTP bleibt stabil.',
         );
       }
     }
@@ -98,14 +101,17 @@ class FtpEstimator {
       confidence = ConfidenceLevel.low;
     }
 
-    final dateStr = '${activityDate.day.toString().padLeft(2, '0')}.${activityDate.month.toString().padLeft(2, '0')}.${activityDate.year}';
+    final dateStr =
+        '${activityDate.day.toString().padLeft(2, '0')}.${activityDate.month.toString().padLeft(2, '0')}.${activityDate.year}';
     final basis = [
       '20-Minuten-Bestwert: ${twentyMinMmp.round()} W am $dateStr',
       'Pacing-Gleichmäßigkeit: VI = ${vi.toStringAsFixed(2)}',
       if (isIndoor) 'Aufzeichnung auf Rollentrainer (Indoor)',
     ];
 
-    final deltaText = delta >= 0 ? '+${delta.round()} W (+${deltaPercent.toStringAsFixed(1)} %)' : '${delta.round()} W (${deltaPercent.toStringAsFixed(1)} %)';
+    final deltaText = delta >= 0
+        ? '+${delta.round()} W (+${deltaPercent.toStringAsFixed(1)} %)'
+        : '${delta.round()} W (${deltaPercent.toStringAsFixed(1)} %)';
     final explanationDe = currentFtp != null
         ? 'Basierend auf deinem 20-Minuten-Bestwert von ${twentyMinMmp.round()} W vom $dateStr ergibt sich ein neuer FTP von ${calculatedFtp.round()} W ($deltaText).'
         : 'Basierend auf deinem 20-Minuten-Bestwert von ${twentyMinMmp.round()} W vom $dateStr wird ein Einstiegs-FTP von ${calculatedFtp.round()} W empfohlen.';

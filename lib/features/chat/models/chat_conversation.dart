@@ -32,7 +32,8 @@ class ChatConversation {
     this.otherUserRole,
   });
 
-  factory ChatConversation.fromDocument(DocumentSnapshot doc, {String? currentUid}) {
+  factory ChatConversation.fromDocument(DocumentSnapshot doc,
+      {String? currentUid}) {
     final data = (doc.data() as Map<String, dynamic>?) ?? {};
 
     final athleteId = data['athleteId'] as String? ?? '';
@@ -69,7 +70,8 @@ class ChatConversation {
         'lastMessage': {
           'text': lastMessageText,
           'senderId': lastMessageSenderId,
-          if (lastMessageTime != null) 'sentAt': Timestamp.fromDate(lastMessageTime!),
+          if (lastMessageTime != null)
+            'sentAt': Timestamp.fromDate(lastMessageTime!),
           'type': lastMessageType ?? 'TEXT',
         },
       'unreadCount': unreadCounts,

@@ -55,7 +55,8 @@ class MatchingEngine {
 
     // Eindeutiger Treffer: Genau 1 Kandidat >= autoMatchThreshold ODER bester Kandidat hat mindestens 20 Punkte Vorsprung
     final isClearWinner = scoredCandidates.length == 1 ||
-        (scoredCandidates.length > 1 && (bestCandidate.score - scoredCandidates[1].score >= 25));
+        (scoredCandidates.length > 1 &&
+            (bestCandidate.score - scoredCandidates[1].score >= 25));
 
     if (bestCandidate.score >= autoMatchThreshold && isClearWinner) {
       return WorkoutMatchResult(
@@ -73,7 +74,8 @@ class MatchingEngine {
   }
 
   /// Berechnet den Zuordnungs-Score (0 bis 100) zwischen einer Aktivität und einem Plan.
-  static ({int score, String reason}) _calculateScore(Activity activity, PlannedWorkout plan) {
+  static ({int score, String reason}) _calculateScore(
+      Activity activity, PlannedWorkout plan) {
     int totalScore = 0;
     final reasons = <String>[];
 
@@ -95,7 +97,11 @@ class MatchingEngine {
 
       // Verhältnis außerhalb von 0.4 bis 2.5 gilt als Ausreißer
       if (ratio < 0.4 || ratio > 2.5) {
-        return (score: 0, reason: 'Dauer weicht extrem ab (${(ratio * 100).toStringAsFixed(0)}%)');
+        return (
+          score: 0,
+          reason:
+              'Dauer weicht extrem ab (${(ratio * 100).toStringAsFixed(0)}%)'
+        );
       }
 
       final diff = (1.0 - ratio).abs();
@@ -118,7 +124,9 @@ class MatchingEngine {
     }
 
     // C. Distanz / Titel-Übereinstimmung (max. 20 Punkte)
-    if (plan.plannedDistanceM != null && plan.plannedDistanceM! > 0 && activity.distanceM > 0) {
+    if (plan.plannedDistanceM != null &&
+        plan.plannedDistanceM! > 0 &&
+        activity.distanceM > 0) {
       final distRatio = activity.distanceM / plan.plannedDistanceM!;
       final distDiff = (1.0 - distRatio).abs();
       if (distDiff <= 0.10) {
@@ -128,7 +136,9 @@ class MatchingEngine {
         totalScore += 12;
         reasons.add('Distanz ähnlich');
       }
-    } else if (activity.title.toLowerCase().contains(plan.title.toLowerCase())) {
+    } else if (activity.title
+        .toLowerCase()
+        .contains(plan.title.toLowerCase())) {
       totalScore += 15;
       reasons.add('Titel-Übereinstimmung');
     }

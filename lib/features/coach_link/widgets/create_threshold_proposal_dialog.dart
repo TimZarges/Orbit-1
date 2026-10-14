@@ -33,10 +33,12 @@ class CreateThresholdProposalDialog extends StatefulWidget {
   }
 
   @override
-  State<CreateThresholdProposalDialog> createState() => _CreateThresholdProposalDialogState();
+  State<CreateThresholdProposalDialog> createState() =>
+      _CreateThresholdProposalDialogState();
 }
 
-class _CreateThresholdProposalDialogState extends State<CreateThresholdProposalDialog> {
+class _CreateThresholdProposalDialogState
+    extends State<CreateThresholdProposalDialog> {
   String _selectedSport = 'BIKE';
   String _selectedType = 'FTP';
   final _valueController = TextEditingController();
@@ -68,7 +70,8 @@ class _CreateThresholdProposalDialogState extends State<CreateThresholdProposalD
     final value = double.tryParse(_valueController.text.replaceAll(',', '.'));
     if (value == null || value <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Bitte einen gültigen Zahlenwert eingeben.')),
+        const SnackBar(
+            content: Text('Bitte einen gültigen Zahlenwert eingeben.')),
       );
       return;
     }
@@ -100,7 +103,9 @@ class _CreateThresholdProposalDialogState extends State<CreateThresholdProposalD
       if (mounted) {
         Navigator.of(context).pop();
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Vorschlag für ${widget.athleteName} erfolgreich eingereicht.')),
+          SnackBar(
+              content: Text(
+                  'Vorschlag für ${widget.athleteName} erfolgreich eingereicht.')),
         );
       }
     } catch (e) {
@@ -130,7 +135,8 @@ class _CreateThresholdProposalDialogState extends State<CreateThresholdProposalD
               children: [
                 Text(
                   'Schwellenwert vorschlagen',
-                  style: AppTypography.title.copyWith(fontSize: 18, color: AppColors.navy),
+                  style: AppTypography.title
+                      .copyWith(fontSize: 18, color: AppColors.navy),
                 ),
                 IconButton(
                   icon: const Icon(Icons.close),
@@ -147,24 +153,29 @@ class _CreateThresholdProposalDialogState extends State<CreateThresholdProposalD
             // Sportart Dropdown
             DropdownButtonFormField<String>(
               value: _selectedSport,
-              decoration: const InputDecoration(labelText: 'Sportart', border: OutlineInputBorder()),
+              decoration: const InputDecoration(
+                  labelText: 'Sportart', border: OutlineInputBorder()),
               items: const [
                 DropdownMenuItem(value: 'BIKE', child: Text('Rad (Bike)')),
                 DropdownMenuItem(value: 'RUN', child: Text('Lauf (Run)')),
-                DropdownMenuItem(value: 'SWIM', child: Text('Schwimmen (Swim)')),
+                DropdownMenuItem(
+                    value: 'SWIM', child: Text('Schwimmen (Swim)')),
               ],
               onChanged: _onSportChanged,
             ),
             const SizedBox(height: 14),
 
             // Schwellentyp
-            Text('Schwellenparameter: $_selectedType', style: AppTypography.body.copyWith(fontWeight: FontWeight.bold)),
+            Text('Schwellenparameter: $_selectedType',
+                style:
+                    AppTypography.body.copyWith(fontWeight: FontWeight.bold)),
             const SizedBox(height: 14),
 
             // Neuer Wert
             TextField(
               controller: _valueController,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
               decoration: InputDecoration(
                 labelText: _selectedType == 'FTP'
                     ? 'Neue FTP in Watt'
@@ -182,7 +193,8 @@ class _CreateThresholdProposalDialogState extends State<CreateThresholdProposalD
               maxLines: 2,
               decoration: const InputDecoration(
                 labelText: 'Begründung / Trainingsbeobachtung (optional)',
-                hintText: 'z.B. Konstante Leistungssteigerung in 4x4min Intervallen',
+                hintText:
+                    'z.B. Konstante Leistungssteigerung in 4x4min Intervallen',
                 border: OutlineInputBorder(),
               ),
             ),
@@ -201,11 +213,16 @@ class _CreateThresholdProposalDialogState extends State<CreateThresholdProposalD
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.volt,
                     foregroundColor: AppColors.navy,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10)),
                   ),
                   child: _isSubmitting
-                      ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
-                      : const Text('Vorschlag senden', style: TextStyle(fontWeight: FontWeight.bold)),
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2))
+                      : const Text('Vorschlag senden',
+                          style: TextStyle(fontWeight: FontWeight.bold)),
                 ),
               ],
             ),

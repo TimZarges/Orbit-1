@@ -6,6 +6,9 @@ final firestoreProvider = Provider<FirebaseFirestore>((ref) {
   return FirebaseFirestore.instance;
 });
 
+/// Liefert den aktuell eingeloggten Firebase User
+final userProvider = authStateChangesProvider;
+
 /// Liefert das Firestore-Nutzerdokument des aktuell eingeloggten Users
 final userDocumentProvider = StreamProvider<Map<String, dynamic>?>((ref) {
   final user = ref.watch(authStateChangesProvider).value;

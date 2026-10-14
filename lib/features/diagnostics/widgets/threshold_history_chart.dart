@@ -1,4 +1,3 @@
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../../../core/design/app_colors.dart';
 import '../../../core/design/app_typography.dart';
@@ -86,11 +85,13 @@ class ThresholdHistoryChart extends StatelessWidget {
             children: [
               Text(
                 'Entwicklung',
-                style: AppTypography.title.copyWith(fontSize: 15, color: AppColors.navy),
+                style: AppTypography.title
+                    .copyWith(fontSize: 15, color: AppColors.navy),
               ),
               Text(
                 '${validPoints.length} Einträge',
-                style: AppTypography.label.copyWith(color: Colors.grey.shade500),
+                style:
+                    AppTypography.label.copyWith(color: Colors.grey.shade500),
               ),
             ],
           ),
@@ -114,11 +115,13 @@ class ThresholdHistoryChart extends StatelessWidget {
             children: [
               Text(
                 validPoints.first.date,
-                style: AppTypography.label.copyWith(fontSize: 11, color: Colors.grey.shade500),
+                style: AppTypography.label
+                    .copyWith(fontSize: 11, color: Colors.grey.shade500),
               ),
               Text(
                 validPoints.last.date,
-                style: AppTypography.label.copyWith(fontSize: 11, color: Colors.grey.shade500),
+                style: AppTypography.label
+                    .copyWith(fontSize: 11, color: Colors.grey.shade500),
               ),
             ],
           ),
@@ -177,13 +180,15 @@ class _HistoryChartPainter extends CustomPainter {
       canvas.drawLine(Offset(0, y), Offset(size.width, y), gridPaint);
     }
 
-    final double xStep = points.length > 1 ? size.width / (points.length - 1) : 0;
+    final double xStep =
+        points.length > 1 ? size.width / (points.length - 1) : 0;
     final path = Path();
     final pointOffsets = <Offset>[];
 
     for (int i = 0; i < points.length; i++) {
       final x = points.length == 1 ? size.width / 2 : i * xStep;
-      final normalizedY = (points[i].value - minY) / (maxY - minY == 0 ? 1 : (maxY - minY));
+      final normalizedY =
+          (points[i].value - minY) / (maxY - minY == 0 ? 1 : (maxY - minY));
       final y = size.height - (normalizedY * size.height);
       final offset = Offset(x, y.clamp(8, size.height - 8));
       pointOffsets.add(offset);
@@ -206,6 +211,8 @@ class _HistoryChartPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _HistoryChartPainter oldDelegate) {
-    return oldDelegate.points != points || oldDelegate.minY != minY || oldDelegate.maxY != maxY;
+    return oldDelegate.points != points ||
+        oldDelegate.minY != minY ||
+        oldDelegate.maxY != maxY;
   }
 }

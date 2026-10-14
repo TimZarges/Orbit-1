@@ -53,7 +53,9 @@ void main() {
       expect(result.reasonForNoProposal, contains('Variabilitätsindex > 1.15'));
     });
 
-    test('verwirft Vorschlag bei irrelevanter Minimaldifferenz (< 3 W und < 1.5 %)', () {
+    test(
+        'verwirft Vorschlag bei irrelevanter Minimaldifferenz (< 3 W und < 1.5 %)',
+        () {
       final result = estimator.estimateFrom20MinMmp(
         twentyMinMmp: 285.0, // 285 * 0.95 = 270.75 -> round 271 W
         normalizedPower: 290.0,
@@ -89,7 +91,8 @@ void main() {
     const estimator = LthrEstimator();
     final testDate = DateTime(2026, 10, 13);
 
-    test('erzeugt LTHR- und Pace-Vorschläge bei konstantem 30-Minuten-Test', () {
+    test('erzeugt LTHR- und Pace-Vorschläge bei konstantem 30-Minuten-Test',
+        () {
       final result = estimator.estimateFrom30MinRun(
         last20MinAvgHr: 174.0,
         thirtyMinAvgPaceSec: 270.0, // 4:30 min/km
@@ -110,7 +113,9 @@ void main() {
       expect(result.paceProposal!.delta, -15.0); // schneller
     });
 
-    test('verwirft Vorschläge bei instabilem Herzfrequenzplateau (StdDev > 8 bpm)', () {
+    test(
+        'verwirft Vorschläge bei instabilem Herzfrequenzplateau (StdDev > 8 bpm)',
+        () {
       final result = estimator.estimateFrom30MinRun(
         last20MinAvgHr: 174.0,
         thirtyMinAvgPaceSec: 270.0,
@@ -150,7 +155,9 @@ void main() {
       expect(p.sport, 'SWIM');
     });
 
-    test('verwirft ungültigen Test wenn 400m schneller als 200m geschwommen wurde', () {
+    test(
+        'verwirft ungültigen Test wenn 400m schneller als 200m geschwommen wurde',
+        () {
       final result = estimator.estimateFrom400mAnd200m(
         t400Seconds: 200.0,
         t200Seconds: 220.0,

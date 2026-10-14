@@ -13,8 +13,10 @@ class PlannedWorkoutRepository {
 
   /// Erstellt eine neue geplante Trainingseinheit.
   Future<String> create(PlannedWorkout workout) async {
-    final docRef = workout.id.isNotEmpty ? _collection.doc(workout.id) : _collection.doc();
-    final toSave = workout.id.isNotEmpty ? workout : workout.copyWith(id: docRef.id);
+    final docRef =
+        workout.id.isNotEmpty ? _collection.doc(workout.id) : _collection.doc();
+    final toSave =
+        workout.id.isNotEmpty ? workout : workout.copyWith(id: docRef.id);
     await docRef.set(toSave.toMap());
     return docRef.id;
   }
@@ -120,7 +122,9 @@ class PlannedWorkoutRepository {
         .where('localDate', isLessThanOrEqualTo: endDate)
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs.map((doc) => PlannedWorkout.fromFirestore(doc)).toList()
+      return snapshot.docs
+          .map((doc) => PlannedWorkout.fromFirestore(doc))
+          .toList()
         ..sort((a, b) => a.localDate.compareTo(b.localDate));
     });
   }

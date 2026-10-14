@@ -25,7 +25,8 @@ class AnalysisRepository {
           .where(FieldPath.documentId, isLessThanOrEqualTo: endDate)
           .get();
 
-      final list = snapshot.docs.map((doc) => DailyAggregate.fromDocument(doc)).toList();
+      final list =
+          snapshot.docs.map((doc) => DailyAggregate.fromDocument(doc)).toList();
       // Sortiere chronologisch aufsteigend
       list.sort((a, b) => a.localDate.compareTo(b.localDate));
       return list;
@@ -82,7 +83,9 @@ class AnalysisRepository {
           .where('localDate', isLessThanOrEqualTo: endDate)
           .get();
 
-      return snapshot.docs.map((doc) => PlannedWorkout.fromDocument(doc)).toList();
+      return snapshot.docs
+          .map((doc) => PlannedWorkout.fromDocument(doc))
+          .toList();
     } catch (e) {
       return [];
     }

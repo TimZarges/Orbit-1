@@ -53,19 +53,23 @@ class LthrEstimator {
     required DateTime activityDate,
   }) {
     // Plausibilitätsprüfungen
-    if (last20MinAvgHr < minPlausibleLthr || last20MinAvgHr > maxPlausibleLthr) {
+    if (last20MinAvgHr < minPlausibleLthr ||
+        last20MinAvgHr > maxPlausibleLthr) {
       return const RunThresholdEstimationResult(
         hasLthrProposal: false,
         hasPaceProposal: false,
-        reasonForNoProposal: 'Herzfrequenz außerhalb des physiologisch plausiblen Bereichs (120–215 bpm).',
+        reasonForNoProposal:
+            'Herzfrequenz außerhalb des physiologisch plausiblen Bereichs (120–215 bpm).',
       );
     }
 
-    if (thirtyMinAvgPaceSec < minPlausiblePaceSec || thirtyMinAvgPaceSec > maxPlausiblePaceSec) {
+    if (thirtyMinAvgPaceSec < minPlausiblePaceSec ||
+        thirtyMinAvgPaceSec > maxPlausiblePaceSec) {
       return const RunThresholdEstimationResult(
         hasLthrProposal: false,
         hasPaceProposal: false,
-        reasonForNoProposal: 'Lauftempo außerhalb des plausiblen Bereichs (2:30–10:00 min/km).',
+        reasonForNoProposal:
+            'Lauftempo außerhalb des plausiblen Bereichs (2:30–10:00 min/km).',
       );
     }
 
@@ -74,11 +78,13 @@ class LthrEstimator {
       return const RunThresholdEstimationResult(
         hasLthrProposal: false,
         hasPaceProposal: false,
-        reasonForNoProposal: 'Herzfrequenz schwankte zu stark (kein stabiles Plateau im Schwellenbereich).',
+        reasonForNoProposal:
+            'Herzfrequenz schwankte zu stark (kein stabiles Plateau im Schwellenbereich).',
       );
     }
 
-    final dateStr = '${activityDate.day.toString().padLeft(2, '0')}.${activityDate.month.toString().padLeft(2, '0')}.${activityDate.year}';
+    final dateStr =
+        '${activityDate.day.toString().padLeft(2, '0')}.${activityDate.month.toString().padLeft(2, '0')}.${activityDate.year}';
     final calculatedLthr = last20MinAvgHr.roundToDouble();
 
     // LTHR Proposal
@@ -94,7 +100,8 @@ class LthrEstimator {
 
     if (currentLthr == null || lthrDelta.abs() >= minDeltaBpm) {
       hasLthrProp = true;
-      final conf = hrStdDev <= 4.0 ? ConfidenceLevel.high : ConfidenceLevel.medium;
+      final conf =
+          hrStdDev <= 4.0 ? ConfidenceLevel.high : ConfidenceLevel.medium;
       final deltaSign = lthrDelta >= 0 ? '+' : '';
       lthrProp = ThresholdProposal(
         id: 'prop_lthr_${activityDate.millisecondsSinceEpoch}',
@@ -129,13 +136,15 @@ class LthrEstimator {
     double paceDelta = 0.0;
     double paceDeltaPct = 0.0;
     if (currentPaceSec != null && currentPaceSec > 0) {
-      paceDelta = thirtyMinAvgPaceSec - currentPaceSec; // Negativ = schneller = Verbesserung!
+      paceDelta = thirtyMinAvgPaceSec -
+          currentPaceSec; // Negativ = schneller = Verbesserung!
       paceDeltaPct = (paceDelta / currentPaceSec) * 100.0;
     }
 
     if (currentPaceSec == null || paceDelta.abs() >= minDeltaPaceSec) {
       hasPaceProp = true;
-      final conf = hrStdDev <= 4.0 ? ConfidenceLevel.high : ConfidenceLevel.medium;
+      final conf =
+          hrStdDev <= 4.0 ? ConfidenceLevel.high : ConfidenceLevel.medium;
 
       final m = thirtyMinAvgPaceSec.toInt() ~/ 60;
       final s = (thirtyMinAvgPaceSec % 60).round();

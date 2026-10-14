@@ -20,7 +20,8 @@ class ZoneDistributionCard extends StatelessWidget {
 
     return Semantics(
       container: true,
-      label: 'Zonenverteilung: ${summary.zones.map((z) => '${z.zoneLabel} ${z.nameDe}: ${z.percent.round()} %').join(', ')}',
+      label:
+          'Zonenverteilung: ${summary.zones.map((z) => '${z.zoneLabel} ${z.nameDe}: ${z.percent.round()} %').join(', ')}',
       child: Container(
         decoration: BoxDecoration(
           color: AppColors.white,
@@ -48,13 +49,15 @@ class ZoneDistributionCard extends StatelessWidget {
                     const SizedBox(width: 8),
                     Text(
                       'Zonenverteilung',
-                      style: AppTypography.title.copyWith(color: AppColors.navy),
+                      style:
+                          AppTypography.title.copyWith(color: AppColors.navy),
                     ),
                   ],
                 ),
                 Text(
                   'Gesamt ${_formatTotal(summary.totalDurationSec)}',
-                  style: AppTypography.label.copyWith(color: Colors.grey.shade600),
+                  style:
+                      AppTypography.label.copyWith(color: Colors.grey.shade600),
                 ),
               ],
             ),
@@ -128,13 +131,15 @@ class ZoneDistributionCard extends StatelessWidget {
                         child: LayoutBuilder(
                           builder: (context, constraints) {
                             final w = constraints.maxWidth;
-                            final barW = (w * (zone.percent / 100)).clamp(0.0, w);
+                            final barW =
+                                (w * (zone.percent / 100)).clamp(0.0, w);
                             return Stack(
                               children: [
                                 Container(
                                   height: 8,
                                   decoration: BoxDecoration(
-                                    color: AppColors.cardBorder.withValues(alpha: 0.4),
+                                    color: AppColors.cardBorder
+                                        .withValues(alpha: 0.4),
                                     borderRadius: BorderRadius.circular(4),
                                   ),
                                 ),

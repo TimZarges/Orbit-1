@@ -59,10 +59,13 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     } else {
                       final coachId = userDoc?['coachId'];
                       if (coachId != null) {
-                        final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
-                        context.push('/chat/${uid}_$coachId?athleteId=$uid&name=Trainer');
+                        final uid =
+                            FirebaseAuth.instance.currentUser?.uid ?? '';
+                        context.push(
+                            '/chat/${uid}_$coachId?athleteId=$uid&name=Trainer');
                       } else {
-                        setState(() => _currentIndex = 3); // Zur Coach-Seite wechseln
+                        setState(() =>
+                            _currentIndex = 3); // Zur Coach-Seite wechseln
                       }
                     }
                   },
@@ -75,7 +78,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   onPressed: () {
                     showMenu(
                       context: context,
-                      position: const RelativeRect.fromLTRB(100, kToolbarHeight, 0, 0),
+                      position: const RelativeRect.fromLTRB(
+                          100, kToolbarHeight, 0, 0),
                       items: [
                         PopupMenuItem(
                           value: 'profile',

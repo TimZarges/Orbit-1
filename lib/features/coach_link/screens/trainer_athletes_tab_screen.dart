@@ -35,10 +35,12 @@ class TrainerAthletesTabScreen extends ConsumerStatefulWidget {
   const TrainerAthletesTabScreen({super.key});
 
   @override
-  ConsumerState<TrainerAthletesTabScreen> createState() => _TrainerAthletesTabScreenState();
+  ConsumerState<TrainerAthletesTabScreen> createState() =>
+      _TrainerAthletesTabScreenState();
 }
 
-class _TrainerAthletesTabScreenState extends ConsumerState<TrainerAthletesTabScreen> {
+class _TrainerAthletesTabScreenState
+    extends ConsumerState<TrainerAthletesTabScreen> {
   CoachViewMode _viewMode = CoachViewMode.table;
   final _searchController = TextEditingController();
   final _searchFocusNode = FocusNode();
@@ -63,7 +65,8 @@ class _TrainerAthletesTabScreenState extends ConsumerState<TrainerAthletesTabScr
       });
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Fehler: $e')));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Fehler: $e')));
       }
     } finally {
       if (mounted) setState(() => _isCreatingInvite = false);
@@ -147,13 +150,15 @@ class _TrainerAthletesTabScreenState extends ConsumerState<TrainerAthletesTabScr
           ),
           body: LayoutBuilder(
             builder: (context, constraints) {
-              final isWide = constraints.maxWidth >= AppSpacing.breakpointCompact;
+              final isWide =
+                  constraints.maxWidth >= AppSpacing.breakpointCompact;
 
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   // Toolbar: Suche, Filter & Ansichten-Umschalter
-                  _buildToolbar(context, coachId, selectedIds, activePref, isWide),
+                  _buildToolbar(
+                      context, coachId, selectedIds, activePref, isWide),
 
                   const Divider(height: 1),
 
@@ -163,12 +168,14 @@ class _TrainerAthletesTabScreenState extends ConsumerState<TrainerAthletesTabScr
                         ? CoachAthletesTable(
                             athletes: athletes,
                             onAthleteOpen: _openAthleteContext,
-                            onCreateProposal: (athlete) => _openThresholdProposal(coachId, athlete),
+                            onCreateProposal: (athlete) =>
+                                _openThresholdProposal(coachId, athlete),
                           )
                         : MultiAthleteWeekGrid(
                             athletes: athletes,
                             coachId: coachId,
-                            onDrop: (workout, targetAthleteId, targetDate, isCopy) {
+                            onDrop:
+                                (workout, targetAthleteId, targetDate, isCopy) {
                               // Drop-Aktion verarbeiten
                             },
                             onAthleteClick: _openAthleteContext,
@@ -213,14 +220,19 @@ class _TrainerAthletesTabScreenState extends ConsumerState<TrainerAthletesTabScr
                         icon: const Icon(Icons.clear, size: 16),
                         onPressed: () {
                           _searchController.clear();
-                          ref.read(coachAthleteSearchQueryProvider.notifier).state = '';
+                          ref
+                              .read(coachAthleteSearchQueryProvider.notifier)
+                              .state = '';
                         },
                       )
                     : null,
-                contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 10),
+                contentPadding:
+                    const EdgeInsets.symmetric(vertical: 0, horizontal: 10),
                 filled: true,
                 fillColor: AppColors.techGrey,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+                border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide.none),
               ),
               onChanged: (val) {
                 ref.read(coachAthleteSearchQueryProvider.notifier).state = val;
@@ -256,25 +268,39 @@ class _TrainerAthletesTabScreenState extends ConsumerState<TrainerAthletesTabScr
             hint: const Text('Alle Sportarten', style: TextStyle(fontSize: 12)),
             underline: const SizedBox.shrink(),
             items: const [
-              DropdownMenuItem(value: null, child: Text('Alle Sportarten', style: TextStyle(fontSize: 12))),
-              DropdownMenuItem(value: 'TRIATHLON', child: Text('Triathlon', style: TextStyle(fontSize: 12))),
-              DropdownMenuItem(value: 'RUN', child: Text('Lauf', style: TextStyle(fontSize: 12))),
-              DropdownMenuItem(value: 'BIKE', child: Text('Rad', style: TextStyle(fontSize: 12))),
-              DropdownMenuItem(value: 'SWIM', child: Text('Schwimmen', style: TextStyle(fontSize: 12))),
+              DropdownMenuItem(
+                  value: null,
+                  child:
+                      Text('Alle Sportarten', style: TextStyle(fontSize: 12))),
+              DropdownMenuItem(
+                  value: 'TRIATHLON',
+                  child: Text('Triathlon', style: TextStyle(fontSize: 12))),
+              DropdownMenuItem(
+                  value: 'RUN',
+                  child: Text('Lauf', style: TextStyle(fontSize: 12))),
+              DropdownMenuItem(
+                  value: 'BIKE',
+                  child: Text('Rad', style: TextStyle(fontSize: 12))),
+              DropdownMenuItem(
+                  value: 'SWIM',
+                  child: Text('Schwimmen', style: TextStyle(fontSize: 12))),
             ],
             onChanged: (sport) {
-              ref.read(coachActivePreferenceProvider.notifier).state = activePref.copyWith(filterSport: sport);
+              ref.read(coachActivePreferenceProvider.notifier).state =
+                  activePref.copyWith(filterSport: sport);
             },
           ),
 
           // Alerts-Filter Chip
           FilterChip(
-            label: const Text('Nur Auffälligkeiten', style: TextStyle(fontSize: 12)),
+            label: const Text('Nur Auffälligkeiten',
+                style: TextStyle(fontSize: 12)),
             selected: activePref.alertOnly,
             selectedColor: AppColors.volt.withValues(alpha: 0.25),
             checkmarkColor: AppColors.navy,
             onSelected: (val) {
-              ref.read(coachActivePreferenceProvider.notifier).state = activePref.copyWith(alertOnly: val);
+              ref.read(coachActivePreferenceProvider.notifier).state =
+                  activePref.copyWith(alertOnly: val);
             },
           ),
 
@@ -288,8 +314,10 @@ class _TrainerAthletesTabScreenState extends ConsumerState<TrainerAthletesTabScr
                 backgroundColor: AppColors.volt,
                 foregroundColor: AppColors.navy,
                 elevation: 0,
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
               ),
             ),
           ],
@@ -309,7 +337,8 @@ class _TrainerAthletesTabScreenState extends ConsumerState<TrainerAthletesTabScr
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Erzeuge einen 7 Tage gültigen Einladungscode für deinen Athleten.'),
+                const Text(
+                    'Erzeuge einen 7 Tage gültigen Einladungscode für deinen Athleten.'),
                 const SizedBox(height: 16),
                 if (_inviteCode != null) ...[
                   Container(
@@ -331,7 +360,9 @@ class _TrainerAthletesTabScreenState extends ConsumerState<TrainerAthletesTabScr
                     ),
                   ),
                   const SizedBox(height: 8),
-                  const Text('Der Athlet gibt diesen Code in seinem Profil ein.', style: TextStyle(fontSize: 12)),
+                  const Text(
+                      'Der Athlet gibt diesen Code in seinem Profil ein.',
+                      style: TextStyle(fontSize: 12)),
                 ],
               ],
             ),
@@ -349,9 +380,15 @@ class _TrainerAthletesTabScreenState extends ConsumerState<TrainerAthletesTabScr
                           await _generateInvite();
                           setDialogState(() => _isCreatingInvite = false);
                         },
-                  style: ElevatedButton.styleFrom(backgroundColor: AppColors.navy, foregroundColor: AppColors.white),
+                  style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.navy,
+                      foregroundColor: AppColors.white),
                   child: _isCreatingInvite
-                      ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                              strokeWidth: 2, color: Colors.white))
                       : const Text('Code generieren'),
                 ),
             ],

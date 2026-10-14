@@ -106,7 +106,8 @@ class StepBlock extends WorkoutBlock {
     return StepBlock(
       role: WorkoutRole.fromSchemaString(json['role'] as String),
       target: WorkoutTarget.fromJson(json['target'] as Map<String, dynamic>),
-      intensity: WorkoutIntensity.fromJson(json['intensity'] as Map<String, dynamic>),
+      intensity:
+          WorkoutIntensity.fromJson(json['intensity'] as Map<String, dynamic>),
       cadence: json['cadence'] != null
           ? WorkoutCadence.fromJson(json['cadence'] as Map<String, dynamic>)
           : null,
@@ -155,9 +156,8 @@ class RepeatBlock extends WorkoutBlock {
   String get type => 'REPEAT';
 
   @override
-  int get depth => blocks.isEmpty
-      ? 1
-      : 1 + blocks.map((b) => b.depth).fold(0, math.max);
+  int get depth =>
+      blocks.isEmpty ? 1 : 1 + blocks.map((b) => b.depth).fold(0, math.max);
 
   @override
   int get totalStepsCount => blocks.isEmpty
@@ -176,10 +176,10 @@ class RepeatBlock extends WorkoutBlock {
 
   @override
   Map<String, dynamic> toJson() => {
-    'type': type,
-    'count': count,
-    'blocks': blocks.map((b) => b.toJson()).toList(),
-  };
+        'type': type,
+        'count': count,
+        'blocks': blocks.map((b) => b.toJson()).toList(),
+      };
 
   factory RepeatBlock.fromJson(Map<String, dynamic> json) {
     final rawBlocks = json['blocks'] as List<dynamic>? ?? [];

@@ -22,11 +22,13 @@ class WeeklyLoadTrendChart extends StatelessWidget {
     }
 
     final maxLoad = points.map((p) => p.totalLoad).fold(0.0, max);
-    final avgLoad = points.fold(0.0, (sum, p) => sum + p.totalLoad) / points.length;
+    final avgLoad =
+        points.fold(0.0, (sum, p) => sum + p.totalLoad) / points.length;
 
     return Semantics(
       container: true,
-      label: '8-Wochen-Belastungstrend: $trendDescription. Durchschnittliche Wochenbelastung: ${avgLoad.round()} TSS.',
+      label:
+          '8-Wochen-Belastungstrend: $trendDescription. Durchschnittliche Wochenbelastung: ${avgLoad.round()} TSS.',
       child: Container(
         decoration: BoxDecoration(
           color: AppColors.white,
@@ -54,7 +56,8 @@ class WeeklyLoadTrendChart extends StatelessWidget {
                     const SizedBox(width: 8),
                     Text(
                       '8-Wochen-Trend',
-                      style: AppTypography.title.copyWith(color: AppColors.navy),
+                      style:
+                          AppTypography.title.copyWith(color: AppColors.navy),
                     ),
                   ],
                 ),
@@ -156,7 +159,8 @@ class _WeeklyTrendPainter extends CustomPainter {
       // Gestrichelte Linie
       double x = 0;
       while (x < size.width) {
-        canvas.drawLine(Offset(x, avgY), Offset(min(x + 4, size.width), avgY), linePaint);
+        canvas.drawLine(
+            Offset(x, avgY), Offset(min(x + 4, size.width), avgY), linePaint);
         x += 8;
       }
     }
@@ -170,7 +174,8 @@ class _WeeklyTrendPainter extends CustomPainter {
       final point = points[i];
       final isLast = i == n - 1;
       final xCenter = (i + 0.5) * step;
-      final barHeight = maxLoad > 0 ? (point.totalLoad / maxLoad) * chartHeight : 0.0;
+      final barHeight =
+          maxLoad > 0 ? (point.totalLoad / maxLoad) * chartHeight : 0.0;
       final topY = chartHeight - barHeight;
 
       // Balken mit abgerundeter Oberkante
@@ -195,7 +200,8 @@ class _WeeklyTrendPainter extends CustomPainter {
         textPainter.layout();
         textPainter.paint(
           canvas,
-          Offset(xCenter - (textPainter.width / 2), topY - textPainter.height - 2),
+          Offset(
+              xCenter - (textPainter.width / 2), topY - textPainter.height - 2),
         );
       }
 

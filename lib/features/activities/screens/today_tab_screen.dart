@@ -49,9 +49,11 @@ class TodayTabScreen extends ConsumerWidget {
           await ref.read(homeDashboardProvider(athleteId).future);
         },
         child: homeDataAsync.when(
-          data: (data) => _buildDashboardContent(context, ref, athleteId, data, uploadState),
+          data: (data) => _buildDashboardContent(
+              context, ref, athleteId, data, uploadState),
           loading: () => _buildLoadingSkeleton(context),
-          error: (error, stack) => _buildErrorState(context, ref, athleteId, error),
+          error: (error, stack) =>
+              _buildErrorState(context, ref, athleteId, error),
         ),
       ),
       floatingActionButton: FloatingActionButton(
@@ -65,7 +67,8 @@ class TodayTabScreen extends ConsumerWidget {
             ? const SizedBox(
                 width: 24,
                 height: 24,
-                child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.volt),
+                child: CircularProgressIndicator(
+                    strokeWidth: 2, color: AppColors.volt),
               )
             : const Icon(Icons.add),
       ),
@@ -95,9 +98,11 @@ class TodayTabScreen extends ConsumerWidget {
       raceGoal: data.raceGoal,
     );
 
-    final visibleCards = const HomeCardResolver().resolveVisibleCards(cardContext);
+    final visibleCards =
+        const HomeCardResolver().resolveVisibleCards(cardContext);
 
-    if (visibleCards.length == 1 && visibleCards.first == HomeCardType.emptyGetStarted) {
+    if (visibleCards.length == 1 &&
+        visibleCards.first == HomeCardType.emptyGetStarted) {
       return _buildEmptyState(context, ref, athleteId, uploadState);
     }
 
@@ -132,13 +137,17 @@ class TodayTabScreen extends ConsumerWidget {
                           SizedBox(
                             width: 18,
                             height: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.navy),
+                            child: CircularProgressIndicator(
+                                strokeWidth: 2, color: AppColors.navy),
                           ),
                           SizedBox(width: 12),
                           Expanded(
                             child: Text(
                               'Aktivitätsdatei wird hochgeladen und verarbeitet...',
-                              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: AppColors.navy),
+                              style: TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 13,
+                                  color: AppColors.navy),
                             ),
                           ),
                         ],
@@ -157,16 +166,19 @@ class TodayTabScreen extends ConsumerWidget {
                       ),
                       child: Text(
                         'Upload-Fehler: ${uploadState.error}',
-                        style: TextStyle(color: Colors.red.shade800, fontSize: 13),
+                        style:
+                            TextStyle(color: Colors.red.shade800, fontSize: 13),
                       ),
                     ),
                   ],
 
                   // Karten-Rendering
                   if (isWide)
-                    _buildWideLayout(context, ref, athleteId, data, visibleCards)
+                    _buildWideLayout(
+                        context, ref, athleteId, data, visibleCards)
                   else
-                    _buildCompactLayout(context, ref, athleteId, data, visibleCards),
+                    _buildCompactLayout(
+                        context, ref, athleteId, data, visibleCards),
                 ],
               ),
             ),
@@ -209,7 +221,8 @@ class TodayTabScreen extends ConsumerWidget {
     for (var i = 0; i < visibleCards.length; i++) {
       final card = visibleCards[i];
       // Hero-Card und Action-Banner bevorzugt links oder oben
-      if (card == HomeCardType.actionBanner || card == HomeCardType.heroDailyRing) {
+      if (card == HomeCardType.actionBanner ||
+          card == HomeCardType.heroDailyRing) {
         leftCards.add(card);
       } else if (i % 2 == 0) {
         leftCards.add(card);
@@ -264,7 +277,8 @@ class TodayTabScreen extends ConsumerWidget {
           unmatchedActivitiesCount: data.unmatchedActivitiesCount,
           onThresholdsTap: () {
             Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => DiagnosticsScreen(athleteId: athleteId)),
+              MaterialPageRoute(
+                  builder: (_) => DiagnosticsScreen(athleteId: athleteId)),
             );
           },
           onChatTap: () {
@@ -275,7 +289,8 @@ class TodayTabScreen extends ConsumerWidget {
           onMatchTap: () {
             // Zeigt Kalender zur Zuordnung
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Öffne Kalender, um Aktivitäten zuzuordnen.')),
+              const SnackBar(
+                  content: Text('Öffne Kalender, um Aktivitäten zuzuordnen.')),
             );
           },
         );
@@ -315,7 +330,8 @@ class TodayTabScreen extends ConsumerWidget {
           onOpenCockpit: () {
             Navigator.of(context).push(
               MaterialPageRoute(
-                builder: (_) => ActivityDetailScreen(activity: data.latestActivity!),
+                builder: (_) =>
+                    ActivityDetailScreen(activity: data.latestActivity!),
               ),
             );
           },
@@ -379,7 +395,8 @@ class TodayTabScreen extends ConsumerWidget {
                       ),
                     ],
                   ),
-                  child: const Icon(Icons.directions_run, size: 40, color: AppColors.volt),
+                  child: const Icon(Icons.directions_run,
+                      size: 40, color: AppColors.volt),
                 ),
               ),
               const SizedBox(height: 24),
@@ -400,12 +417,15 @@ class TodayTabScreen extends ConsumerWidget {
               ElevatedButton.icon(
                 onPressed: uploadState.isUploading
                     ? null
-                    : () => ref.read(activityUploadProvider.notifier).pickAndUpload(),
+                    : () => ref
+                        .read(activityUploadProvider.notifier)
+                        .pickAndUpload(),
                 icon: uploadState.isUploading
                     ? const SizedBox(
                         width: 18,
                         height: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.navy),
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2, color: AppColors.navy),
                       )
                     : const Icon(Icons.upload_file),
                 label: const Text('FIT-Datei hochladen'),
@@ -413,7 +433,8 @@ class TodayTabScreen extends ConsumerWidget {
                   backgroundColor: AppColors.volt,
                   foregroundColor: AppColors.navy,
                   padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
                   elevation: 0,
                 ),
               ),
@@ -424,7 +445,8 @@ class TodayTabScreen extends ConsumerWidget {
                 onPressed: () {
                   EditRaceGoalSheet.show(
                     context,
-                    onSaved: () => ref.refresh(homeDashboardProvider(athleteId)),
+                    onSaved: () =>
+                        ref.refresh(homeDashboardProvider(athleteId)),
                   );
                 },
                 icon: const Icon(Icons.emoji_events_outlined),
@@ -433,7 +455,8 @@ class TodayTabScreen extends ConsumerWidget {
                   foregroundColor: AppColors.navy,
                   side: const BorderSide(color: AppColors.navy),
                   padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
                 ),
               ),
               const SizedBox(height: 24),
@@ -496,7 +519,8 @@ class TodayTabScreen extends ConsumerWidget {
   }
 
   /// Fehlerzustand mit Wiederholen-Button
-  Widget _buildErrorState(BuildContext context, WidgetRef ref, String athleteId, Object error) {
+  Widget _buildErrorState(
+      BuildContext context, WidgetRef ref, String athleteId, Object error) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24.0),
@@ -524,7 +548,8 @@ class TodayTabScreen extends ConsumerWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.navy,
                 foregroundColor: AppColors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
               ),
             ),
           ],

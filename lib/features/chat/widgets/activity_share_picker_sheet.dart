@@ -15,7 +15,8 @@ class ActivitySharePickerSheet extends StatelessWidget {
     required this.onSelect,
   });
 
-  static Future<ActivityShareSnapshot?> show(BuildContext context, String athleteId) {
+  static Future<ActivityShareSnapshot?> show(
+      BuildContext context, String athleteId) {
     return showModalBottomSheet<ActivityShareSnapshot>(
       context: context,
       isScrollControlled: true,
@@ -54,7 +55,8 @@ class ActivitySharePickerSheet extends StatelessWidget {
             const SizedBox(height: 16),
             Text(
               'Aktivität teilen',
-              style: AppTypography.title.copyWith(fontSize: 18, color: AppColors.navy),
+              style: AppTypography.title
+                  .copyWith(fontSize: 18, color: AppColors.navy),
             ),
             const SizedBox(height: 4),
             Text(
@@ -80,7 +82,8 @@ class ActivitySharePickerSheet extends StatelessWidget {
                     return Center(
                       child: Text(
                         'Keine Aktivitäten vorhanden.',
-                        style: AppTypography.body.copyWith(color: Colors.grey.shade500),
+                        style: AppTypography.body
+                            .copyWith(color: Colors.grey.shade500),
                       ),
                     );
                   }
@@ -95,9 +98,12 @@ class ActivitySharePickerSheet extends StatelessWidget {
                       final title = data['title'] as String? ?? 'Training';
                       final sport = data['sport'] as String? ?? 'OTHER';
                       final date = data['localDate'] as String? ?? '';
-                      final durationSec = (data['durationSec'] as num?)?.toInt() ?? 0;
-                      final distanceM = (data['distanceM'] as num?)?.toDouble() ?? 0.0;
-                      final summary = data['summary'] as Map<String, dynamic>? ?? {};
+                      final durationSec =
+                          (data['durationSec'] as num?)?.toInt() ?? 0;
+                      final distanceM =
+                          (data['distanceM'] as num?)?.toDouble() ?? 0.0;
+                      final summary =
+                          data['summary'] as Map<String, dynamic>? ?? {};
 
                       final snapshotObj = ActivityShareSnapshot(
                         activityId: doc.id,
@@ -117,17 +123,22 @@ class ActivitySharePickerSheet extends StatelessWidget {
                             color: AppColors.techGrey,
                             borderRadius: BorderRadius.circular(10),
                           ),
-                          child: Icon(_getSportIcon(sport), color: AppColors.navy, size: 20),
+                          child: Icon(_getSportIcon(sport),
+                              color: AppColors.navy, size: 20),
                         ),
                         title: Text(
                           title,
-                          style: AppTypography.body.copyWith(fontWeight: FontWeight.bold, color: AppColors.navy),
+                          style: AppTypography.body.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.navy),
                         ),
                         subtitle: Text(
                           '$date · ${snapshotObj.formattedDuration}${distanceM > 0 ? " · ${snapshotObj.formattedDistance}" : ""}',
-                          style: AppTypography.label.copyWith(color: Colors.grey.shade600),
+                          style: AppTypography.label
+                              .copyWith(color: Colors.grey.shade600),
                         ),
-                        trailing: const Icon(Icons.send, size: 18, color: AppColors.navy),
+                        trailing: const Icon(Icons.send,
+                            size: 18, color: AppColors.navy),
                         onTap: () => onSelect(snapshotObj),
                       );
                     },

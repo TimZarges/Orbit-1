@@ -34,17 +34,22 @@ class StreamDecoder {
     double basePower = sport == 'BIKE' ? 220.0 : 0.0;
     double baseHr = 135.0;
     double baseCadence = sport == 'BIKE' ? 88.0 : 172.0;
-    double baseSpeed = sport == 'BIKE' ? 8.5 : 3.3; // m/s (ca. 30 km/h Rad, 5:00/km Lauf)
+    double baseSpeed =
+        sport == 'BIKE' ? 8.5 : 3.3; // m/s (ca. 30 km/h Rad, 5:00/km Lauf)
 
     for (int t = 0; t < durationSec; t++) {
       // Welliges Höhenprofil (Perioden von ca. 15-20 min)
       final hillFactor = sin((t / 900.0) * pi);
-      alt = 120.0 + (hillFactor * 250.0).clamp(-50.0, 600.0) + (random.nextDouble() * 2 - 1);
+      alt = 120.0 +
+          (hillFactor * 250.0).clamp(-50.0, 600.0) +
+          (random.nextDouble() * 2 - 1);
 
       // Leistung steigt am Berg
       double currentPower = 0.0;
       if (hasPower && sport == 'BIKE') {
-        currentPower = (basePower + (hillFactor * 70.0) + (random.nextDouble() * 40 - 20)).clamp(0.0, 850.0);
+        currentPower =
+            (basePower + (hillFactor * 70.0) + (random.nextDouble() * 40 - 20))
+                .clamp(0.0, 850.0);
         // Gelegentliche Antritte / Sprints
         if (t % 600 < 15) {
           currentPower += 250.0;
@@ -54,15 +59,20 @@ class StreamDecoder {
       // Herzfrequenz folgt der Leistung mit leichter Verzögerung
       double currentHr = 0.0;
       if (hasHr) {
-        currentHr = (baseHr + (hillFactor * 25.0) + (random.nextDouble() * 6 - 3)).clamp(85.0, 192.0);
+        currentHr =
+            (baseHr + (hillFactor * 25.0) + (random.nextDouble() * 6 - 3))
+                .clamp(85.0, 192.0);
       }
 
       // Geschwindigkeit (am Berg langsamer, bergab schneller)
-      double currentSpeed = (baseSpeed - (hillFactor * 2.5) + (random.nextDouble() * 0.4 - 0.2)).clamp(1.5, 18.0);
+      double currentSpeed =
+          (baseSpeed - (hillFactor * 2.5) + (random.nextDouble() * 0.4 - 0.2))
+              .clamp(1.5, 18.0);
       cumulativeDist += currentSpeed;
 
       // Trittfrequenz
-      double currentCadence = (baseCadence + (random.nextDouble() * 6 - 3)).clamp(60.0, 115.0);
+      double currentCadence =
+          (baseCadence + (random.nextDouble() * 6 - 3)).clamp(60.0, 115.0);
 
       // GPS Drift (Rundkurs)
       if (hasGps) {

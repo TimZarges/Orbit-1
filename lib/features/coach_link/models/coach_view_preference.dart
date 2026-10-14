@@ -33,7 +33,9 @@ class CoachViewPreference {
     return CoachViewPreference(
       id: id,
       name: map['name'] as String? ?? 'Standard',
-      visibleColumns: (map['visibleColumns'] as List<dynamic>?)?.map((e) => e.toString()).toList() ??
+      visibleColumns: (map['visibleColumns'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ??
           const [
             'name',
             'sport',

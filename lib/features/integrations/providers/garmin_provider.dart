@@ -25,7 +25,8 @@ final garminServiceProvider = Provider<GarminService>((ref) {
 });
 
 class GarminService {
-  final FirebaseFunctions _functions = FirebaseFunctions.instanceFor(region: 'europe-west3');
+  final FirebaseFunctions _functions =
+      FirebaseFunctions.instanceFor(region: 'europe-west3');
 
   /// Startet den OAuth-Flow bei Garmin und öffnet die Autorisierungsseite im Browser
   Future<String?> startGarminAuth() async {

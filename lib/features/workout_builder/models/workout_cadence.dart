@@ -9,14 +9,14 @@ class WorkoutCadence {
   const WorkoutCadence({
     required this.low,
     required this.high,
-  }) : assert(low > 0, 'low muss > 0 sein'),
-       assert(high >= low, 'high muss >= low sein');
+  })  : assert(low > 0, 'low muss > 0 sein'),
+        assert(high >= low, 'high muss >= low sein');
 
   /// Konvertiert in das Schema-JSON.
   Map<String, dynamic> toJson() => {
-    'low': low,
-    'high': high,
-  };
+        'low': low,
+        'high': high,
+      };
 
   /// Erstellt eine Frequenz aus Schema-JSON.
   factory WorkoutCadence.fromJson(Map<String, dynamic> json) {

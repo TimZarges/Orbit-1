@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import '../models/planned_workout.dart';
 import '../repositories/planned_workout_repository.dart';
@@ -6,7 +5,8 @@ import '../repositories/planned_workout_repository.dart';
 /// Seeder für realistische geplante Trainingseinheiten im Demo-Modus.
 class CalendarDemoSeeder {
   /// Schreibt realistische geplante Einheiten für den Athleten [athleteId] in Firestore.
-  static Future<void> seedDemoWorkoutsForAthlete(String athleteId, {String? coachId}) async {
+  static Future<void> seedDemoWorkoutsForAthlete(String athleteId,
+      {String? coachId}) async {
     final now = DateTime.now();
     final repo = PlannedWorkoutRepository();
 
@@ -17,7 +17,8 @@ class CalendarDemoSeeder {
         athleteId: athleteId,
         coachId: coachId,
         createdBy: athleteId,
-        localDate: DateFormat('yyyy-MM-dd').format(now.subtract(const Duration(days: 3))),
+        localDate: DateFormat('yyyy-MM-dd')
+            .format(now.subtract(const Duration(days: 3))),
         sport: 'RUN',
         title: 'GA1 Grundlagendauerlauf',
         description: 'Lockerer Lauf im aeroben Bereich, HF < 145 bpm.',
@@ -34,7 +35,8 @@ class CalendarDemoSeeder {
         athleteId: athleteId,
         coachId: coachId,
         createdBy: coachId ?? athleteId,
-        localDate: DateFormat('yyyy-MM-dd').format(now.subtract(const Duration(days: 2))),
+        localDate: DateFormat('yyyy-MM-dd')
+            .format(now.subtract(const Duration(days: 2))),
         sport: 'STRENGTH',
         title: 'Rumpfstabilität & Kraftzirkel',
         description: '3 Durchgänge Rumpf & Beine.',
@@ -50,7 +52,8 @@ class CalendarDemoSeeder {
         athleteId: athleteId,
         coachId: coachId,
         createdBy: coachId ?? athleteId,
-        localDate: DateFormat('yyyy-MM-dd').format(now.subtract(const Duration(days: 1))),
+        localDate: DateFormat('yyyy-MM-dd')
+            .format(now.subtract(const Duration(days: 1))),
         sport: 'BIKE',
         title: 'Rad Grundlagenausdauer',
         description: 'Gleichmäßiges Kurbeln, 85-95 rpm Trittfrequenz.',
@@ -70,7 +73,8 @@ class CalendarDemoSeeder {
         localDate: DateFormat('yyyy-MM-dd').format(now),
         sport: 'RUN',
         title: 'Lauf Tempowechsel / Fahrtspiel',
-        description: '15 min Einlaufen, 6x 2 min flott mit 2 min Trabpause, 15 min Auslaufen.',
+        description:
+            '15 min Einlaufen, 6x 2 min flott mit 2 min Trabpause, 15 min Auslaufen.',
         plannedDurationSec: 3600,
         plannedDistanceM: 9500,
         plannedLoad: 65,
@@ -84,7 +88,8 @@ class CalendarDemoSeeder {
         athleteId: athleteId,
         coachId: coachId,
         createdBy: coachId ?? 'coach_sample',
-        localDate: DateFormat('yyyy-MM-dd').format(now.add(const Duration(days: 1))),
+        localDate:
+            DateFormat('yyyy-MM-dd').format(now.add(const Duration(days: 1))),
         sport: 'SWIM',
         title: 'Schwimmen Technik & CSS-Intervalle',
         description: 'Fokus auf hohen Ellenbogen und Wassergefühl.',
@@ -101,7 +106,8 @@ class CalendarDemoSeeder {
         athleteId: athleteId,
         coachId: coachId,
         createdBy: coachId ?? athleteId,
-        localDate: DateFormat('yyyy-MM-dd').format(now.add(const Duration(days: 2))),
+        localDate:
+            DateFormat('yyyy-MM-dd').format(now.add(const Duration(days: 2))),
         sport: 'BIKE',
         title: 'Lange Ausfahrt GA1/GA2',
         description: 'Verpflegung im 20-Minuten-Takt üben.',
@@ -118,7 +124,8 @@ class CalendarDemoSeeder {
         athleteId: athleteId,
         coachId: coachId,
         createdBy: athleteId,
-        localDate: DateFormat('yyyy-MM-dd').format(now.add(const Duration(days: 3))),
+        localDate:
+            DateFormat('yyyy-MM-dd').format(now.add(const Duration(days: 3))),
         sport: 'OTHER',
         title: 'Aktive Regeneration & Mobility',
         description: 'Faszienrolle und leichtes Dehnen.',

@@ -51,7 +51,8 @@ class _GuidedTestCardState extends State<GuidedTestCard> {
                   color: AppColors.techGrey,
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Icon(_getSportIcon(info.sport), color: AppColors.navy, size: 20),
+                child: Icon(_getSportIcon(info.sport),
+                    color: AppColors.navy, size: 20),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -60,11 +61,13 @@ class _GuidedTestCardState extends State<GuidedTestCard> {
                   children: [
                     Text(
                       info.titleDe,
-                      style: AppTypography.title.copyWith(fontSize: 15, color: AppColors.navy),
+                      style: AppTypography.title
+                          .copyWith(fontSize: 15, color: AppColors.navy),
                     ),
                     Text(
                       'Dauer: ca. ${info.durationMinutes} Min.',
-                      style: AppTypography.label.copyWith(color: Colors.grey.shade600),
+                      style: AppTypography.label
+                          .copyWith(color: Colors.grey.shade600),
                     ),
                   ],
                 ),
@@ -86,7 +89,8 @@ class _GuidedTestCardState extends State<GuidedTestCard> {
 
           Text(
             info.subtitleDe,
-            style: AppTypography.body.copyWith(fontSize: 13, color: Colors.grey.shade700),
+            style: AppTypography.body
+                .copyWith(fontSize: 13, color: Colors.grey.shade700),
           ),
 
           if (_isExpanded) ...[
@@ -97,7 +101,8 @@ class _GuidedTestCardState extends State<GuidedTestCard> {
             // Protokoll
             Text(
               'Ablauf & Protokoll',
-              style: AppTypography.title.copyWith(fontSize: 14, color: AppColors.navy),
+              style: AppTypography.title
+                  .copyWith(fontSize: 14, color: AppColors.navy),
             ),
             const SizedBox(height: 6),
             Text(
@@ -121,7 +126,8 @@ class _GuidedTestCardState extends State<GuidedTestCard> {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(Icons.warning_amber_rounded, color: Color(0xFFD97706), size: 18),
+                  const Icon(Icons.warning_amber_rounded,
+                      color: Color(0xFFD97706), size: 18),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
@@ -149,7 +155,8 @@ class _GuidedTestCardState extends State<GuidedTestCard> {
               style: OutlinedButton.styleFrom(
                 foregroundColor: AppColors.navy,
                 side: BorderSide(color: AppColors.navy.withValues(alpha: 0.2)),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
                 padding: const EdgeInsets.symmetric(vertical: 12),
               ),
             ),

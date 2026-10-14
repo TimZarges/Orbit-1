@@ -40,12 +40,14 @@ class _TelemetryChartWidgetState extends State<TelemetryChartWidget> {
   int? _scrubIndex;
   Offset? _scrubPosition;
 
-  void _handleLongPressStart(LongPressStartDetails details, BoxConstraints constraints) {
+  void _handleLongPressStart(
+      LongPressStartDetails details, BoxConstraints constraints) {
     HapticFeedback.selectionClick();
     _updateScrub(details.localPosition.dx, constraints.maxWidth);
   }
 
-  void _handleLongPressMoveUpdate(LongPressMoveUpdateDetails details, BoxConstraints constraints) {
+  void _handleLongPressMoveUpdate(
+      LongPressMoveUpdateDetails details, BoxConstraints constraints) {
     _updateScrub(details.localPosition.dx, constraints.maxWidth);
   }
 
@@ -81,20 +83,23 @@ class _TelemetryChartWidgetState extends State<TelemetryChartWidget> {
         height: widget.height,
         color: const Color(0xFF0F172A),
         alignment: Alignment.center,
-        child: const Text('Keine Telemetrie-Daten vorhanden', style: TextStyle(color: Colors.white54)),
+        child: const Text('Keine Telemetrie-Daten vorhanden',
+            style: TextStyle(color: Colors.white54)),
       );
     }
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final scrubPoint = _scrubIndex != null ? widget.points[_scrubIndex!] : null;
+        final scrubPoint =
+            _scrubIndex != null ? widget.points[_scrubIndex!] : null;
 
         return Stack(
           clipBehavior: Clip.none,
           children: [
             GestureDetector(
               onLongPressStart: (d) => _handleLongPressStart(d, constraints),
-              onLongPressMoveUpdate: (d) => _handleLongPressMoveUpdate(d, constraints),
+              onLongPressMoveUpdate: (d) =>
+                  _handleLongPressMoveUpdate(d, constraints),
               onLongPressEnd: _handleLongPressEnd,
               child: Container(
                 height: widget.height,
@@ -119,7 +124,8 @@ class _TelemetryChartWidgetState extends State<TelemetryChartWidget> {
             // HUD über dem Finger
             if (scrubPoint != null && _scrubPosition != null)
               Positioned(
-                left: (_scrubPosition!.dx - 80).clamp(8.0, constraints.maxWidth - 168.0),
+                left: (_scrubPosition!.dx - 80)
+                    .clamp(8.0, constraints.maxWidth - 168.0),
                 top: -50,
                 child: _buildHud(scrubPoint),
               ),
@@ -130,8 +136,10 @@ class _TelemetryChartWidgetState extends State<TelemetryChartWidget> {
                 top: 8,
                 right: 8,
                 child: IconButton(
-                  icon: const Icon(Icons.fullscreen, color: Colors.white70, size: 20),
-                  constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+                  icon: const Icon(Icons.fullscreen,
+                      color: Colors.white70, size: 20),
+                  constraints:
+                      const BoxConstraints(minWidth: 48, minHeight: 48),
                   onPressed: widget.onToggleFullscreen,
                 ),
               ),
@@ -151,30 +159,62 @@ class _TelemetryChartWidgetState extends State<TelemetryChartWidget> {
         color: const Color(0xFF1E293B),
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: AppColors.accentVolt.withValues(alpha: 0.8)),
-        boxShadow: const [BoxShadow(color: Colors.black54, blurRadius: 6, offset: Offset(0, 2))],
+        boxShadow: const [
+          BoxShadow(color: Colors.black54, blurRadius: 6, offset: Offset(0, 2))
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            widget.useDistanceAxis ? '$distKm km ($timeStr)' : '$timeStr ($distKm km)',
-            style: AppTypography.label.copyWith(color: AppColors.accentVolt, fontWeight: FontWeight.bold, fontSize: 10),
+            widget.useDistanceAxis
+                ? '$distKm km ($timeStr)'
+                : '$timeStr ($distKm km)',
+            style: AppTypography.label.copyWith(
+                color: AppColors.accentVolt,
+                fontWeight: FontWeight.bold,
+                fontSize: 10),
           ),
           const SizedBox(height: 2),
           Wrap(
             spacing: 8,
             children: [
-              if (widget.activeChannels.contains(TelemetryChannel.power) && point.power != null)
-                Text('${point.power!.round()} W', style: TextStyle(color: TelemetryChannel.power.color, fontSize: 10, fontWeight: FontWeight.bold)),
-              if (widget.activeChannels.contains(TelemetryChannel.heartRate) && point.hr != null)
-                Text('${point.hr!.round()} bpm', style: TextStyle(color: TelemetryChannel.heartRate.color, fontSize: 10, fontWeight: FontWeight.bold)),
-              if (widget.activeChannels.contains(TelemetryChannel.speed) && point.speedMps != null)
-                Text('${(point.speedMps! * 3.6).toStringAsFixed(1)} km/h', style: TextStyle(color: TelemetryChannel.speed.color, fontSize: 10, fontWeight: FontWeight.bold)),
-              if (widget.activeChannels.contains(TelemetryChannel.cadence) && point.cadence != null)
-                Text('${point.cadence!.round()} rpm', style: TextStyle(color: TelemetryChannel.cadence.color, fontSize: 10, fontWeight: FontWeight.bold)),
-              if (widget.activeChannels.contains(TelemetryChannel.altitude) && point.altitudeM != null)
-                Text('${point.altitudeM!.round()} m', style: TextStyle(color: TelemetryChannel.altitude.color, fontSize: 10, fontWeight: FontWeight.bold)),
+              if (widget.activeChannels.contains(TelemetryChannel.power) &&
+                  point.power != null)
+                Text('${point.power!.round()} W',
+                    style: TextStyle(
+                        color: TelemetryChannel.power.color,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold)),
+              if (widget.activeChannels.contains(TelemetryChannel.heartRate) &&
+                  point.hr != null)
+                Text('${point.hr!.round()} bpm',
+                    style: TextStyle(
+                        color: TelemetryChannel.heartRate.color,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold)),
+              if (widget.activeChannels.contains(TelemetryChannel.speed) &&
+                  point.speedMps != null)
+                Text('${(point.speedMps! * 3.6).toStringAsFixed(1)} km/h',
+                    style: TextStyle(
+                        color: TelemetryChannel.speed.color,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold)),
+              if (widget.activeChannels.contains(TelemetryChannel.cadence) &&
+                  point.cadence != null)
+                Text('${point.cadence!.round()} rpm',
+                    style: TextStyle(
+                        color: TelemetryChannel.cadence.color,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold)),
+              if (widget.activeChannels.contains(TelemetryChannel.altitude) &&
+                  point.altitudeM != null)
+                Text('${point.altitudeM!.round()} m',
+                    style: TextStyle(
+                        color: TelemetryChannel.altitude.color,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold)),
             ],
           ),
         ],
@@ -186,7 +226,8 @@ class _TelemetryChartWidgetState extends State<TelemetryChartWidget> {
     final h = sec ~/ 3600;
     final m = (sec % 3600) ~/ 60;
     final s = sec % 60;
-    if (h > 0) return '$h:${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
+    if (h > 0)
+      return '$h:${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
     return '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
   }
 }
@@ -244,19 +285,23 @@ class _TelemetryChartPainter extends CustomPainter {
 
     // 2. Kanallinien zeichnen
     if (activeChannels.contains(TelemetryChannel.power) && maxPower > 0) {
-      _drawLine(canvas, size, h, (p) => p.power, maxPower * 1.1, TelemetryChannel.power.color);
+      _drawLine(canvas, size, h, (p) => p.power, maxPower * 1.1,
+          TelemetryChannel.power.color);
     }
 
     if (activeChannels.contains(TelemetryChannel.heartRate) && maxHr > 0) {
-      _drawLine(canvas, size, h, (p) => p.hr, maxHr * 1.05, TelemetryChannel.heartRate.color);
+      _drawLine(canvas, size, h, (p) => p.hr, maxHr * 1.05,
+          TelemetryChannel.heartRate.color);
     }
 
     if (activeChannels.contains(TelemetryChannel.speed) && maxSpeed > 0) {
-      _drawLine(canvas, size, h, (p) => p.speedMps, maxSpeed * 1.1, TelemetryChannel.speed.color);
+      _drawLine(canvas, size, h, (p) => p.speedMps, maxSpeed * 1.1,
+          TelemetryChannel.speed.color);
     }
 
     if (activeChannels.contains(TelemetryChannel.cadence) && maxCad > 0) {
-      _drawLine(canvas, size, h, (p) => p.cadence, maxCad * 1.1, TelemetryChannel.cadence.color);
+      _drawLine(canvas, size, h, (p) => p.cadence, maxCad * 1.1,
+          TelemetryChannel.cadence.color);
     }
 
     // 3. Scrubbing Leitlinie

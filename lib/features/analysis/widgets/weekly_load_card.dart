@@ -22,7 +22,8 @@ class WeeklyLoadCard extends StatelessWidget {
 
     return Semantics(
       container: true,
-      label: 'Wochenbelastung: ${summary.actualLoad.round()} von ${summary.hasPlan ? summary.plannedLoad.round() : 'kein Plan'} Punkten. ${summary.statusTextDe}.',
+      label:
+          'Wochenbelastung: ${summary.actualLoad.round()} von ${summary.hasPlan ? summary.plannedLoad.round() : 'kein Plan'} Punkten. ${summary.statusTextDe}.',
       child: Container(
         decoration: BoxDecoration(
           color: AppColors.white,
@@ -46,11 +47,13 @@ class WeeklyLoadCard extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Icon(Icons.assessment_outlined, size: 20, color: AppColors.navy),
+                    Icon(Icons.assessment_outlined,
+                        size: 20, color: AppColors.navy),
                     const SizedBox(width: 8),
                     Text(
                       'Wochenbelastung',
-                      style: AppTypography.title.copyWith(color: AppColors.navy),
+                      style:
+                          AppTypography.title.copyWith(color: AppColors.navy),
                     ),
                   ],
                 ),
@@ -58,8 +61,10 @@ class WeeklyLoadCard extends StatelessWidget {
                   button: true,
                   label: 'Information zur Trainingsbelastung',
                   child: IconButton(
-                    icon: const Icon(Icons.info_outline, size: 20, color: Colors.grey),
-                    constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+                    icon: const Icon(Icons.info_outline,
+                        size: 20, color: Colors.grey),
+                    constraints:
+                        const BoxConstraints(minWidth: 48, minHeight: 48),
                     onPressed: () => AnalysisInfoSheet.showTerm(
                       context,
                       term: MetricTerm.tss,
@@ -101,7 +106,9 @@ class WeeklyLoadCard extends StatelessWidget {
                         ],
                         const SizedBox(width: 4),
                         Text(
-                          experienceLevel == ExperienceLevel.expert ? 'TSS' : 'Punkte',
+                          experienceLevel == ExperienceLevel.expert
+                              ? 'TSS'
+                              : 'Punkte',
                           style: AppTypography.bodySmall.copyWith(
                             color: Colors.grey.shade600,
                             fontWeight: FontWeight.w600,
@@ -114,11 +121,13 @@ class WeeklyLoadCard extends StatelessWidget {
 
                 // Status Badge
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
                     color: summary.statusColor.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: summary.statusColor.withValues(alpha: 0.4)),
+                    border: Border.all(
+                        color: summary.statusColor.withValues(alpha: 0.4)),
                   ),
                   child: Text(
                     summary.statusTextDe,
@@ -136,14 +145,6 @@ class WeeklyLoadCard extends StatelessWidget {
             LayoutBuilder(
               builder: (context, constraints) {
                 final maxWidth = constraints.maxWidth;
-                final ratio = summary.hasPlan && summary.plannedLoad > 0
-                    ? (summary.actualLoad / summary.plannedLoad).clamp(0.0, 1.5)
-                    : (summary.actualLoad > 0 ? 1.0 : 0.0);
-
-                // Balkenbreite: Wenn über 100%, skaliert auf max 1.0
-                final progressFraction = (ratio / 1.5).clamp(0.0, 1.0);
-                final actualWidth = maxWidth * (summary.hasPlan ? progressFraction : 1.0);
-
                 return Stack(
                   children: [
                     // Hintergrund
@@ -159,9 +160,17 @@ class WeeklyLoadCard extends StatelessWidget {
                     // Ist-Balken
                     Container(
                       height: 12,
-                      width: (summary.hasPlan ? (maxWidth * (summary.actualLoad / (summary.plannedLoad * 1.3)).clamp(0.0, 1.0)) : maxWidth).clamp(4.0, maxWidth),
+                      width: (summary.hasPlan
+                              ? (maxWidth *
+                                  (summary.actualLoad /
+                                          (summary.plannedLoad * 1.3))
+                                      .clamp(0.0, 1.0))
+                              : maxWidth)
+                          .clamp(4.0, maxWidth),
                       decoration: BoxDecoration(
-                        color: summary.statusColor == AppColors.accentVolt ? AppColors.navy : summary.statusColor,
+                        color: summary.statusColor == AppColors.accentVolt
+                            ? AppColors.navy
+                            : summary.statusColor,
                         borderRadius: BorderRadius.circular(6),
                       ),
                     ),

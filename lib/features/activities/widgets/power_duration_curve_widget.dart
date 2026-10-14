@@ -23,7 +23,8 @@ class PowerDurationCurveWidget extends StatelessWidget {
     }
 
     final maxWatt = curve.points
-        .map((p) => [p.activityWatts, p.seasonBestWatts ?? 0, p.allTimeBestWatts ?? 0])
+        .map((p) =>
+            [p.activityWatts, p.seasonBestWatts ?? 0, p.allTimeBestWatts ?? 0])
         .expand((e) => e)
         .fold(0.0, max);
 
@@ -43,7 +44,8 @@ class PowerDurationCurveWidget extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  const Icon(Icons.show_chart, color: Color(0xFFF6C453), size: 20),
+                  const Icon(Icons.show_chart,
+                      color: Color(0xFFF6C453), size: 20),
                   const SizedBox(width: 8),
                   Text(
                     'Power-Duration-Kurve (MMP)',
@@ -53,15 +55,18 @@ class PowerDurationCurveWidget extends StatelessWidget {
               ),
               if (curve.hasPR)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: AppColors.accentVolt, // Volt-Regel: Volt-Fläche mit Navy-Text
+                    color: AppColors
+                        .accentVolt, // Volt-Regel: Volt-Fläche mit Navy-Text
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.emoji_events, size: 14, color: AppColors.navy),
+                      const Icon(Icons.emoji_events,
+                          size: 14, color: AppColors.navy),
                       const SizedBox(width: 4),
                       Text(
                         '${curve.prCount}x PR',
@@ -116,7 +121,8 @@ class PowerDurationCurveWidget extends StatelessWidget {
                 children: [
                   Text(
                     p.formattedDuration,
-                    style: AppTypography.label.copyWith(color: Colors.grey.shade400),
+                    style: AppTypography.label
+                        .copyWith(color: Colors.grey.shade400),
                   ),
                   const SizedBox(height: 4),
                   Text(
@@ -130,7 +136,8 @@ class PowerDurationCurveWidget extends StatelessWidget {
                   if (p.isAllTimePR)
                     Container(
                       margin: const EdgeInsets.only(top: 2),
-                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 4, vertical: 1),
                       decoration: BoxDecoration(
                         color: AppColors.accentVolt,
                         borderRadius: BorderRadius.circular(4),
@@ -157,9 +164,13 @@ class PowerDurationCurveWidget extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Container(width: 8, height: 8, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
+        Container(
+            width: 8,
+            height: 8,
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
         const SizedBox(width: 6),
-        Text(label, style: TextStyle(color: Colors.grey.shade400, fontSize: 11)),
+        Text(label,
+            style: TextStyle(color: Colors.grey.shade400, fontSize: 11)),
       ],
     );
   }
@@ -176,7 +187,6 @@ class _PowerDurationPainter extends CustomPainter {
     final points = curve.points;
     if (points.isEmpty) return;
 
-    final n = points.length;
     final w = size.width;
     final h = size.height - 20;
 
@@ -194,13 +204,17 @@ class _PowerDurationPainter extends CustomPainter {
     }
 
     // 1. Allzeit-Linie
-    _drawPath(canvas, points, toX, toY, (p) => p.allTimeBestWatts, const Color(0xFF94A3B8), 1.0, isDashed: true);
+    _drawPath(canvas, points, toX, toY, (p) => p.allTimeBestWatts,
+        const Color(0xFF94A3B8), 1.0,
+        isDashed: true);
 
     // 2. Saison-Linie
-    _drawPath(canvas, points, toX, toY, (p) => p.seasonBestWatts, const Color(0xFF22D3EE), 1.5);
+    _drawPath(canvas, points, toX, toY, (p) => p.seasonBestWatts,
+        const Color(0xFF22D3EE), 1.5);
 
     // 3. Aktivitäts-Linie
-    _drawPath(canvas, points, toX, toY, (p) => p.activityWatts, const Color(0xFFF6C453), 2.5);
+    _drawPath(canvas, points, toX, toY, (p) => p.activityWatts,
+        const Color(0xFFF6C453), 2.5);
 
     // X-Achsen-Labels
     final labelPainter = TextPainter(textDirection: TextDirection.ltr);

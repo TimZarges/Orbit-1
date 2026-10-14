@@ -45,18 +45,21 @@ class HomeRecentActivityCard extends StatelessWidget {
                       color: AppColors.techGrey,
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: Icon(_getSportIcon(activity.sport), size: 18, color: AppColors.navy),
+                    child: Icon(_getSportIcon(activity.sport),
+                        size: 18, color: AppColors.navy),
                   ),
                   const SizedBox(width: 8),
                   Text(
                     'Letzte Trainingseinheit',
-                    style: AppTypography.label.copyWith(color: Colors.grey.shade600),
+                    style: AppTypography.label
+                        .copyWith(color: Colors.grey.shade600),
                   ),
                 ],
               ),
               Text(
                 activity.localDate,
-                style: AppTypography.label.copyWith(color: Colors.grey.shade500),
+                style:
+                    AppTypography.label.copyWith(color: Colors.grey.shade500),
               ),
             ],
           ),
@@ -67,7 +70,8 @@ class HomeRecentActivityCard extends StatelessWidget {
             activity.title,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: AppTypography.title.copyWith(fontSize: 16, color: AppColors.navy),
+            style: AppTypography.title
+                .copyWith(fontSize: 16, color: AppColors.navy),
           ),
           const SizedBox(height: 12),
 
@@ -75,13 +79,23 @@ class HomeRecentActivityCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _StatItem(label: 'Dauer', value: _formatDuration(activity.durationSec)),
+              _StatItem(
+                  label: 'Dauer',
+                  value: _formatDuration(activity.durationSec.round())),
               if (activity.distanceM > 0)
-                _StatItem(label: 'Distanz', value: _formatDistance(activity.sport, activity.distanceM)),
-              if (activity.summary?.avgPowerW != null && activity.summary!.avgPowerW! > 0)
-                _StatItem(label: 'Ø Leistung', value: '${activity.summary!.avgPowerW!.round()} W'),
-              if (activity.summary?.avgHr != null && activity.summary!.avgHr! > 0)
-                _StatItem(label: 'Ø Puls', value: '${activity.summary!.avgHr!.round()} bpm'),
+                _StatItem(
+                    label: 'Distanz',
+                    value: _formatDistance(activity.sport, activity.distanceM)),
+              if (activity.summary?.avgPowerW != null &&
+                  activity.summary!.avgPowerW! > 0)
+                _StatItem(
+                    label: 'Ø Leistung',
+                    value: '${activity.summary!.avgPowerW!.round()} W'),
+              if (activity.summary?.avgHr != null &&
+                  activity.summary!.avgHr! > 0)
+                _StatItem(
+                    label: 'Ø Puls',
+                    value: '${activity.summary!.avgHr!.round()} bpm'),
             ],
           ),
           const SizedBox(height: 14),
@@ -96,7 +110,8 @@ class HomeRecentActivityCard extends StatelessWidget {
               style: OutlinedButton.styleFrom(
                 foregroundColor: AppColors.navy,
                 side: BorderSide(color: AppColors.navy.withValues(alpha: 0.2)),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
                 padding: const EdgeInsets.symmetric(vertical: 10),
               ),
             ),
@@ -142,9 +157,15 @@ class _StatItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Text(label, style: AppTypography.label.copyWith(fontSize: 10, color: Colors.grey.shade500)),
+        Text(label,
+            style: AppTypography.label
+                .copyWith(fontSize: 10, color: Colors.grey.shade500)),
         const SizedBox(height: 2),
-        Text(value, style: AppTypography.body.copyWith(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.navy)),
+        Text(value,
+            style: AppTypography.body.copyWith(
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                color: AppColors.navy)),
       ],
     );
   }

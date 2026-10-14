@@ -46,7 +46,8 @@ void main() {
       expect(cards[1], equals(HomeCardType.heroDailyRing));
     });
 
-    test('User with upcoming race goal displays raceCountdown card after hero', () {
+    test('User with upcoming race goal displays raceCountdown card after hero',
+        () {
       final now = DateTime.now();
       final futureDate = '${now.year + 1}-08-20';
       final goal = RaceGoal(

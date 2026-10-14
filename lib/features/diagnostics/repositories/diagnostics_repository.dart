@@ -18,7 +18,9 @@ class DiagnosticsRepository {
         .where('status', isEqualTo: 'PENDING')
         .snapshots()
         .map((snapshot) {
-      final list = snapshot.docs.map((doc) => ThresholdProposal.fromDocument(doc)).toList();
+      final list = snapshot.docs
+          .map((doc) => ThresholdProposal.fromDocument(doc))
+          .toList();
       list.sort((a, b) => b.createdAt.compareTo(a.createdAt));
       return list;
     });
@@ -34,7 +36,9 @@ class DiagnosticsRepository {
           .where('status', isEqualTo: 'PENDING')
           .get();
 
-      final list = snapshot.docs.map((doc) => ThresholdProposal.fromDocument(doc)).toList();
+      final list = snapshot.docs
+          .map((doc) => ThresholdProposal.fromDocument(doc))
+          .toList();
       list.sort((a, b) => b.createdAt.compareTo(a.createdAt));
       return list;
     } catch (e) {
@@ -51,7 +55,9 @@ class DiagnosticsRepository {
         .orderBy('effectiveFrom', descending: false)
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs.map((doc) => ThresholdEntry.fromDocument(doc)).toList();
+      return snapshot.docs
+          .map((doc) => ThresholdEntry.fromDocument(doc))
+          .toList();
     });
   }
 
@@ -83,7 +89,8 @@ class DiagnosticsRepository {
     required bool triggerRecompute,
   }) async {
     final now = DateTime.now();
-    final todayStr = '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+    final todayStr =
+        '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
 
     // 1. Neuesten Schwellenwert-Stand laden, um bestehende andere Werte beizubehalten
     final latest = await getLatestThresholds(athleteId);
@@ -165,7 +172,8 @@ class DiagnosticsRepository {
   }
 
   /// Triggert die serverseitige Neuberechnung für vergangene Einheiten (Phase 05).
-  Future<void> _triggerHistoricalRecompute(String athleteId, String fromDate) async {
+  Future<void> _triggerHistoricalRecompute(
+      String athleteId, String fromDate) async {
     try {
       // Protokollierung / Trigger-Dokument für den Worker
       await _firestore

@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import '../models/home_dashboard_data.dart';
 import '../models/race_goal.dart';
 import '../../calendar/models/planned_workout.dart';
@@ -11,10 +10,12 @@ import '../../analysis/models/form_traffic_light.dart';
 
 /// Gebündelter Provider für das Home-Dashboard („Heute").
 /// Führt maximal 4 Firestore-Reads pro Aufruf durch und cacht das Ergebnis.
-final homeDashboardProvider = FutureProvider.family<HomeDashboardData, String>((ref, athleteId) async {
+final homeDashboardProvider =
+    FutureProvider.family<HomeDashboardData, String>((ref, athleteId) async {
   final firestore = FirebaseFirestore.instance;
   final now = DateTime.now();
-  final todayStr = '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+  final todayStr =
+      '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
 
   try {
     // 1. Tagesaggregat laden
@@ -33,7 +34,9 @@ final homeDashboardProvider = FutureProvider.family<HomeDashboardData, String>((
         .where('localDate', isEqualTo: todayStr)
         .limit(1)
         .get();
-    final todayPlan = planSnap.docs.isNotEmpty ? PlannedWorkout.fromDocument(planSnap.docs.first) : null;
+    final todayPlan = planSnap.docs.isNotEmpty
+        ? PlannedWorkout.fromDocument(planSnap.docs.first)
+        : null;
 
     // 3. Letzte Aktivität laden
     final actSnap = await firestore
@@ -42,7 +45,9 @@ final homeDashboardProvider = FutureProvider.family<HomeDashboardData, String>((
         .orderBy('startTimeUtc', descending: true)
         .limit(1)
         .get();
-    final latestAct = actSnap.docs.isNotEmpty ? Activity.fromFirestore(actSnap.docs.first) : null;
+    final latestAct = actSnap.docs.isNotEmpty
+        ? Activity.fromFirestore(actSnap.docs.first)
+        : null;
 
     // 4. Offene Schwellenwert-Vorschläge zählen
     final propSnap = await firestore
@@ -60,20 +65,22 @@ final homeDashboardProvider = FutureProvider.family<HomeDashboardData, String>((
 
     RaceGoal? raceGoal;
     if (userData['profile']?['raceGoal'] != null) {
-      raceGoal = RaceGoal.fromMap(Map<String, dynamic>.from(userData['profile']['raceGoal'] as Map));
+      raceGoal = RaceGoal.fromMap(
+          Map<String, dynamic>.from(userData['profile']['raceGoal'] as Map));
     }
 
     // Form-Ampel berechnen, falls Aggregate vorliegen
     FormTrafficLight? formLight;
-    if (todayAgg != null && (todayAgg.ctl > 0 || todayAgg.tsb != 0)) {
+    if (todayAgg != null && (todayAgg.ctl > 0 || todayAgg.atl > 0)) {
       formLight = const FormCalculator().calculate(
         ctl: todayAgg.ctl,
-        tsb: todayAgg.tsb,
-        recordedDaysCount: 28,
+        atl: todayAgg.atl,
+        daysOfHistory: 28,
       );
     }
 
-    final isBrandNew = !aggDoc.exists && planSnap.docs.isEmpty && actSnap.docs.isEmpty;
+    final isBrandNew =
+        !aggDoc.exists && planSnap.docs.isEmpty && actSnap.docs.isEmpty;
 
     return HomeDashboardData(
       todayLocalDate: todayStr,
@@ -99,10 +106,11 @@ final homeDashboardProvider = FutureProvider.family<HomeDashboardData, String>((
         localDate: todayStr,
         sport: 'BIKE',
         title: '4x4min Schwellenintervalle Rad',
-        description: 'Warmup 15 min, 4x 4 min Z4 mit 2 min Pause, Ausrollen 15 min.',
+        description:
+            'Warmup 15 min, 4x 4 min Z4 mit 2 min Pause, Ausrollen 15 min.',
         plannedDurationSec: 3600,
         plannedLoad: 68.0,
-        status: PlannedWorkoutStatus.planned,
+        status: 'PLANNED',
         createdAt: now,
       ),
       raceGoal: RaceGoal(
@@ -112,8 +120,8 @@ final homeDashboardProvider = FutureProvider.family<HomeDashboardData, String>((
       ),
       formTrafficLight: const FormCalculator().calculate(
         ctl: 58.0,
-        tsb: -8.0,
-        recordedDaysCount: 42,
+        atl: 66.0,
+        daysOfHistory: 42,
       ),
     );
   }

@@ -16,7 +16,8 @@ class ConsistencyCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Semantics(
       container: true,
-      label: 'Konsistenz: ${consistency.statusTextDe}. Serie: ${consistency.streakWeeks} Wochen.',
+      label:
+          'Konsistenz: ${consistency.statusTextDe}. Serie: ${consistency.streakWeeks} Wochen.',
       child: Container(
         decoration: BoxDecoration(
           color: AppColors.white,
@@ -40,17 +41,20 @@ class ConsistencyCard extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Icon(Icons.calendar_today_outlined, size: 20, color: AppColors.navy),
+                    Icon(Icons.calendar_today_outlined,
+                        size: 20, color: AppColors.navy),
                     const SizedBox(width: 8),
                     Text(
                       'Konsistenz',
-                      style: AppTypography.title.copyWith(color: AppColors.navy),
+                      style:
+                          AppTypography.title.copyWith(color: AppColors.navy),
                     ),
                   ],
                 ),
                 if (consistency.streakWeeks > 1)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
                       color: AppColors.accentVolt.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(16),
@@ -59,7 +63,8 @@ class ConsistencyCard extends StatelessWidget {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.local_fire_department, size: 14, color: AppColors.navy),
+                        const Icon(Icons.local_fire_department,
+                            size: 14, color: AppColors.navy),
                         const SizedBox(width: 4),
                         Text(
                           '${consistency.streakWeeks} Wochen Serie',
@@ -108,7 +113,8 @@ class ConsistencyCard extends StatelessWidget {
 
             // Visuelle Punkte-Reihe (für 7-Tage-Woche oder 4-Wochen-Muster)
             Row(
-              children: List.generate(consistency.totalDays <= 7 ? 7 : 14, (index) {
+              children:
+                  List.generate(consistency.totalDays <= 7 ? 7 : 14, (index) {
                 final isActive = index < consistency.activeDays;
                 return Expanded(
                   child: Container(

@@ -27,8 +27,10 @@ class CssEstimationResult {
 class CssEstimator {
   const CssEstimator();
 
-  static const double minPlausibleCssPaceSec = 45.0; // Weltklasse (0:45 min/100m)
-  static const double maxPlausibleCssPaceSec = 240.0; // Einsteiger (4:00 min/100m)
+  static const double minPlausibleCssPaceSec =
+      45.0; // Weltklasse (0:45 min/100m)
+  static const double maxPlausibleCssPaceSec =
+      240.0; // Einsteiger (4:00 min/100m)
   static const double minDeltaSecPer100m = 1.0;
 
   /// Schätzt die CSS aus den Zeiten über 400m und 200m (jeweils in Sekunden).
@@ -59,17 +61,20 @@ class CssEstimator {
     if (pace400Per100m < pace200Per100m * 0.95) {
       return const CssEstimationResult(
         hasProposal: false,
-        reasonForNoProposal: 'Unplausible Pacing-Differenz: Das 400m-Tempo war schneller als das 200m-Tempo.',
+        reasonForNoProposal:
+            'Unplausible Pacing-Differenz: Das 400m-Tempo war schneller als das 200m-Tempo.',
       );
     }
 
     // CSS-Berechnung: CSS Pace pro 100m = (T400 - T200) / 2
     final calculatedCssPaceSec = (t400Seconds - t200Seconds) / 2.0;
 
-    if (calculatedCssPaceSec < minPlausibleCssPaceSec || calculatedCssPaceSec > maxPlausibleCssPaceSec) {
+    if (calculatedCssPaceSec < minPlausibleCssPaceSec ||
+        calculatedCssPaceSec > maxPlausibleCssPaceSec) {
       return const CssEstimationResult(
         hasProposal: false,
-        reasonForNoProposal: 'Errechnetes CSS-Tempo liegt außerhalb des physiologischen Bereichs (0:45–4:00 min/100m).',
+        reasonForNoProposal:
+            'Errechnetes CSS-Tempo liegt außerhalb des physiologischen Bereichs (0:45–4:00 min/100m).',
       );
     }
 
@@ -82,12 +87,14 @@ class CssEstimator {
       if (delta.abs() < minDeltaSecPer100m) {
         return const CssEstimationResult(
           hasProposal: false,
-          reasonForNoProposal: 'CSS-Änderung liegt unter der Relevanzschwelle (< 1.0 s / 100m).',
+          reasonForNoProposal:
+              'CSS-Änderung liegt unter der Relevanzschwelle (< 1.0 s / 100m).',
         );
       }
     }
 
-    final dateStr = '${testDate.day.toString().padLeft(2, '0')}.${testDate.month.toString().padLeft(2, '0')}.${testDate.year}';
+    final dateStr =
+        '${testDate.day.toString().padLeft(2, '0')}.${testDate.month.toString().padLeft(2, '0')}.${testDate.year}';
     final m = calculatedCssPaceSec.toInt() ~/ 60;
     final s = (calculatedCssPaceSec % 60).round();
     final cssPaceStr = '$m:${s.toString().padLeft(2, '0')} min/100m';
@@ -124,7 +131,8 @@ class CssEstimator {
       currentValue: currentCssPaceSec,
       delta: delta,
       deltaPercent: deltaPercent,
-      confidence: ConfidenceLevel.high, // Direkter 400/200 Feldtest hat hohe Güte
+      confidence:
+          ConfidenceLevel.high, // Direkter 400/200 Feldtest hat hohe Güte
       basis: basis,
       explanationDe: explanationDe,
       explanationEn: explanationEn,

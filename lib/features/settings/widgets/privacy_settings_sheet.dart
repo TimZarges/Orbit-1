@@ -28,7 +28,8 @@ class _PrivacySettingsSheetState extends State<PrivacySettingsSheet> {
     setState(() => _exporting = false);
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Datenexport (JSON) wird vorbereitet und per E-Mail bereitgestellt.'),
+        content: Text(
+            'Datenexport (JSON) wird vorbereitet und per E-Mail bereitgestellt.'),
         backgroundColor: Color(0xFF10B981),
       ),
     );
@@ -53,7 +54,8 @@ class _PrivacySettingsSheetState extends State<PrivacySettingsSheet> {
               Navigator.of(ctx).pop();
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
-                  content: Text('Löschungsanfrage eingereicht. Dein Konto wird deaktiviert.'),
+                  content: Text(
+                      'Löschungsanfrage eingereicht. Dein Konto wird deaktiviert.'),
                   backgroundColor: Color(0xFFEF4444),
                 ),
               );
@@ -102,14 +104,16 @@ class _PrivacySettingsSheetState extends State<PrivacySettingsSheet> {
                   children: [
                     Row(
                       children: [
-                        const Icon(Icons.privacy_tip_outlined, color: AppColors.volt, size: 28),
+                        const Icon(Icons.privacy_tip_outlined,
+                            color: AppColors.volt, size: 28),
                         const SizedBox(width: 12),
                         Text(
                           'Datenschutz & Rechte',
-                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
+                          style:
+                              Theme.of(context).textTheme.titleLarge?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
                         ),
                       ],
                     ),
@@ -136,13 +140,17 @@ class _PrivacySettingsSheetState extends State<PrivacySettingsSheet> {
                           color: const Color(0xFF1E293B),
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: const Icon(Icons.download_outlined, color: AppColors.volt),
+                        child: const Icon(Icons.download_outlined,
+                            color: AppColors.volt),
                       ),
                       title: const Text('Daten exportieren (Art. 20 DSGVO)',
-                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600)),
                       subtitle: const Text(
                         'Maschinenlesbarer Export deiner Profildaten, Aktivitäten und Messwerte als JSON.',
-                        style: TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
+                        style:
+                            TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
                       ),
                       trailing: _exporting
                           ? const SizedBox(
@@ -150,7 +158,8 @@ class _PrivacySettingsSheetState extends State<PrivacySettingsSheet> {
                               height: 20,
                               child: CircularProgressIndicator(strokeWidth: 2),
                             )
-                          : const Icon(Icons.chevron_right, color: Color(0xFF64748B)),
+                          : const Icon(Icons.chevron_right,
+                              color: Color(0xFF64748B)),
                       onTap: _exporting ? null : _triggerExport,
                     ),
 
@@ -167,14 +176,18 @@ class _PrivacySettingsSheetState extends State<PrivacySettingsSheet> {
                           color: const Color(0xFF1E293B),
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: const Icon(Icons.shield_outlined, color: Color(0xFF0EA5E9)),
+                        child: const Icon(Icons.shield_outlined,
+                            color: Color(0xFF0EA5E9)),
                       ),
                       title: const Text('Speicherort & Sicherheit',
-                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600)),
                       subtitle: const Text(
                         'Hosting: Google Cloud Frankfurt (europe-west3). Ende-zu-Ende verschlüsselte '
                         'Tokens in Google Secret Manager.',
-                        style: TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
+                        style:
+                            TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
                       ),
                     ),
 
@@ -191,15 +204,21 @@ class _PrivacySettingsSheetState extends State<PrivacySettingsSheet> {
                           color: const Color(0x26EF4444),
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: const Icon(Icons.delete_forever_outlined, color: Color(0xFFEF4444)),
+                        child: const Icon(Icons.delete_forever_outlined,
+                            color: Color(0xFFEF4444)),
                       ),
-                      title: const Text('Konto und Daten löschen (Art. 17 DSGVO)',
-                          style: TextStyle(color: Color(0xFFEF4444), fontWeight: FontWeight.w600)),
+                      title: const Text(
+                          'Konto und Daten löschen (Art. 17 DSGVO)',
+                          style: TextStyle(
+                              color: Color(0xFFEF4444),
+                              fontWeight: FontWeight.w600)),
                       subtitle: const Text(
                         'Unwiderrufliche Löschung aller Trainings-, Gesundheits- und Profildaten.',
-                        style: TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
+                        style:
+                            TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
                       ),
-                      trailing: const Icon(Icons.chevron_right, color: Color(0xFFEF4444)),
+                      trailing: const Icon(Icons.chevron_right,
+                          color: Color(0xFFEF4444)),
                       onTap: _confirmDeleteAccount,
                     ),
 
@@ -209,7 +228,8 @@ class _PrivacySettingsSheetState extends State<PrivacySettingsSheet> {
                       style: OutlinedButton.styleFrom(
                         foregroundColor: Colors.white,
                         side: const BorderSide(color: Color(0xFF1E293B)),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
                         padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
                       child: const Text('Schließen'),

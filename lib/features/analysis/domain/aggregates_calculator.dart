@@ -47,9 +47,9 @@ class AggregatesCalculator {
       if (p.plannedLoad != null && p.plannedLoad! > 0) {
         return sum + p.plannedLoad!;
       }
-      if (p.plannedDurationSec != null && p.plannedDurationSec! > 0) {
+      if (p.plannedDurationSec > 0) {
         // Schätzung: ca. 50 TSS pro Stunde Grundlagentraining
-        return sum + (p.plannedDurationSec! / 3600.0) * 50.0;
+        return sum + (p.plannedDurationSec / 3600.0) * 50.0;
       }
       return sum;
     });
@@ -67,7 +67,8 @@ class AggregatesCalculator {
     required List<PlannedWorkout> plannedWorkouts,
     required int totalDays,
   }) {
-    final activeDays = aggregates.where((a) => a.activityCount > 0 || a.dailyLoad > 0).length;
+    final activeDays =
+        aggregates.where((a) => a.activityCount > 0 || a.dailyLoad > 0).length;
     final plannedDaySet = plannedWorkouts.map((p) => p.localDate).toSet();
 
     // Streak-Berechnung: Wir prüfen rückwirkend 7-Tage-Blöcke
@@ -77,8 +78,11 @@ class AggregatesCalculator {
         ..sort((a, b) => b.localDate.compareTo(a.localDate)); // Neueste zuerst
 
       for (int w = 0; w < (sorted.length / 7).floor(); w++) {
-        final weekSlice = sorted.sublist(w * 7, min((w + 1) * 7, sorted.length));
-        final activeInWeek = weekSlice.where((a) => a.activityCount > 0 || a.dailyLoad > 0).length;
+        final weekSlice =
+            sorted.sublist(w * 7, min((w + 1) * 7, sorted.length));
+        final activeInWeek = weekSlice
+            .where((a) => a.activityCount > 0 || a.dailyLoad > 0)
+            .length;
         if (activeInWeek >= 3) {
           streakWeeks++;
         } else {
@@ -96,7 +100,8 @@ class AggregatesCalculator {
   }
 
   /// Berechnet die kumulierte Sportarten-Verteilung.
-  static SportDistributionSummary calculateSportDistribution(List<DailyAggregate> aggregates) {
+  static SportDistributionSummary calculateSportDistribution(
+      List<DailyAggregate> aggregates) {
     final map = <String, double>{};
     for (final agg in aggregates) {
       agg.sportsBreakdownSec.forEach((sport, sec) {
@@ -107,7 +112,8 @@ class AggregatesCalculator {
   }
 
   /// Berechnet die kumulierte Zonenverteilung.
-  static ZoneDistributionSummary calculateZoneDistribution(List<DailyAggregate> aggregates) {
+  static ZoneDistributionSummary calculateZoneDistribution(
+      List<DailyAggregate> aggregates) {
     final zones = List<double>.filled(7, 0.0);
     for (final agg in aggregates) {
       for (int i = 0; i < min(7, agg.zoneBreakdownSec.length); i++) {
@@ -118,7 +124,8 @@ class AggregatesCalculator {
   }
 
   /// Erzeugt Datenpunkte für die letzten 8 Wochen.
-  static List<WeeklyLoadTrendPoint> calculate8WeekTrend(List<DailyAggregate> sortedAggregatesDesc) {
+  static List<WeeklyLoadTrendPoint> calculate8WeekTrend(
+      List<DailyAggregate> sortedAggregatesDesc) {
     final points = <WeeklyLoadTrendPoint>[];
     if (sortedAggregatesDesc.isEmpty) return points;
 
@@ -144,7 +151,8 @@ class AggregatesCalculator {
   /// Erzeugt eine barrierefreie Textzusammenfassung für den 8-Wochen-Trend.
   static String describeWeeklyTrend(List<WeeklyLoadTrendPoint> points) {
     if (points.isEmpty) return 'Noch keine Trenddaten verfügbar.';
-    if (points.length < 2) return 'Belastung der letzten Woche: ${points.first.totalLoad.round()} TSS.';
+    if (points.length < 2)
+      return 'Belastung der letzten Woche: ${points.first.totalLoad.round()} TSS.';
 
     final first = points.first.totalLoad;
     final last = points.last.totalLoad;
@@ -166,7 +174,8 @@ class AggregatesCalculator {
   }
 
   /// Erzeugt Zeitreihenpunkte für das CTL/ATL/TSB-Diagramm.
-  static List<FitnessFatiguePoint> calculateFitnessFatiguePoints(List<DailyAggregate> aggregatesAsc) {
+  static List<FitnessFatiguePoint> calculateFitnessFatiguePoints(
+      List<DailyAggregate> aggregatesAsc) {
     return aggregatesAsc.map((a) {
       return FitnessFatiguePoint(
         date: a.localDate,

@@ -4,7 +4,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/design/app_colors.dart';
 import '../../../core/design/app_typography.dart';
-import '../models/chat_conversation.dart';
 import '../providers/chat_providers.dart';
 
 /// Übersicht aller aktiven Konversationen (vor allem für Trainer mit mehreren Athleten).
@@ -28,7 +27,8 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
       appBar: AppBar(
         title: Text(
           'Nachrichten',
-          style: AppTypography.headline.copyWith(fontSize: 18, color: AppColors.navy),
+          style: AppTypography.headline
+              .copyWith(fontSize: 18, color: AppColors.navy),
         ),
         backgroundColor: AppColors.white,
         elevation: 0,
@@ -43,16 +43,19 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
             child: TextField(
               decoration: InputDecoration(
                 hintText: 'Nachrichten durchsuchen...',
-                prefixIcon: const Icon(Icons.search, size: 20, color: Colors.grey),
+                prefixIcon:
+                    const Icon(Icons.search, size: 20, color: Colors.grey),
                 filled: true,
                 fillColor: AppColors.lightBackground,
-                contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
+                contentPadding:
+                    const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide.none,
                 ),
               ),
-              onChanged: (val) => setState(() => _searchQuery = val.toLowerCase()),
+              onChanged: (val) =>
+                  setState(() => _searchQuery = val.toLowerCase()),
             ),
           ),
           const Divider(height: 1),
@@ -64,7 +67,8 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                 final filtered = conversations.where((c) {
                   final name = c.otherUserName?.toLowerCase() ?? '';
                   final lastText = c.lastMessageText?.toLowerCase() ?? '';
-                  return name.contains(_searchQuery) || lastText.contains(_searchQuery);
+                  return name.contains(_searchQuery) ||
+                      lastText.contains(_searchQuery);
                 }).toList();
 
                 if (filtered.isEmpty) {
@@ -72,11 +76,13 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.forum_outlined, size: 48, color: Colors.grey.shade300),
+                        Icon(Icons.forum_outlined,
+                            size: 48, color: Colors.grey.shade300),
                         const SizedBox(height: 12),
                         Text(
                           'Keine Chats vorhanden.',
-                          style: AppTypography.body.copyWith(color: Colors.grey.shade500),
+                          style: AppTypography.body
+                              .copyWith(color: Colors.grey.shade500),
                         ),
                       ],
                     ),
@@ -85,22 +91,27 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
 
                 return ListView.separated(
                   itemCount: filtered.length,
-                  separatorBuilder: (_, __) => const Divider(height: 1, indent: 72),
+                  separatorBuilder: (_, __) =>
+                      const Divider(height: 1, indent: 72),
                   itemBuilder: (context, index) {
                     final conversation = filtered[index];
                     final unread = conversation.unreadFor(currentUid);
                     final displayName = conversation.otherUserName ?? 'Athlet';
 
                     return ListTile(
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 6),
                       leading: Stack(
                         children: [
                           CircleAvatar(
                             radius: 24,
                             backgroundColor: AppColors.techGrey,
                             child: Text(
-                              displayName.isNotEmpty ? displayName[0].toUpperCase() : 'A',
-                              style: AppTypography.title.copyWith(fontSize: 18, color: AppColors.navy),
+                              displayName.isNotEmpty
+                                  ? displayName[0].toUpperCase()
+                                  : 'A',
+                              style: AppTypography.title.copyWith(
+                                  fontSize: 18, color: AppColors.navy),
                             ),
                           ),
                           if (unread > 0)
@@ -112,9 +123,11 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                                 decoration: BoxDecoration(
                                   color: AppColors.volt,
                                   shape: BoxShape.circle,
-                                  border: Border.all(color: AppColors.white, width: 1.5),
+                                  border: Border.all(
+                                      color: AppColors.white, width: 1.5),
                                 ),
-                                constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                                constraints: const BoxConstraints(
+                                    minWidth: 16, minHeight: 16),
                                 child: Text(
                                   unread > 9 ? '9+' : '$unread',
                                   textAlign: TextAlign.center,
@@ -137,7 +150,9 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: AppTypography.body.copyWith(
-                                fontWeight: unread > 0 ? FontWeight.bold : FontWeight.w600,
+                                fontWeight: unread > 0
+                                    ? FontWeight.bold
+                                    : FontWeight.w600,
                                 color: AppColors.navy,
                               ),
                             ),
@@ -147,8 +162,12 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                               _formatTime(conversation.lastMessageTime!),
                               style: AppTypography.label.copyWith(
                                 fontSize: 11,
-                                color: unread > 0 ? AppColors.navy : Colors.grey.shade500,
-                                fontWeight: unread > 0 ? FontWeight.bold : FontWeight.normal,
+                                color: unread > 0
+                                    ? AppColors.navy
+                                    : Colors.grey.shade500,
+                                fontWeight: unread > 0
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
                               ),
                             ),
                         ],
@@ -158,8 +177,11 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: AppTypography.label.copyWith(
-                          color: unread > 0 ? AppColors.navy : Colors.grey.shade600,
-                          fontWeight: unread > 0 ? FontWeight.w600 : FontWeight.normal,
+                          color: unread > 0
+                              ? AppColors.navy
+                              : Colors.grey.shade600,
+                          fontWeight:
+                              unread > 0 ? FontWeight.w600 : FontWeight.normal,
                         ),
                       ),
                       onTap: () {

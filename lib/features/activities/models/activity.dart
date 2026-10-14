@@ -77,6 +77,7 @@ class Activity {
   final double distanceM;
   final ActivitySummary? summary;
   final ActivityProcessing? processing;
+  final List<dynamic>? segments;
   final String? plannedWorkoutId;
   final String? matchStatus;
 
@@ -95,6 +96,9 @@ class Activity {
     this.plannedWorkoutId,
     this.matchStatus,
   });
+
+  factory Activity.fromFirestore(DocumentSnapshot doc) =>
+      Activity.fromDocument(doc);
 
   factory Activity.fromDocument(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
@@ -123,4 +127,3 @@ class Activity {
     );
   }
 }
-

@@ -33,7 +33,8 @@ void main() {
       expect(result.isSuccess, isTrue);
 
       const thresholds = AthleteThresholds(cssSecPer100m: 105); // 1:45/100m
-      final calc = WorkoutCalculator.calculate(result.structure!, thresholds: thresholds);
+      final calc = WorkoutCalculator.calculate(result.structure!,
+          thresholds: thresholds);
 
       // Gesamtdistanz: 400 + (8 * 100) + 200 = 1400 m
       expect(calc.totalDistanceM, 1400);
@@ -50,9 +51,11 @@ void main() {
       final result = parser.parse('8x100m CSS / 20"');
       expect(result.isSuccess, isTrue);
 
-      final calc = WorkoutCalculator.calculate(result.structure!, thresholds: AthleteThresholds.empty);
+      final calc = WorkoutCalculator.calculate(result.structure!,
+          thresholds: AthleteThresholds.empty);
       expect(calc.missingThresholdWarnings, isNotEmpty);
-      expect(calc.missingThresholdWarnings.first, contains('Keine CSS hinterlegt'));
+      expect(calc.missingThresholdWarnings.first,
+          contains('Keine CSS hinterlegt'));
     });
   });
 }

@@ -64,17 +64,20 @@ class WidgetGalleryScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 32),
-          Text('Workout Profil (Live-Balkengrafik)', style: Theme.of(context).textTheme.headlineLarge),
+          Text('Workout Profil (Live-Balkengrafik)',
+              style: Theme.of(context).textTheme.headlineLarge),
           const SizedBox(height: 16),
           Builder(
             builder: (context) {
               const parser = WorkoutParser(sport: 'BIKE');
               final result = parser.parse("10' Z1, 4x(4' Z4 / 2' Z1), 10' Z1");
-              return WorkoutProfileChart(structure: result.structure, height: 100);
+              return WorkoutProfileChart(
+                  structure: result.structure, height: 100);
             },
           ),
           const SizedBox(height: 32),
-          Text('Trainingsanalyse (Phase 10)', style: Theme.of(context).textTheme.headlineLarge),
+          Text('Trainingsanalyse (Phase 10)',
+              style: Theme.of(context).textTheme.headlineLarge),
           const SizedBox(height: 16),
 
           // 1. Form-Ampel
@@ -125,7 +128,13 @@ class WidgetGalleryScreen extends StatelessWidget {
           // 5. Zonenverteilung
           ZoneDistributionCard(
             summary: ZoneDistributionSummary.fromSeconds(const [
-              1800, 10800, 3600, 1800, 900, 300, 60,
+              1800,
+              10800,
+              3600,
+              1800,
+              900,
+              300,
+              60,
             ]),
           ),
           const SizedBox(height: 16),
@@ -133,32 +142,46 @@ class WidgetGalleryScreen extends StatelessWidget {
           // 6. 8-Wochen-Trend
           const WeeklyLoadTrendChart(
             points: [
-              WeeklyLoadTrendPoint(weekNumber: 1, weekLabel: 'W1', totalLoad: 280),
-              WeeklyLoadTrendPoint(weekNumber: 2, weekLabel: 'W2', totalLoad: 320),
-              WeeklyLoadTrendPoint(weekNumber: 3, weekLabel: 'W3', totalLoad: 350),
-              WeeklyLoadTrendPoint(weekNumber: 4, weekLabel: 'W4', totalLoad: 200),
-              WeeklyLoadTrendPoint(weekNumber: 5, weekLabel: 'W5', totalLoad: 380),
-              WeeklyLoadTrendPoint(weekNumber: 6, weekLabel: 'W6', totalLoad: 410),
-              WeeklyLoadTrendPoint(weekNumber: 7, weekLabel: 'W7', totalLoad: 440),
-              WeeklyLoadTrendPoint(weekNumber: 8, weekLabel: 'Aktuell', totalLoad: 420),
+              WeeklyLoadTrendPoint(
+                  weekNumber: 1, weekLabel: 'W1', totalLoad: 280),
+              WeeklyLoadTrendPoint(
+                  weekNumber: 2, weekLabel: 'W2', totalLoad: 320),
+              WeeklyLoadTrendPoint(
+                  weekNumber: 3, weekLabel: 'W3', totalLoad: 350),
+              WeeklyLoadTrendPoint(
+                  weekNumber: 4, weekLabel: 'W4', totalLoad: 200),
+              WeeklyLoadTrendPoint(
+                  weekNumber: 5, weekLabel: 'W5', totalLoad: 380),
+              WeeklyLoadTrendPoint(
+                  weekNumber: 6, weekLabel: 'W6', totalLoad: 410),
+              WeeklyLoadTrendPoint(
+                  weekNumber: 7, weekLabel: 'W7', totalLoad: 440),
+              WeeklyLoadTrendPoint(
+                  weekNumber: 8, weekLabel: 'Aktuell', totalLoad: 420),
             ],
-            trendDescription: 'Belastung in den letzten 8 Wochen moderat gestiegen (+18 %).',
+            trendDescription:
+                'Belastung in den letzten 8 Wochen moderat gestiegen (+18 %).',
           ),
           const SizedBox(height: 16),
 
           // 7. CTL/ATL/TSB Verlauf
           const FitnessFatigueTrendChart(
             points: [
-              FitnessFatiguePoint(date: '2026-08-01', ctl: 40, atl: 45, tsb: -5),
-              FitnessFatiguePoint(date: '2026-08-15', ctl: 48, atl: 55, tsb: -7),
-              FitnessFatiguePoint(date: '2026-09-01', ctl: 52, atl: 62, tsb: -10),
+              FitnessFatiguePoint(
+                  date: '2026-08-01', ctl: 40, atl: 45, tsb: -5),
+              FitnessFatiguePoint(
+                  date: '2026-08-15', ctl: 48, atl: 55, tsb: -7),
+              FitnessFatiguePoint(
+                  date: '2026-09-01', ctl: 52, atl: 62, tsb: -10),
               FitnessFatiguePoint(date: '2026-09-15', ctl: 55, atl: 50, tsb: 5),
-              FitnessFatiguePoint(date: '2026-10-01', ctl: 58, atl: 68, tsb: -10),
+              FitnessFatiguePoint(
+                  date: '2026-10-01', ctl: 58, atl: 68, tsb: -10),
             ],
           ),
           const SizedBox(height: 32),
 
-          Text('Cockpit Telemetrie (Phase 11)', style: Theme.of(context).textTheme.headlineLarge),
+          Text('Cockpit Telemetrie (Phase 11)',
+              style: Theme.of(context).textTheme.headlineLarge),
           const SizedBox(height: 16),
           Container(
             padding: const EdgeInsets.all(16),
@@ -171,7 +194,10 @@ class WidgetGalleryScreen extends StatelessWidget {
               children: [
                 Text(
                   'Dark Cockpit Data Density (#0F172A)',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(color: Colors.white),
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleLarge
+                      ?.copyWith(color: Colors.white),
                 ),
                 const SizedBox(height: 16),
                 Builder(
@@ -206,10 +232,22 @@ class WidgetGalleryScreen extends StatelessWidget {
                         const PowerDurationCurveWidget(
                           curve: PowerDurationCurve(
                             points: [
-                              PowerDurationPoint(durationSec: 5, activityWatts: 620, allTimeBestWatts: 600),
-                              PowerDurationPoint(durationSec: 60, activityWatts: 380, seasonBestWatts: 360),
-                              PowerDurationPoint(durationSec: 300, activityWatts: 295, allTimeBestWatts: 310),
-                              PowerDurationPoint(durationSec: 1200, activityWatts: 260, allTimeBestWatts: 270),
+                              PowerDurationPoint(
+                                  durationSec: 5,
+                                  activityWatts: 620,
+                                  allTimeBestWatts: 600),
+                              PowerDurationPoint(
+                                  durationSec: 60,
+                                  activityWatts: 380,
+                                  seasonBestWatts: 360),
+                              PowerDurationPoint(
+                                  durationSec: 300,
+                                  activityWatts: 295,
+                                  allTimeBestWatts: 310),
+                              PowerDurationPoint(
+                                  durationSec: 1200,
+                                  activityWatts: 260,
+                                  allTimeBestWatts: 270),
                             ],
                           ),
                         ),
@@ -221,7 +259,8 @@ class WidgetGalleryScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 32),
-          Text('Leistungsdiagnostik & Schwellenwerte (Phase 12)', style: Theme.of(context).textTheme.headlineLarge),
+          Text('Leistungsdiagnostik & Schwellenwerte (Phase 12)',
+              style: Theme.of(context).textTheme.headlineLarge),
           const SizedBox(height: 16),
           ThresholdProposalCard(
             proposal: ThresholdProposal(
@@ -238,8 +277,10 @@ class WidgetGalleryScreen extends StatelessWidget {
                 '20-Minuten-Bestwert: 282 W am 12.10.2026',
                 'Pacing-Gleichmäßigkeit: VI = 1.03',
               ],
-              explanationDe: 'Basierend auf deinem 20-Minuten-Bestwert von 282 W vom 12.10. ergibt sich ein neuer FTP von 268 W (+13 W, +5.1 %).',
-              explanationEn: 'Based on your 20-min peak of 282 W, your estimated FTP is 268 W (+13 W).',
+              explanationDe:
+                  'Basierend auf deinem 20-Minuten-Bestwert von 282 W vom 12.10. ergibt sich ein neuer FTP von 268 W (+13 W, +5.1 %).',
+              explanationEn:
+                  'Based on your 20-min peak of 282 W, your estimated FTP is 268 W (+13 W).',
               createdAt: DateTime.now(),
             ),
             onAccept: () {},
@@ -281,7 +322,8 @@ class WidgetGalleryScreen extends StatelessWidget {
             type: ThresholdType.ftp,
           ),
           const SizedBox(height: 32),
-          Text('Chat & Nachrichten (Phase 13)', style: Theme.of(context).textTheme.headlineLarge),
+          Text('Chat & Nachrichten (Phase 13)',
+              style: Theme.of(context).textTheme.headlineLarge),
           const SizedBox(height: 16),
           ChatBubble(
             message: ChatMessage(
@@ -289,7 +331,8 @@ class WidgetGalleryScreen extends StatelessWidget {
               chatId: 'c1',
               senderId: 'coach',
               type: MessageType.text,
-              text: 'Hallo Tim! Die Intervalle gestern sahen technisch sehr stabil aus.',
+              text:
+                  'Hallo Tim! Die Intervalle gestern sahen technisch sehr stabil aus.',
               createdAt: DateTime.now().subtract(const Duration(minutes: 15)),
             ),
             isMe: false,
@@ -300,7 +343,8 @@ class WidgetGalleryScreen extends StatelessWidget {
               chatId: 'c1',
               senderId: 'me',
               type: MessageType.text,
-              text: 'Danke! Vor allem in Block 3 konnte ich den Druck gut halten.',
+              text:
+                  'Danke! Vor allem in Block 3 konnte ich den Druck gut halten.',
               createdAt: DateTime.now().subtract(const Duration(minutes: 10)),
             ),
             isMe: true,
@@ -337,7 +381,8 @@ class WidgetGalleryScreen extends StatelessWidget {
             isMe: true,
           ),
           const SizedBox(height: 32),
-          Text('Home-Dashboard („Heute") (Phase 14)', style: Theme.of(context).textTheme.headlineLarge),
+          Text('Home-Dashboard („Heute") (Phase 14)',
+              style: Theme.of(context).textTheme.headlineLarge),
           const SizedBox(height: 16),
           const HomeActionBanner(
             pendingThresholdsCount: 1,
@@ -355,7 +400,7 @@ class WidgetGalleryScreen extends StatelessWidget {
               title: '4x4min Schwellenintervalle Rad',
               plannedDurationSec: 3600,
               plannedLoad: 68.0,
-              status: PlannedWorkoutStatus.planned,
+              status: 'PLANNED',
               createdAt: DateTime.now(),
             ),
           ),
@@ -368,7 +413,8 @@ class WidgetGalleryScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 32),
-          Text('Coach-Desktop & Web (Phase 15)', style: Theme.of(context).textTheme.headlineLarge),
+          Text('Coach-Desktop & Web (Phase 15)',
+              style: Theme.of(context).textTheme.headlineLarge),
           const SizedBox(height: 16),
           ElevatedButton.icon(
             onPressed: () => KeyboardShortcutsDialog.show(context),

@@ -41,15 +41,33 @@ class ActivityStreamPoint {
     double cumulativeDistance = 0.0,
   }) {
     final t = (time[index] as num?)?.toInt() ?? index;
-    final h = heartRate != null && index < heartRate.length ? (heartRate[index] as num?)?.toDouble() : null;
-    final p = power != null && index < power.length ? (power[index] as num?)?.toDouble() : null;
-    final c = cadence != null && index < cadence.length ? (cadence[index] as num?)?.toDouble() : null;
-    final s = speed != null && index < speed.length ? (speed[index] as num?)?.toDouble() : null;
-    final a = altitude != null && index < altitude.length ? (altitude[index] as num?)?.toDouble() : null;
-    final lat = positionLat != null && index < positionLat.length ? (positionLat[index] as num?)?.toDouble() : null;
-    final lng = positionLng != null && index < positionLng.length ? (positionLng[index] as num?)?.toDouble() : null;
-    final temp = temperature != null && index < temperature.length ? (temperature[index] as num?)?.toDouble() : null;
-    final cTemp = coreTemperature != null && index < coreTemperature.length ? (coreTemperature[index] as num?)?.toDouble() : null;
+    final h = heartRate != null && index < heartRate.length
+        ? (heartRate[index] as num?)?.toDouble()
+        : null;
+    final p = power != null && index < power.length
+        ? (power[index] as num?)?.toDouble()
+        : null;
+    final c = cadence != null && index < cadence.length
+        ? (cadence[index] as num?)?.toDouble()
+        : null;
+    final s = speed != null && index < speed.length
+        ? (speed[index] as num?)?.toDouble()
+        : null;
+    final a = altitude != null && index < altitude.length
+        ? (altitude[index] as num?)?.toDouble()
+        : null;
+    final lat = positionLat != null && index < positionLat.length
+        ? (positionLat[index] as num?)?.toDouble()
+        : null;
+    final lng = positionLng != null && index < positionLng.length
+        ? (positionLng[index] as num?)?.toDouble()
+        : null;
+    final temp = temperature != null && index < temperature.length
+        ? (temperature[index] as num?)?.toDouble()
+        : null;
+    final cTemp = coreTemperature != null && index < coreTemperature.length
+        ? (coreTemperature[index] as num?)?.toDouble()
+        : null;
 
     return ActivityStreamPoint(
       timeSec: t,
@@ -89,9 +107,12 @@ class ActivityStream {
   bool get hasGps => points.any((p) => p.lat != null && p.lng != null);
   bool get hasTemp => points.any((p) => p.tempC != null || p.coreTempC != null);
 
-  double get maxPower => points.map((p) => p.power ?? 0.0).fold(0.0, (a, b) => a > b ? a : b);
-  double get maxHr => points.map((p) => p.hr ?? 0.0).fold(0.0, (a, b) => a > b ? a : b);
-  double get maxSpeedMps => points.map((p) => p.speedMps ?? 0.0).fold(0.0, (a, b) => a > b ? a : b);
+  double get maxPower =>
+      points.map((p) => p.power ?? 0.0).fold(0.0, (a, b) => a > b ? a : b);
+  double get maxHr =>
+      points.map((p) => p.hr ?? 0.0).fold(0.0, (a, b) => a > b ? a : b);
+  double get maxSpeedMps =>
+      points.map((p) => p.speedMps ?? 0.0).fold(0.0, (a, b) => a > b ? a : b);
 
   factory ActivityStream.fromJsonMap(Map<String, dynamic> json) {
     final version = (json['version'] as num?)?.toInt() ?? 1;
@@ -114,14 +135,18 @@ class ActivityStream {
 
     double cumulativeDist = 0.0;
     for (int i = 0; i < count; i++) {
-      final s = (speedList != null && i < speedList.length) ? (speedList[i] as num?)?.toDouble() : null;
+      final s = (speedList != null && i < speedList.length)
+          ? (speedList[i] as num?)?.toDouble()
+          : null;
       if (s != null && s > 0) {
         cumulativeDist += s * sampleRateSec;
       }
 
       points.add(ActivityStreamPoint.fromArrays(
         index: i,
-        time: timeList.isNotEmpty ? timeList : List.generate(count, (idx) => idx * sampleRateSec),
+        time: timeList.isNotEmpty
+            ? timeList
+            : List.generate(count, (idx) => idx * sampleRateSec),
         heartRate: hrList,
         power: powerList,
         cadence: cadList,

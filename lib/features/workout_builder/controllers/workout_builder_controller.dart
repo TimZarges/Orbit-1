@@ -64,13 +64,13 @@ class WorkoutBuilderNotifier extends StateNotifier<WorkoutBuilderState> {
     WorkoutStructure? initialStructure,
     this.thresholds = AthleteThresholds.empty,
   }) : super(
-         _createInitialState(
-           sport: initialSport,
-           initialText: initialText,
-           initialStructure: initialStructure,
-           thresholds: thresholds,
-         ),
-       );
+          _createInitialState(
+            sport: initialSport,
+            initialText: initialText,
+            initialStructure: initialStructure,
+            thresholds: thresholds,
+          ),
+        );
 
   static WorkoutBuilderState _createInitialState({
     required String sport,
@@ -149,7 +149,8 @@ class WorkoutBuilderNotifier extends StateNotifier<WorkoutBuilderState> {
     _pushUndo(state.text);
 
     final newText = WorkoutFormatter.format(newStructure);
-    final calc = WorkoutCalculator.calculate(newStructure, thresholds: thresholds);
+    final calc =
+        WorkoutCalculator.calculate(newStructure, thresholds: thresholds);
 
     state = state.copyWith(
       text: newText,
@@ -158,6 +159,24 @@ class WorkoutBuilderNotifier extends StateNotifier<WorkoutBuilderState> {
       calculation: calc,
       canUndo: _undoStack.isNotEmpty,
       canRedo: false,
+    );
+  }
+
+  /// Aktueller Zustand des Workout Builders.
+  WorkoutBuilderState get currentState => state;
+
+  /// Ersetzt einen Block an Position [index] durch [newBlock].
+  void replaceBlock(int index, WorkoutBlock newBlock) {
+    final currentBlocks = state.structure?.blocks ?? [];
+    if (index < 0 || index >= currentBlocks.length) return;
+
+    final updated = List<WorkoutBlock>.from(currentBlocks)..[index] = newBlock;
+    updateStructure(
+      WorkoutStructure(
+        schemaVersion: 1,
+        sport: state.sport,
+        blocks: updated,
+      ),
     );
   }
 
@@ -172,7 +191,8 @@ class WorkoutBuilderNotifier extends StateNotifier<WorkoutBuilderState> {
 
     if (parseResult.isSuccess && parseResult.structure != null) {
       final updatedStructure = parseResult.structure!.copyWith(sport: newSport);
-      final calc = WorkoutCalculator.calculate(updatedStructure, thresholds: thresholds);
+      final calc =
+          WorkoutCalculator.calculate(updatedStructure, thresholds: thresholds);
       state = state.copyWith(
         sport: newSport,
         structure: updatedStructure,
@@ -223,7 +243,8 @@ class WorkoutBuilderNotifier extends StateNotifier<WorkoutBuilderState> {
     if (index < 0 || index >= currentBlocks.length) return;
     if (currentBlocks.length <= 1) return; // Mindestens ein Block muss bleiben
 
-    final updatedBlocks = List<WorkoutBlock>.from(currentBlocks)..removeAt(index);
+    final updatedBlocks = List<WorkoutBlock>.from(currentBlocks)
+      ..removeAt(index);
     final updated = WorkoutStructure(
       schemaVersion: 1,
       sport: state.sport,
@@ -258,7 +279,8 @@ class WorkoutBuilderNotifier extends StateNotifier<WorkoutBuilderState> {
     final target = currentBlocks[index];
     final repeat = RepeatBlock(count: repeatCount, blocks: [target]);
 
-    final updatedBlocks = List<WorkoutBlock>.from(currentBlocks)..[index] = repeat;
+    final updatedBlocks = List<WorkoutBlock>.from(currentBlocks)
+      ..[index] = repeat;
     final updated = WorkoutStructure(
       schemaVersion: 1,
       sport: state.sport,
@@ -275,7 +297,8 @@ class WorkoutBuilderNotifier extends StateNotifier<WorkoutBuilderState> {
     final target = currentBlocks[index];
     if (target is! RepeatBlock) return;
 
-    final updatedBlocks = List<WorkoutBlock>.from(currentBlocks)..removeAt(index);
+    final updatedBlocks = List<WorkoutBlock>.from(currentBlocks)
+      ..removeAt(index);
     updatedBlocks.insertAll(index, target.blocks);
 
     final updated = WorkoutStructure(
@@ -296,7 +319,8 @@ class WorkoutBuilderNotifier extends StateNotifier<WorkoutBuilderState> {
     final parseResult = parser.parse(previousText);
 
     final calc = parseResult.structure != null
-        ? WorkoutCalculator.calculate(parseResult.structure!, thresholds: thresholds)
+        ? WorkoutCalculator.calculate(parseResult.structure!,
+            thresholds: thresholds)
         : state.calculation;
 
     state = state.copyWith(
@@ -319,7 +343,8 @@ class WorkoutBuilderNotifier extends StateNotifier<WorkoutBuilderState> {
     final parseResult = parser.parse(nextText);
 
     final calc = parseResult.structure != null
-        ? WorkoutCalculator.calculate(parseResult.structure!, thresholds: thresholds)
+        ? WorkoutCalculator.calculate(parseResult.structure!,
+            thresholds: thresholds)
         : state.calculation;
 
     state = state.copyWith(
@@ -367,8 +392,8 @@ class WorkoutBuilderParams {
 }
 
 /// Provider für den interaktiven Workout Builder.
-final workoutBuilderProvider = StateNotifierProvider.autoDispose.family<
-    WorkoutBuilderNotifier, WorkoutBuilderState, WorkoutBuilderParams>(
+final workoutBuilderProvider = StateNotifierProvider.autoDispose
+    .family<WorkoutBuilderNotifier, WorkoutBuilderState, WorkoutBuilderParams>(
   (ref, params) {
     return WorkoutBuilderNotifier(
       initialSport: params.sport,
@@ -377,4 +402,3 @@ final workoutBuilderProvider = StateNotifierProvider.autoDispose.family<
     );
   },
 );
-

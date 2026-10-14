@@ -9,6 +9,7 @@ class AppSpacing {
   // Spezifische Layout-Abstände
   static const double mobilePageMargin = 16.0;
   static const double cardRadius = 16.0;
+  static const double cardPadding = 16.0;
   static const double buttonRadius = 12.0;
 
   // Breakpoints

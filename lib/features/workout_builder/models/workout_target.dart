@@ -9,7 +9,8 @@ class WorkoutTarget {
   const WorkoutTarget._({this.durationSec, this.distanceM});
 
   /// Erstellt ein Ziel basierend auf Dauer in Sekunden.
-  const factory WorkoutTarget.duration(int durationSec) = _WorkoutTargetDuration;
+  const factory WorkoutTarget.duration(int durationSec) =
+      _WorkoutTargetDuration;
 
   /// Erstellt ein Ziel basierend auf Distanz in Metern.
   const factory WorkoutTarget.distance(int distanceM) = _WorkoutTargetDistance;
@@ -91,8 +92,9 @@ class WorkoutTarget {
   int get hashCode => durationSec.hashCode ^ distanceM.hashCode;
 
   @override
-  String toString() =>
-      isDuration ? 'WorkoutTarget.duration($durationSec s)' : 'WorkoutTarget.distance($distanceM m)';
+  String toString() => isDuration
+      ? 'WorkoutTarget.duration($durationSec s)'
+      : 'WorkoutTarget.distance($distanceM m)';
 }
 
 class _WorkoutTargetDuration extends WorkoutTarget {

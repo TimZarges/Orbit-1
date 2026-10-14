@@ -86,7 +86,8 @@ class PlannedWorkout {
   bool get isPlanned => status == 'PLANNED';
 
   /// Gibt an, ob die Einheit von einem Trainer (und nicht vom Athleten selbst) geplant wurde.
-  bool isPlannedByCoach(String currentAthleteId) => createdBy != currentAthleteId;
+  bool isPlannedByCoach(String currentAthleteId) =>
+      createdBy != currentAthleteId;
 
   /// Formatierte geplante Dauer (z. B. "1h 30m" oder "45m").
   String get formattedDuration {
@@ -109,8 +110,15 @@ class PlannedWorkout {
   }
 
   /// Erstellt ein [PlannedWorkout] aus einem Firestore DocumentSnapshot.
-  factory PlannedWorkout.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
+  factory PlannedWorkout.fromFirestore(
+      DocumentSnapshot<Map<String, dynamic>> doc) {
     final data = doc.data() ?? {};
+    return PlannedWorkout.fromMap(doc.id, data);
+  }
+
+  /// Erstellt ein [PlannedWorkout] aus einem generischen DocumentSnapshot.
+  factory PlannedWorkout.fromDocument(DocumentSnapshot doc) {
+    final data = (doc.data() as Map<String, dynamic>?) ?? {};
     return PlannedWorkout.fromMap(doc.id, data);
   }
 
@@ -175,7 +183,9 @@ class PlannedWorkout {
       'status': status,
       'activityId': activityId,
       'templateId': templateId,
-      'createdAt': createdAt != null ? Timestamp.fromDate(createdAt!) : FieldValue.serverTimestamp(),
+      'createdAt': createdAt != null
+          ? Timestamp.fromDate(createdAt!)
+          : FieldValue.serverTimestamp(),
       'updatedAt': FieldValue.serverTimestamp(),
     };
   }

@@ -10,7 +10,8 @@ class AthleteCoachTabScreen extends ConsumerStatefulWidget {
   const AthleteCoachTabScreen({super.key});
 
   @override
-  ConsumerState<AthleteCoachTabScreen> createState() => _AthleteCoachTabScreenState();
+  ConsumerState<AthleteCoachTabScreen> createState() =>
+      _AthleteCoachTabScreenState();
 }
 
 class _AthleteCoachTabScreenState extends ConsumerState<AthleteCoachTabScreen> {
@@ -39,7 +40,8 @@ class _AthleteCoachTabScreenState extends ConsumerState<AthleteCoachTabScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.group_add, size: 64, color: AppColors.textTertiaryDark),
+              const Icon(Icons.group_add,
+                  size: 64, color: AppColors.textTertiaryDark),
               const SizedBox(height: 16),
               Text(
                 'Noch kein Trainer verknüpft',
@@ -59,8 +61,10 @@ class _AthleteCoachTabScreenState extends ConsumerState<AthleteCoachTabScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.volt,
                   foregroundColor: AppColors.navy,
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
                 ),
               ),
             ],
@@ -107,7 +111,8 @@ class _AthleteCoachTabScreenState extends ConsumerState<AthleteCoachTabScreen> {
               Navigator.of(ctx).pop();
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('Code $code wird geprüft und Verknüpfungsanfrage gesendet...'),
+                  content: Text(
+                      'Code $code wird geprüft und Verknüpfungsanfrage gesendet...'),
                   backgroundColor: AppColors.green,
                 ),
               );
@@ -187,7 +192,8 @@ class _AthleteCoachTabScreenState extends ConsumerState<AthleteCoachTabScreen> {
               foregroundColor: AppColors.navy,
               elevation: 0,
               padding: const EdgeInsets.symmetric(vertical: 14),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
             ),
           ),
           const SizedBox(height: 24),
@@ -198,13 +204,15 @@ class _AthleteCoachTabScreenState extends ConsumerState<AthleteCoachTabScreen> {
           const SizedBox(height: 16),
           SwitchListTile(
             title: const Text('Aktivitäten & Workouts'),
-            subtitle: const Text('Trainingsplandaten und absolvierte Einheiten'),
+            subtitle:
+                const Text('Trainingsplandaten und absolvierte Einheiten'),
             value: _shareActivities,
             onChanged: (val) {
               setState(() => _shareActivities = val);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('Freigabe Aktivitäten: ${val ? 'Aktiviert' : 'Deaktiviert'}'),
+                  content: Text(
+                      'Freigabe Aktivitäten: ${val ? 'Aktiviert' : 'Deaktiviert'}'),
                   duration: const Duration(seconds: 1),
                 ),
               );
@@ -218,7 +226,8 @@ class _AthleteCoachTabScreenState extends ConsumerState<AthleteCoachTabScreen> {
               setState(() => _shareCalendar = val);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('Freigabe Kalender: ${val ? 'Aktiviert' : 'Deaktiviert'}'),
+                  content: Text(
+                      'Freigabe Kalender: ${val ? 'Aktiviert' : 'Deaktiviert'}'),
                   duration: const Duration(seconds: 1),
                 ),
               );
@@ -226,13 +235,15 @@ class _AthleteCoachTabScreenState extends ConsumerState<AthleteCoachTabScreen> {
           ),
           SwitchListTile(
             title: const Text('Gesundheitsdaten (Art. 9 DSGVO)'),
-            subtitle: const Text('Schlaf, HRV, Ruhepuls (nur bei gesonderter Freigabe)'),
+            subtitle: const Text(
+                'Schlaf, HRV, Ruhepuls (nur bei gesonderter Freigabe)'),
             value: _shareHealth,
             onChanged: (val) {
               setState(() => _shareHealth = val);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('Freigabe Gesundheitsdaten: ${val ? 'Aktiviert' : 'Deaktiviert'}'),
+                  content: Text(
+                      'Freigabe Gesundheitsdaten: ${val ? 'Aktiviert' : 'Deaktiviert'}'),
                   duration: const Duration(seconds: 1),
                 ),
               );

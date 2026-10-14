@@ -30,7 +30,8 @@ class HomeActionBanner extends StatelessWidget {
         icon: Icons.auto_awesome,
         iconColor: AppColors.navy,
         badgeText: '$pendingThresholdsCount NEU',
-        title: '$pendingThresholdsCount neuer Schwellenwert-Vorschlag verfügbar',
+        title:
+            '$pendingThresholdsCount neuer Schwellenwert-Vorschlag verfügbar',
         actionLabel: 'Prüfen',
         onTap: onThresholdsTap,
       ));
@@ -63,7 +64,10 @@ class HomeActionBanner extends StatelessWidget {
     if (items.isEmpty) return const SizedBox.shrink();
 
     return Column(
-      children: items.map((w) => Padding(padding: const EdgeInsets.only(bottom: 10), child: w)).toList(),
+      children: items
+          .map((w) =>
+              Padding(padding: const EdgeInsets.only(bottom: 10), child: w))
+          .toList(),
     );
   }
 
@@ -104,7 +108,8 @@ class HomeActionBanner extends StatelessWidget {
               foregroundColor: AppColors.white,
               elevation: 0,
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
             ),
             child: Text(
               actionLabel,

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import '../../../core/design/app_colors.dart';
 import '../../calendar/models/planned_workout.dart';
 import '../../calendar/repositories/planned_workout_repository.dart';
@@ -29,7 +28,8 @@ class WorkoutBuilderScreen extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<WorkoutBuilderScreen> createState() => _WorkoutBuilderScreenState();
+  ConsumerState<WorkoutBuilderScreen> createState() =>
+      _WorkoutBuilderScreenState();
 }
 
 class _WorkoutBuilderScreenState extends ConsumerState<WorkoutBuilderScreen> {
@@ -63,7 +63,8 @@ class _WorkoutBuilderScreenState extends ConsumerState<WorkoutBuilderScreen> {
     if (!_isSyncing && _textController.text != state.text) {
       final oldSelection = _textController.selection;
       _textController.text = state.text;
-      if (oldSelection.start <= state.text.length && oldSelection.end <= state.text.length) {
+      if (oldSelection.start <= state.text.length &&
+          oldSelection.end <= state.text.length) {
         _textController.selection = oldSelection;
       }
     }
@@ -88,7 +89,9 @@ class _WorkoutBuilderScreenState extends ConsumerState<WorkoutBuilderScreen> {
           IconButton(
             icon: const Icon(Icons.bookmark_add_outlined),
             tooltip: 'Als Vorlage speichern',
-            onPressed: state.isValid ? () => _showSaveTemplateDialog(context, state) : null,
+            onPressed: state.isValid
+                ? () => _showSaveTemplateDialog(context, state)
+                : null,
           ),
         ],
       ),
@@ -131,7 +134,8 @@ class _WorkoutBuilderScreenState extends ConsumerState<WorkoutBuilderScreen> {
             OutlinedButton.icon(
               style: OutlinedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
               ),
               icon: const Icon(Icons.dashboard_customize_outlined),
               label: const Text('Visuellen Block-Editor öffnen'),
@@ -149,21 +153,25 @@ class _WorkoutBuilderScreenState extends ConsumerState<WorkoutBuilderScreen> {
               backgroundColor: AppColors.navy,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 14),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
             ),
             icon: const Icon(Icons.calendar_today_outlined),
             label: const Text(
               'Im Kalender einplanen',
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
             ),
-            onPressed: state.isValid ? () => _scheduleInCalendar(context, state) : null,
+            onPressed: state.isValid
+                ? () => _scheduleInCalendar(context, state)
+                : null,
           ),
         ),
       ),
     );
   }
 
-  Widget _buildSportSelector(String currentSport, WorkoutBuilderNotifier notifier) {
+  Widget _buildSportSelector(
+      String currentSport, WorkoutBuilderNotifier notifier) {
     const sports = [
       ('BIKE', 'Rad', Icons.directions_bike),
       ('RUN', 'Lauf', Icons.directions_run),
@@ -188,13 +196,16 @@ class _WorkoutBuilderScreenState extends ConsumerState<WorkoutBuilderScreen> {
     );
   }
 
-  Widget _buildTextInputCard(WorkoutBuilderState state, WorkoutBuilderNotifier notifier) {
+  Widget _buildTextInputCard(
+      WorkoutBuilderState state, WorkoutBuilderNotifier notifier) {
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
         side: BorderSide(
-          color: state.errors.isNotEmpty ? Colors.red.shade400 : AppColors.cardBorder,
+          color: state.errors.isNotEmpty
+              ? Colors.red.shade400
+              : AppColors.cardBorder,
           width: state.errors.isNotEmpty ? 1.5 : 1.0,
         ),
       ),
@@ -217,7 +228,11 @@ class _WorkoutBuilderScreenState extends ConsumerState<WorkoutBuilderScreen> {
                     children: [
                       Icon(Icons.check_circle, size: 16, color: Colors.green),
                       SizedBox(width: 4),
-                      Text('Gültig', style: TextStyle(color: Colors.green, fontSize: 12, fontWeight: FontWeight.bold)),
+                      Text('Gültig',
+                          style: TextStyle(
+                              color: Colors.green,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold)),
                     ],
                   ),
               ],
@@ -251,12 +266,14 @@ class _WorkoutBuilderScreenState extends ConsumerState<WorkoutBuilderScreen> {
                   return Padding(
                     padding: const EdgeInsets.only(right: 6.0),
                     child: ActionChip(
-                      label: Text(snippet, style: const TextStyle(fontSize: 11)),
+                      label:
+                          Text(snippet, style: const TextStyle(fontSize: 11)),
                       padding: EdgeInsets.zero,
                       materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       onPressed: () {
                         final current = _textController.text;
-                        final newText = current.isEmpty ? snippet : '$current, $snippet';
+                        final newText =
+                            current.isEmpty ? snippet : '$current, $snippet';
                         _textController.text = newText;
                         notifier.updateText(newText);
                       },
@@ -281,12 +298,14 @@ class _WorkoutBuilderScreenState extends ConsumerState<WorkoutBuilderScreen> {
                     return Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Icon(Icons.error_outline, size: 14, color: Colors.red),
+                        const Icon(Icons.error_outline,
+                            size: 14, color: Colors.red),
                         const SizedBox(width: 6),
                         Expanded(
                           child: Text(
                             e.messageDe,
-                            style: TextStyle(color: Colors.red.shade900, fontSize: 12),
+                            style: TextStyle(
+                                color: Colors.red.shade900, fontSize: 12),
                           ),
                         ),
                       ],
@@ -304,13 +323,36 @@ class _WorkoutBuilderScreenState extends ConsumerState<WorkoutBuilderScreen> {
   List<String> _getQuickChips(String sport) {
     switch (sport.toUpperCase()) {
       case 'BIKE':
-        return ["10' Z1", "4x(4' Z4 / 2' Z1)", "3x(10' 90%FTP / 4' Z1)", "15' Z2", "@90rpm"];
+        return [
+          "10' Z1",
+          "4x(4' Z4 / 2' Z1)",
+          "3x(10' 90%FTP / 4' Z1)",
+          "15' Z2",
+          "@90rpm"
+        ];
       case 'RUN':
-        return ["2km Z1", "5x(1000m @4:30/km / 90\")", "6x(3' Z4 / 2' Z2)", "15' Z2", "1.5km Z1"];
+        return [
+          "2km Z1",
+          "5x(1000m @4:30/km / 90\")",
+          "6x(3' Z4 / 2' Z2)",
+          "15' Z2",
+          "1.5km Z1"
+        ];
       case 'SWIM':
-        return ["400m Z1", "8x(100m CSS / 20\")", "4x(100m CSS+4\" / 15\")", "3x(4x(50m Z5 / 15\") / 2')", "200m Z1"];
+        return [
+          "400m Z1",
+          "8x(100m CSS / 20\")",
+          "4x(100m CSS+4\" / 15\")",
+          "3x(4x(50m Z5 / 15\") / 2')",
+          "200m Z1"
+        ];
       case 'STRENGTH':
-        return ["5' Z1", "3x(45\" frei [Plank] / 15\")", "3x(45\" frei [Side Plank] / 15\")", "5' frei [Stretching]"];
+        return [
+          "5' Z1",
+          "3x(45\" frei [Plank] / 15\")",
+          "3x(45\" frei [Side Plank] / 15\")",
+          "5' frei [Stretching]"
+        ];
       default:
         return ["10' Z1", "4x(4' Z4 / 2' Z1)", "10' Z1"];
     }
@@ -327,9 +369,12 @@ class _WorkoutBuilderScreenState extends ConsumerState<WorkoutBuilderScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _buildMetricItem('Dauer', state.calculation.formattedDuration, Icons.timer_outlined),
-          _buildMetricItem('Distanz', state.calculation.formattedDistance, Icons.straighten_outlined),
-          _buildMetricItem('ORBIT Score', state.calculation.formattedLoad, Icons.bolt_outlined),
+          _buildMetricItem('Dauer', state.calculation.formattedDuration,
+              Icons.timer_outlined),
+          _buildMetricItem('Distanz', state.calculation.formattedDistance,
+              Icons.straighten_outlined),
+          _buildMetricItem('ORBIT Score', state.calculation.formattedLoad,
+              Icons.bolt_outlined),
         ],
       ),
     );
@@ -343,7 +388,8 @@ class _WorkoutBuilderScreenState extends ConsumerState<WorkoutBuilderScreen> {
           children: [
             Icon(icon, size: 14, color: Colors.grey),
             const SizedBox(width: 4),
-            Text(label, style: const TextStyle(fontSize: 11, color: Colors.grey)),
+            Text(label,
+                style: const TextStyle(fontSize: 11, color: Colors.grey)),
           ],
         ),
         const SizedBox(height: 4),
@@ -370,7 +416,8 @@ class _WorkoutBuilderScreenState extends ConsumerState<WorkoutBuilderScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Zeit je Zone', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+          const Text('Zeit je Zone',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
           const SizedBox(height: 8),
           ClipRRect(
             borderRadius: BorderRadius.circular(6),
@@ -426,7 +473,10 @@ class _WorkoutBuilderScreenState extends ConsumerState<WorkoutBuilderScreen> {
               SizedBox(width: 6),
               Text(
                 'Berechnete Annahmen',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.black87),
+                style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                    color: Colors.black87),
               ),
             ],
           ),
@@ -434,12 +484,14 @@ class _WorkoutBuilderScreenState extends ConsumerState<WorkoutBuilderScreen> {
           for (final a in state.calculation.assumptions)
             Padding(
               padding: const EdgeInsets.only(bottom: 2.0),
-              child: Text('• $a', style: const TextStyle(fontSize: 11, color: Colors.black87)),
+              child: Text('• $a',
+                  style: const TextStyle(fontSize: 11, color: Colors.black87)),
             ),
           for (final w in state.calculation.missingThresholdWarnings)
             Padding(
               padding: const EdgeInsets.only(bottom: 2.0),
-              child: Text('⚠ $w', style: TextStyle(fontSize: 11, color: Colors.red.shade900)),
+              child: Text('⚠ $w',
+                  style: TextStyle(fontSize: 11, color: Colors.red.shade900)),
             ),
         ],
       ),
@@ -455,11 +507,14 @@ class _WorkoutBuilderScreenState extends ConsumerState<WorkoutBuilderScreen> {
     );
   }
 
-  Future<void> _scheduleInCalendar(BuildContext context, WorkoutBuilderState state) async {
+  Future<void> _scheduleInCalendar(
+      BuildContext context, WorkoutBuilderState state) async {
     final now = DateTime.now();
     final pickedDate = await showDatePicker(
       context: context,
-      initialDate: widget.targetLocalDate != null ? DateTime.parse(widget.targetLocalDate!) : now,
+      initialDate: widget.targetLocalDate != null
+          ? DateTime.parse(widget.targetLocalDate!)
+          : now,
       firstDate: now.subtract(const Duration(days: 30)),
       lastDate: now.add(const Duration(days: 365)),
     );
@@ -480,7 +535,9 @@ class _WorkoutBuilderScreenState extends ConsumerState<WorkoutBuilderScreen> {
       sport: state.sport,
       title: 'Geplantes ${state.sport}-Training',
       plannedDurationSec: state.calculation.totalDurationSec,
-      plannedDistanceM: state.calculation.totalDistanceM > 0 ? state.calculation.totalDistanceM.toDouble() : null,
+      plannedDistanceM: state.calculation.totalDistanceM > 0
+          ? state.calculation.totalDistanceM.toDouble()
+          : null,
       plannedLoad: state.calculation.estimatedLoad,
       status: 'PLANNED',
       structure: state.structure?.toJson(),
@@ -492,14 +549,17 @@ class _WorkoutBuilderScreenState extends ConsumerState<WorkoutBuilderScreen> {
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Einheit für $localDateStr im Kalender eingeplant!')),
+        SnackBar(
+            content: Text('Einheit für $localDateStr im Kalender eingeplant!')),
       );
       Navigator.of(context).pop();
     }
   }
 
-  Future<void> _showSaveTemplateDialog(BuildContext context, WorkoutBuilderState state) async {
-    final titleController = TextEditingController(text: '${state.sport} Einheit');
+  Future<void> _showSaveTemplateDialog(
+      BuildContext context, WorkoutBuilderState state) async {
+    final titleController =
+        TextEditingController(text: '${state.sport} Einheit');
     final descController = TextEditingController();
 
     final confirmed = await showDialog<bool>(
@@ -516,13 +576,18 @@ class _WorkoutBuilderScreenState extends ConsumerState<WorkoutBuilderScreen> {
             const SizedBox(height: 8),
             TextField(
               controller: descController,
-              decoration: const InputDecoration(labelText: 'Optionale Beschreibung'),
+              decoration:
+                  const InputDecoration(labelText: 'Optionale Beschreibung'),
             ),
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Abbrechen')),
-          ElevatedButton(onPressed: () => Navigator.of(ctx).pop(true), child: const Text('Speichern')),
+          TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: const Text('Abbrechen')),
+          ElevatedButton(
+              onPressed: () => Navigator.of(ctx).pop(true),
+              child: const Text('Speichern')),
         ],
       ),
     );
@@ -534,8 +599,12 @@ class _WorkoutBuilderScreenState extends ConsumerState<WorkoutBuilderScreen> {
         ownerId: widget.athleteId ?? 'me',
         visibility: 'PRIVATE',
         sport: state.sport,
-        title: titleController.text.trim().isNotEmpty ? titleController.text.trim() : 'Vorlage',
-        description: descController.text.trim().isNotEmpty ? descController.text.trim() : null,
+        title: titleController.text.trim().isNotEmpty
+            ? titleController.text.trim()
+            : 'Vorlage',
+        description: descController.text.trim().isNotEmpty
+            ? descController.text.trim()
+            : null,
         structure: state.structure!,
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),

@@ -35,12 +35,14 @@ class CoachAthletesTable extends ConsumerWidget {
               const SizedBox(height: 12),
               Text(
                 'Keine Athleten entsprechen den aktuellen Filtern.',
-                style: AppTypography.title.copyWith(fontSize: 16, color: AppColors.navy),
+                style: AppTypography.title
+                    .copyWith(fontSize: 16, color: AppColors.navy),
               ),
               const SizedBox(height: 8),
               TextButton(
                 onPressed: () {
-                  ref.read(coachActivePreferenceProvider.notifier).state = CoachViewPreference.defaultView;
+                  ref.read(coachActivePreferenceProvider.notifier).state =
+                      CoachViewPreference.defaultView;
                   ref.read(coachAthleteSearchQueryProvider.notifier).state = '';
                 },
                 child: const Text('Filter zurücksetzen'),
@@ -50,8 +52,6 @@ class CoachAthletesTable extends ConsumerWidget {
         ),
       );
     }
-
-    final allSelected = athletes.isNotEmpty && selectedIds.length == athletes.length;
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
@@ -67,9 +67,11 @@ class CoachAthletesTable extends ConsumerWidget {
           columns: [
             // Name
             DataColumn(
-              label: const Text('Name', style: TextStyle(fontWeight: FontWeight.bold)),
+              label: const Text('Name',
+                  style: TextStyle(fontWeight: FontWeight.bold)),
               onSort: (columnIndex, ascending) {
-                ref.read(coachActivePreferenceProvider.notifier).state = activePref.copyWith(
+                ref.read(coachActivePreferenceProvider.notifier).state =
+                    activePref.copyWith(
                   sortField: 'name',
                   sortAscending: ascending,
                 );
@@ -77,17 +79,21 @@ class CoachAthletesTable extends ConsumerWidget {
             ),
             // Sport
             const DataColumn(
-              label: Text('Sport', style: TextStyle(fontWeight: FontWeight.bold)),
+              label:
+                  Text('Sport', style: TextStyle(fontWeight: FontWeight.bold)),
             ),
             // Form
             const DataColumn(
-              label: Text('Form', style: TextStyle(fontWeight: FontWeight.bold)),
+              label:
+                  Text('Form', style: TextStyle(fontWeight: FontWeight.bold)),
             ),
             // Compliance 7d
             DataColumn(
-              label: const Text('Soll/Ist (7T)', style: TextStyle(fontWeight: FontWeight.bold)),
+              label: const Text('Soll/Ist (7T)',
+                  style: TextStyle(fontWeight: FontWeight.bold)),
               onSort: (columnIndex, ascending) {
-                ref.read(coachActivePreferenceProvider.notifier).state = activePref.copyWith(
+                ref.read(coachActivePreferenceProvider.notifier).state =
+                    activePref.copyWith(
                   sortField: 'compliance7d',
                   sortAscending: ascending,
                 );
@@ -95,13 +101,16 @@ class CoachAthletesTable extends ConsumerWidget {
             ),
             // Belastung 7d
             const DataColumn(
-              label: Text('Last 7T', style: TextStyle(fontWeight: FontWeight.bold)),
+              label: Text('Last 7T',
+                  style: TextStyle(fontWeight: FontWeight.bold)),
             ),
             // Saisonziel
             DataColumn(
-              label: const Text('Saisonziel', style: TextStyle(fontWeight: FontWeight.bold)),
+              label: const Text('Saisonziel',
+                  style: TextStyle(fontWeight: FontWeight.bold)),
               onSort: (columnIndex, ascending) {
-                ref.read(coachActivePreferenceProvider.notifier).state = activePref.copyWith(
+                ref.read(coachActivePreferenceProvider.notifier).state =
+                    activePref.copyWith(
                   sortField: 'daysRemaining',
                   sortAscending: ascending,
                 );
@@ -109,11 +118,13 @@ class CoachAthletesTable extends ConsumerWidget {
             ),
             // Auffälligkeiten / Alerts
             const DataColumn(
-              label: Text('Status / Alerts', style: TextStyle(fontWeight: FontWeight.bold)),
+              label: Text('Status / Alerts',
+                  style: TextStyle(fontWeight: FontWeight.bold)),
             ),
             // Aktionen
             const DataColumn(
-              label: Text('Aktion', style: TextStyle(fontWeight: FontWeight.bold)),
+              label:
+                  Text('Aktion', style: TextStyle(fontWeight: FontWeight.bold)),
             ),
           ],
           rows: athletes.map((athlete) {
@@ -128,7 +139,8 @@ class CoachAthletesTable extends ConsumerWidget {
                 } else {
                   current.remove(athlete.athleteId);
                 }
-                ref.read(coachSelectedAthleteIdsProvider.notifier).state = current;
+                ref.read(coachSelectedAthleteIdsProvider.notifier).state =
+                    current;
               },
               cells: [
                 // Name
@@ -140,28 +152,38 @@ class CoachAthletesTable extends ConsumerWidget {
                       children: [
                         CircleAvatar(
                           radius: 14,
-                          backgroundColor: AppColors.navy.withValues(alpha: 0.1),
+                          backgroundColor:
+                              AppColors.navy.withValues(alpha: 0.1),
                           child: Text(
                             athlete.name.isNotEmpty ? athlete.name[0] : 'A',
-                            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.navy),
+                            style: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.navy),
                           ),
                         ),
                         const SizedBox(width: 8),
                         Text(
                           athlete.name,
-                          style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.navy),
+                          style: const TextStyle(
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.navy),
                         ),
                         if (athlete.unreadMessagesCount > 0) ...[
                           const SizedBox(width: 6),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
                               color: AppColors.volt,
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: Text(
                               '${athlete.unreadMessagesCount}',
-                              style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.navy),
+                              style: const TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.navy),
                             ),
                           ),
                         ],
@@ -171,7 +193,8 @@ class CoachAthletesTable extends ConsumerWidget {
                 ),
                 // Sport
                 DataCell(
-                  Text(athlete.sport, style: AppTypography.label.copyWith(fontSize: 12)),
+                  Text(athlete.sport,
+                      style: AppTypography.label.copyWith(fontSize: 12)),
                 ),
                 // Form
                 DataCell(
@@ -189,7 +212,7 @@ class CoachAthletesTable extends ConsumerWidget {
                           backgroundColor: Colors.grey.shade200,
                           color: athlete.compliance7d < 70
                               ? Colors.orange
-                              : AppColors.voltDark,
+                              : const Color(0xFF10B981),
                           minHeight: 6,
                           borderRadius: BorderRadius.circular(3),
                         ),
@@ -200,7 +223,9 @@ class CoachAthletesTable extends ConsumerWidget {
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
-                          color: athlete.compliance7d < 70 ? Colors.orange.shade800 : AppColors.navy,
+                          color: athlete.compliance7d < 70
+                              ? Colors.orange.shade800
+                              : AppColors.navy,
                         ),
                       ),
                     ],
@@ -226,7 +251,8 @@ class CoachAthletesTable extends ConsumerWidget {
                 DataCell(
                   athlete.alert != null
                       ? Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
                             color: Colors.amber.shade100,
                             borderRadius: BorderRadius.circular(8),
@@ -234,10 +260,14 @@ class CoachAthletesTable extends ConsumerWidget {
                           ),
                           child: Text(
                             athlete.alertLabelDe ?? athlete.alert!,
-                            style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.amber.shade900),
+                            style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.amber.shade900),
                           ),
                         )
-                      : const Text('Normal', style: TextStyle(fontSize: 12, color: Colors.green)),
+                      : const Text('Normal',
+                          style: TextStyle(fontSize: 12, color: Colors.green)),
                 ),
                 // Aktionen
                 DataCell(
@@ -245,14 +275,17 @@ class CoachAthletesTable extends ConsumerWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       IconButton(
-                        icon: const Icon(Icons.auto_awesome, size: 18, color: AppColors.navy),
+                        icon: const Icon(Icons.auto_awesome,
+                            size: 18, color: AppColors.navy),
                         tooltip: 'Schwellenwert vorschlagen',
                         onPressed: () => onCreateProposal(athlete),
                       ),
                       IconButton(
-                        icon: const Icon(Icons.calendar_month, size: 18, color: AppColors.navy),
+                        icon: const Icon(Icons.calendar_month,
+                            size: 18, color: AppColors.navy),
                         tooltip: 'Kalender öffnen',
-                        onPressed: () => onAthleteOpen(athlete.athleteId, athlete.name),
+                        onPressed: () =>
+                            onAthleteOpen(athlete.athleteId, athlete.name),
                       ),
                     ],
                   ),

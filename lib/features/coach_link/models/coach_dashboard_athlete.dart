@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../analysis/models/form_traffic_light.dart';
 
 /// Status der physiologischen Form im Dashboard
 enum CoachAthleteFormStatus {
@@ -89,9 +88,14 @@ class CoachDashboardAthlete {
       actualLoad7d: (map['actualLoad7d'] as num?)?.toInt() ?? 0,
       plannedLoad7d: (map['plannedLoad7d'] as num?)?.toInt() ?? 0,
       unreadMessagesCount: (map['unreadMessagesCount'] as num?)?.toInt() ?? 0,
-      pendingProposalsCount: (map['pendingProposalsCount'] as num?)?.toInt() ?? 0,
-      latestActivity: map['latestActivity'] != null ? Map<String, dynamic>.from(map['latestActivity'] as Map) : null,
-      raceGoal: map['raceGoal'] != null ? Map<String, dynamic>.from(map['raceGoal'] as Map) : null,
+      pendingProposalsCount:
+          (map['pendingProposalsCount'] as num?)?.toInt() ?? 0,
+      latestActivity: map['latestActivity'] != null
+          ? Map<String, dynamic>.from(map['latestActivity'] as Map)
+          : null,
+      raceGoal: map['raceGoal'] != null
+          ? Map<String, dynamic>.from(map['raceGoal'] as Map)
+          : null,
       alert: map['alert'] as String?,
       updatedAt: parseDate(map['updatedAt']),
     );
@@ -121,7 +125,9 @@ class CoachDashboardAthlete {
       if (latestActivity != null) 'latestActivity': latestActivity,
       if (raceGoal != null) 'raceGoal': raceGoal,
       if (alert != null) 'alert': alert,
-      'updatedAt': updatedAt != null ? Timestamp.fromDate(updatedAt!) : FieldValue.serverTimestamp(),
+      'updatedAt': updatedAt != null
+          ? Timestamp.fromDate(updatedAt!)
+          : FieldValue.serverTimestamp(),
     };
   }
 

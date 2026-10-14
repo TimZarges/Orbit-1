@@ -36,12 +36,14 @@ class KeyboardShortcutsDialog extends StatelessWidget {
                         color: AppColors.techGrey,
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: const Icon(Icons.keyboard_outlined, size: 20, color: AppColors.navy),
+                      child: const Icon(Icons.keyboard_outlined,
+                          size: 20, color: AppColors.navy),
                     ),
                     const SizedBox(width: 12),
                     Text(
                       'Tastaturkürzel (Coach)',
-                      style: AppTypography.title.copyWith(fontSize: 18, color: AppColors.navy),
+                      style: AppTypography.title
+                          .copyWith(fontSize: 18, color: AppColors.navy),
                     ),
                   ],
                 ),
@@ -56,10 +58,12 @@ class KeyboardShortcutsDialog extends StatelessWidget {
             const Divider(height: 1),
             const SizedBox(height: 16),
             _buildShortcutRow('?', 'Diese Übersicht öffnen'),
-            _buildShortcutRow('Cmd + K  /  Strg + K', 'Athleten-Suche fokussieren'),
+            _buildShortcutRow(
+                'Cmd + K  /  Strg + K', 'Athleten-Suche fokussieren'),
             _buildShortcutRow('/', 'Schnellsuche im Raster'),
             _buildShortcutRow('Alt + Ziehen', 'Einheit duplizieren / kopieren'),
-            _buildShortcutRow('Pfeiltasten ↑ ↓', 'In der Athletenliste navigieren'),
+            _buildShortcutRow(
+                'Pfeiltasten ↑ ↓', 'In der Athletenliste navigieren'),
             _buildShortcutRow('Enter', 'Ausgewählten Athleten öffnen'),
             _buildShortcutRow('Esc', 'Suche / Dialoge schließen'),
             const SizedBox(height: 20),
@@ -69,7 +73,8 @@ class KeyboardShortcutsDialog extends StatelessWidget {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.navy,
                   foregroundColor: AppColors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
                 ),
                 child: const Text('Verstanden'),
               ),
@@ -104,7 +109,8 @@ class KeyboardShortcutsDialog extends StatelessWidget {
           ),
           Text(
             description,
-            style: AppTypography.body.copyWith(fontSize: 13, color: Colors.grey.shade700),
+            style: AppTypography.body
+                .copyWith(fontSize: 13, color: Colors.grey.shade700),
           ),
         ],
       ),

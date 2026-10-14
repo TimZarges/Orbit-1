@@ -57,17 +57,21 @@ class WorkoutProfileChart extends StatelessWidget {
     }
 
     final segments = _buildVisualSegments(structure!);
-    final totalDuration = segments.fold<int>(0, (sum, s) => sum + s.durationSec);
+    final totalDuration =
+        segments.fold<int>(0, (sum, s) => sum + s.durationSec);
 
     return Semantics(
-      label: 'Workout-Profil: ${structure!.sport}, $totalDuration Sekunden Gesamtdauer, ${segments.length} Intervalle',
+      label:
+          'Workout-Profil: ${structure!.sport}, $totalDuration Sekunden Gesamtdauer, ${segments.length} Intervalle',
       child: Container(
         height: height,
         padding: padding,
         decoration: BoxDecoration(
-          color: const Color(0xFF0F172A), // Dark cockpit background for high contrast
+          color: const Color(
+              0xFF0F172A), // Dark cockpit background for high contrast
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.cardBorder.withValues(alpha: 0.2)),
+          border:
+              Border.all(color: AppColors.cardBorder.withValues(alpha: 0.2)),
         ),
         child: CustomPaint(
           size: Size.infinite,

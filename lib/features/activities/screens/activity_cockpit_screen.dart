@@ -31,7 +31,8 @@ class ActivityCockpitScreen extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<ActivityCockpitScreen> createState() => _ActivityCockpitScreenState();
+  ConsumerState<ActivityCockpitScreen> createState() =>
+      _ActivityCockpitScreenState();
 }
 
 class _ActivityCockpitScreenState extends ConsumerState<ActivityCockpitScreen> {
@@ -60,7 +61,9 @@ class _ActivityCockpitScreenState extends ConsumerState<ActivityCockpitScreen> {
     // Generiert oder lädt den Stream für diese Aktivität
     // In der Praxis wird hier der Stream aus Storage via StreamDecoder geladen;
     // Falls noch keine Storage-Datei verknüpft ist, nutzen wir den synthetischen Generator.
-    final duration = widget.activity.durationSec > 0 ? widget.activity.durationSec.toInt() : 3600;
+    final duration = widget.activity.durationSec > 0
+        ? widget.activity.durationSec.toInt()
+        : 3600;
     final isBike = widget.activity.sport.toUpperCase() == 'BIKE';
     final stream = StreamDecoder.generateSyntheticStream(
       durationSec: duration,
@@ -111,7 +114,8 @@ class _ActivityCockpitScreenState extends ConsumerState<ActivityCockpitScreen> {
         backgroundColor: const Color(0xFF0F172A),
         appBar: AppBar(
           backgroundColor: const Color(0xFF0F172A),
-          title: Text('${widget.activity.title} (Vollbild)', style: const TextStyle(color: Colors.white)),
+          title: Text('${widget.activity.title} (Vollbild)',
+              style: const TextStyle(color: Colors.white)),
           leading: IconButton(
             icon: const Icon(Icons.close, color: Colors.white),
             onPressed: () => Navigator.of(context).pop(),
@@ -148,17 +152,21 @@ class _ActivityCockpitScreenState extends ConsumerState<ActivityCockpitScreen> {
       ),
       child: Scaffold(
         appBar: AppBar(
-          title: Text(widget.activity.title.isNotEmpty ? widget.activity.title : 'Cockpit'),
+          title: Text(widget.activity.title.isNotEmpty
+              ? widget.activity.title
+              : 'Cockpit'),
           actions: [
             IconButton(
-              icon: const Icon(Icons.screen_rotation_outlined, color: Colors.white70),
+              icon: const Icon(Icons.screen_rotation_outlined,
+                  color: Colors.white70),
               tooltip: 'Vollbild',
               onPressed: _openFullscreen,
             ),
           ],
         ),
         body: _isLoading
-            ? const Center(child: CircularProgressIndicator(color: AppColors.accentVolt))
+            ? const Center(
+                child: CircularProgressIndicator(color: AppColors.volt))
             : SingleChildScrollView(
                 padding: const EdgeInsets.all(16),
                 child: Column(
@@ -167,14 +175,17 @@ class _ActivityCockpitScreenState extends ConsumerState<ActivityCockpitScreen> {
                     // Athleten-Banner bei Trainer-Ansicht
                     if (widget.athleteName != null) ...[
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 8),
                         decoration: BoxDecoration(
                           color: const Color(0xFF1E293B),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
                           'Aktivität von ${widget.athleteName}',
-                          style: const TextStyle(color: AppColors.accentVolt, fontWeight: FontWeight.bold),
+                          style: const TextStyle(
+                              color: AppColors.volt,
+                              fontWeight: FontWeight.bold),
                         ),
                       ),
                       const SizedBox(height: 12),
@@ -183,19 +194,26 @@ class _ActivityCockpitScreenState extends ConsumerState<ActivityCockpitScreen> {
                     // Kopfzeile mit Metadaten
                     Row(
                       children: [
-                        Text(widget.activity.sport, style: AppTypography.title.copyWith(color: AppColors.accentVolt)),
+                        Text(widget.activity.sport,
+                            style: AppTypography.title
+                                .copyWith(color: AppColors.volt)),
                         const SizedBox(width: 12),
-                        Text(dateStr, style: TextStyle(color: Colors.grey.shade400, fontSize: 13)),
+                        Text(dateStr,
+                            style: TextStyle(
+                                color: Colors.grey.shade400, fontSize: 13)),
                         const Spacer(),
                         Text(
                           '${(widget.activity.durationSec / 60).round()} min',
-                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                          style: const TextStyle(
+                              color: Colors.white, fontWeight: FontWeight.bold),
                         ),
                         if (widget.activity.distanceM > 0) ...[
                           const SizedBox(width: 8),
                           Text(
                             '${(widget.activity.distanceM / 1000).toStringAsFixed(1)} km',
-                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                            style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold),
                           ),
                         ],
                       ],
@@ -215,20 +233,26 @@ class _ActivityCockpitScreenState extends ConsumerState<ActivityCockpitScreen> {
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         InkWell(
-                          onTap: () => setState(() => _useDistanceAxis = !_useDistanceAxis),
+                          onTap: () => setState(
+                              () => _useDistanceAxis = !_useDistanceAxis),
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 4),
                             decoration: BoxDecoration(
                               color: const Color(0xFF1E293B),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Row(
                               children: [
-                                const Icon(Icons.swap_horiz, size: 14, color: Colors.white70),
+                                const Icon(Icons.swap_horiz,
+                                    size: 14, color: Colors.white70),
                                 const SizedBox(width: 4),
                                 Text(
-                                  _useDistanceAxis ? 'Achse: Distanz (km)' : 'Achse: Zeit (h:mm)',
-                                  style: const TextStyle(color: Colors.white70, fontSize: 11),
+                                  _useDistanceAxis
+                                      ? 'Achse: Distanz (km)'
+                                      : 'Achse: Zeit (h:mm)',
+                                  style: const TextStyle(
+                                      color: Colors.white70, fontSize: 11),
                                 ),
                               ],
                             ),
@@ -263,8 +287,18 @@ class _ActivityCockpitScreenState extends ConsumerState<ActivityCockpitScreen> {
                         builder: (context) {
                           final bests = ActivityBests(
                             sport: widget.activity.sport,
-                            allTimeMmp: const {5: 680, 60: 420, 300: 310, 1200: 275},
-                            seasonMmp: const {5: 650, 60: 400, 300: 295, 1200: 260},
+                            allTimeMmp: const {
+                              5: 680,
+                              60: 420,
+                              300: 310,
+                              1200: 275
+                            },
+                            seasonMmp: const {
+                              5: 650,
+                              60: 400,
+                              300: 295,
+                              1200: 260
+                            },
                           );
                           final curve = MmpCalculator.buildCurve(
                             stream: _fullStream!,
@@ -280,7 +314,13 @@ class _ActivityCockpitScreenState extends ConsumerState<ActivityCockpitScreen> {
                     ZoneDetailWidget(
                       title: 'Herzfrequenz-Zonen',
                       summary: ZoneDistributionSummary.fromSeconds(const [
-                        600, 2400, 1200, 600, 200, 0, 0,
+                        600,
+                        2400,
+                        1200,
+                        600,
+                        200,
+                        0,
+                        0,
                       ]),
                     ),
                     const SizedBox(height: 24),

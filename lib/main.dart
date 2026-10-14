@@ -18,20 +18,22 @@ import 'features/settings/providers/settings_provider.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   usePathUrlStrategy();
-  
+
   try {
     if (Firebase.apps.isEmpty) {
       await Firebase.initializeApp(
         options: DefaultFirebaseOptions.currentPlatform,
       );
 
-      const useEmulators = bool.fromEnvironment('USE_FIREBASE_EMULATOR', defaultValue: false);
+      const useEmulators =
+          bool.fromEnvironment('USE_FIREBASE_EMULATOR', defaultValue: false);
       if (useEmulators) {
         const localHostString = 'localhost';
         FirebaseFirestore.instance.useFirestoreEmulator(localHostString, 8081);
         await FirebaseAuth.instance.useAuthEmulator(localHostString, 9099);
         FirebaseStorage.instance.useStorageEmulator(localHostString, 9199);
-        FirebaseFunctions.instanceFor(region: 'europe-west3').useFunctionsEmulator(localHostString, 5001);
+        FirebaseFunctions.instanceFor(region: 'europe-west3')
+            .useFunctionsEmulator(localHostString, 5001);
       }
     }
   } catch (e) {

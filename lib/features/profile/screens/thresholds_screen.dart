@@ -131,8 +131,10 @@ class ThresholdsScreen extends StatelessWidget {
     );
   }
 
-  void _showEditDialog(BuildContext context, String title, String currentValue) {
-    final controller = TextEditingController(text: currentValue.replaceAll(RegExp(r'[^0-9.:]'), ''));
+  void _showEditDialog(
+      BuildContext context, String title, String currentValue) {
+    final controller = TextEditingController(
+        text: currentValue.replaceAll(RegExp(r'[^0-9.:]'), ''));
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -167,7 +169,8 @@ class ThresholdsScreen extends StatelessWidget {
               Navigator.of(ctx).pop();
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('$title wurde aktualisiert (${controller.text}).'),
+                  content:
+                      Text('$title wurde aktualisiert (${controller.text}).'),
                   backgroundColor: AppColors.green,
                 ),
               );
@@ -179,4 +182,3 @@ class ThresholdsScreen extends StatelessWidget {
     );
   }
 }
-

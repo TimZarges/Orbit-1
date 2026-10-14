@@ -10,7 +10,8 @@ import '../models/coach_dashboard_athlete.dart';
 class MultiAthleteWeekGrid extends StatefulWidget {
   final List<CoachDashboardAthlete> athletes;
   final String coachId;
-  final Function(PlannedWorkout workout, String targetAthleteId, String targetDate, bool isCopy) onDrop;
+  final Function(PlannedWorkout workout, String targetAthleteId,
+      String targetDate, bool isCopy) onDrop;
   final Function(String athleteId, String name) onAthleteClick;
 
   const MultiAthleteWeekGrid({
@@ -53,7 +54,8 @@ class _MultiAthleteWeekGridState extends State<MultiAthleteWeekGrid> {
         final dateStr = DateFormat('yyyy-MM-dd').format(date);
 
         if ((i + d) % 3 == 0) {
-          final sport = a.sport == 'TRIATHLON' ? (d % 2 == 0 ? 'BIKE' : 'RUN') : a.sport;
+          final sport =
+              a.sport == 'TRIATHLON' ? (d % 2 == 0 ? 'BIKE' : 'RUN') : a.sport;
           _gridWorkouts[athleteId]!.add(PlannedWorkout(
             id: 'pw_${athleteId}_$d',
             athleteId: athleteId,
@@ -61,10 +63,12 @@ class _MultiAthleteWeekGridState extends State<MultiAthleteWeekGrid> {
             createdBy: widget.coachId,
             localDate: dateStr,
             sport: sport,
-            title: sport == 'BIKE' ? '2h GA1 mit 4x30s Sprint' : '10km Tempodauerlauf',
+            title: sport == 'BIKE'
+                ? '2h GA1 mit 4x30s Sprint'
+                : '10km Tempodauerlauf',
             plannedDurationSec: 3600 + (d * 600),
             plannedLoad: 55.0 + (d * 10),
-            status: PlannedWorkoutStatus.planned,
+            status: 'PLANNED',
             createdAt: DateTime.now(),
           ));
         }
@@ -115,7 +119,8 @@ class _MultiAthleteWeekGridState extends State<MultiAthleteWeekGrid> {
               Text(
                 'KW ${((_weekStart.difference(DateTime(_weekStart.year, 1, 1)).inDays) / 7).ceil()}: '
                 '${DateFormat('dd.MM.').format(_weekStart)} – ${DateFormat('dd.MM.yyyy').format(days.last)}',
-                style: AppTypography.title.copyWith(fontSize: 15, color: AppColors.navy),
+                style: AppTypography.title
+                    .copyWith(fontSize: 15, color: AppColors.navy),
               ),
               IconButton(
                 icon: const Icon(Icons.chevron_right),
@@ -125,14 +130,19 @@ class _MultiAthleteWeekGridState extends State<MultiAthleteWeekGrid> {
               const SizedBox(width: 8),
               OutlinedButton(
                 onPressed: _currentWeek,
-                style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6)),
+                style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 10, vertical: 6)),
                 child: const Text('Heute', style: TextStyle(fontSize: 12)),
               ),
               const Spacer(),
               IconButton(
-                icon: Icon(_isCompactDensity ? Icons.density_small : Icons.density_medium),
+                icon: Icon(_isCompactDensity
+                    ? Icons.density_small
+                    : Icons.density_medium),
                 tooltip: 'Dichte umschalten',
-                onPressed: () => setState(() => _isCompactDensity = !_isCompactDensity),
+                onPressed: () =>
+                    setState(() => _isCompactDensity = !_isCompactDensity),
               ),
             ],
           ),
@@ -156,11 +166,14 @@ class _MultiAthleteWeekGridState extends State<MultiAthleteWeekGrid> {
                   children: [
                     // Kopfzeile: Tage
                     TableRow(
-                      decoration: const BoxDecoration(color: AppColors.techGrey),
+                      decoration:
+                          const BoxDecoration(color: AppColors.techGrey),
                       children: [
                         const Padding(
                           padding: EdgeInsets.all(10),
-                          child: Text('Athlet', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                          child: Text('Athlet',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 13)),
                         ),
                         ...days.map((d) => Padding(
                               padding: const EdgeInsets.all(10),
@@ -170,7 +183,8 @@ class _MultiAthleteWeekGridState extends State<MultiAthleteWeekGrid> {
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 12,
-                                  color: d.day == DateTime.now().day && d.month == DateTime.now().month
+                                  color: d.day == DateTime.now().day &&
+                                          d.month == DateTime.now().month
                                       ? AppColors.navy
                                       : Colors.grey.shade700,
                                 ),
@@ -181,13 +195,15 @@ class _MultiAthleteWeekGridState extends State<MultiAthleteWeekGrid> {
 
                     // Zeilen pro Athlet
                     ...widget.athletes.map((athlete) {
-                      final athleteWorkouts = _gridWorkouts[athlete.athleteId] ?? [];
+                      final athleteWorkouts =
+                          _gridWorkouts[athlete.athleteId] ?? [];
 
                       return TableRow(
                         children: [
                           // Athleten-Zelle
                           InkWell(
-                            onTap: () => widget.onAthleteClick(athlete.athleteId, athlete.name),
+                            onTap: () => widget.onAthleteClick(
+                                athlete.athleteId, athlete.name),
                             child: Padding(
                               padding: const EdgeInsets.all(10),
                               child: Column(
@@ -197,12 +213,17 @@ class _MultiAthleteWeekGridState extends State<MultiAthleteWeekGrid> {
                                     athlete.name,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.navy),
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 13,
+                                        color: AppColors.navy),
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
                                     '${athlete.sport} · ${athlete.ctl} CTL',
-                                    style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+                                    style: TextStyle(
+                                        fontSize: 11,
+                                        color: Colors.grey.shade600),
                                   ),
                                 ],
                               ),
@@ -211,26 +232,37 @@ class _MultiAthleteWeekGridState extends State<MultiAthleteWeekGrid> {
 
                           // 7 Wochentage
                           ...days.map((day) {
-                            final dateStr = DateFormat('yyyy-MM-dd').format(day);
-                            final dayWorkouts = athleteWorkouts.where((w) => w.localDate == dateStr).toList();
+                            final dateStr =
+                                DateFormat('yyyy-MM-dd').format(day);
+                            final dayWorkouts = athleteWorkouts
+                                .where((w) => w.localDate == dateStr)
+                                .toList();
 
                             return DragTarget<PlannedWorkout>(
                               onAcceptWithDetails: (details) {
-                                final isAltPressed = HardwareKeyboard.instance.isAltPressed;
-                                widget.onDrop(details.data, athlete.athleteId, dateStr, isAltPressed);
+                                final isAltPressed =
+                                    HardwareKeyboard.instance.isAltPressed;
+                                widget.onDrop(details.data, athlete.athleteId,
+                                    dateStr, isAltPressed);
 
                                 setState(() {
                                   if (!isAltPressed) {
                                     // Altes entfernen
-                                    _gridWorkouts[details.data.athleteId]?.removeWhere((w) => w.id == details.data.id);
+                                    _gridWorkouts[details.data.athleteId]
+                                        ?.removeWhere(
+                                            (w) => w.id == details.data.id);
                                   }
                                   // Neues hinzufügen
                                   final newW = details.data.copyWith(
-                                    id: isAltPressed ? 'copy_${DateTime.now().millisecondsSinceEpoch}' : details.data.id,
+                                    id: isAltPressed
+                                        ? 'copy_${DateTime.now().millisecondsSinceEpoch}'
+                                        : details.data.id,
                                     athleteId: athlete.athleteId,
                                     localDate: dateStr,
                                   );
-                                  _gridWorkouts.putIfAbsent(athlete.athleteId, () => []).add(newW);
+                                  _gridWorkouts
+                                      .putIfAbsent(athlete.athleteId, () => [])
+                                      .add(newW);
                                 });
 
                                 ScaffoldMessenger.of(context).showSnackBar(
@@ -248,27 +280,41 @@ class _MultiAthleteWeekGridState extends State<MultiAthleteWeekGrid> {
                                 final isHovered = candidateData.isNotEmpty;
 
                                 return Container(
-                                  minHeight: _isCompactDensity ? 54 : 76,
-                                  color: isHovered ? AppColors.volt.withValues(alpha: 0.15) : Colors.transparent,
+                                  constraints: BoxConstraints(
+                                      minHeight: _isCompactDensity ? 54 : 76),
+                                  color: isHovered
+                                      ? AppColors.volt.withValues(alpha: 0.15)
+                                      : Colors.transparent,
                                   padding: const EdgeInsets.all(4),
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.stretch,
                                     children: [
                                       ...dayWorkouts.map((workout) {
                                         return Draggable<PlannedWorkout>(
                                           data: workout,
                                           feedback: Material(
                                             elevation: 4,
-                                            borderRadius: BorderRadius.circular(8),
+                                            borderRadius:
+                                                BorderRadius.circular(8),
                                             child: Container(
-                                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 10,
+                                                      vertical: 6),
                                               decoration: BoxDecoration(
-                                                color: _getSportColor(workout.sport),
-                                                borderRadius: BorderRadius.circular(8),
+                                                color: _getSportColor(
+                                                    workout.sport),
+                                                borderRadius:
+                                                    BorderRadius.circular(8),
                                               ),
                                               child: Text(
                                                 workout.title,
-                                                style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                                                style: const TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 12,
+                                                    fontWeight:
+                                                        FontWeight.bold),
                                               ),
                                             ),
                                           ),
@@ -304,7 +350,8 @@ class _MultiAthleteWeekGridState extends State<MultiAthleteWeekGrid> {
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
       decoration: BoxDecoration(
         color: _getSportColor(workout.sport).withValues(alpha: 0.16),
-        border: Border.all(color: _getSportColor(workout.sport).withValues(alpha: 0.5)),
+        border: Border.all(
+            color: _getSportColor(workout.sport).withValues(alpha: 0.5)),
         borderRadius: BorderRadius.circular(6),
       ),
       child: Column(
@@ -312,7 +359,8 @@ class _MultiAthleteWeekGridState extends State<MultiAthleteWeekGrid> {
         children: [
           Row(
             children: [
-              Icon(_getSportIcon(workout.sport), size: 12, color: _getSportColor(workout.sport)),
+              Icon(_getSportIcon(workout.sport),
+                  size: 12, color: _getSportColor(workout.sport)),
               const SizedBox(width: 4),
               Expanded(
                 child: Text(

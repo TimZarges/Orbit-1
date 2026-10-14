@@ -52,7 +52,8 @@ class AnalysisTimeframeSelector extends StatelessWidget {
                   child: Text(
                     timeframe.labelDe,
                     style: AppTypography.bodySmall.copyWith(
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      fontWeight:
+                          isSelected ? FontWeight.bold : FontWeight.normal,
                       color: isSelected ? AppColors.navy : Colors.grey.shade700,
                     ),
                   ),

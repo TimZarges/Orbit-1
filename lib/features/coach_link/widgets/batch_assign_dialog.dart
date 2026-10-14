@@ -48,13 +48,15 @@ class _BatchAssignDialogState extends ConsumerState<BatchAssignDialog> {
   void initState() {
     super.initState();
     final tomorrow = DateTime.now().add(const Duration(days: 1));
-    _targetDate = '${tomorrow.year}-${tomorrow.month.toString().padLeft(2, '0')}-${tomorrow.day.toString().padLeft(2, '0')}';
+    _targetDate =
+        '${tomorrow.year}-${tomorrow.month.toString().padLeft(2, '0')}-${tomorrow.day.toString().padLeft(2, '0')}';
   }
 
   Future<void> _handleExecute() async {
     if (_selectedTemplate == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Bitte wähle zuerst eine Workout-Vorlage aus.')),
+        const SnackBar(
+            content: Text('Bitte wähle zuerst eine Workout-Vorlage aus.')),
       );
       return;
     }
@@ -110,12 +112,14 @@ class _BatchAssignDialogState extends ConsumerState<BatchAssignDialog> {
                         color: AppColors.techGrey,
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: const Icon(Icons.group_add_outlined, size: 20, color: AppColors.navy),
+                      child: const Icon(Icons.group_add_outlined,
+                          size: 20, color: AppColors.navy),
                     ),
                     const SizedBox(width: 12),
                     Text(
                       'Massenzuweisung',
-                      style: AppTypography.title.copyWith(fontSize: 18, color: AppColors.navy),
+                      style: AppTypography.title
+                          .copyWith(fontSize: 18, color: AppColors.navy),
                     ),
                   ],
                 ),
@@ -133,16 +137,20 @@ class _BatchAssignDialogState extends ConsumerState<BatchAssignDialog> {
             const SizedBox(height: 20),
 
             // Vorlagen-Auswahl
-            Text('Vorlage auswählen:', style: AppTypography.body.copyWith(fontWeight: FontWeight.bold)),
+            Text('Vorlage auswählen:',
+                style:
+                    AppTypography.body.copyWith(fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             templatesAsync.when(
               data: (templates) {
                 if (templates.isEmpty) {
-                  return const Text('Keine Vorlagen in der Bibliothek vorhanden.');
+                  return const Text(
+                      'Keine Vorlagen in der Bibliothek vorhanden.');
                 }
                 return DropdownButtonFormField<WorkoutTemplate>(
                   value: _selectedTemplate,
-                  decoration: const InputDecoration(border: OutlineInputBorder()),
+                  decoration:
+                      const InputDecoration(border: OutlineInputBorder()),
                   hint: const Text('Vorlage wählen...'),
                   items: templates.map((tmpl) {
                     return DropdownMenuItem(
@@ -169,12 +177,14 @@ class _BatchAssignDialogState extends ConsumerState<BatchAssignDialog> {
                 );
                 if (picked != null) {
                   setState(() {
-                    _targetDate = '${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}';
+                    _targetDate =
+                        '${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}';
                   });
                 }
               },
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                 decoration: BoxDecoration(
                   color: AppColors.lightBackground,
                   borderRadius: BorderRadius.circular(10),
@@ -183,8 +193,11 @@ class _BatchAssignDialogState extends ConsumerState<BatchAssignDialog> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Datum: $_targetDate', style: AppTypography.body.copyWith(color: AppColors.navy)),
-                    const Icon(Icons.calendar_month, size: 20, color: AppColors.navy),
+                    Text('Datum: $_targetDate',
+                        style:
+                            AppTypography.body.copyWith(color: AppColors.navy)),
+                    const Icon(Icons.calendar_month,
+                        size: 20, color: AppColors.navy),
                   ],
                 ),
               ),
@@ -202,12 +215,16 @@ class _BatchAssignDialogState extends ConsumerState<BatchAssignDialog> {
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.preview_outlined, size: 20, color: AppColors.navy),
+                    const Icon(Icons.preview_outlined,
+                        size: 20, color: AppColors.navy),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
                         'Vorschau: ${widget.athleteIds.length} Athleten erhalten „${_selectedTemplate!.title}" am $_targetDate.',
-                        style: AppTypography.body.copyWith(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.navy),
+                        style: AppTypography.body.copyWith(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.navy),
                       ),
                     ),
                   ],
@@ -226,15 +243,22 @@ class _BatchAssignDialogState extends ConsumerState<BatchAssignDialog> {
                 ),
                 const SizedBox(width: 8),
                 ElevatedButton(
-                  onPressed: _isExecuting || _selectedTemplate == null ? null : _handleExecute,
+                  onPressed: _isExecuting || _selectedTemplate == null
+                      ? null
+                      : _handleExecute,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.volt,
                     foregroundColor: AppColors.navy,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10)),
                   ),
                   child: _isExecuting
-                      ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
-                      : const Text('Jetzt zuweisen', style: TextStyle(fontWeight: FontWeight.bold)),
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2))
+                      : const Text('Jetzt zuweisen',
+                          style: TextStyle(fontWeight: FontWeight.bold)),
                 ),
               ],
             ),

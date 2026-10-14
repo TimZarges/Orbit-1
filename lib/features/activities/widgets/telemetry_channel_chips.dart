@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../../core/design/app_colors.dart';
 import '../../../core/design/app_typography.dart';
 
 /// Die auswählbaren Telemetrie-Kanäle im Analyse-Cockpit.
@@ -101,7 +100,9 @@ class TelemetryChannelChips extends StatelessWidget {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
-        children: TelemetryChannel.values.where(availableChannels.contains).map((channel) {
+        children: TelemetryChannel.values
+            .where(availableChannels.contains)
+            .map((channel) {
           final isActive = activeChannels.contains(channel);
           final color = channel.color;
 
@@ -110,15 +111,19 @@ class TelemetryChannelChips extends StatelessWidget {
             child: Semantics(
               button: true,
               selected: isActive,
-              label: 'Kanal ${channel.label} ${isActive ? "ausblenden" : "einblenden"}',
+              label:
+                  'Kanal ${channel.label} ${isActive ? "ausblenden" : "einblenden"}',
               child: InkWell(
                 onTap: () => onToggle(channel),
                 borderRadius: BorderRadius.circular(20),
                 child: Container(
                   constraints: const BoxConstraints(minHeight: 48),
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
-                    color: isActive ? color.withValues(alpha: 0.2) : const Color(0xFF1E293B),
+                    color: isActive
+                        ? color.withValues(alpha: 0.2)
+                        : const Color(0xFF1E293B),
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
                       color: isActive ? color : const Color(0xFF334155),
@@ -138,7 +143,8 @@ class TelemetryChannelChips extends StatelessWidget {
                         channel.label,
                         style: AppTypography.label.copyWith(
                           color: isActive ? Colors.white : Colors.grey.shade400,
-                          fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+                          fontWeight:
+                              isActive ? FontWeight.bold : FontWeight.normal,
                         ),
                       ),
                     ],

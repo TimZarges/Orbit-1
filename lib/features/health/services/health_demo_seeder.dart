@@ -12,7 +12,8 @@ class HealthDemoSeeder {
     // 30 Tage rückwärts generieren
     for (int i = 29; i >= 0; i--) {
       final date = now.subtract(Duration(days: i));
-      final dateStr = "${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
+      final dateStr =
+          "${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
 
       int rhr;
       int hrv;
@@ -87,7 +88,11 @@ class HealthDemoSeeder {
     final batch = db.batch();
 
     for (final m in metrics) {
-      final docRef = db.collection('users').doc(athleteId).collection('dailyMetrics').doc(m.localDate);
+      final docRef = db
+          .collection('users')
+          .doc(athleteId)
+          .collection('dailyMetrics')
+          .doc(m.localDate);
       batch.set(docRef, m.toMap(), SetOptions(merge: true));
     }
 

@@ -4,10 +4,10 @@ import '../../auth/providers/auth_provider.dart';
 import '../models/daily_metrics.dart';
 import '../models/health_baseline.dart';
 import '../domain/readiness_evaluator.dart';
-import '../services/health_demo_seeder.dart';
 
 /// Prüft, ob der aktuelle Nutzer (Athlet selbst oder Trainer) Leseberechtigung für Health-Daten des [athleteId] besitzt.
-final coachHealthPermissionProvider = StreamProvider.family<bool, String>((ref, athleteId) {
+final coachHealthPermissionProvider =
+    StreamProvider.family<bool, String>((ref, athleteId) {
   final currentUid = ref.watch(authStateChangesProvider).valueOrNull?.uid;
   if (currentUid == null) return Stream.value(false);
 
@@ -31,9 +31,11 @@ final coachHealthPermissionProvider = StreamProvider.family<bool, String>((ref, 
 });
 
 /// Liefert die DailyMetrics-Historie der letzten 28 Tage für den angegebenen Athleten.
-final athleteDailyMetricsHistoryProvider = StreamProvider.family<List<DailyMetrics>, String>((ref, athleteId) {
+final athleteDailyMetricsHistoryProvider =
+    StreamProvider.family<List<DailyMetrics>, String>((ref, athleteId) {
   // Sicherheitsprüfung: Darf der Nutzer Health-Daten lesen?
-  final hasPermission = ref.watch(coachHealthPermissionProvider(athleteId)).valueOrNull ?? false;
+  final hasPermission =
+      ref.watch(coachHealthPermissionProvider(athleteId)).valueOrNull ?? false;
   if (!hasPermission) {
     return Stream.value([]);
   }
@@ -61,14 +63,16 @@ final athleteDailyMetricsHistoryProvider = StreamProvider.family<List<DailyMetri
 });
 
 /// Berechnet die [HealthBaseline] für den gegebenen [athleteId].
-final healthBaselineProvider = Provider.family<HealthBaseline, String>((ref, athleteId) {
+final healthBaselineProvider =
+    Provider.family<HealthBaseline, String>((ref, athleteId) {
   final historyAsync = ref.watch(athleteDailyMetricsHistoryProvider(athleteId));
   final history = historyAsync.valueOrNull ?? [];
   return HealthBaseline.fromMetrics(history);
 });
 
 /// Liefert die Tagesform-Bewertung [ReadinessEvaluation] für heute.
-final todayReadinessProvider = Provider.family<ReadinessEvaluation, String>((ref, athleteId) {
+final todayReadinessProvider =
+    Provider.family<ReadinessEvaluation, String>((ref, athleteId) {
   final historyAsync = ref.watch(athleteDailyMetricsHistoryProvider(athleteId));
   final history = historyAsync.valueOrNull ?? [];
   final baseline = ref.watch(healthBaselineProvider(athleteId));

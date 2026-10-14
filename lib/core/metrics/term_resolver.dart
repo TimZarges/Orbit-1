@@ -1,5 +1,3 @@
-import 'package:flutter/widgets.dart';
-
 enum ExperienceLevel { beginner, advanced, expert }
 
 enum MetricTerm {

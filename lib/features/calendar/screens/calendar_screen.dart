@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../core/design/app_colors.dart';
-import '../../../core/design/app_spacing.dart';
 import '../../coach_link/providers/athlete_context_provider.dart';
 import '../models/planned_workout.dart';
 import '../providers/calendar_provider.dart';
@@ -20,7 +19,8 @@ class CalendarScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final activeAthleteId = athleteId ?? ref.watch(currentAthleteIdProvider);
+    final String activeAthleteId =
+        athleteId ?? (ref.watch(viewedAthleteIdProvider) ?? 'me');
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
@@ -38,7 +38,8 @@ class CalendarScreen extends ConsumerWidget {
           // "Heute" Button
           TextButton.icon(
             onPressed: () {
-              ref.read(selectedCalendarDateProvider.notifier).state = DateTime.now();
+              ref.read(selectedCalendarDateProvider.notifier).state =
+                  DateTime.now();
             },
             icon: const Icon(Icons.today, size: 18),
             label: const Text('Heute'),
@@ -79,7 +80,8 @@ class CalendarScreen extends ConsumerWidget {
               ],
               selected: {viewMode},
               onSelectionChanged: (newSelection) {
-                ref.read(calendarViewModeProvider.notifier).state = newSelection.first;
+                ref.read(calendarViewModeProvider.notifier).state =
+                    newSelection.first;
               },
             ),
           ),
@@ -91,9 +93,12 @@ class CalendarScreen extends ConsumerWidget {
           // Haupt-Inhalt je nach Ansicht
           Expanded(
             child: switch (viewMode) {
-              CalendarViewMode.week => _buildWeekView(context, ref, activeAthleteId, selectedDate),
-              CalendarViewMode.month => _buildMonthView(context, ref, activeAthleteId, selectedDate),
-              CalendarViewMode.list => _buildListView(context, ref, activeAthleteId),
+              CalendarViewMode.week =>
+                _buildWeekView(context, ref, activeAthleteId, selectedDate),
+              CalendarViewMode.month =>
+                _buildMonthView(context, ref, activeAthleteId, selectedDate),
+              CalendarViewMode.list =>
+                _buildListView(context, ref, activeAthleteId),
             },
           ),
         ],
@@ -130,7 +135,8 @@ class CalendarScreen extends ConsumerWidget {
   ) {
     final compliance = summary.durationCompliancePercentage;
     final cardBg = isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC);
-    final cardBorder = isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0);
+    final cardBorder =
+        isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0);
 
     final plannedHours = (summary.plannedDurationSec / 3600).toStringAsFixed(1);
     final actualHours = (summary.actualDurationSec / 3600).toStringAsFixed(1);
@@ -155,11 +161,13 @@ class CalendarScreen extends ConsumerWidget {
             children: [
               Text(
                 'Wochensoll: ${actualHours}h von ${plannedHours}h (${compliance.toStringAsFixed(0)} %)',
-                style: theme.textTheme.labelMedium?.copyWith(fontWeight: FontWeight.bold),
+                style: theme.textTheme.labelMedium
+                    ?.copyWith(fontWeight: FontWeight.bold),
               ),
               Text(
                 '${summary.completedWorkoutsCount}/${summary.totalPlannedWorkoutsCount} Einheiten',
-                style: theme.textTheme.labelSmall?.copyWith(color: const Color(0xFF64748B)),
+                style: theme.textTheme.labelSmall
+                    ?.copyWith(color: const Color(0xFF64748B)),
               ),
             ],
           ),
@@ -167,9 +175,12 @@ class CalendarScreen extends ConsumerWidget {
           ClipRRect(
             borderRadius: BorderRadius.circular(4),
             child: LinearProgressIndicator(
-              value: (summary.plannedDurationSec > 0 ? summary.actualDurationSec / summary.plannedDurationSec : 0.0)
+              value: (summary.plannedDurationSec > 0
+                      ? summary.actualDurationSec / summary.plannedDurationSec
+                      : 0.0)
                   .clamp(0.0, 1.0),
-              backgroundColor: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+              backgroundColor:
+                  isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
               color: progressColor,
               minHeight: 6,
             ),
@@ -186,10 +197,12 @@ class CalendarScreen extends ConsumerWidget {
     String athleteId,
     DateTime selectedDate,
   ) {
-    final workoutsAsync = ref.watch(athleteCurrentWeekWorkoutsProvider(athleteId));
+    final workoutsAsync =
+        ref.watch(athleteCurrentWeekWorkoutsProvider(athleteId));
     final workouts = workoutsAsync.valueOrNull ?? [];
 
-    final monday = selectedDate.subtract(Duration(days: selectedDate.weekday - 1));
+    final monday =
+        selectedDate.subtract(Duration(days: selectedDate.weekday - 1));
 
     return ListView.builder(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 80),
@@ -197,8 +210,10 @@ class CalendarScreen extends ConsumerWidget {
       itemBuilder: (context, index) {
         final day = monday.add(Duration(days: index));
         final dayStr = DateFormat('yyyy-MM-dd').format(day);
-        final dayWorkouts = workouts.where((w) => w.localDate == dayStr).toList();
-        final isToday = DateFormat('yyyy-MM-dd').format(DateTime.now()) == dayStr;
+        final dayWorkouts =
+            workouts.where((w) => w.localDate == dayStr).toList();
+        final isToday =
+            DateFormat('yyyy-MM-dd').format(DateTime.now()) == dayStr;
 
         return _buildDaySection(context, day, dayWorkouts, isToday, athleteId);
       },
@@ -233,12 +248,15 @@ class CalendarScreen extends ConsumerWidget {
               if (isToday) ...[
                 const SizedBox(width: 8),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
                     color: AppColors.volt.withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(4),
                   ),
-                  child: const Text('Heute', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+                  child: const Text('Heute',
+                      style:
+                          TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
                 ),
               ],
             ],
@@ -246,7 +264,8 @@ class CalendarScreen extends ConsumerWidget {
           const SizedBox(height: 6),
           if (workouts.isEmpty)
             InkWell(
-              onTap: () => showCreateWorkoutDialog(context, athleteId: athleteId, initialDate: date),
+              onTap: () => showCreateWorkoutDialog(context,
+                  athleteId: athleteId, initialDate: date),
               borderRadius: BorderRadius.circular(8),
               child: Container(
                 width: double.infinity,
@@ -258,7 +277,8 @@ class CalendarScreen extends ConsumerWidget {
                 child: Center(
                   child: Text(
                     '+ Ruhetag / Einheit planen',
-                    style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey),
+                    style:
+                        theme.textTheme.bodySmall?.copyWith(color: Colors.grey),
                   ),
                 ),
               ),
@@ -281,15 +301,18 @@ class CalendarScreen extends ConsumerWidget {
     String athleteId,
     DateTime selectedDate,
   ) {
-    final workoutsAsync = ref.watch(athleteCurrentMonthWorkoutsProvider(athleteId));
+    final workoutsAsync =
+        ref.watch(athleteCurrentMonthWorkoutsProvider(athleteId));
     final workouts = workoutsAsync.valueOrNull ?? [];
 
     final firstDayOfMonth = DateTime(selectedDate.year, selectedDate.month, 1);
-    final lastDayOfMonth = DateTime(selectedDate.year, selectedDate.month + 1, 0);
+    final lastDayOfMonth =
+        DateTime(selectedDate.year, selectedDate.month + 1, 0);
 
     // Ausgewählter Tag im Monat
     final selectedDayStr = DateFormat('yyyy-MM-dd').format(selectedDate);
-    final selectedDayWorkouts = workouts.where((w) => w.localDate == selectedDayStr).toList();
+    final selectedDayWorkouts =
+        workouts.where((w) => w.localDate == selectedDayStr).toList();
 
     return Column(
       children: [
@@ -310,7 +333,6 @@ class CalendarScreen extends ConsumerWidget {
           ),
         ),
 
-
         // Tage-Grid
         Expanded(
           flex: 2,
@@ -326,22 +348,29 @@ class CalendarScreen extends ConsumerWidget {
               if (index < offset) return const SizedBox.shrink();
 
               final dayNum = index - offset + 1;
-              final dayDate = DateTime(selectedDate.year, selectedDate.month, dayNum);
+              final dayDate =
+                  DateTime(selectedDate.year, selectedDate.month, dayNum);
               final dayStr = DateFormat('yyyy-MM-dd').format(dayDate);
-              final dayWorkouts = workouts.where((w) => w.localDate == dayStr).toList();
+              final dayWorkouts =
+                  workouts.where((w) => w.localDate == dayStr).toList();
               final isSelected = dayStr == selectedDayStr;
 
               return InkWell(
                 onTap: () {
-                  ref.read(selectedCalendarDateProvider.notifier).state = dayDate;
+                  ref.read(selectedCalendarDateProvider.notifier).state =
+                      dayDate;
                 },
                 borderRadius: BorderRadius.circular(8),
                 child: Container(
                   margin: const EdgeInsets.all(2),
                   decoration: BoxDecoration(
-                    color: isSelected ? AppColors.navyLight.withValues(alpha: 0.15) : null,
+                    color: isSelected
+                        ? AppColors.navyLight.withValues(alpha: 0.15)
+                        : null,
                     borderRadius: BorderRadius.circular(8),
-                    border: isSelected ? Border.all(color: AppColors.navyLight) : null,
+                    border: isSelected
+                        ? Border.all(color: AppColors.navyLight)
+                        : null,
                   ),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -349,18 +378,22 @@ class CalendarScreen extends ConsumerWidget {
                       Text(
                         '$dayNum',
                         style: TextStyle(
-                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                          fontWeight:
+                              isSelected ? FontWeight.bold : FontWeight.normal,
                         ),
                       ),
                       if (dayWorkouts.isNotEmpty)
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            for (int i = 0; i < dayWorkouts.length.clamp(0, 3); i++)
+                            for (int i = 0;
+                                i < dayWorkouts.length.clamp(0, 3);
+                                i++)
                               Container(
                                 width: 5,
                                 height: 5,
-                                margin: const EdgeInsets.symmetric(horizontal: 1),
+                                margin:
+                                    const EdgeInsets.symmetric(horizontal: 1),
                                 decoration: const BoxDecoration(
                                   color: Color(0xFF10B981),
                                   shape: BoxShape.circle,
@@ -415,7 +448,8 @@ class CalendarScreen extends ConsumerWidget {
     WidgetRef ref,
     String athleteId,
   ) {
-    final workoutsAsync = ref.watch(athleteCurrentMonthWorkoutsProvider(athleteId));
+    final workoutsAsync =
+        ref.watch(athleteCurrentMonthWorkoutsProvider(athleteId));
     final workouts = workoutsAsync.valueOrNull ?? [];
 
     if (workouts.isEmpty) {
@@ -428,7 +462,8 @@ class CalendarScreen extends ConsumerWidget {
             const Text('Keine geplanten Einheiten in diesem Zeitraum.'),
             const SizedBox(height: 12),
             ElevatedButton.icon(
-              onPressed: () => showCreateWorkoutDialog(context, athleteId: athleteId),
+              onPressed: () =>
+                  showCreateWorkoutDialog(context, athleteId: athleteId),
               icon: const Icon(Icons.add),
               label: const Text('Erste Einheit planen'),
             ),

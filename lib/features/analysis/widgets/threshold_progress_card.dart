@@ -23,8 +23,10 @@ class ThresholdProgressCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final effectiveAthleteId = athleteId ?? 'demo';
-    final proposalsAsync = ref.watch(pendingProposalsProvider(effectiveAthleteId));
-    final historyAsync = ref.watch(thresholdHistoryProvider(effectiveAthleteId));
+    final proposalsAsync =
+        ref.watch(pendingProposalsProvider(effectiveAthleteId));
+    final historyAsync =
+        ref.watch(thresholdHistoryProvider(effectiveAthleteId));
 
     final pendingCount = proposalsAsync.asData?.value.length ?? 0;
     final latestHistory = historyAsync.asData?.value.isNotEmpty == true
@@ -33,7 +35,8 @@ class ThresholdProgressCard extends ConsumerWidget {
 
     final currentFtp = latestHistory?.ftpW ?? ftpW ?? 260.0;
     final currentHr = latestHistory?.thresholdHrBpm ?? thresholdHrBpm ?? 168.0;
-    final currentCss = latestHistory?.swimCssSecPer100m ?? cssSecPer100m ?? 105.0;
+    final currentCss =
+        latestHistory?.swimCssSecPer100m ?? cssSecPer100m ?? 105.0;
 
     return InkWell(
       onTap: () {
@@ -67,11 +70,13 @@ class ThresholdProgressCard extends ConsumerWidget {
                     const SizedBox(width: 8),
                     Text(
                       'Schwellenwerte & Diagnostik',
-                      style: AppTypography.title.copyWith(color: AppColors.navy),
+                      style:
+                          AppTypography.title.copyWith(color: AppColors.navy),
                     ),
                   ],
                 ),
-                Icon(Icons.chevron_right, color: Colors.grey.shade400, size: 20),
+                Icon(Icons.chevron_right,
+                    color: Colors.grey.shade400, size: 20),
               ],
             ),
             const SizedBox(height: 14),
@@ -104,7 +109,8 @@ class ThresholdProgressCard extends ConsumerWidget {
             if (pendingCount > 0) ...[
               const SizedBox(height: 14),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
                   color: AppColors.volt.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(10),
@@ -186,7 +192,9 @@ class _ThresholdItem extends StatelessWidget {
           children: [
             Icon(icon, size: 14, color: color),
             const SizedBox(width: 4),
-            Text(label, style: AppTypography.label.copyWith(color: Colors.grey.shade600)),
+            Text(label,
+                style:
+                    AppTypography.label.copyWith(color: Colors.grey.shade600)),
           ],
         ),
         const SizedBox(height: 4),

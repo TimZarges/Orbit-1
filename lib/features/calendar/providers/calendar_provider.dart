@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../activities/models/activity.dart';
 import '../../activities/providers/activities_provider.dart';
 import '../models/planned_workout.dart';
 import '../repositories/planned_workout_repository.dart';
@@ -17,7 +16,8 @@ enum CalendarViewMode {
 }
 
 /// Provider für das [PlannedWorkoutRepository].
-final plannedWorkoutRepositoryProvider = Provider<PlannedWorkoutRepository>((ref) {
+final plannedWorkoutRepositoryProvider =
+    Provider<PlannedWorkoutRepository>((ref) {
   return PlannedWorkoutRepository();
 });
 
@@ -32,7 +32,8 @@ final calendarViewModeProvider = StateProvider<CalendarViewMode>((ref) {
 });
 
 /// Liefert geplante Einheiten für einen beliebigen Datumsbereich.
-final athleteWorkoutsRangeProvider = StreamProvider.family<List<PlannedWorkout>, ({String athleteId, String startDate, String endDate})>((ref, arg) {
+final athleteWorkoutsRangeProvider = StreamProvider.family<List<PlannedWorkout>,
+    ({String athleteId, String startDate, String endDate})>((ref, arg) {
   final repo = ref.watch(plannedWorkoutRepositoryProvider);
   return repo.watchWorkoutsForAthlete(
     athleteId: arg.athleteId,
@@ -42,11 +43,13 @@ final athleteWorkoutsRangeProvider = StreamProvider.family<List<PlannedWorkout>,
 });
 
 /// Liefert die geplanten Workouts für die aktuell ausgewählte Woche (Montag bis Sonntag).
-final athleteCurrentWeekWorkoutsProvider = StreamProvider.family<List<PlannedWorkout>, String>((ref, athleteId) {
+final athleteCurrentWeekWorkoutsProvider =
+    StreamProvider.family<List<PlannedWorkout>, String>((ref, athleteId) {
   final selectedDate = ref.watch(selectedCalendarDateProvider);
-  
+
   // Montag der Woche ermitteln (DateTime: Montag = 1, Sonntag = 7)
-  final monday = selectedDate.subtract(Duration(days: selectedDate.weekday - 1));
+  final monday =
+      selectedDate.subtract(Duration(days: selectedDate.weekday - 1));
   final sunday = monday.add(const Duration(days: 6));
 
   final startStr = _formatDate(monday);
@@ -60,14 +63,16 @@ final athleteCurrentWeekWorkoutsProvider = StreamProvider.family<List<PlannedWor
 });
 
 /// Liefert die geplanten Workouts für den aktuell ausgewählten Monat (inkl. Puffer für Randtage).
-final athleteCurrentMonthWorkoutsProvider = StreamProvider.family<List<PlannedWorkout>, String>((ref, athleteId) {
+final athleteCurrentMonthWorkoutsProvider =
+    StreamProvider.family<List<PlannedWorkout>, String>((ref, athleteId) {
   final selectedDate = ref.watch(selectedCalendarDateProvider);
 
   final firstDayOfMonth = DateTime(selectedDate.year, selectedDate.month, 1);
   final lastDayOfMonth = DateTime(selectedDate.year, selectedDate.month + 1, 0);
 
   // Jeweils bis zum Wochenanfang/ende erweitern für saubere Kalenderansicht
-  final start = firstDayOfMonth.subtract(Duration(days: firstDayOfMonth.weekday - 1));
+  final start =
+      firstDayOfMonth.subtract(Duration(days: firstDayOfMonth.weekday - 1));
   final end = lastDayOfMonth.add(Duration(days: 7 - lastDayOfMonth.weekday));
 
   return ref.watch(athleteWorkoutsRangeProvider((
@@ -78,19 +83,24 @@ final athleteCurrentMonthWorkoutsProvider = StreamProvider.family<List<PlannedWo
 });
 
 /// Berechnet die Wochensummen (Soll vs. Ist) für die ausgewählte Woche.
-final weekSummaryProvider = Provider.family<WeekSummary, String>((ref, athleteId) {
-  final workouts = ref.watch(athleteCurrentWeekWorkoutsProvider(athleteId)).valueOrNull ?? [];
+final weekSummaryProvider =
+    Provider.family<WeekSummary, String>((ref, athleteId) {
+  final workouts =
+      ref.watch(athleteCurrentWeekWorkoutsProvider(athleteId)).valueOrNull ??
+          [];
   final activities = ref.watch(activitiesProvider).valueOrNull ?? [];
 
   final selectedDate = ref.watch(selectedCalendarDateProvider);
-  final monday = selectedDate.subtract(Duration(days: selectedDate.weekday - 1));
+  final monday =
+      selectedDate.subtract(Duration(days: selectedDate.weekday - 1));
   final sunday = monday.add(const Duration(days: 6));
   final startStr = _formatDate(monday);
   final endStr = _formatDate(sunday);
 
   // Aktivitäten der aktuellen Woche filtern
   final weekActivities = activities.where((a) {
-    return a.localDate.compareTo(startStr) >= 0 && a.localDate.compareTo(endStr) <= 0;
+    return a.localDate.compareTo(startStr) >= 0 &&
+        a.localDate.compareTo(endStr) <= 0;
   }).toList();
 
   int plannedDurationSec = 0;

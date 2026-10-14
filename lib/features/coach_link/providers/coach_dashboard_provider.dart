@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import '../models/coach_dashboard_athlete.dart';
 import '../models/coach_view_preference.dart';
 
@@ -10,7 +9,8 @@ final coachActivePreferenceProvider = StateProvider<CoachViewPreference>((ref) {
 });
 
 /// Provider für gespeicherte Ansichten des Trainers aus `users/{coachId}/preferences/{viewId}`.
-final coachSavedPreferencesProvider = StreamProvider.family<List<CoachViewPreference>, String>((ref, coachId) {
+final coachSavedPreferencesProvider =
+    StreamProvider.family<List<CoachViewPreference>, String>((ref, coachId) {
   final firestore = FirebaseFirestore.instance;
   return firestore
       .collection('users')
@@ -32,7 +32,8 @@ final coachSavedPreferencesProvider = StreamProvider.family<List<CoachViewPrefer
 });
 
 /// Raw Stream der aggregierten Athleten-Dokumente aus `coachDashboard/{coachId}/athletes`.
-final coachRawAthletesStreamProvider = StreamProvider.family<List<CoachDashboardAthlete>, String>((ref, coachId) {
+final coachRawAthletesStreamProvider =
+    StreamProvider.family<List<CoachDashboardAthlete>, String>((ref, coachId) {
   final firestore = FirebaseFirestore.instance;
   return firestore
       .collection('coachDashboard')
@@ -57,10 +58,13 @@ final coachAthleteSearchQueryProvider = StateProvider<String>((ref) => '');
 final coachSelectedAthleteIdsProvider = StateProvider<Set<String>>((ref) => {});
 
 /// Aufbereiteter Provider: Gefilterte und sortierte Athletenliste für die Tabelle / das Dashboard.
-final coachFilteredAthletesProvider = Provider.family<List<CoachDashboardAthlete>, String>((ref, coachId) {
-  final rawList = ref.watch(coachRawAthletesStreamProvider(coachId)).valueOrNull ?? [];
+final coachFilteredAthletesProvider =
+    Provider.family<List<CoachDashboardAthlete>, String>((ref, coachId) {
+  final rawList =
+      ref.watch(coachRawAthletesStreamProvider(coachId)).valueOrNull ?? [];
   final pref = ref.watch(coachActivePreferenceProvider);
-  final searchQuery = ref.watch(coachAthleteSearchQueryProvider).toLowerCase().trim();
+  final searchQuery =
+      ref.watch(coachAthleteSearchQueryProvider).toLowerCase().trim();
 
   return rawList.where((a) {
     // 1. Suche
@@ -112,8 +116,66 @@ final coachFilteredAthletesProvider = Provider.family<List<CoachDashboardAthlete
 
 /// Erzeugt 28 realistische Demo-Athleten für Dev / Offline / Lasttests.
 List<CoachDashboardAthlete> _generateDemoAthletes(String coachId) {
-  final firstNames = ['Lukas', 'Julia', 'Felix', 'Sophie', 'Maximilian', 'Hannah', 'Leon', 'Marie', 'David', 'Laura', 'Jonas', 'Lena', 'Tim', 'Sarah', 'Paul', 'Emma', 'Niklas', 'Mia', 'Moritz', 'Anna', 'Florian', 'Clara', 'Simon', 'Lara', 'Tobias', 'Lea', 'Jan', 'Lisa'];
-  final lastNames = ['Weber', 'Müller', 'Schmidt', 'Schneider', 'Fischer', 'Meyer', 'Wagner', 'Becker', 'Schulz', 'Hoffmann', 'Schäfer', 'Koch', 'Bauer', 'Richter', 'Klein', 'Wolf', 'Schröder', 'Neumann', 'Schwarz', 'Zimmermann', 'Braun', 'Krüger', 'Hofmann', 'Hartmann', 'Lange', 'Schmitt', 'Werner', 'Schmitz'];
+  final firstNames = [
+    'Lukas',
+    'Julia',
+    'Felix',
+    'Sophie',
+    'Maximilian',
+    'Hannah',
+    'Leon',
+    'Marie',
+    'David',
+    'Laura',
+    'Jonas',
+    'Lena',
+    'Tim',
+    'Sarah',
+    'Paul',
+    'Emma',
+    'Niklas',
+    'Mia',
+    'Moritz',
+    'Anna',
+    'Florian',
+    'Clara',
+    'Simon',
+    'Lara',
+    'Tobias',
+    'Lea',
+    'Jan',
+    'Lisa'
+  ];
+  final lastNames = [
+    'Weber',
+    'Müller',
+    'Schmidt',
+    'Schneider',
+    'Fischer',
+    'Meyer',
+    'Wagner',
+    'Becker',
+    'Schulz',
+    'Hoffmann',
+    'Schäfer',
+    'Koch',
+    'Bauer',
+    'Richter',
+    'Klein',
+    'Wolf',
+    'Schröder',
+    'Neumann',
+    'Schwarz',
+    'Zimmermann',
+    'Braun',
+    'Krüger',
+    'Hofmann',
+    'Hartmann',
+    'Lange',
+    'Schmitt',
+    'Werner',
+    'Schmitz'
+  ];
   final sports = ['TRIATHLON', 'RUN', 'BIKE', 'SWIM'];
   final formStatuses = [
     CoachAthleteFormStatus.optimal,
@@ -131,7 +193,9 @@ List<CoachDashboardAthlete> _generateDemoAthletes(String coachId) {
     final sport = sports[i % sports.length];
     final formStatus = formStatuses[i % formStatuses.length];
     final ctl = 40 + (i * 3) % 60;
-    final atl = formStatus == CoachAthleteFormStatus.caution ? ctl + 22 : ctl + ((i % 5) - 2) * 4;
+    final atl = formStatus == CoachAthleteFormStatus.caution
+        ? ctl + 22
+        : ctl + ((i % 5) - 2) * 4;
     final tsb = ctl - atl;
     final plannedLoad7d = 260 + (i * 25) % 320;
     final compliance7d = [96, 85, 100, 68, 88, 104, 76, 92, 54, 90][i % 10];
@@ -154,16 +218,28 @@ List<CoachDashboardAthlete> _generateDemoAthletes(String coachId) {
       pendingProposalsCount: i % 5 == 0 ? 1 : 0,
       latestActivity: {
         'date': '2026-10-12',
-        'title': sport == 'BIKE' ? 'Grundlagenfahrt' : sport == 'RUN' ? 'Tempodauerlauf' : 'Technikblock',
+        'title': sport == 'BIKE'
+            ? 'Grundlagenfahrt'
+            : sport == 'RUN'
+                ? 'Tempodauerlauf'
+                : 'Technikblock',
         'sport': sport,
         'load': 45 + (i * 6) % 75,
       },
       raceGoal: {
-        'title': sport == 'TRIATHLON' ? 'Challenge Roth' : sport == 'RUN' ? 'Berlin Marathon' : 'Cyclassics',
+        'title': sport == 'TRIATHLON'
+            ? 'Challenge Roth'
+            : sport == 'RUN'
+                ? 'Berlin Marathon'
+                : 'Cyclassics',
         'date': '2027-06-20',
         'daysRemaining': raceDays,
       },
-      alert: i == 3 ? 'NO_ACTIVITY_7D' : i == 7 ? 'LOAD_SPIKE' : null,
+      alert: i == 3
+          ? 'NO_ACTIVITY_7D'
+          : i == 7
+              ? 'LOAD_SPIKE'
+              : null,
       updatedAt: DateTime.now(),
     );
   });

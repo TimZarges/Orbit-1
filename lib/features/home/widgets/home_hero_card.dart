@@ -57,7 +57,8 @@ class HomeHeroCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: _getSportColor(plannedWorkout!.sport).withValues(alpha: 0.18),
+                    color: _getSportColor(plannedWorkout!.sport)
+                        .withValues(alpha: 0.18),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
@@ -100,8 +101,10 @@ class HomeHeroCard extends StatelessWidget {
                     backgroundColor: AppColors.volt,
                     foregroundColor: AppColors.navy,
                     elevation: 0,
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 10),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10)),
                   ),
                   child: Text(
                     'Details',
@@ -123,7 +126,8 @@ class HomeHeroCard extends StatelessWidget {
                     color: const Color(0xFF1E293B),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Icon(Icons.self_improvement, color: AppColors.volt, size: 24),
+                  child: const Icon(Icons.self_improvement,
+                      color: AppColors.volt, size: 24),
                 ),
                 const SizedBox(width: 14),
                 Expanded(

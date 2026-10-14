@@ -190,7 +190,9 @@ class WorkoutParser {
       return [];
     }
 
-    final rawSegments = _splitByTopLevelDelimiter(s, startOffset, endOffset, const {',', '/'});
+    final delimiters = isTopLevel ? const {','} : const {',', '/'};
+    final rawSegments =
+        _splitByTopLevelDelimiter(s, startOffset, endOffset, delimiters);
     final blocks = <WorkoutBlock>[];
 
     for (final seg in rawSegments) {
@@ -226,7 +228,8 @@ class WorkoutParser {
     final text = s.substring(start, end).trim();
 
     // 1. Prüfung auf Gruppen-Wiederholung: z. B. `4x(...)`
-    final repeatMatch = RegExp(r'^(\d+)\s*x\s*\((.*)\)$', caseSensitive: false).firstMatch(text);
+    final repeatMatch = RegExp(r'^(\d+)\s*x\s*\((.*)\)$', caseSensitive: false)
+        .firstMatch(text);
     if (repeatMatch != null) {
       final count = int.parse(repeatMatch.group(1)!);
       if (count < 2 || count > 99) {
@@ -235,7 +238,8 @@ class WorkoutParser {
             startIndex: start,
             endIndex: start + repeatMatch.group(1)!.length + 1,
             code: 'INVALID_REPEAT_COUNT',
-            messageDe: 'Wiederholungsanzahl muss zwischen 2 und 99 liegen (war: $count).',
+            messageDe:
+                'Wiederholungsanzahl muss zwischen 2 und 99 liegen (war: $count).',
             messageEn: 'Repeat count must be between 2 and 99 (was: $count).',
           ),
         );
@@ -271,7 +275,9 @@ class WorkoutParser {
     }
 
     // 2. Prüfung auf Kurzform-Wiederholung: z. B. `8x100m CSS / 20"` oder `5x1000m @4:30/km / 90"`
-    final shortRepeatMatch = RegExp(r'^(\d+)\s*x\s*([^/]+)\s*/\s*(.+)$', caseSensitive: false).firstMatch(text);
+    final shortRepeatMatch =
+        RegExp(r'^(\d+)\s*x\s*([^/]+)\s*/\s*(.+)$', caseSensitive: false)
+            .firstMatch(text);
     if (shortRepeatMatch != null) {
       final count = int.parse(shortRepeatMatch.group(1)!);
       if (count < 2 || count > 99) {
@@ -339,7 +345,10 @@ class WorkoutParser {
 
     // 2. Explizite Rolle extrahieren (falls vorhanden, z. B. `WU: 10' Z1` oder `Pause: 2'`)
     var role = defaultRole;
-    final roleMatch = RegExp(r'^(WU|CD|WARMUP|COOLDOWN|WORK|REST|PAUSE|MAIN)\s*:\s*', caseSensitive: false).firstMatch(text);
+    final roleMatch = RegExp(
+            r'^(WU|CD|WARMUP|COOLDOWN|WORK|REST|PAUSE|MAIN)\s*:\s*',
+            caseSensitive: false)
+        .firstMatch(text);
     if (roleMatch != null) {
       final rolePrefix = roleMatch.group(1)!;
       role = WorkoutRole.fromSchemaString(rolePrefix);
@@ -348,10 +357,14 @@ class WorkoutParser {
 
     // 3. Cadence extrahieren: `@90rpm`, `@90-95rpm`, `@180spm`
     WorkoutCadence? cadence;
-    final cadenceMatch = RegExp(r'@(\d+)(?:-(\d+))?\s*(rpm|spm)', caseSensitive: false).firstMatch(text);
+    final cadenceMatch =
+        RegExp(r'@(\d+)(?:-(\d+))?\s*(rpm|spm)', caseSensitive: false)
+            .firstMatch(text);
     if (cadenceMatch != null) {
       final low = int.parse(cadenceMatch.group(1)!);
-      final high = cadenceMatch.group(2) != null ? int.parse(cadenceMatch.group(2)!) : low;
+      final high = cadenceMatch.group(2) != null
+          ? int.parse(cadenceMatch.group(2)!)
+          : low;
       cadence = WorkoutCadence(low: low, high: high);
       text = text.replaceRange(cadenceMatch.start, cadenceMatch.end, '').trim();
     }
@@ -365,7 +378,8 @@ class WorkoutParser {
 
     if (targetMatch != null) {
       final targetStr = targetMatch.group(1)!.trim();
-      target = _parseTarget(targetStr, startIndex, startIndex + targetStr.length, errors);
+      target = _parseTarget(
+          targetStr, startIndex, startIndex + targetStr.length, errors);
       text = text.substring(targetMatch.end).trim();
     } else {
       errors.add(
@@ -373,8 +387,10 @@ class WorkoutParser {
           startIndex: startIndex,
           endIndex: endIndex,
           code: 'MISSING_OR_INVALID_TARGET',
-          messageDe: 'Zielvorgabe (Dauer wie 10\' oder Distanz wie 400m) fehlt oder ist ungültig.',
-          messageEn: 'Target (duration like 10\' or distance like 400m) is missing or invalid.',
+          messageDe:
+              'Zielvorgabe (Dauer wie 10\' oder Distanz wie 400m) fehlt oder ist ungültig.',
+          messageEn:
+              'Target (duration like 10\' or distance like 400m) is missing or invalid.',
         ),
       );
       return null;
@@ -400,7 +416,8 @@ class WorkoutParser {
   }
 
   /// Parst eine Zielvorgabe (Dauer oder Distanz).
-  WorkoutTarget? _parseTarget(String s, int start, int end, List<WorkoutParseError> errors) {
+  WorkoutTarget? _parseTarget(
+      String s, int start, int end, List<WorkoutParseError> errors) {
     final lower = s.toLowerCase();
 
     // 1. Distanz in km
@@ -493,7 +510,9 @@ class WorkoutParser {
     final t = s.trim();
     if (t.isEmpty) {
       // Leere Intensität: Fallback auf Z1 oder Free
-      return sport.toUpperCase() == 'STRENGTH' ? const FreeIntensity() : const ZoneIntensity.single(1);
+      return sport.toUpperCase() == 'STRENGTH'
+          ? const FreeIntensity()
+          : const ZoneIntensity.single(1);
     }
 
     final upper = t.toUpperCase();
@@ -507,17 +526,20 @@ class WorkoutParser {
     }
 
     // 2. Zonen: `Z1`..`Z7` oder Bereiche `Z2-Z3`
-    final zoneMatch = RegExp(r'^Z([1-7])(?:-Z?([1-7]))?$', caseSensitive: false).firstMatch(upper);
+    final zoneMatch = RegExp(r'^Z([1-7])(?:-Z?([1-7]))?$', caseSensitive: false)
+        .firstMatch(upper);
     if (zoneMatch != null) {
       final low = int.parse(zoneMatch.group(1)!);
-      final high = zoneMatch.group(2) != null ? int.parse(zoneMatch.group(2)!) : low;
+      final high =
+          zoneMatch.group(2) != null ? int.parse(zoneMatch.group(2)!) : low;
       if (low > high) {
         errors.add(
           WorkoutParseError(
             startIndex: start,
             endIndex: end,
             code: 'INVALID_ZONE_RANGE',
-            messageDe: 'Zonenbereich ungültig: Z$low-Z$high (erste Zone muss kleiner/gleich sein).',
+            messageDe:
+                'Zonenbereich ungültig: Z$low-Z$high (erste Zone muss kleiner/gleich sein).',
             messageEn: 'Invalid zone range: Z$low-Z$high.',
           ),
         );
@@ -527,7 +549,8 @@ class WorkoutParser {
     }
 
     // 3. % FTP: `85%FTP`, `90-95%FTP`, `85% FTP`
-    final ftpMatch = RegExp(r'^(\d+)(?:-(\d+))?%\s*FTP$', caseSensitive: false).firstMatch(upper);
+    final ftpMatch = RegExp(r'^(\d+)(?:-(\d+))?%\s*FTP$', caseSensitive: false)
+        .firstMatch(upper);
     if (ftpMatch != null) {
       if (sport.toUpperCase() != 'BIKE') {
         errors.add(
@@ -541,12 +564,15 @@ class WorkoutParser {
         );
       }
       final low = int.parse(ftpMatch.group(1)!);
-      final high = ftpMatch.group(2) != null ? int.parse(ftpMatch.group(2)!) : low;
+      final high =
+          ftpMatch.group(2) != null ? int.parse(ftpMatch.group(2)!) : low;
       return PctFtpIntensity(low: low, high: high);
     }
 
     // 4. % LTHR: `88%LTHR`, `85-90%LTHR`
-    final lthrMatch = RegExp(r'^(\d+)(?:-(\d+))?%\s*LTHR$', caseSensitive: false).firstMatch(upper);
+    final lthrMatch =
+        RegExp(r'^(\d+)(?:-(\d+))?%\s*LTHR$', caseSensitive: false)
+            .firstMatch(upper);
     if (lthrMatch != null) {
       if (sport.toUpperCase() != 'BIKE' && sport.toUpperCase() != 'RUN') {
         errors.add(
@@ -560,7 +586,8 @@ class WorkoutParser {
         );
       }
       final low = int.parse(lthrMatch.group(1)!);
-      final high = lthrMatch.group(2) != null ? int.parse(lthrMatch.group(2)!) : low;
+      final high =
+          lthrMatch.group(2) != null ? int.parse(lthrMatch.group(2)!) : low;
       return PctLthrIntensity(low: low, high: high);
     }
 
@@ -580,7 +607,8 @@ class WorkoutParser {
       if (upper == 'CSS') {
         return const CssOffsetIntensity(offsetSecPer100m: 0);
       }
-      final offsetMatch = RegExp(r'^CSS([+-]\d+)["”]?$', caseSensitive: false).firstMatch(upper);
+      final offsetMatch = RegExp(r'^CSS([+-]\d+)["”]?$', caseSensitive: false)
+          .firstMatch(upper);
       if (offsetMatch != null) {
         final offset = int.parse(offsetMatch.group(1)!);
         return CssOffsetIntensity(offsetSecPer100m: offset);
@@ -588,7 +616,8 @@ class WorkoutParser {
     }
 
     // 6. Lauf-Pace: `@4:30/km` oder `4:30/km`
-    final runPaceMatch = RegExp(r'^@?(\d+):(\d{2})/KM$', caseSensitive: false).firstMatch(upper);
+    final runPaceMatch =
+        RegExp(r'^@?(\d+):(\d{2})/KM$', caseSensitive: false).firstMatch(upper);
     if (runPaceMatch != null) {
       if (sport.toUpperCase() != 'RUN') {
         errors.add(
@@ -607,7 +636,9 @@ class WorkoutParser {
     }
 
     // 7. Schwimm-Pace: `@1:45/100m` oder `1:45/100m`
-    final swimPaceMatch = RegExp(r'^@?(\d+):(\d{2})/100M$', caseSensitive: false).firstMatch(upper);
+    final swimPaceMatch =
+        RegExp(r'^@?(\d+):(\d{2})/100M$', caseSensitive: false)
+            .firstMatch(upper);
     if (swimPaceMatch != null) {
       if (sport.toUpperCase() != 'SWIM') {
         errors.add(
@@ -653,7 +684,8 @@ class WorkoutParser {
 
     // Letzter Block
     final last = result.last;
-    if (last is StepBlock && (last.role == WorkoutRole.work || last.role == WorkoutRole.rest)) {
+    if (last is StepBlock &&
+        (last.role == WorkoutRole.work || last.role == WorkoutRole.rest)) {
       result[result.length - 1] = last.copyWith(role: WorkoutRole.cooldown);
     }
 
@@ -679,15 +711,23 @@ class WorkoutParser {
       } else if (char == ')') {
         parenDepth = math.max(0, parenDepth - 1);
       } else if (parenDepth == 0 && delimiters.contains(char)) {
-        segments.add(
-          _Segment(
-            start: currentStart,
-            end: i,
-            delimiterBefore: lastDelim,
-          ),
-        );
-        currentStart = i + 1;
-        lastDelim = char;
+        // Nicht an '/' trennen, wenn es sich um eine Pace-Einheit (/km, /100m, /mi, /100y) handelt
+        final isPaceUnit = char == '/' &&
+            s.substring(i).startsWith(
+                  RegExp(r'^/(?:km|100m|mi|100y)(?:\s|[,\)/]|$)',
+                      caseSensitive: false),
+                );
+        if (!isPaceUnit) {
+          segments.add(
+            _Segment(
+              start: currentStart,
+              end: i,
+              delimiterBefore: lastDelim,
+            ),
+          );
+          currentStart = i + 1;
+          lastDelim = char;
+        }
       }
     }
 

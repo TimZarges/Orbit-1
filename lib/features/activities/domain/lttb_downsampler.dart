@@ -42,7 +42,8 @@ class LttbDownsampler {
         avgY /= avgCount;
       } else {
         avgX = data[min(avgRangeStart, data.length - 1)].timeSec.toDouble();
-        avgY = _getRepresentativeValue(data[min(avgRangeStart, data.length - 1)]);
+        avgY =
+            _getRepresentativeValue(data[min(avgRangeStart, data.length - 1)]);
       }
 
       // 2. Finde den Punkt im aktuellen Bucket (Bucket B), der mit A und dem Durchschnitt von C das größte Dreieck aufspannt
@@ -61,8 +62,8 @@ class LttbDownsampler {
 
         // Dreiecksfläche = 0.5 * |x_A*(y_B - y_C) + x_B*(y_C - y_A) + x_C*(y_A - y_B)|
         final area = ((pointAX - avgX) * (pointY - pointAY) -
-                (pointAX - pointX) * (avgY - pointAY))
-            .abs() *
+                    (pointAX - pointX) * (avgY - pointAY))
+                .abs() *
             0.5;
 
         if (area > maxArea) {

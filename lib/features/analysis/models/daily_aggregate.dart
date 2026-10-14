@@ -77,7 +77,8 @@ class DailyAggregate {
       metricsVersion: map['metricsVersion'] as String?,
       sportsBreakdownSec: sportsMap,
       zoneBreakdownSec: zonesList,
-      activityCount: (map['activityCount'] as num?)?.toInt() ?? (map['dailyLoad'] != null && (map['dailyLoad'] as num) > 0 ? 1 : 0),
+      activityCount: (map['activityCount'] as num?)?.toInt() ??
+          (map['dailyLoad'] != null && (map['dailyLoad'] as num) > 0 ? 1 : 0),
     );
   }
 

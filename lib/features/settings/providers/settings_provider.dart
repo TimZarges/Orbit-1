@@ -30,3 +30,6 @@ final settingsControllerProvider =
     NotifierProvider<SettingsController, AppSettings>(() {
   return SettingsController();
 });
+
+/// Alias für settingsControllerProvider
+final settingsProvider = settingsControllerProvider;

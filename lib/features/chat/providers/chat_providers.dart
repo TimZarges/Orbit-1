@@ -7,17 +7,20 @@ final chatRepositoryProvider = Provider<ChatRepository>((ref) {
   return ChatRepository();
 });
 
-final conversationProvider = StreamProvider.family<ChatConversation?, String>((ref, chatId) {
+final conversationProvider =
+    StreamProvider.family<ChatConversation?, String>((ref, chatId) {
   final repo = ref.watch(chatRepositoryProvider);
   return repo.watchConversation(chatId);
 });
 
-final userConversationsProvider = StreamProvider.family<List<ChatConversation>, String>((ref, uid) {
+final userConversationsProvider =
+    StreamProvider.family<List<ChatConversation>, String>((ref, uid) {
   final repo = ref.watch(chatRepositoryProvider);
   return repo.watchUserConversations(uid);
 });
 
-final messagesProvider = StreamProvider.family<List<ChatMessage>, String>((ref, chatId) {
+final messagesProvider =
+    StreamProvider.family<List<ChatMessage>, String>((ref, chatId) {
   final repo = ref.watch(chatRepositoryProvider);
   return repo.watchMessages(chatId);
 });

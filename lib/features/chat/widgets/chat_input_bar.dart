@@ -81,12 +81,15 @@ class _ChatInputBarState extends State<ChatInputBar> {
                 ),
                 title: Text(
                   'Aktivität teilen',
-                  style: AppTypography.body.copyWith(fontWeight: FontWeight.bold, color: AppColors.navy),
+                  style: AppTypography.body.copyWith(
+                      fontWeight: FontWeight.bold, color: AppColors.navy),
                 ),
-                subtitle: const Text('Momentaufnahme einer absolvierten Einheit senden.'),
+                subtitle: const Text(
+                    'Momentaufnahme einer absolvierten Einheit senden.'),
                 onTap: () async {
                   Navigator.of(ctx).pop();
-                  final snapshot = await ActivitySharePickerSheet.show(context, widget.athleteId);
+                  final snapshot = await ActivitySharePickerSheet.show(
+                      context, widget.athleteId);
                   if (snapshot != null) {
                     widget.onShareActivity(snapshot);
                   }
@@ -99,11 +102,13 @@ class _ChatInputBarState extends State<ChatInputBar> {
                     color: AppColors.techGrey,
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Icon(Icons.image_outlined, color: AppColors.navy, size: 20),
+                  child: Icon(Icons.image_outlined,
+                      color: AppColors.navy, size: 20),
                 ),
                 title: Text(
                   'Bild senden',
-                  style: AppTypography.body.copyWith(fontWeight: FontWeight.bold, color: AppColors.navy),
+                  style: AppTypography.body.copyWith(
+                      fontWeight: FontWeight.bold, color: AppColors.navy),
                 ),
                 subtitle: const Text('Aus Galerie oder Kamera (max. 10 MB).'),
                 onTap: () {
@@ -118,11 +123,13 @@ class _ChatInputBarState extends State<ChatInputBar> {
                     color: AppColors.techGrey,
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Icon(Icons.attach_file, color: AppColors.navy, size: 20),
+                  child:
+                      Icon(Icons.attach_file, color: AppColors.navy, size: 20),
                 ),
                 title: Text(
                   'Datei anhängen',
-                  style: AppTypography.body.copyWith(fontWeight: FontWeight.bold, color: AppColors.navy),
+                  style: AppTypography.body.copyWith(
+                      fontWeight: FontWeight.bold, color: AppColors.navy),
                 ),
                 subtitle: const Text('FIT-Datei oder Dokument (max. 25 MB).'),
                 onTap: () {
@@ -158,7 +165,8 @@ class _ChatInputBarState extends State<ChatInputBar> {
                 Expanded(
                   child: Text(
                     'Verknüpfung beendet – Der Chat ist archiviert und kann nicht mehr fortgeführt werden.',
-                    style: AppTypography.label.copyWith(color: Colors.grey.shade600),
+                    style: AppTypography.label
+                        .copyWith(color: Colors.grey.shade600),
                   ),
                 ),
               ],
@@ -177,7 +185,8 @@ class _ChatInputBarState extends State<ChatInputBar> {
           children: [
             // Anhang-Button
             IconButton(
-              icon: Icon(Icons.add_circle_outline, color: AppColors.navy, size: 26),
+              icon: Icon(Icons.add_circle_outline,
+                  color: AppColors.navy, size: 26),
               onPressed: _showAttachmentOptions,
             ),
             const SizedBox(width: 4),
@@ -190,7 +199,8 @@ class _ChatInputBarState extends State<ChatInputBar> {
                   borderRadius: BorderRadius.circular(22),
                   border: Border.all(color: AppColors.cardBorder),
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
                 child: TextField(
                   controller: _controller,
                   maxLines: 5,
@@ -202,7 +212,8 @@ class _ChatInputBarState extends State<ChatInputBar> {
                     isDense: true,
                     contentPadding: EdgeInsets.symmetric(vertical: 8),
                   ),
-                  style: AppTypography.body.copyWith(fontSize: 15, color: AppColors.navy),
+                  style: AppTypography.body
+                      .copyWith(fontSize: 15, color: AppColors.navy),
                 ),
               ),
             ),

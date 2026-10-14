@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../core/design/app_colors.dart';
-import '../../../core/design/app_spacing.dart';
 import '../../activities/models/activity.dart';
 import '../../activities/providers/activities_provider.dart';
 import '../models/planned_workout.dart';
@@ -64,7 +63,9 @@ class WorkoutDetailSheet extends ConsumerWidget {
                 height: 4,
                 margin: const EdgeInsets.only(bottom: 16),
                 decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF475569) : const Color(0xFFCBD5E1),
+                  color: isDark
+                      ? const Color(0xFF475569)
+                      : const Color(0xFFCBD5E1),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -74,9 +75,11 @@ class WorkoutDetailSheet extends ConsumerWidget {
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: _getSportColor(workout.sport).withValues(alpha: 0.15),
+                    color:
+                        _getSportColor(workout.sport).withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
@@ -91,7 +94,9 @@ class WorkoutDetailSheet extends ConsumerWidget {
                 Text(
                   workout.localDate,
                   style: theme.textTheme.bodyMedium?.copyWith(
-                    color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                    color: isDark
+                        ? const Color(0xFF94A3B8)
+                        : const Color(0xFF64748B),
                   ),
                 ),
                 const Spacer(),
@@ -102,11 +107,15 @@ class WorkoutDetailSheet extends ConsumerWidget {
                       context: context,
                       builder: (ctx) => AlertDialog(
                         title: const Text('Einheit löschen?'),
-                        content: const Text('Möchtest du diese geplante Einheit wirklich löschen?'),
+                        content: const Text(
+                            'Möchtest du diese geplante Einheit wirklich löschen?'),
                         actions: [
-                          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Abbrechen')),
+                          TextButton(
+                              onPressed: () => Navigator.pop(ctx, false),
+                              child: const Text('Abbrechen')),
                           ElevatedButton(
-                            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                            style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.red),
                             onPressed: () => Navigator.pop(ctx, true),
                             child: const Text('Löschen'),
                           ),
@@ -127,15 +136,19 @@ class WorkoutDetailSheet extends ConsumerWidget {
             // Titel
             Text(
               workout.title,
-              style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+              style: theme.textTheme.headlineSmall
+                  ?.copyWith(fontWeight: FontWeight.bold),
             ),
 
-            if (workout.description != null && workout.description!.isNotEmpty) ...[
+            if (workout.description != null &&
+                workout.description!.isNotEmpty) ...[
               const SizedBox(height: 8),
               Text(
                 workout.description!,
                 style: theme.textTheme.bodyMedium?.copyWith(
-                  color: isDark ? const Color(0xFFCBD5E1) : const Color(0xFF475569),
+                  color: isDark
+                      ? const Color(0xFFCBD5E1)
+                      : const Color(0xFF475569),
                 ),
               ),
             ],
@@ -147,14 +160,17 @@ class WorkoutDetailSheet extends ConsumerWidget {
             // Geplante Werte
             Row(
               children: [
-                _buildInfoColumn('Geplante Dauer', workout.formattedDuration, theme),
+                _buildInfoColumn(
+                    'Geplante Dauer', workout.formattedDuration, theme),
                 if (workout.formattedDistance != null) ...[
                   const SizedBox(width: 24),
-                  _buildInfoColumn('Distanz', workout.formattedDistance!, theme),
+                  _buildInfoColumn(
+                      'Distanz', workout.formattedDistance!, theme),
                 ],
                 if (workout.plannedLoad != null) ...[
                   const SizedBox(width: 24),
-                  _buildInfoColumn('Belastung', '${workout.plannedLoad!.toStringAsFixed(0)} TSS', theme),
+                  _buildInfoColumn('Belastung',
+                      '${workout.plannedLoad!.toStringAsFixed(0)} TSS', theme),
                 ],
               ],
             ),
@@ -167,18 +183,22 @@ class WorkoutDetailSheet extends ConsumerWidget {
                 decoration: BoxDecoration(
                   color: const Color(0xFF10B981).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.3)),
+                  border: Border.all(
+                      color: const Color(0xFF10B981).withValues(alpha: 0.3)),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       children: [
-                        const Icon(Icons.check_circle, size: 18, color: Color(0xFF10B981)),
+                        const Icon(Icons.check_circle,
+                            size: 18, color: Color(0xFF10B981)),
                         const SizedBox(width: 6),
                         Text(
                           'Absolviert: ${linkedActivity.title}',
-                          style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF10B981)),
+                          style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF10B981)),
                         ),
                       ],
                     ),
@@ -190,7 +210,9 @@ class WorkoutDetailSheet extends ConsumerWidget {
                     const SizedBox(height: 8),
                     TextButton.icon(
                       onPressed: () async {
-                        await repo.unlinkActivity(workoutId: workout.id, activityId: linkedActivity!.id);
+                        await repo.unlinkActivity(
+                            workoutId: workout.id,
+                            activityId: linkedActivity!.id);
                         if (context.mounted) Navigator.pop(context);
                       },
                       icon: const Icon(Icons.link_off, size: 16),
@@ -206,7 +228,8 @@ class WorkoutDetailSheet extends ConsumerWidget {
               const SizedBox(height: 16),
               Text(
                 'Mögliche Aktivitäten vom selben Tag zuordnen:',
-                style: theme.textTheme.labelMedium?.copyWith(fontWeight: FontWeight.bold),
+                style: theme.textTheme.labelMedium
+                    ?.copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               for (final act in sameDayUnmatched)
@@ -214,10 +237,14 @@ class WorkoutDetailSheet extends ConsumerWidget {
                   contentPadding: EdgeInsets.zero,
                   leading: const Icon(Icons.directions_run),
                   title: Text(act.title),
-                  subtitle: Text('${(act.durationSec / 60).toStringAsFixed(0)} min · ${act.sport}'),
+                  subtitle: Text(
+                      '${(act.durationSec / 60).toStringAsFixed(0)} min · ${act.sport}'),
                   trailing: ElevatedButton(
                     onPressed: () async {
-                      await repo.linkActivity(workoutId: workout.id, activityId: act.id, matchStatus: 'MANUAL');
+                      await repo.linkActivity(
+                          workoutId: workout.id,
+                          activityId: act.id,
+                          matchStatus: 'MANUAL');
                       if (context.mounted) Navigator.pop(context);
                     },
                     child: const Text('Zuordnen'),
@@ -230,7 +257,8 @@ class WorkoutDetailSheet extends ConsumerWidget {
             // Aktionen: Verschieben & Status
             Text(
               'Aktionen',
-              style: theme.textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold),
+              style: theme.textTheme.labelLarge
+                  ?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 10),
 
@@ -242,10 +270,12 @@ class WorkoutDetailSheet extends ConsumerWidget {
                   avatar: const Icon(Icons.calendar_today, size: 16),
                   label: const Text('Auf morgen verschieben'),
                   onPressed: () async {
-                    final current = DateTime.tryParse(workout.localDate) ?? DateTime.now();
+                    final current =
+                        DateTime.tryParse(workout.localDate) ?? DateTime.now();
                     final tomorrow = current.add(const Duration(days: 1));
                     final dateStr = DateFormat('yyyy-MM-dd').format(tomorrow);
-                    await repo.reschedule(workoutId: workout.id, newLocalDate: dateStr);
+                    await repo.reschedule(
+                        workoutId: workout.id, newLocalDate: dateStr);
                     if (context.mounted) Navigator.pop(context);
                   },
                 ),
@@ -253,7 +283,8 @@ class WorkoutDetailSheet extends ConsumerWidget {
                   avatar: const Icon(Icons.date_range, size: 16),
                   label: const Text('Datum wählen...'),
                   onPressed: () async {
-                    final initial = DateTime.tryParse(workout.localDate) ?? DateTime.now();
+                    final initial =
+                        DateTime.tryParse(workout.localDate) ?? DateTime.now();
                     final picked = await showDatePicker(
                       context: context,
                       initialDate: initial,
@@ -262,7 +293,8 @@ class WorkoutDetailSheet extends ConsumerWidget {
                     );
                     if (picked != null) {
                       final dateStr = DateFormat('yyyy-MM-dd').format(picked);
-                      await repo.reschedule(workoutId: workout.id, newLocalDate: dateStr);
+                      await repo.reschedule(
+                          workoutId: workout.id, newLocalDate: dateStr);
                       if (context.mounted) Navigator.pop(context);
                     }
                   },
@@ -297,15 +329,20 @@ class WorkoutDetailSheet extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: theme.textTheme.labelSmall?.copyWith(color: const Color(0xFF64748B))),
+        Text(label,
+            style: theme.textTheme.labelSmall
+                ?.copyWith(color: const Color(0xFF64748B))),
         const SizedBox(height: 2),
-        Text(value, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+        Text(value,
+            style: theme.textTheme.titleMedium
+                ?.copyWith(fontWeight: FontWeight.bold)),
       ],
     );
   }
 
   String _buildComparisonText(PlannedWorkout plan, Activity act) {
-    if (plan.plannedDurationSec == 0) return 'Dauer: ${(act.durationSec / 60).toStringAsFixed(0)} min';
+    if (plan.plannedDurationSec == 0)
+      return 'Dauer: ${(act.durationSec / 60).toStringAsFixed(0)} min';
     final percent = (act.durationSec / plan.plannedDurationSec) * 100;
     return '${percent.toStringAsFixed(0)} % der geplanten Dauer (${(act.durationSec / 60).toStringAsFixed(0)} min absolviert).';
   }

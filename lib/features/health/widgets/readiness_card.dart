@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/design/app_colors.dart';
 import '../../../core/design/app_spacing.dart';
 import '../../../l10n/app_localizations.dart';
-import '../../settings/models/app_settings.dart';
 import '../../settings/providers/settings_provider.dart';
+import '../../../core/metrics/term_resolver.dart';
 import '../domain/readiness_evaluator.dart';
 import '../models/daily_metrics.dart';
 import '../models/health_baseline.dart';
@@ -33,7 +32,8 @@ class ReadinessCard extends ConsumerWidget {
     final experienceLevel = ref.watch(settingsProvider).experienceLevel;
 
     // 1. Berechtigungsprüfung für Trainer
-    final hasPermissionAsync = ref.watch(coachHealthPermissionProvider(athleteId));
+    final hasPermissionAsync =
+        ref.watch(coachHealthPermissionProvider(athleteId));
     final hasPermission = hasPermissionAsync.valueOrNull ?? false;
 
     if (!hasPermission && !hasPermissionAsync.isLoading) {
@@ -41,7 +41,8 @@ class ReadinessCard extends ConsumerWidget {
     }
 
     // 2. Daten laden
-    final historyAsync = ref.watch(athleteDailyMetricsHistoryProvider(athleteId));
+    final historyAsync =
+        ref.watch(athleteDailyMetricsHistoryProvider(athleteId));
 
     return historyAsync.when(
       loading: () => _buildLoadingSkeleton(context, theme, isDark),
@@ -81,10 +82,12 @@ class ReadinessCard extends ConsumerWidget {
   }) {
     final statusColor = _getStatusColor(evaluation.status, isDark);
     final statusTitle = _getStatusTitle(evaluation.status, l10n);
-    final statusDescription = _getStatusDescription(evaluation.status, l10n, baseline.dataPointsCount);
+    final statusDescription = _getStatusDescription(
+        evaluation.status, l10n, baseline.dataPointsCount);
 
     final cardBg = isDark ? const Color(0xFF1E293B) : Colors.white;
-    final cardBorder = isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0);
+    final cardBorder =
+        isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0);
 
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8),
@@ -133,7 +136,9 @@ class ReadinessCard extends ConsumerWidget {
                 icon: Icon(
                   Icons.info_outline,
                   size: 20,
-                  color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                  color: isDark
+                      ? const Color(0xFF94A3B8)
+                      : const Color(0xFF64748B),
                 ),
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(),
@@ -185,7 +190,8 @@ class ReadinessCard extends ConsumerWidget {
           ),
 
           // Fortgeschritten & Experte: Kern-Messwerte und Trend
-          if (experienceLevel != ExperienceLevel.simple && evaluation.todayMetrics != null) ...[
+          if (experienceLevel != ExperienceLevel.beginner &&
+              evaluation.todayMetrics != null) ...[
             const SizedBox(height: 16),
             const Divider(height: 1),
             const SizedBox(height: 16),
@@ -223,7 +229,8 @@ class ReadinessCard extends ConsumerWidget {
             theme: theme,
             isDark: isDark,
             label: 'Ruhepuls',
-            value: today.restingHrBpm != null ? '${today.restingHrBpm} bpm' : '--',
+            value:
+                today.restingHrBpm != null ? '${today.restingHrBpm} bpm' : '--',
             deltaText: eval.restingHrDelta != null
                 ? '${eval.restingHrDelta! >= 0 ? '+' : ''}${eval.restingHrDelta!.toStringAsFixed(0)} bpm'
                 : null,
@@ -256,7 +263,8 @@ class ReadinessCard extends ConsumerWidget {
             isDark: isDark,
             label: 'Schlaf',
             value: today.formattedSleepDuration,
-            deltaText: today.sleepScore != null ? 'Score ${today.sleepScore}' : null,
+            deltaText:
+                today.sleepScore != null ? 'Score ${today.sleepScore}' : null,
             isPositiveDeltaBetter: true,
             deltaValue: null,
           ),
@@ -277,7 +285,8 @@ class ReadinessCard extends ConsumerWidget {
     final bg = isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC);
     final border = isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0);
 
-    Color deltaColor = isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
+    Color deltaColor =
+        isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
     if (deltaValue != null) {
       if (isPositiveDeltaBetter) {
         if (deltaValue >= 0) {
@@ -391,7 +400,8 @@ class ReadinessCard extends ConsumerWidget {
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
+        border: Border.all(
+            color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
       ),
       child: Row(
         children: [
@@ -401,7 +411,8 @@ class ReadinessCard extends ConsumerWidget {
               color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.lock_outline, size: 22, color: Color(0xFF64748B)),
+            child: const Icon(Icons.lock_outline,
+                size: 22, color: Color(0xFF64748B)),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -409,15 +420,19 @@ class ReadinessCard extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  l10n?.readiness_coach_no_permission ?? 'Health-Freigabe erforderlich',
-                  style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+                  l10n?.readiness_coach_no_permission ??
+                      'Health-Freigabe erforderlich',
+                  style: theme.textTheme.titleSmall
+                      ?.copyWith(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   l10n?.readiness_coach_no_permission_desc ??
                       'Der Athlet hat Health-Daten nicht freigegeben.',
                   style: theme.textTheme.bodySmall?.copyWith(
-                    color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                    color: isDark
+                        ? const Color(0xFF94A3B8)
+                        : const Color(0xFF64748B),
                   ),
                 ),
               ],
@@ -442,18 +457,21 @@ class ReadinessCard extends ConsumerWidget {
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E293B) : Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
+        border: Border.all(
+            color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Icon(Icons.favorite_outline, size: 20, color: Color(0xFF94A3B8)),
+              const Icon(Icons.favorite_outline,
+                  size: 20, color: Color(0xFF94A3B8)),
               const SizedBox(width: 8),
               Text(
                 l10n?.readiness_title ?? 'Tagesform',
-                style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                style: theme.textTheme.titleMedium
+                    ?.copyWith(fontWeight: FontWeight.bold),
               ),
             ],
           ),
@@ -478,7 +496,8 @@ class ReadinessCard extends ConsumerWidget {
                 onPressed: () async {
                   await HealthDemoSeeder.seedDemoMetricsForAthlete(athleteId);
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('30 Tage Demo-Health-Daten geladen!')),
+                    const SnackBar(
+                        content: Text('30 Tage Demo-Health-Daten geladen!')),
                   );
                 },
                 child: const Text('Demo laden'),
@@ -490,7 +509,8 @@ class ReadinessCard extends ConsumerWidget {
     );
   }
 
-  Widget _buildLoadingSkeleton(BuildContext context, ThemeData theme, bool isDark) {
+  Widget _buildLoadingSkeleton(
+      BuildContext context, ThemeData theme, bool isDark) {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8),
       height: 130,
@@ -561,7 +581,8 @@ class ReadinessCard extends ConsumerWidget {
     }
   }
 
-  String _getStatusDescription(ReadinessStatus status, AppLocalizations? l10n, int count) {
+  String _getStatusDescription(
+      ReadinessStatus status, AppLocalizations? l10n, int count) {
     switch (status) {
       case ReadinessStatus.normal:
         return l10n?.readiness_normal_desc ??
@@ -596,7 +617,8 @@ class ReadinessCard extends ConsumerWidget {
               children: [
                 Text(
                   l10n?.health_info_title ?? 'Über die Tagesform',
-                  style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+                  style: theme.textTheme.headlineSmall
+                      ?.copyWith(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 14),
                 Text(
@@ -612,7 +634,8 @@ class ReadinessCard extends ConsumerWidget {
                   decoration: BoxDecoration(
                     color: Colors.amber.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.amber.withValues(alpha: 0.4)),
+                    border:
+                        Border.all(color: Colors.amber.withValues(alpha: 0.4)),
                   ),
                   child: Text(
                     l10n?.health_info_disclaimer ??
@@ -620,7 +643,6 @@ class ReadinessCard extends ConsumerWidget {
                     style: theme.textTheme.bodySmall?.copyWith(height: 1.4),
                   ),
                 ),
-
                 const SizedBox(height: 20),
                 SizedBox(
                   width: double.infinity,

@@ -7,7 +7,9 @@ class WorkoutFormatter {
   /// Formatiert eine gesamte [WorkoutStructure] in kanonischen Text.
   static String format(WorkoutStructure structure) {
     if (structure.blocks.isEmpty) return '';
-    return structure.blocks.map((b) => _formatBlock(b, structure.sport)).join(', ');
+    return structure.blocks
+        .map((b) => _formatBlock(b, structure.sport))
+        .join(', ');
   }
 
   /// Formatiert einen einzelnen Block (Step oder Repeat).
@@ -26,16 +28,21 @@ class WorkoutFormatter {
       return '${repeat.count}x()';
     }
 
-    // Wenn es genau 2 Blöcke sind (typisch Belastung / Pause): mit '/' trennen
-    if (repeat.blocks.length == 2) {
-      final work = _formatBlock(repeat.blocks[0], sport);
-      final rest = _formatBlock(repeat.blocks[1], sport);
-      return '${repeat.count}x($work / $rest)';
+    final buffer = StringBuffer('${repeat.count}x(');
+    for (int i = 0; i < repeat.blocks.length; i++) {
+      final block = repeat.blocks[i];
+      if (i > 0) {
+        final isRest = block is StepBlock && block.role == WorkoutRole.rest;
+        if (isRest) {
+          buffer.write(' / ');
+        } else {
+          buffer.write(', ');
+        }
+      }
+      buffer.write(_formatBlock(block, sport));
     }
-
-    // Sonst Blöcke kommagetrennt innerhalb der Klammern
-    final inner = repeat.blocks.map((b) => _formatBlock(b, sport)).join(', ');
-    return '${repeat.count}x($inner)';
+    buffer.write(')');
+    return buffer.toString();
   }
 
   /// Formatiert einen Einzelschritt.

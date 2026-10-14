@@ -22,7 +22,8 @@ class ThresholdProposalCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final deltaIsPositive = proposal.delta >= 0;
-    final deltaColor = deltaIsPositive ? const Color(0xFF10B981) : const Color(0xFFF59E0B);
+    final deltaColor =
+        deltaIsPositive ? const Color(0xFF10B981) : const Color(0xFFF59E0B);
 
     return Container(
       decoration: BoxDecoration(
@@ -53,12 +54,14 @@ class ThresholdProposalCard extends StatelessWidget {
                       color: AppColors.techGrey,
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: Icon(_getSportIcon(proposal.sport), size: 16, color: AppColors.navy),
+                    child: Icon(_getSportIcon(proposal.sport),
+                        size: 16, color: AppColors.navy),
                   ),
                   const SizedBox(width: 8),
                   Text(
                     proposal.typeLabelDe,
-                    style: AppTypography.title.copyWith(fontSize: 15, color: AppColors.navy),
+                    style: AppTypography.title
+                        .copyWith(fontSize: 15, color: AppColors.navy),
                   ),
                 ],
               ),
@@ -67,7 +70,8 @@ class ThresholdProposalCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: proposal.confidenceColor.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: proposal.confidenceColor.withValues(alpha: 0.3)),
+                  border: Border.all(
+                      color: proposal.confidenceColor.withValues(alpha: 0.3)),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -128,7 +132,8 @@ class ThresholdProposalCard extends StatelessWidget {
               if (proposal.currentValue != null)
                 Text(
                   'Bisher: ${_formatValue(proposal.type, proposal.currentValue!)}',
-                  style: AppTypography.label.copyWith(color: Colors.grey.shade600),
+                  style:
+                      AppTypography.label.copyWith(color: Colors.grey.shade600),
                 ),
             ],
           ),
@@ -155,12 +160,14 @@ class ThresholdProposalCard extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  Icon(Icons.lock_outline, size: 14, color: Colors.grey.shade600),
+                  Icon(Icons.lock_outline,
+                      size: 14, color: Colors.grey.shade600),
                   const SizedBox(width: 6),
                   Expanded(
                     child: Text(
                       'Nur der Athlet selbst kann Vorschläge übernehmen oder verwerfen.',
-                      style: AppTypography.label.copyWith(color: Colors.grey.shade600),
+                      style: AppTypography.label
+                          .copyWith(color: Colors.grey.shade600),
                     ),
                   ),
                 ],
@@ -171,7 +178,8 @@ class ThresholdProposalCard extends StatelessWidget {
               children: [
                 // Warum? Button
                 TextButton.icon(
-                  onPressed: () => ThresholdExplanationSheet.show(context, proposal),
+                  onPressed: () =>
+                      ThresholdExplanationSheet.show(context, proposal),
                   icon: const Icon(Icons.help_outline, size: 16),
                   label: const Text('Warum?'),
                   style: TextButton.styleFrom(
@@ -187,8 +195,10 @@ class ThresholdProposalCard extends StatelessWidget {
                   style: OutlinedButton.styleFrom(
                     foregroundColor: Colors.grey.shade700,
                     side: BorderSide(color: Colors.grey.shade300),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10)),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                   ),
                   child: const Text('Ignorieren'),
                 ),
@@ -201,8 +211,10 @@ class ThresholdProposalCard extends StatelessWidget {
                     backgroundColor: AppColors.volt,
                     foregroundColor: AppColors.navy,
                     elevation: 0,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10)),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   ),
                   child: Text(
                     'Übernehmen',
