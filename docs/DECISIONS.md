@@ -260,3 +260,13 @@
   3. Trennung des öffentlichen Status in `users/{uid}/integrationStatus/garmin` für die UI-Anzeige (`state: CONNECTED`).
   4. Bereitstellung eines öffentlichen Webhook-Endpunkts (`garminWebhook`) zur Entgegennahme von Push-Benachrichtigungen.
 - **Alternativen:** Direkter Token-Austausch über den mobilen Client (verworfen, da OAuth 1.0a Client Secrets erfordert, die niemals in die App kompiliert werden dürfen).
+
+### 2026-10-14: [Rekonstruiert in Phase 17] Manuelle Dart-Datenmodelle statt Code-Generierung mit Freezed
+- **Kontext:** In der ursprünglichen Architektur-Festlegung (2026-10-08) war `freezed` + `json_serializable` vorgesehen. In der tatsächlichen Implementierung (Phasen 01–16) wurden sämtliche Datenmodelle (`ActivityModel`, `ChatMessage`, `WorkoutBlock`, `PlannedWorkout`, `DailyMetrics` etc.) als handgeschriebene, unveränderliche Dart-Klassen mit manuellen `toMap()`/`fromFirestore()` und `copyWith()`-Methoden umgesetzt.
+- **Entscheidung:** Beibehaltung der manuell geschriebenen Dart-Modelle und Verzicht auf `@freezed`/`build_runner` im Produktionscode.
+- **Begründung:**
+  1. Schnellere Build- und Entwicklungszyklen ohne zeitraubenden `build_runner`-Kompilierschritt.
+  2. Robuste, maßgeschneiderte Deserialisierung für heterogene Firestore-Typen (`Timestamp`, `DateTime`, ISO-Strings, Firestore `FieldValue`).
+  3. Null Runtime-Overhead und keine Abhängigkeit von generiertem `*.freezed.dart`-Code.
+  4. Einfacheres Refactoring und direktere Fehlermeldungen des Dart-Analyzers.
+- **Alternativen:** Nachträgliche Umstellung aller über 40 Modelle auf `@freezed` (verworfen wegen hohem Regressionsrisiko und ohne Mehrwert für den Beta-Launch).

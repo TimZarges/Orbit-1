@@ -113,17 +113,17 @@ service cloud.firestore {
 
     function isCoachForHealth(userId) {
       let linkDoc = get(/databases/$(database)/documents/coachLinks/$(userId + '_' + request.auth.uid));
-      return linkDoc != null && linkDoc.data.permissions.health == true;
+      return linkDoc != null && linkDoc.data.status == 'ACTIVE' && linkDoc.data.permissions.health == true;
     }
 
     function isCoachForCalendar(athleteId) {
       let linkDoc = get(/databases/$(database)/documents/coachLinks/$(athleteId + '_' + request.auth.uid));
-      return linkDoc != null && linkDoc.data.permissions.calendar == true;
+      return linkDoc != null && linkDoc.data.status == 'ACTIVE' && linkDoc.data.permissions.calendar == true;
     }
 
     function isCoachForActivities(athleteId) {
       let linkDoc = get(/databases/$(database)/documents/coachLinks/$(athleteId + '_' + request.auth.uid));
-      return linkDoc != null && linkDoc.data.permissions.activities == true;
+      return linkDoc != null && linkDoc.data.status == 'ACTIVE' && linkDoc.data.permissions.activities == true;
     }
 
     function isValidThresholdProposalUpdate() {
@@ -289,7 +289,10 @@ service cloud.firestore {
     }
 
     match /activities/{activityId} {
-      allow read: if isAuthenticated() && (resource.data.athleteId == request.auth.uid || resource.data.coachId == request.auth.uid);
+      allow read: if isAuthenticated() && (
+        resource.data.athleteId == request.auth.uid ||
+        (resource.data.coachId == request.auth.uid && isCoachForActivities(resource.data.athleteId))
+      );
       allow create: if isAuthenticated() && request.resource.data.athleteId == request.auth.uid; // Prototype
       allow update: if isAuthenticated() && resource.data.athleteId == request.auth.uid && request.resource.data.athleteId == resource.data.athleteId; // Prototype, immutable athleteId
       allow delete: if isAuthenticated() && resource.data.athleteId == request.auth.uid;
@@ -298,7 +301,6 @@ service cloud.firestore {
     match /plannedWorkouts/{workoutId} {
       allow read: if isAuthenticated() && (
         resource.data.athleteId == request.auth.uid ||
-        resource.data.coachId == request.auth.uid ||
         isCoachForCalendar(resource.data.athleteId)
       );
       allow create: if isAuthenticated() && (
@@ -322,7 +324,8 @@ service cloud.firestore {
         resource.data.ownerId == request.auth.uid ||
         (
           resource.data.visibility == 'SHARED_WITH_MY_ATHLETES' &&
-          exists(/databases/$(database)/documents/coachLinks/$(request.auth.uid + '_' + resource.data.ownerId))
+          exists(/databases/$(database)/documents/coachLinks/$(request.auth.uid + '_' + resource.data.ownerId)) &&
+          get(/databases/$(database)/documents/coachLinks/$(request.auth.uid + '_' + resource.data.ownerId)).data.status == 'ACTIVE'
         )
       );
       allow create: if isAuthenticated() &&

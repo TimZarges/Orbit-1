@@ -25,7 +25,7 @@ class HomeHeroCard extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFF0F172A), // Deep Navy Hero
+        color: AppColors.navy, // Deep Navy Hero (#001F47) gemäß DESIGN.md
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: const Color(0xFF1E293B)),
         boxShadow: [
