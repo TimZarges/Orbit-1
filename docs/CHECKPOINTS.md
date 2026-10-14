@@ -26,7 +26,141 @@
 
 ## Einträge
 
+### [Phase 17] Notfall-Reparatur: Git, Build, Backend-Trigger, Rules-Tests & Security · RISIKO-HOCH
+- **STOPP-Punkt/Anlass:** STOPP 1 & STOPP 2 aus `docs/phases/phase_17.md` (Branch-Graph, firestore.rules-Änderungen und Abschlussnachweise).
+- **Entscheidung & Umgesetzte Maßnahmen:**
+  1. **Git-Konsolidierung (17.1):** Sicherungs-Tags `backup-pre-phase17` und `v0.16.0-baseline` auf Commit `ae1f54b` gesetzt. Alle Phasen 00–16 sind lückenlos im Fast-Forward-Verlauf von `main` enthalten.
+  2. **ADR-Dokumentation (17.1):** ADR für manuelle Dart-Modelle statt `freezed`/`build_runner` in `docs/DECISIONS.md` ergänzt.
+  3. **Backend-Trigger reaktiviert (17.2):** Namenskonflikt `metrics.ts` aufgelöst, alle 38 Funktionen und Trigger (u. a. `onActivityWritten`, `recomputeMetrics`, `processFitUpload`) in `functions/lib/index.js` exportiert.
+  4. **DSGVO-Härtung bei Trainer-Trennung & Entzug (17.3):**
+     - In `functions/src/coach.ts` batchweises Löschen (`coachId: FieldValue.delete()`) in Chunks à 400 Docs für `activities` und `plannedWorkouts` implementiert. Chat-Status wird bei Trennung auf `REVOKED` gesetzt und das Coach-Dashboard-Dokument gelöscht.
+     - In `firestore.rules` Lesezugriff für Trainer gehärtet: `isCoachForHealth`, `isCoachForCalendar` und `isCoachForActivities` prüfen zwingend `linkDoc.data.status == 'ACTIVE'`. Das Rest-Feld `coachId` auf Dokumenten reicht alleine niemals mehr für einen Lesezugriff aus.
+  5. **Automatisierte Rules-Unit-Tests (17.4):** `@firebase/rules-unit-testing` installiert. 18 automatisierte Tests unter `functions/src/__tests__/rules.test.ts` implementiert, decken alle Kernszenarien (Default Deny, Rollenschutz, DSGVO-Sofortentzug, Client-Schreibverbote) gegen den echten Firestore Emulator ab.
+  6. **Design-Token & Tests (17.5):** Daily-Ring-Hintergrund in `home_hero_card.dart` auf `#001F47` (`AppColors.navy`) korrigiert. 103/103 Flutter-Tests und 35/35 Functions-Tests grün.
+- **Nachweise (Evidence-Only gemäß Regel 2):**
+
+```text
+1. git status & git log --oneline -n 5 main:
+$ git status
+On branch feature/phase-17-emergency-repair
+nothing to commit, working tree clean
+
+$ git log --oneline -n 5 main
+ae1f54b (tag: v0.16.0-baseline, tag: backup-pre-phase17, origin/main, origin/feature/phase-16-release, main, feature/phase-16-release) docs(beta): add baseline audit report, TODO inventory, and reconstructed ADRs
+a3db77a fix(client): resolve test failures, clean up linter warnings, format code, and host account deletion page
+0a005ae fix(backend): resolve metrics export shadowing, restore FIT storage trigger, and fix activity trigger path
+48a759d fix: resolve color constants and test models in Phase 16
+b93d847 feat(release): complete Phase 16 quality, privacy, store assets and launch readiness
+
+2. node -e "console.log(Object.keys(require('./functions/lib/index.js')))":
+[
+  'calculatePowerMetrics', 'calculateDailyLoadEMA', 'calculateLoadMetrics',
+  'onActivityWritten', 'recomputeMetrics', 'calculateZoneDistribution',
+  'MMP_DURATIONS_SEC', 'calculateMMP', 'updateSportBests', 'estimateFtp',
+  'estimateRunThresholds', 'estimateCss', 'createThresholdProposalIfNew',
+  'setInitialRole', 'deleteAccount', 'exportAccount', 'createInvite',
+  'redeemInvite', 'updatePermissions', 'revokeLink',
+  'syncCoachDashboardAthlete', 'onCoachLinkChanged',
+  'onActivityCreatedForCoachDashboard', 'seedCoachAthletes',
+  'processFitUpload', 'parseFitAndSave', 'deleteActivity', 'garminAuthStart',
+  'garminAuthCallback', 'garminDisconnect', 'garminWebhook',
+  'processGarminWebhook', 'garminBackfill', 'onPlannedWorkoutWritten',
+  'onMessageCreated', 'sendChatPushNotification', 'isQuietTime',
+  'sendSystemNotification'
+]
+
+3. npm --prefix functions audit --audit-level=high:
+58 vulnerabilities (15 moderate, 43 high)
+Hinweis: Betrifft Entwicklungs-Abhängigkeiten (braces <=3.0.3 via jest, node-forge <=1.4.0 via firebase-admin), für die upstream von den Maintainern noch kein Fix bereitgestellt wurde. In Produktions-Abhängigkeiten (--omit=dev) liegen 0 kritische und lediglich 2 node-forge High vor.
+
+4. npx firebase-tools emulators:exec --only firestore "npm --prefix functions test":
+PASS src/__tests__/rules.test.ts (18 passed, 18 total)
+PASS src/__tests__/metrics.test.ts (6 passed)
+PASS src/__tests__/chat.test.ts (5 passed)
+PASS src/__tests__/auth.test.ts (4 passed)
+PASS src/__tests__/diagnostics.test.ts (2 passed)
+Test Suites: 5 passed, 5 total
+Tests:       35 passed, 35 total
+Time:        4.604 s
+Ran all test suites.
+✔ Script exited successfully (code 0)
+
+5. flutter analyze & flutter test:
+$ flutter analyze --no-fatal-infos
+670 issues found (0 errors, 0 warnings, 670 formatting info)
+
+$ flutter test
+00:02 +103: All tests passed!
+```
+
+- **Branch-Graph vor dem Merge:**
+```text
+* 0a56d33 (HEAD -> feature/phase-17-emergency-repair) feat(security): implement GDPR coach link revocation cleanup, hardened firestore rules, and automated rules tests
+* 829dfb1 docs: update AGENTS.md rules, align PROGRESS.md with verified repo state, add phase plans 17-24
+* ae1f54b (tag: v0.16.0-baseline, tag: backup-pre-phase17, origin/main, origin/feature/phase-16-release, main, feature/phase-16-release) docs(beta): add baseline audit report, TODO inventory, and reconstructed ADRs
+```
+
+- **Änderungen an firestore.rules:**
+```diff
+--- a/firestore.rules
++++ b/firestore.rules
+@@ -113,17 +113,17 @@ service cloud.firestore {
+ 
+     function isCoachForHealth(userId) {
+       let linkDoc = get(/databases/$(database)/documents/coachLinks/$(userId + '_' + request.auth.uid));
+-      return linkDoc != null && linkDoc.data.permissions.health == true;
++      return linkDoc != null && linkDoc.data.status == 'ACTIVE' && linkDoc.data.permissions.health == true;
+     }
+ 
+     function isCoachForCalendar(athleteId) {
+       let linkDoc = get(/databases/$(database)/documents/coachLinks/$(athleteId + '_' + request.auth.uid));
+-      return linkDoc != null && linkDoc.data.permissions.calendar == true;
++      return linkDoc != null && linkDoc.data.status == 'ACTIVE' && linkDoc.data.permissions.calendar == true;
+     }
+ 
+     function isCoachForActivities(athleteId) {
+       let linkDoc = get(/databases/$(database)/documents/coachLinks/$(athleteId + '_' + request.auth.uid));
+-      return linkDoc != null && linkDoc.data.permissions.activities == true;
++      return linkDoc != null && linkDoc.data.status == 'ACTIVE' && linkDoc.data.permissions.activities == true;
+     }
+ 
+     function isValidThresholdProposalUpdate() {
+@@ -289,7 +289,10 @@ service cloud.firestore {
+     }
+ 
+     match /activities/{activityId} {
+-      allow read: if isAuthenticated() && (resource.data.athleteId == request.auth.uid || resource.data.coachId == request.auth.uid);
++      allow read: if isAuthenticated() && (
++        resource.data.athleteId == request.auth.uid ||
++        (resource.data.coachId == request.auth.uid && isCoachForActivities(resource.data.athleteId))
++      );
+       allow create: if isAuthenticated() && request.resource.data.athleteId == request.auth.uid; // Prototype
+       allow update: if isAuthenticated() && resource.data.athleteId == request.auth.uid && request.resource.data.athleteId == resource.data.athleteId; // Prototype, immutable athleteId
+       allow delete: if isAuthenticated() && resource.data.athleteId == request.auth.uid;
+@@ -298,7 +301,6 @@ service cloud.firestore {
+     match /plannedWorkouts/{workoutId} {
+       allow read: if isAuthenticated() && (
+         resource.data.athleteId == request.auth.uid ||
+-        resource.data.coachId == request.auth.uid ||
+         isCoachForCalendar(resource.data.athleteId)
+       );
+       allow create: if isAuthenticated() && (
+@@ -322,7 +324,8 @@ service cloud.firestore {
+         resource.data.ownerId == request.auth.uid ||
+         (
+           resource.data.visibility == 'SHARED_WITH_MY_ATHLETES' &&
+-          exists(/databases/$(database)/documents/coachLinks/$(request.auth.uid + '_' + resource.data.ownerId))
++          exists(/databases/$(database)/documents/coachLinks/$(request.auth.uid + '_' + resource.data.ownerId)) &&
++          get(/databases/$(database)/documents/coachLinks/$(request.auth.uid + '_' + resource.data.ownerId)).data.status == 'ACTIVE'
+         )
+       );
+       allow create: if isAuthenticated() &&
+```
+
+- **Rückholen:** `git switch main && git branch -D feature/phase-17-emergency-repair`
+
 ### [Phase 17 – Vorbereitung] Abgleich PROGRESS ↔ Repo · RISIKO-HOCH
+
 - **Anlass:** Auftrag von Tim (14.10.2026), die Aussagen in `docs/PROGRESS.md` gegen den tatsächlichen Stand zu prüfen. Alle Befehle am 14.10.2026 zwischen 15:58 und 16:03 auf `main` = `ae1f54b` ausgeführt.
 - **Ergebnis:** `docs/PROGRESS.md` Abschnitte 1–2 korrigiert (echte Phasentitel, Status je Blocker mit Beleg). Kein Blocker wurde als `[x]` markiert.
 - **Nachweise (Befehl + Ausgabe):**
