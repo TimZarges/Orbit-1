@@ -26,6 +26,80 @@
 
 ## Einträge
 
+### [Phase 17 – Vorbereitung] Abgleich PROGRESS ↔ Repo · RISIKO-HOCH
+- **Anlass:** Auftrag von Tim (14.10.2026), die Aussagen in `docs/PROGRESS.md` gegen den tatsächlichen Stand zu prüfen. Alle Befehle am 14.10.2026 zwischen 15:58 und 16:03 auf `main` = `ae1f54b` ausgeführt.
+- **Ergebnis:** `docs/PROGRESS.md` Abschnitte 1–2 korrigiert (echte Phasentitel, Status je Blocker mit Beleg). Kein Blocker wurde als `[x]` markiert.
+- **Nachweise (Befehl + Ausgabe):**
+
+```text
+$ git log -n 5 --oneline --graph
+* ae1f54b (HEAD -> main, origin/main, origin/feature/phase-16-release, feature/phase-16-release) docs(beta): add baseline audit report, TODO inventory, and reconstructed ADRs
+* a3db77a fix(client): resolve test failures, clean up linter warnings, format code, and host account deletion page
+* 0a005ae fix(backend): resolve metrics export shadowing, restore FIT storage trigger, and fix activity trigger path
+* 48a759d fix: resolve color constants and test models in Phase 16
+* b93d847 feat(release): complete Phase 16 quality, privacy, store assets and launch readiness
+
+$ for b in feature/*; do git merge-base --is-ancestor $b main ...; done
+feature/phase-00-foundation 76316b7 ancestor-of-main:yes
+feature/phase-01-auth-onboarding 76316b7 ancestor-of-main:yes
+feature/phase-02-coach-link 16ed00e ancestor-of-main:yes
+feature/phase-03-profile-settings fef019b ancestor-of-main:yes
+feature/phase-04-activity-import 6f00679 ancestor-of-main:yes
+feature/phase-05-metrics-core 0f7f2de ancestor-of-main:yes
+feature/phase-06-garmin-connector de08c2b ancestor-of-main:yes
+feature/phase-07-health-data 6e0bbcc ancestor-of-main:yes
+feature/phase-08-calendar 9108c08 ancestor-of-main:yes
+feature/phase-09-workout-builder cf7a6df ancestor-of-main:yes
+feature/phase-10-analysis-simple 56c2587 ancestor-of-main:yes
+feature/phase-11-analysis-cockpit bc00ef1 ancestor-of-main:yes
+feature/phase-12-diagnostics d5120c9 ancestor-of-main:yes
+feature/phase-13-chat-push 05d9bd8 ancestor-of-main:yes
+feature/phase-14-home 0aa5f74 ancestor-of-main:yes
+feature/phase-15-coach-desktop 5ba2694 ancestor-of-main:yes
+feature/phase-16-release ae1f54b ancestor-of-main:yes
+
+$ git tag
+(leer)
+
+$ npm --prefix functions run build && node -e "console.log(Object.keys(require('./functions/lib/index.js')))"
+> build
+> tsc
+[ 'calculatePowerMetrics', 'calculateDailyLoadEMA', 'calculateLoadMetrics', 'onActivityWritten',
+  'recomputeMetrics', 'calculateZoneDistribution', 'MMP_DURATIONS_SEC', 'calculateMMP',
+  'updateSportBests', 'estimateFtp', 'estimateRunThresholds', 'estimateCss',
+  'createThresholdProposalIfNew', 'setInitialRole', 'deleteAccount', 'exportAccount',
+  'createInvite', 'redeemInvite', 'updatePermissions', 'revokeLink', 'syncCoachDashboardAthlete',
+  'onCoachLinkChanged', 'onActivityCreatedForCoachDashboard', 'seedCoachAthletes',
+  'processFitUpload', 'parseFitAndSave', 'deleteActivity', 'garminAuthStart', 'garminAuthCallback',
+  'garminDisconnect', 'garminWebhook', 'processGarminWebhook', 'garminBackfill',
+  'onPlannedWorkoutWritten', 'onMessageCreated', 'sendChatPushNotification', 'isQuietTime',
+  'sendSystemNotification' ]
+
+$ npm --prefix functions audit --audit-level=high | tail -1
+53 vulnerabilities (15 moderate, 38 high)
+
+$ flutter analyze  (gezählt nach Schweregrad)
+error: 0 | warning: 0 | info: 670
+ 565 require_trailing_commas · 34 prefer_const_constructors · 17 prefer_relative_imports
+  13 prefer_single_quotes · 12 prefer_final_locals · 8 deprecated_member_use
+   7 curly_braces_in_flow_control_structures · 4 use_build_context_synchronously
+   3 depend_on_referenced_packages · 2 unnecessary_brace_in_string_interps
+
+$ flutter test | tail -1
+00:02 +103: All tests passed!
+
+$ grep -n "rules-unit-testing" functions/package.json package.json
+(kein Treffer)
+
+$ which firebase java; java -version
+firebase not found
+The operation couldn’t be completed. Unable to locate a Java Runtime.
+```
+
+- **Code-Belege ohne Befehlsausgabe:** `firestore.rules:114–127` (Coach-Helper ohne `status`-Prüfung), `firestore.rules:292` (Aktivitäten lesbar allein über `coachId`-Feld), `functions/src/coach.ts:125–126, 164` (keine Bereinigung), `functions/src/import/garmin/webhook.ts:62–66` (leere Aktivitätsschleife), `lib/features/coach_link/screens/athlete_coach_tab_screen.dart:108–118, 143–151` (SnackBar-Attrappen), `lib/features/activities/widgets/telemetry_map_widget.dart:243–246` (40px-Gitter), `lib/features/home/widgets/home_hero_card.dart:28` (`0xFF0F172A`), `pubspec.yaml:20, 43–44` (`freezed` deklariert, `grep -rl "@freezed" lib` = 0 Treffer).
+- **Bitte prüfen:** `docs/PROGRESS.md` Abschnitte 1–2.
+- **Rückholen:** `git checkout ae1f54b -- docs/PROGRESS.md`
+
 ### [Phase 16] Release-Freigabe & Launch-Readiness · RISIKO-HOCH
 - **STOPP-Punkt/Anlass:** STOPP 2 aus Phasendatei (Abschlussbericht, Release-Freigabe-Checkliste, App-Bundle & Store-Dokumentation).
 - **Entscheidung:**

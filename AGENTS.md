@@ -1,55 +1,60 @@
-# AGENTS.md – ORBIT
+# AGENTS.md — Verbindliches Regelwerk für KI-Entwicklungsagenten (ORBIT)
 
-ORBIT ist eine Mobile-First-Trainingsplattform für Ausdauersportler (Schwerpunkt Triathlon: Schwimmen, Rad, Lauf; zusätzlich Kraft). Nutzer sind Athleten und Trainer, vom Hobbysportler bis zum Leistungssportler. Leitprinzip: **einfach zuerst, Details eine Ebene tiefer** (Progressive Disclosure).
+## 1. Projekt-Identität & Zielsetzung
+- **Projekt:** ORBIT (`app.orbit.training`) — High-End Performance-, Telemetrie- & Health-Plattform für Ausdauersportler (Rad, Lauf, Schwimmen, Triathlon) und deren Vereinstrainer.
+- **Vorbilder:**
+  - **UI & Coaching-Erlebnis:** MATS.coach (Mobile-First, aufgeräumt, klare Athlet-Trainer-Interaktion).
+  - **Leistungsdiagnostik:** GoldenCheetah (wissenschaftliche Tiefe bei CP, W′bal, PMC, Aero/Decoupling — **ACHTUNG: GPL v2! Niemals Code kopieren, nur öffentliche sportwissenschaftliche Formeln selbst implementieren!**).
+  - **Recovery & Health:** Whoop-inspirierte Tagessteuerung (3 Ringe, 30-Tage-Baselines, Schlafschuld — **ACHTUNG: Keine geschützten Whoop-Begriffe wie „Strain“ oder „Whoop Recovery“ nutzen! Eigene 0–100 Skalen verwenden!**).
+- **Aktuelles Hauptziel:** Absturzfreier, DSGVO-konformer **Google Play Store Closed Beta Launch zum 31.10.** (inkl. Firebase App Distribution Vorab-Test mit 5–10 Vereinsathleten + Trainer).
 
-## Arbeitsweise (wichtig)
-- Stand: `docs/PROGRESS.md`. Plan: `docs/ROADMAP.md`. Aktive Phase: `docs/phases/phase-NN-*.md`.
-- **Eine Phase pro Unterhaltung.** Standard (`/phase-start`): Arbeite selbstständig, **stoppe aber an jedem `STOPP`-Punkt** der Phasendatei: kurz zusammenfassen, dann auf mein „weiter" warten. **Autopilot (`/phase-run`):** STOPP-Punkte werden zu Einträgen in `docs/CHECKPOINTS.md`, du hältst nur bei harten Blockern an (Regeln im Skill). Starte `/goal` oder `/teamwork-preview` nie eigenmächtig.
-- Alle Phasen 00–16 sind vorab in `docs/phases/` geplant. Pläne können veralten: **Plan-Check vor jeder Phase** (Phasendatei gegen Code und `docs/DECISIONS.md` prüfen). Fehlt eine Phasendatei, schreibe keinen Code, sondern erstelle zuerst den Plan (Skill `/phase-plan`). Pläne liegen als Datei in `docs/phases/`, nicht nur als Artefakt.
-- Nachfragen nur bei echten Blockern (fehlende Zugangsdaten, Widersprüche mit großer Tragweite). Sonst pragmatisch entscheiden, Annahme in `docs/DECISIONS.md` festhalten, weitermachen.
-- Alles, was nur ich tun kann (Konsolen, Schlüssel, Anträge), trägst du in `docs/MANUAL_STEPS.md` ein und sagst es mir klar.
-- **Ändere `AGENTS.md`, `.agents/rules/` und `.agents/skills/` nie ohne meine Freigabe.** Auch `/learn` darf Regeln nur vorschlagen, nicht schreiben.
-- Nur ein Agent gleichzeitig am Repository. Keine parallelen Agenten auf demselben Branch.
+---
 
-## Detailwissen (wird bei passenden Dateien automatisch geladen, sonst bei Bedarf selbst lesen)
-- `docs/DESIGN.md`: **vor jeder UI-Arbeit** (Regel `.agents/rules/design.md`)
-- `docs/DATA_MODEL.md`: **vor jeder Firestore-, Rules- oder Functions-Arbeit** (Regel `.agents/rules/data-and-security.md`)
-- `docs/specs/METRICS.md`: bei Kennzahlen und Score · `docs/specs/GARMIN.md`: bei Garmin/Import · `docs/specs/WORKOUT_SYNTAX.md`: bei Workout Builder
-- `docs/REQUIREMENTS.md`: Produktanforderungen · `docs/MANUAL_STEPS.md`: Aufgaben für mich
+## 2. Eiserne Arbeitsregeln (Zero-Trust & Anti-Mock Policy)
 
-## Stack
-- Flutter/Dart (`sdk ^3.11.1`). Prioritäten: **Android > iOS > Web/Desktop**. Kein Offline-Modus nötig.
-- Firebase: Auth, Firestore, Storage, Cloud Functions (TypeScript, 2nd Gen), FCM, App Check, Crashlytics. Region **`europe-west3`** (DSGVO).
-- Zwei Firebase-Projekte (dev/prod) mit Flavors. Entwicklung gegen den **Emulator**.
-- Anbieterneutrale `ProviderConnector`-Schicht. Garmin zuerst, Strava u. a. später. Kein Stripe/Bezahlmodell (Datenmodell offen halten, nichts bauen).
+### Regel 1: Kein Autopilot über STOPP-Punkte hinweg
+- Jede Phase von **Phase 17 bis Phase 24** besitzt explizite **STOPP-Punkte**.
+- An einem STOPP-Punkt **MUSS** der Agent die Ausführung beenden, die geforderten Nachweise in `CHECKPOINTS.md` eintragen und auf die explizite Freigabe durch Tim warten.
+- **STRENG VERBOTEN:** Der Agent darf niemals eine Benutzer-Freigabe oder ein Release-Gate selbst als `[x]` abhaken!
 
-## Befehle
-- `flutter pub get` · `flutter analyze` (null Warnungen) · `flutter test` · `dart format .`
-- Functions: `cd functions && npm ci && npm run build && npm test`
-- Emulatoren: `firebase emulators:start`. Rules-Tests laufen gegen den Emulator.
-- Terminal-Sandbox: Befehle mit Netzwerk (`pub get`, `npm ci`, Emulator, `adb`) laufen außerhalb der Sandbox. Das ist normal. Sie sind in meinen Antigravity-Berechtigungen als erlaubt hinterlegt.
+### Regel 2: Beweispflicht statt Selbstauskunft (Evidence-Only)
+- Aussagen wie *„Tests sind grün“*, *„Garantiert ≤ 16 ms Frame-Zeit“*, *„Rules sind sicher“* oder *„Keine Linter-Fehler“* sind **wertlos und verboten**, solange nicht die **exakte Terminal-Befehlsausgabe** (Command + Output) in `CHECKPOINTS.md` dokumentiert ist.
+- Was in der aktuellen Umgebung nicht live getestet werden kann (z. B. echte Garmin-Prod-Webhooks vor Hinterlegung der Secrets), MUSS zwingend als **`[NICHT PRÜFBAR IN LOKALER UMGEBUNG – ERFORDERT LIVE-TEST]`** markiert werden.
 
-## Code-Konventionen
-- **Kommentare auf Deutsch, Bezeichner auf Englisch.** Jede öffentliche Klasse/Funktion bekommt einen `///`-Kommentar (Zweck, Parameter, Besonderheiten). Formeln stehen im Kommentar.
-- Struktur: feature-first (`lib/features/<feature>/`), Gemeinsames in `lib/core/`, Datenzugriff in `lib/data/`.
-- **Repository-Pattern:** Widgets sprechen nie direkt mit Firebase.
-- **Athlete-Kontext:** Alle Athleten-Screens hängen von einer `athleteId` ab (eigene ID oder die des gerade betrachteten Athleten, wenn ein Trainer sie öffnet). Niemals `currentUser.uid` fest in Feature-Screens verdrahten.
-- Keine hartkodierten Farben, Größen oder Texte. Design nur über `lib/core/design/`, Texte nur über ARB (de = Standard, en umschaltbar).
-- Keine Magic Numbers. Jede Netzwerk-/Firebase-Operation hat Lade-, Fehler- und Leerzustand.
-- Zeiten: UTC + `utcOffsetMinutes` + `localDate` speichern, nie nur lokale Zeit.
-- Zeitreihen nie ins Firestore-Hauptdokument (1-MB-Limit), sondern heruntergesampelt in Storage.
-- **Metriken werden serverseitig berechnet** (Cloud Functions). Dart hat nur eine kleine Vorschau-Variante (Workout Builder). Beide Seiten testen gegen dieselben JSON-Testvektoren (`testvectors/`).
-- Neue Dependencies nur mit Begründung in `docs/DECISIONS.md`.
+### Regel 3: Absolutes Mock- und Platzhalter-Verbot im Produktionscode
+- Im Rahmen des Audits (`docs/beta/BASELINE.md`) wurden gravierende Fassaden aufgedeckt (Dummy-SnackBars im `AthleteCoachTabScreen`, 40px-Canvas-Gitter statt `flutter_map`, verworfene Webhooks in `webhook.ts`).
+- Ab Phase 17 gilt: **Keine UI-Attrappen, keine Fake-SnackBars, keine stillschweigend verworfenen Payloads und keine ungelösten `TODO`-Kommentare** in abgenommenen Phasen! Jeder Button in der UI muss mit echter Riverpod-/Backend-Logik verdrahtet sein.
 
-## Sicherheit, Datenschutz, Recht
-- Rollen `ATHLETE` (Standard), `TRAINER`. **Rolle, `coachId`, `trainerVerified` sind nie vom Client schreibbar** (nur Cloud Functions).
-- Firestore-/Storage-Rules: Standard „deny all", jede Freigabe explizit, per Emulator-Test bewiesen.
-- Tokens/Secrets nur serverseitig (Secret Manager, `users/{uid}/private/*` für Clients gesperrt). **Nie committen.** `.env`/Service-Accounts nicht lesen.
-- Gesundheitsdaten = Art. 9 DSGVO: ausdrückliche Einwilligung (Zeitstempel + Version), Löschung und Export müssen funktionieren. Weitergabe an Trainer nur mit Athleten-Freigabe (granular).
-- Keine Laufzeit-Abrufe von Google Fonts. Keine personenbezogenen Daten in Logs oder Push-Texten.
-- **Kein Übernehmen** von Texten, Grafiken, Logos, Namen oder Code von MATS, TrainingPeaks oder Golden Cheetah (GPL). Formeln selbst implementieren. Der Belastungsindex heißt **ORBIT Score**.
-- UI nutzt neutrale Begriffe (siehe `docs/DESIGN.md`, Erfahrungsstufen). Fachkürzel nur in der Experten-Ebene.
+### Regel 4: Pflicht-Verifikation der Cloud Functions Exporte
+- Um Typescript-Shadowing-Bugs (wie `metrics.ts` vs. `metrics/`) auszuschließen, muss nach jeder Änderung im Ordner `functions/` kompiliert (`npm --prefix functions run build`) und der reale Export-Baum geprüft werden:
+  ```bash
+  node -e "console.log(Object.keys(require('./functions/lib/index.js')))"
+  ```
 
-## Git
-- Branch pro Phase: `feature/phase-NN-name`. Conventional Commits (`feat:`, `fix:`, `refactor:`, `test:`, `docs:`). Kein Force-Push, kein Direkt-Commit auf `main`. Nicht selbst mergen.
-- Phase fertig, wenn: `flutter analyze` und `flutter test` grün, Functions-Tests grün, `docs/PROGRESS.md` aktualisiert (Skill `/phase-finish`).
+---
+
+## 3. Technischer Rahmen
+- **Stack:** Flutter/Dart (Android > iOS > Web/Desktop), Firebase (Auth, Firestore, Storage, Cloud Functions 2nd Gen in TypeScript, FCM, App Check, Crashlytics).
+- **Region:** Alle Cloud Functions, Firestore- und Storage-Ressourcen laufen ausschließlich in **`europe-west3` (Frankfurt)**. Abweichende Regionen sind verboten (DSGVO).
+- **Kommentare auf Deutsch, Bezeichner auf Englisch.** Jede öffentliche Klasse/Funktion erhält einen `///`- bzw. `/** */`-Kommentar (Zweck, Parameter, Besonderheiten). Formeln stehen im Kommentar.
+- **Pflicht-Befehle vor jedem Commit:** `dart format .` · `flutter analyze` (0 Errors, 0 Warnings) · `flutter test` · `npm --prefix functions run build && npm --prefix functions test` · Rules-Tests gegen den Emulator (`firebase emulators:exec --only firestore,storage "npm --prefix functions run test:rules"`).
+
+## 4. Datenschutz (DSGVO)
+- Gesundheitsdaten sind **Art. 9 DSGVO**: ausdrückliche Einwilligung (Zeitstempel + Version), funktionierende Löschung und Export.
+- Trainer sehen Athletendaten **nur bei aktiver Verknüpfung und granularer Freigabe** des Athleten. Nach Trennung oder Widerruf endet der Zugriff **sofort** (per Rules-Test bewiesen).
+- Keine personenbezogenen oder Gesundheitsdaten in Logs, Crash-Reports oder Push-Texten. Keine Laufzeit-Abrufe von Google Fonts. Drittanbieter (z. B. Karten-Kacheln, Crashlytics) nur mit Opt-in.
+
+## 5. Sicherheit
+- **Niemals Secrets committen** (API-Keys, Consumer-Secrets, Signing-Keys, Service-Accounts). Secrets ausschließlich über den GCP **Secret Manager** (`defineSecret`). `.env`-, `key.properties`- und Service-Account-Dateien werden vom Agenten nicht gelesen.
+- Rollen `ATHLETE` / `TRAINER`. **`role`, `coachId`, `trainerVerified`, berechnete Metriken und Verknüpfungsstatus sind nie vom Client schreibbar** (nur Cloud Functions).
+- Firestore-/Storage-Rules: Standard „deny all“, jede Freigabe explizit und durch einen automatisierten Emulator-Test belegt.
+
+## 6. Git-Workflow
+- **Jede Phase erhält einen eigenen Branch** `feature/phase-NN-kurzname`, abgezweigt vom aktuellen `main`. Conventional Commits (`feat:`, `fix:`, `refactor:`, `test:`, `docs:`, `chore:`).
+- Kein Force-Push, kein Direkt-Commit auf `main`.
+- **Am Phasenende wird der Branch in `main` gemergt** (bevorzugt Fast-Forward), sobald Tim den finalen STOPP-Punkt freigegeben hat. Danach Tag `v0.NN.0` setzen und `main`, Branch und Tag auf GitHub pushen.
+
+## 7. Referenzdokumente
+- `docs/PROGRESS.md` (Stand), `docs/phases/phase_NN.md` (aktive Phase ab 17), `docs/CHECKPOINTS.md` (Nachweise), `docs/DECISIONS.md` (ADRs), `docs/beta/BASELINE.md` (Audit).
+- **`docs/DESIGN.md`** (vor jeder UI-Arbeit) und **`docs/DATA_MODEL.md`** (vor jeder Firestore-, Rules- oder Functions-Arbeit) bleiben verbindlich, sind aber **in Überarbeitung**: Sie weichen an einigen Stellen vom Code ab (siehe `docs/beta/BASELINE.md`). Bei Widerspruch gilt: Abweichung in `docs/DECISIONS.md` festhalten und das Dokument im selben Commit korrigieren.
+- Änderungen an `AGENTS.md`, `.agents/rules/` und `.agents/skills/` nur mit Freigabe durch Tim.
