@@ -2,19 +2,25 @@ import { onDocumentWritten } from "firebase-functions/v2/firestore";
 import * as admin from "firebase-admin";
 import { updateSportBests } from "./bests";
 
-export const onActivityWritten = onDocumentWritten("users/{uid}/activities/{activityId}", async (event) => {
+export const onActivityWritten = onDocumentWritten("activities/{activityId}", async (event) => {
   if (!event.data) return;
   const after = event.data.after;
   const before = event.data.before;
 
+  const afterData = after?.exists ? after.data() : undefined;
+  const beforeData = before?.exists ? before.data() : undefined;
+  const uid = afterData?.athleteId || afterData?.userId || afterData?.uid ||
+              beforeData?.athleteId || beforeData?.userId || beforeData?.uid;
+  if (!uid) return;
+
   // Wenn gelöscht
   if (!after.exists) {
     // Aggregation für Folgetage triggern
-    await updateAggregates(event.params.uid, before.data()?.localDate);
+    await updateAggregates(uid, beforeData?.localDate);
     return;
   }
 
-  const data = after.data();
+  const data = afterData;
   if (!data) return;
 
   // Schleifenschutz: Wir schreiben metricsVersion='1' rein, wenn wir fertig sind
@@ -32,7 +38,7 @@ export const onActivityWritten = onDocumentWritten("users/{uid}/activities/{acti
       "300": Math.round(avgW * 1.1),
       "1200": avgW,
     };
-    await updateSportBests(event.params.uid, data.sport, mmp);
+    await updateSportBests(uid, data.sport, mmp);
   }
 
   // Dummy-Update um den Flow zu sichern:
@@ -43,7 +49,7 @@ export const onActivityWritten = onDocumentWritten("users/{uid}/activities/{acti
   });
 
   // Aggregation updaten
-  await updateAggregates(event.params.uid, data.localDate);
+  await updateAggregates(uid, data.localDate);
 });
 
 async function updateAggregates(uid: string, fromDateStr: string | undefined) {
