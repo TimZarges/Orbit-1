@@ -1,0 +1,82 @@
+{
+  "project_info": {
+    "project_number": "58590696532",
+    "project_id": "orbit-app-mvp",
+    "storage_bucket": "orbit-app-mvp.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:58590696532:android:94db3229ecbe5ad29549c1",
+        "android_client_info": {
+          "package_name": "app.orbit.training"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "58590696532-q0ecpt9iousukcccgt06v80gr3jmn1hc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA4xYVv6Fx6V25lbsoF2w5MWO19n5z0Fso"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "58590696532-q0ecpt9iousukcccgt06v80gr3jmn1hc.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "58590696532-lgl9kr8lk8ufsqgsa87j5keeg98kp7p6.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.orbit"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:58590696532:android:0a0bb6ca1bdc77ed9549c1",
+        "android_client_info": {
+          "package_name": "com.example.orbit"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "58590696532-q0ecpt9iousukcccgt06v80gr3jmn1hc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA4xYVv6Fx6V25lbsoF2w5MWO19n5z0Fso"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "58590696532-q0ecpt9iousukcccgt06v80gr3jmn1hc.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "58590696532-lgl9kr8lk8ufsqgsa87j5keeg98kp7p6.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.orbit"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

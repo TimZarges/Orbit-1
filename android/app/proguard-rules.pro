@@ -6,6 +6,16 @@
 -keep class io.flutter.**  { *; }
 -keep class io.flutter.plugins.**  { *; }
 
+# Keep App Package & Activities (Prevents ClassNotFoundException on MainActivity)
+-keep class com.example.orbit.** { *; }
+-keep class app.orbit.training.** { *; }
+-keep public class * extends io.flutter.embedding.android.FlutterActivity
+-keep public class * extends android.app.Activity
+-keep public class * extends android.app.Application
+-keep public class * extends android.app.Service
+-keep public class * extends android.content.BroadcastReceiver
+-keep public class * extends android.content.ContentProvider
+
 # Firebase Core & Firestore
 -dontwarn com.google.firebase.**
 -keep class com.google.firebase.** { *; }
