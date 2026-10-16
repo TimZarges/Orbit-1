@@ -10,7 +10,8 @@
     "deploy": "firebase deploy --only functions",
     "logs": "firebase functions:log",
     "test": "jest --runInBand",
-    "test:rules": "jest src/__tests__/rules.test.ts --runInBand"
+    "test:rules": "jest src/__tests__/rules.test.ts --runInBand",
+    "verify:corpus": "tsc && node lib/scripts/verifyFitCorpus.js"
   },
   "engines": {
     "node": "20"
