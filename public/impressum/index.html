@@ -1,47 +1,122 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="de" data-theme="light">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Impressum & Nutzungsbedingungen - ORBIT</title>
-    <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; padding: 2rem; }
-        h1, h2 { color: #1a73e8; }
-        .back-link { margin-bottom: 2rem; display: inline-block; color: #1a73e8; text-decoration: none; }
-        .footer { margin-top: 4rem; font-size: 0.9em; color: #666; border-top: 1px solid #eee; padding-top: 1rem; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Impressum — ORBIT</title>
+  <link rel="icon" type="image/png" href="/logo.png">
+  <style>
+    :root {
+      --navy: #001F47;
+      --volt: #CDFB17;
+      --bg: #F8FAFC;
+      --card: #FFFFFF;
+      --text: #001F47;
+      --muted: #475569;
+      --border: #E2E8F0;
+    }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Inter", sans-serif;
+      line-height: 1.6;
+      margin: 0;
+      padding: 40px 20px;
+    }
+    .container {
+      max-width: 820px;
+      margin: 0 auto;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 10px 30px rgba(0, 31, 71, 0.06);
+    }
+    .header-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 32px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    .brand-link {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--navy);
+      font-weight: 900;
+      font-size: 18px;
+    }
+    .brand-link img {
+      width: 36px;
+      height: 36px;
+      border-radius: 9px;
+    }
+    .back-btn {
+      background: #001F47;
+      color: var(--volt);
+      text-decoration: none;
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+    h1 { font-size: 28px; font-weight: 900; margin-bottom: 8px; }
+    h2 { font-size: 20px; font-weight: 800; margin-top: 32px; margin-bottom: 12px; color: var(--navy); border-left: 4px solid var(--volt); padding-left: 12px; }
+    p { color: var(--muted); font-size: 15px; margin-bottom: 12px; }
+    strong { color: var(--navy); }
+    .footer { margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--border); font-size: 13px; color: var(--muted); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+    .footer a { color: var(--navy); text-decoration: none; font-weight: 700; }
+  </style>
 </head>
 <body>
-    <a href="/" class="back-link">&larr; Zurück zur Startseite</a>
+  <div class="container">
+    <div class="header-nav">
+      <a href="/" class="brand-link">
+        <img src="/logo.png" alt="ORBIT Logo">
+        <span>ORBIT</span>
+      </a>
+      <a href="/" class="back-btn">← Zurück zur Startseite</a>
+    </div>
+
     <h1>Impressum</h1>
-    <p>Angaben gemäß § 5 TMG / § 18 MStV:</p>
+    <p>Angaben gemäß § 5 TMG</p>
 
-    <h2>Dienstanbieter</h2>
+    <h2>Betreiber der Plattform</h2>
     <p>
-        <strong>ORBIT Trainingsplattform</strong><br>
-        Vertreten durch die Betreiber der ORBIT Plattform<br>
-        Kontakt: <a href="mailto:support@orbit-app.com">support@orbit-app.com</a>
+      <strong>ORBIT Endurance Technologies</strong><br>
+      Vertreten durch das Entwicklungs- & Projektteam.<br>
+      E-Mail: <a href="mailto:support@orbit-app.com">support@orbit-app.com</a><br>
+      Web: <a href="https://app.orbit.training">https://app.orbit.training</a>
     </p>
 
-    <h2>Haftung für Inhalte und Links</h2>
+    <h2>Verantwortlich für den Inhalt nach § 55 Abs. 2 RStV</h2>
     <p>
-        Als Diensteanbieter sind wir gemäß § 7 Abs.1 TMG für eigene Inhalte auf diesen Seiten nach den allgemeinen Gesetzen verantwortlich. Wir übernehmen jedoch keine Gewähr für die Aktualität, Richtigkeit und Vollständigkeit der bereitgestellten Inhalte.
+      ORBIT Projektleitung<br>
+      Kontakt: <a href="mailto:support@orbit-app.com">support@orbit-app.com</a>
     </p>
 
-    <h2>Medizinischer und gesundheitlicher Haftungsausschluss</h2>
+    <h2>Haftung für Inhalte & Links</h2>
     <p>
-        ORBIT ist eine Software zur Dokumentation und sportwissenschaftlichen Auswertung von Trainingsleistungen. 
-        Die berechneten Kennzahlen (u.&nbsp;a. Belastungsindizes, Schwellenwerte, ORBIT Score) stellen <strong>keine medizinische Diagnose, Beratung oder Behandlungsempfehlung</strong> dar. 
-        Konsultieren Sie vor Beginn eines intensiven Trainingsprogramms stets einen qualifizierten Arzt.
+      Als Diensteanbieter sind wir gemäß § 7 Abs.1 TMG für eigene Inhalte auf diesen Seiten nach den allgemeinen Gesetzen verantwortlich. Nach §§ 8 bis 10 TMG sind wir als Diensteanbieter jedoch nicht verpflichtet, übermittelte oder gespeicherte fremde Informationen zu überwachen.
     </p>
 
-    <h2>Urheberrecht</h2>
+    <h2>Wissenschaftlicher & Medizinischer Hinweis</h2>
     <p>
-        Die durch die Seitenbetreiber erstellten Inhalte, Markenzeichen und Grafiken auf diesen Seiten unterliegen dem deutschen Urheberrecht.
+      Die auf der ORBIT Plattform bereitgestellten Kennzahlen (wie Critical Power, W'bal, ORBIT Erholungs-Score, Trainingsstress-Scores) dienen ausschließlich sportwissenschaftlichen Trainings- und Informationszwecken von gesunden Ausdauersportlern. 
+      <strong>ORBIT ist kein Medizinprodukt und ersetzt keine ärztliche oder sportmedizinische Untersuchung oder Diagnose.</strong>
     </p>
 
     <div class="footer">
-        <p>&copy; 2026 ORBIT. Alle Rechte vorbehalten. | <a href="/privacy">Datenschutzerklärung</a></p>
+      <div>&copy; 2026 ORBIT Endurance Technologies. Alle Rechte vorbehalten.</div>
+      <div>
+        <a href="/privacy">Datenschutz</a> · 
+        <a href="/help">Hilfe & Lexikon</a> · 
+        <a href="/delete-account">Konto löschen</a>
+      </div>
     </div>
+  </div>
 </body>
 </html>

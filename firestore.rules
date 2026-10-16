@@ -55,6 +55,9 @@ service cloud.firestore {
     //
     // Collection: betaFeedback/{reportId} (and beta_feedback/{reportId})
     // Fields: userId, category, description, includeDiagnostics, diagnostics, screenshotPath, createdAt, status
+    //
+    // Collection: betaWaitlist/{entryId}
+    // Fields: email, name, role, device, consentGiven, createdAt
     // ===============================================================
 
     // ===============================================================
@@ -210,6 +213,17 @@ service cloud.firestore {
       let screenshotPathOk = !('screenshotPath' in data) || checkOptionalStringSize(data.screenshotPath, 1, 500);
       let sizeOk = data.keys().size() <= 15;
       return hasRequired && userIdOk && categoryOk && descriptionOk && includeDiagnosticsOk && diagnosticsOk && screenshotPathOk && sizeOk;
+    }
+
+    function isValidBetaWaitlistEntry(data) {
+      return ('email' in data && 'name' in data && 'role' in data && 'device' in data && 'consentGiven' in data) &&
+             checkStringSize(data.email, 5, 200) &&
+             checkStringSize(data.name, 2, 100) &&
+             data.role in ['ATHLETE', 'COACH', 'CLUB'] &&
+             data.device in ['GARMIN', 'WAHOO', 'SRM', 'OTHER'] &&
+             data.consentGiven == true &&
+             (!('notes' in data) || checkOptionalStringSize(data.notes, 1, 500)) &&
+             data.keys().size() <= 10;
     }
 
     // ===============================================================
@@ -397,6 +411,11 @@ service cloud.firestore {
       allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
       allow create: if isAuthenticated() && isValidBetaFeedbackCreate(request.resource.data);
       allow update, delete: if false;
+    }
+
+    match /betaWaitlist/{entryId} {
+      allow create: if isValidBetaWaitlistEntry(request.resource.data);
+      allow read, update, delete: if false;
     }
   }
 }

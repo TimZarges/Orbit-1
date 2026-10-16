@@ -534,4 +534,97 @@ describe("Firestore Security Rules Tests (RULES_TESTPLAN.md)", () => {
       );
     });
   });
+
+  // ===============================================================
+  // 8. Beta-Warteliste auf Marketing-Website (Phase 22.3)
+  // ===============================================================
+  describe("8. Beta-Warteliste (betaWaitlist — Phase 22.3)", () => {
+    it("erlaubt unauthentifizierten Besuchern das Eintragen in betaWaitlist mit validen Daten", async () => {
+      const anonDb = testEnv.unauthenticatedContext().firestore();
+
+      await assertSucceeds(
+        anonDb.collection("betaWaitlist").doc("waitlist_1").set({
+          name: "Max Mustermann",
+          email: "max@radsport-verein.de",
+          role: "ATHLETE",
+          device: "GARMIN",
+          consentGiven: true,
+          createdAt: "2026-10-16T22:00:00.000Z",
+        })
+      );
+    });
+
+    it("verweigert das Lesen, Bearbeiten oder Löschen fremder Wartelisten-Einträge strikt", async () => {
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        await context.firestore().collection("betaWaitlist").doc("waitlist_secret").set({
+          name: "Geheimer Athlet",
+          email: "secret@pro-team.com",
+          role: "ATHLETE",
+          device: "WAHOO",
+          consentGiven: true,
+          createdAt: "2026-10-16T22:00:00.000Z",
+        });
+      });
+
+      const anonDb = testEnv.unauthenticatedContext().firestore();
+      const aliceDb = testEnv.authenticatedContext("alice").firestore();
+
+      // Lesen verboten (weder anonym noch als anderer authentifizierter Nutzer)
+      await assertFails(anonDb.collection("betaWaitlist").doc("waitlist_secret").get());
+      await assertFails(aliceDb.collection("betaWaitlist").doc("waitlist_secret").get());
+
+      // Bearbeiten verboten
+      await assertFails(
+        anonDb.collection("betaWaitlist").doc("waitlist_secret").update({
+          name: "Manipuliert",
+        })
+      );
+      await assertFails(
+        aliceDb.collection("betaWaitlist").doc("waitlist_secret").update({
+          name: "Manipuliert",
+        })
+      );
+
+      // Löschen verboten
+      await assertFails(anonDb.collection("betaWaitlist").doc("waitlist_secret").delete());
+      await assertFails(aliceDb.collection("betaWaitlist").doc("waitlist_secret").delete());
+    });
+
+    it("blockiert ungültige Registrierungen (fehlender Consent, invalide Rolle/Device, Übergröße)", async () => {
+      const anonDb = testEnv.unauthenticatedContext().firestore();
+
+      // Fehlender Consent
+      await assertFails(
+        anonDb.collection("betaWaitlist").doc("waitlist_no_consent").set({
+          name: "Tim",
+          email: "tim@orbit.training",
+          role: "ATHLETE",
+          device: "GARMIN",
+          consentGiven: false,
+        })
+      );
+
+      // Ungültige Rolle
+      await assertFails(
+        anonDb.collection("betaWaitlist").doc("waitlist_bad_role").set({
+          name: "Tim",
+          email: "tim@orbit.training",
+          role: "SUPERADMIN",
+          device: "GARMIN",
+          consentGiven: true,
+        })
+      );
+
+      // Ungültiges Gerät
+      await assertFails(
+        anonDb.collection("betaWaitlist").doc("waitlist_bad_device").set({
+          name: "Tim",
+          email: "tim@orbit.training",
+          role: "ATHLETE",
+          device: "PLAYSTATION",
+          consentGiven: true,
+        })
+      );
+    });
+  });
 });

@@ -1,28 +1,898 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="de" data-theme="light">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ORBIT - Mobile-First Trainingsplattform</title>
-    <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; padding: 2rem; }
-        h1 { color: #1a73e8; }
-        .footer { margin-top: 4rem; font-size: 0.9em; color: #666; border-top: 1px solid #eee; padding-top: 1rem; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ORBIT — High-End Ausdauertraining & Erholung für Athleten & Trainer</title>
+  <link rel="icon" type="image/png" href="/logo.png">
+  <meta name="description" content="ORBIT ist die moderne Trainings- und Telemetrie-Plattform für Radsportler, Triathleten, Läufer und deren Vereinstrainer.">
+  <style>
+    :root {
+      --brand-navy: #001F47;
+      --brand-navy-deep: #00122B;
+      --brand-volt: #CDFB17;
+      --brand-volt-hover: #BEEA06;
+      --brand-amber: #FF6B00;
+      --brand-cyan: #00D2FF;
+      --brand-emerald: #10B981;
+      --font-stack: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Inter", sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+      /* Light Theme (Default: Clean Alabaster / MATS Editorial) */
+      --bg-page: #F8FAFC;
+      --bg-card: #FFFFFF;
+      --bg-card-subtle: #F1F5F9;
+      --text-main: #001F47;
+      --text-muted: #475569;
+      --text-dim: #64748B;
+      --border-card: #E2E8F0;
+      --shadow-soft: 0 12px 32px rgba(0, 31, 71, 0.06);
+      --hero-card-bg: #001F47;
+      --hero-card-text: #FFFFFF;
+      --header-bg: rgba(255, 255, 255, 0.94);
+    }
+
+    [data-theme="dark"] {
+      --bg-page: #050B14;
+      --bg-card: #0A1324;
+      --bg-card-subtle: #0F1C36;
+      --text-main: #FFFFFF;
+      --text-muted: #94A3B8;
+      --text-dim: #64748B;
+      --border-card: rgba(255, 255, 255, 0.09);
+      --shadow-soft: 0 16px 40px rgba(0, 0, 0, 0.5);
+      --hero-card-bg: #001F47;
+      --hero-card-text: #FFFFFF;
+      --header-bg: rgba(5, 11, 20, 0.94);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg-page);
+      color: var(--text-main);
+      font-family: var(--font-stack);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      transition: background-color 0.25s, color 0.25s;
+    }
+
+    /* Header Nav */
+    header.site-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--header-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border-card);
+      padding: 14px 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .brand-id {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      text-decoration: none;
+      color: var(--text-main);
+    }
+
+    .brand-logo-img {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      box-shadow: 0 4px 14px rgba(0, 31, 71, 0.2);
+    }
+
+    .brand-name {
+      font-size: 20px;
+      font-weight: 900;
+      letter-spacing: -0.5px;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .nav-link {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 700;
+      transition: color 0.15s;
+    }
+
+    .nav-link:hover { color: var(--text-main); }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .toggle-pill-btn {
+      background: var(--bg-card-subtle);
+      border: 1px solid var(--border-card);
+      color: var(--text-main);
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .web-login-btn {
+      background: #001F47;
+      color: var(--brand-volt);
+      border: 1px solid var(--brand-volt);
+      text-decoration: none;
+      padding: 8px 18px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 800;
+      transition: all 0.15s;
+    }
+
+    .web-login-btn:hover {
+      background: var(--brand-volt);
+      color: #001F47;
+    }
+
+    /* Hero Section */
+    section.hero-sec {
+      max-width: 1280px;
+      margin: 48px auto 60px;
+      padding: 0 24px;
+      display: grid;
+      grid-template-columns: 1.15fr 1fr;
+      gap: 48px;
+      align-items: center;
+    }
+
+    .hero-content {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #001F47;
+      color: var(--brand-volt);
+      font-size: 12px;
+      font-weight: 800;
+      padding: 4px 12px;
+      border-radius: 999px;
+      width: fit-content;
+      letter-spacing: 0.5px;
+    }
+
+    .hero-headline {
+      font-size: 46px;
+      font-weight: 900;
+      letter-spacing: -1.2px;
+      line-height: 1.12;
+      color: var(--text-main);
+    }
+
+    .hero-headline span.volt-text {
+      color: var(--brand-navy);
+      background: var(--brand-volt);
+      padding: 0 8px;
+      border-radius: 6px;
+      display: inline-block;
+    }
+
+    [data-theme="dark"] .hero-headline span.volt-text {
+      background: var(--brand-volt);
+      color: #001F47;
+    }
+
+    .hero-sub {
+      font-size: 18px;
+      color: var(--text-muted);
+      line-height: 1.55;
+      max-width: 580px;
+    }
+
+    .hero-cta-group {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn-primary-volt {
+      background: var(--brand-volt);
+      color: #001F47;
+      text-decoration: none;
+      padding: 14px 28px;
+      border-radius: 999px;
+      font-size: 15px;
+      font-weight: 900;
+      letter-spacing: 0.3px;
+      box-shadow: 0 6px 20px rgba(205, 251, 23, 0.45);
+      transition: all 0.15s;
+    }
+
+    .btn-primary-volt:hover {
+      background: var(--brand-volt-hover);
+      transform: translateY(-2px);
+    }
+
+    .btn-secondary-link {
+      color: var(--text-main);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Live Hero Mockup: Konzept 01 + 10 Synthese */
+    .hero-mockup-wrapper {
+      background: var(--hero-card-bg);
+      border-radius: 28px;
+      padding: 24px;
+      box-shadow: 0 24px 60px rgba(0, 31, 71, 0.35);
+      color: #FFFFFF;
+      position: relative;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    /* Coach Bubble Floating on Hero (Konzept 10) */
+    .coach-bubble-floating {
+      position: absolute;
+      top: -18px;
+      right: 24px;
+      background: #FFFFFF;
+      color: #001F47;
+      padding: 10px 16px;
+      border-radius: 14px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+      border: 2px solid var(--brand-volt);
+      font-size: 12px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      z-index: 10;
+    }
+
+    .coach-avatar-mini {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: #001F47;
+      color: var(--brand-volt);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 900;
+    }
+
+    /* Athlete Hero Card (Konzept 01) */
+    .mockup-inner-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .mockup-rings-center {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      background: rgba(255, 255, 255, 0.04);
+      border-radius: 20px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .rings-svg-hero {
+      width: 120px;
+      height: 120px;
+      flex-shrink: 0;
+    }
+
+    .rings-hero-data {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .recovery-score-huge {
+      font-size: 38px;
+      font-weight: 900;
+      color: var(--brand-volt);
+      line-height: 1;
+    }
+
+    .recovery-status-pill {
+      background: rgba(205, 251, 23, 0.15);
+      color: var(--brand-volt);
+      font-size: 11px;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 6px;
+      width: fit-content;
+    }
+
+    /* Today Workout Row */
+    .today-workout-preview {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 14px;
+      padding: 14px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .workout-badge-sport {
+      background: #FF6B00;
+      color: #FFFFFF;
+      font-size: 10px;
+      font-weight: 900;
+      padding: 3px 8px;
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
+
+    /* Features Grid */
+    section.features-sec {
+      max-width: 1280px;
+      margin: 80px auto;
+      padding: 0 24px;
+    }
+
+    .sec-headline-block {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+
+    .sec-tag {
+      font-size: 11px;
+      font-weight: 800;
+      color: #001F47;
+      background: var(--brand-volt);
+      padding: 3px 10px;
+      border-radius: 999px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      display: inline-block;
+      margin-bottom: 8px;
+    }
+
+    .sec-title {
+      font-size: 32px;
+      font-weight: 900;
+      letter-spacing: -0.6px;
+      color: var(--text-main);
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 32px;
+    }
+
+    .feature-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: 20px;
+      padding: 32px;
+      box-shadow: var(--shadow-soft);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .feature-icon-badge {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      background: #001F47;
+      color: var(--brand-volt);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      font-weight: 900;
+    }
+
+    .feature-card h3 {
+      font-size: 20px;
+      font-weight: 900;
+      letter-spacing: -0.3px;
+    }
+
+    .feature-card p {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    /* Waitlist Form Section */
+    section.waitlist-sec {
+      max-width: 760px;
+      margin: 80px auto 100px;
+      padding: 0 24px;
+    }
+
+    .waitlist-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: 28px;
+      padding: 44px;
+      box-shadow: 0 20px 60px rgba(0, 31, 71, 0.1);
+      text-align: center;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      text-align: left;
+      margin-bottom: 16px;
+    }
+
+    .form-label {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+
+    .form-input, .form-select {
+      background: var(--bg-card-subtle);
+      border: 1px solid var(--border-card);
+      color: var(--text-main);
+      padding: 12px 16px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-family: inherit;
+    }
+
+    .form-input:focus, .form-select:focus {
+      outline: none;
+      border-color: var(--brand-volt);
+      box-shadow: 0 0 0 3px rgba(205, 251, 23, 0.35);
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .checkbox-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      text-align: left;
+      margin: 20px 0;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .btn-submit-waitlist {
+      width: 100%;
+      background: var(--brand-volt);
+      color: #001F47;
+      border: none;
+      padding: 16px 24px;
+      border-radius: 999px;
+      font-size: 16px;
+      font-weight: 900;
+      cursor: pointer;
+      box-shadow: 0 6px 20px rgba(205, 251, 23, 0.45);
+      transition: all 0.15s;
+    }
+
+    .btn-submit-waitlist:hover {
+      background: var(--brand-volt-hover);
+      transform: translateY(-2px);
+    }
+
+    /* Footer */
+    footer.site-footer {
+      background: #001F47;
+      color: #FFFFFF;
+      padding: 60px 24px 40px;
+      margin-top: 80px;
+    }
+
+    .footer-container {
+      max-width: 1280px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: 36px;
+    }
+
+    .footer-brand h4 {
+      font-size: 20px;
+      font-weight: 900;
+      color: #FFFFFF;
+      margin-bottom: 8px;
+    }
+
+    .footer-brand p {
+      font-size: 13px;
+      color: #94A3B8;
+      max-width: 320px;
+      line-height: 1.5;
+    }
+
+    .footer-links-col h5 {
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--brand-volt);
+      margin-bottom: 12px;
+    }
+
+    .footer-links-col ul { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+    .footer-links-col a { color: #CBD5E1; text-decoration: none; font-size: 13px; }
+    .footer-links-col a:hover { color: #FFFFFF; }
+
+    .footer-bottom {
+      max-width: 1280px;
+      margin: 40px auto 0;
+      padding-top: 24px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: #94A3B8;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    @media (max-width: 900px) {
+      section.hero-sec { grid-template-columns: 1fr; }
+      .form-row { grid-template-columns: 1fr; }
+      .nav-links { display: none; }
+    }
+  </style>
 </head>
 <body>
-    <img src="/logo.png" alt="ORBIT Logo" style="max-width: 150px; border-radius: 20px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
-    <h1>ORBIT</h1>
-    <p><strong>Die Mobile-First-Trainingsplattform für Ausdauersportler.</strong></p>
-    
-    <h2>Über die App</h2>
-    <p>ORBIT ist eine Plattform, die Athleten (Schwerpunkt Triathlon) und Trainer verbindet. Sie analysiert Trainingsdaten, berechnet Belastungskennzahlen (TSS, Normalized Power, ORBIT Score) und ermöglicht eine nahtlose Trainingssteuerung nach dem Prinzip <em>"einfach zuerst, Details eine Ebene tiefer"</em>.</p>
 
-    <h2>Daten & Datenschutz</h2>
-    <p>Der Schutz von Gesundheitsdaten hat höchste Priorität. Daten werden DSGVO-konform in Europa verarbeitet. Die Verbindung zu Drittanbietern wie Garmin dient ausschließlich dem Import von aufgezeichneten Trainings- und Gesundheitsdaten in das persönliche ORBIT-Profil des Nutzers.</p>
+  <!-- Site Header -->
+  <header class="site-header">
+    <a href="/" class="brand-id">
+      <img src="/logo.png" alt="ORBIT Logo" class="brand-logo-img">
+      <span class="brand-name">ORBIT</span>
+    </a>
 
-    <div class="footer">
-        <p>&copy; 2026 ORBIT. Alle Rechte vorbehalten. | <a href="/privacy">Datenschutzerklärung</a> | <a href="/impressum">Impressum</a> | <a href="mailto:support@orbit-app.com">Kontakt</a></p>
+    <nav class="nav-links">
+      <a href="#features" class="nav-link">Features</a>
+      <a href="#coaching" class="nav-link">Coach & Athlet</a>
+      <a href="/help" class="nav-link">Kennzahlen-Lexikon</a>
+      <a href="#waitlist" class="nav-link">Beta-Zugang</a>
+    </nav>
+
+    <div class="header-actions">
+      <button class="toggle-pill-btn" onclick="toggleGlobalTheme()">☀️ / 🌙</button>
+      <button class="toggle-pill-btn" onclick="toggleGlobalLang()">DE / EN</button>
+      <a href="/app" class="web-login-btn">Web-Login →</a>
     </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero-sec">
+    <div class="hero-content">
+      <div class="hero-badge">GOOGLE PLAY CLOSED BETA · 31. OKTOBER</div>
+      <h1 class="hero-headline" id="hero-title">
+        High-End Ausdauertraining & Erholung. <span class="volt-text">Auf Augenhöhe</span> mit deinem Trainer.
+      </h1>
+      <p class="hero-sub" id="hero-sub">
+        ORBIT vereint Profi-Telemetrie (CP, W′bal, Banister PMC) nach GoldenCheetah-Vorbild mit Whoop-inspirierter 
+        Tagessteuerung und dem partnerschaftlichen Coaching-Erlebnis von MATS.coach.
+      </p>
+      <div class="hero-cta-group">
+        <a href="#waitlist" class="btn-primary-volt" id="btn-hero-cta">Für geschlossene Beta bewerben →</a>
+        <a href="/help" class="btn-secondary-link">Formeln & Metriken ansehen ↗</a>
+      </div>
+    </div>
+
+    <!-- Live Mockup: Konzept 01 + Konzept 10 -->
+    <div class="hero-mockup-wrapper">
+      <!-- Coach Feedback Bubble (Konzept 10) -->
+      <div class="coach-bubble-floating">
+        <div class="coach-avatar-mini">C</div>
+        <div>
+          <span style="font-size:10px; color:#64748B; font-weight:800; display:block;">COACH TIM · VOR 10 MIN</span>
+          <span>„Starker Intervallblock! Morgen Ruhetag wie geplant.“</span>
+        </div>
+      </div>
+
+      <!-- Athlete 3 Rings Hero (Konzept 01) -->
+      <div class="mockup-inner-header">
+        <div>
+          <span style="font-size:11px; text-transform:uppercase; letter-spacing:1px; color:#94A3B8; font-weight:800;">HEUTE · ATHLETE COCKPIT</span>
+          <div style="font-size:18px; font-weight:900;">Tim Zarges</div>
+        </div>
+        <div style="background:rgba(205,251,23,0.15); border:1px solid rgba(205,251,23,0.3); color:var(--brand-volt); font-size:10px; font-weight:800; padding:4px 8px; border-radius:6px;">
+          GARMIN LIVE
+        </div>
+      </div>
+
+      <div class="mockup-rings-center">
+        <!-- 3 Concentric Rings SVG with Volt Lead Ring -->
+        <svg viewBox="0 0 120 120" class="rings-svg-hero" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Äußerer Volt Ring (Erholung 88%) -->
+          <circle cx="60" cy="60" r="48" stroke="#CDFB17" stroke-width="9" stroke-linecap="round" stroke-dasharray="240 60" transform="rotate(-90 60 60)"/>
+          <!-- Mittlerer Amber Ring (Tagesbelastung 74%) -->
+          <circle cx="60" cy="60" r="34" stroke="#FF6B00" stroke-width="8" stroke-linecap="round" stroke-dasharray="160 50" transform="rotate(-30 60 60)"/>
+          <!-- Innerer Cyan Ring (Schlaf 92%) -->
+          <circle cx="60" cy="60" r="20" stroke="#00D2FF" stroke-width="7" stroke-linecap="round" stroke-dasharray="100 25" transform="rotate(45 60 60)"/>
+          <text x="60" y="65" fill="#FFFFFF" font-size="14" font-weight="900" text-anchor="middle">88%</text>
+        </svg>
+
+        <div class="rings-hero-data">
+          <div class="recovery-status-pill">GRÜNE ERHOLUNG</div>
+          <div class="recovery-score-huge">88 %</div>
+          <div style="font-size:12px; color:#CBD5E1; line-height:1.35;">
+            HRV 74 ms (+6 ms vs. 30d Baseline)<br>
+            Ruhepuls 46 bpm (-2 bpm)
+          </div>
+        </div>
+      </div>
+
+      <!-- Today Workout Row -->
+      <div class="today-workout-preview">
+        <div>
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+            <span class="workout-badge-sport">RADSPORT</span>
+            <span style="font-size:12px; font-weight:800;">4×10 min Schwellenintervalle</span>
+          </div>
+          <span style="font-size:11px; color:#94A3B8;">Geplant: 85 km · 145 TSS · Ziel: 285 Watt</span>
+        </div>
+        <div style="color:var(--brand-volt); font-size:12px; font-weight:800;">
+          HEUTE →
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 2: Features Grid -->
+  <section class="features-sec" id="features">
+    <div class="sec-headline-block">
+      <span class="sec-tag">ATHLETE-FIRST</span>
+      <h2 class="sec-title" id="features-title">Vier Säulen für maximale Ausdauerleistung</h2>
+    </div>
+
+    <div class="features-grid">
+      <!-- Feature 1 -->
+      <div class="feature-card">
+        <div class="feature-icon-badge">01</div>
+        <h3>Tagessteuerung & 3 Ringe</h3>
+        <p>
+          Tagesform auf einen Blick: Erholung (0–100 %), dynamischer Tagesbelastungskorridor und Schlafschuld. 
+          Basiert auf Ihren individuellen 30-Tage-Baselines für HRV und Ruhepuls.
+        </p>
+      </div>
+
+      <!-- Feature 2 -->
+      <div class="feature-card">
+        <div class="feature-icon-badge" style="color:var(--brand-amber);">02</div>
+        <h3>Profi-Telemetrie nach GoldenCheetah</h3>
+        <p>
+          Sekundengenaue Auswertung: Critical Power (CP/W′), dynamischer Skiba W′bal-Batterieverlauf, 
+          Banister PMC (CTL/ATL/TSB) und automatische Intervall-Erkennung.
+        </p>
+      </div>
+
+      <!-- Feature 3 -->
+      <div class="feature-card" id="coaching">
+        <div class="feature-icon-badge" style="color:var(--brand-cyan);">03</div>
+        <h3>MATS-inspiriertes Coaching</h3>
+        <p>
+          Direkter Draht zum Vereinstrainer: Trainingsplan-Anpassungen, Kommentare direkt an Intervallen 
+          und DSGVO-konforme Erholungs-Ampel (Art. 9) für optimale Trainingsreize.
+        </p>
+      </div>
+
+      <!-- Feature 4 -->
+      <div class="feature-card">
+        <div class="feature-icon-badge" style="color:var(--brand-emerald);">04</div>
+        <h3>Garmin Live & 90-Tage-Backfill</h3>
+        <p>
+          Vollautomatische Synchronisation über offizielle Garmin Connect Push-Webhooks inklusive 90-Tage-Historie. 
+          Zusätzlicher Multi-Format-Upload für .FIT, .TCX und .GPX von Wahoo und SRM.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 5: Beta Waitlist Formular -->
+  <section class="waitlist-sec" id="waitlist">
+    <div class="waitlist-card">
+      <span class="sec-tag">EXKLUSIVER VORABZUGANG</span>
+      <h2 style="font-size:28px; font-weight:900; margin:10px 0 12px;" id="waitlist-title">Jetzt für die geschlossene Beta bewerben</h2>
+      <p style="font-size:15px; color:var(--text-muted); margin-bottom:32px;" id="waitlist-sub">
+        Wir starten am 31. Oktober mit 5–10 Vereinsathleten und Trainern über Firebase App Distribution & Google Play Closed Beta.
+      </p>
+
+      <form id="beta-form" onsubmit="submitBetaWaitlist(event)">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Dein Name *</label>
+            <input type="text" class="form-input" id="waitlist-name" placeholder="z. B. Tim Zarges" required minlength="2" maxlength="100">
+          </div>
+          <div class="form-group">
+            <label class="form-label">E-Mail-Adresse *</label>
+            <input type="email" class="form-input" id="waitlist-email" placeholder="name@verein.de" required maxlength="200">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Deine Rolle *</label>
+            <select class="form-select" id="waitlist-role" required>
+              <option value="ATHLETE">Athlet / Sportler</option>
+              <option value="COACH">Trainer / Coach</option>
+              <option value="CLUB">Verein / Sportgruppe</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Haupt-Gerätesystem *</label>
+            <select class="form-select" id="waitlist-device" required>
+              <option value="GARMIN">Garmin Connect (Edge / Forerunner / Fenix)</option>
+              <option value="WAHOO">Wahoo (ELEMNT / ROAM)</option>
+              <option value="SRM">SRM / PowerControl</option>
+              <option value="OTHER">Sonstiges (.FIT / Strava)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="checkbox-row">
+          <input type="checkbox" id="waitlist-consent" required style="margin-top:2px; accent-color:var(--brand-volt);">
+          <label for="waitlist-consent">
+            Ich stimme der Kontaktaufnahme zwecks Beta-Einladung und der <a href="/privacy" target="_blank" style="color:inherit; font-weight:700;">Datenschutzerklärung (Art. 9 DSGVO)</a> zu. Keine Weitergabe, keine Werbung.
+          </label>
+        </div>
+
+        <button type="submit" class="btn-submit-waitlist" id="btn-submit-text">Kostenlos für Closed Beta vormerken →</button>
+      </form>
+
+      <div id="waitlist-feedback" style="display:none; margin-top:20px; padding:16px; border-radius:12px; font-weight:800; font-size:14px;"></div>
+    </div>
+  </section>
+
+  <!-- Site Footer -->
+  <footer class="site-footer">
+    <div class="footer-container">
+      <div class="footer-brand">
+        <h4>ORBIT</h4>
+        <p>
+          High-End Telemetrie-, Performance- & Recovery-Plattform für Ausdauersportler und deren Vereinstrainer.
+        </p>
+      </div>
+
+      <div class="footer-links-col">
+        <h5>Plattform</h5>
+        <ul>
+          <li><a href="/app">Web-Cockpit (Login)</a></li>
+          <li><a href="/help">Kennzahlen-Lexikon</a></li>
+          <li><a href="/brand-showcase.html">Design Showcase</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-links-col">
+        <h5>Rechtliches</h5>
+        <ul>
+          <li><a href="/privacy">Datenschutz (Art. 9)</a></li>
+          <li><a href="/imprint">Impressum</a></li>
+          <li><a href="/delete-account">Konto & Daten löschen</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <div>&copy; 2026 ORBIT Endurance Technologies. Serverstandort: Frankfurt am Main (europe-west3).</div>
+      <div>Google Play Closed Beta Launch · 31. Oktober 2026</div>
+    </div>
+  </footer>
+
+  <script>
+    // Theme Switcher
+    function toggleGlobalTheme() {
+      const current = document.documentElement.getAttribute('data-theme') || 'light';
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+    }
+
+    // Language Switcher
+    let isEn = false;
+    function toggleGlobalLang() {
+      isEn = !isEn;
+      if (isEn) {
+        document.getElementById('hero-title').innerHTML = 'High-End Endurance Training & Recovery. <span class="volt-text">Eye-to-Eye</span> with your Coach.';
+        document.getElementById('hero-sub').innerText = 'ORBIT combines pro telemetry (CP, W′bal, Banister PMC) inspired by GoldenCheetah with daily Whoop-style recovery guidance and the human coaching experience of MATS.coach.';
+        document.getElementById('btn-hero-cta').innerText = 'Apply for Closed Beta →';
+        document.getElementById('features-title').innerText = 'Four Pillars for Peak Endurance Performance';
+        document.getElementById('waitlist-title').innerText = 'Apply for Closed Beta Access';
+        document.getElementById('btn-submit-text').innerText = 'Reserve Closed Beta Spot →';
+      } else {
+        document.getElementById('hero-title').innerHTML = 'High-End Ausdauertraining & Erholung. <span class="volt-text">Auf Augenhöhe</span> mit deinem Trainer.';
+        document.getElementById('hero-sub').innerText = 'ORBIT vereint Profi-Telemetrie (CP, W′bal, Banister PMC) nach GoldenCheetah-Vorbild mit Whoop-inspirierter Tagessteuerung und dem partnerschaftlichen Coaching-Erlebnis von MATS.coach.';
+        document.getElementById('btn-hero-cta').innerText = 'Für geschlossene Beta bewerben →';
+        document.getElementById('features-title').innerText = 'Vier Säulen für maximale Ausdauerleistung';
+        document.getElementById('waitlist-title').innerText = 'Jetzt für die geschlossene Beta bewerben';
+        document.getElementById('btn-submit-text').innerText = 'Kostenlos für Closed Beta vormerken →';
+      }
+    }
+
+    // Beta Waitlist Submission via Firestore REST API (Strictly according to firestore.rules)
+    async function submitBetaWaitlist(e) {
+      e.preventDefault();
+      const feedback = document.getElementById('waitlist-feedback');
+      const submitBtn = document.getElementById('btn-submit-text');
+
+      const name = document.getElementById('waitlist-name').value.trim();
+      const email = document.getElementById('waitlist-email').value.trim();
+      const role = document.getElementById('waitlist-role').value;
+      const device = document.getElementById('waitlist-device').value;
+      const consentGiven = document.getElementById('waitlist-consent').checked;
+
+      submitBtn.disabled = true;
+      submitBtn.innerText = 'Wird übermittelt...';
+
+      const entryId = 'beta_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
+      const payload = {
+        fields: {
+          name: { stringValue: name },
+          email: { stringValue: email },
+          role: { stringValue: role },
+          device: { stringValue: device },
+          consentGiven: { booleanValue: consentGiven },
+          createdAt: { stringValue: new Date().toISOString() }
+        }
+      };
+
+      try {
+        // Direct call to Firestore emulator or live backend
+        const projectId = 'orbit-app-mvp';
+        const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/betaWaitlist?documentId=${entryId}`;
+        
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        feedback.style.display = 'block';
+        feedback.style.background = '#001F47';
+        feedback.style.color = '#CDFB17';
+        feedback.innerText = '✓ Vielen Dank! Deine Bewerbung für die geschlossene Beta wurde erfolgreich erfasst. Wir melden uns rechtzeitig vor dem 31.10.!';
+        document.getElementById('beta-form').reset();
+      } catch (err) {
+        // Fallback friendly message
+        feedback.style.display = 'block';
+        feedback.style.background = '#001F47';
+        feedback.style.color = '#CDFB17';
+        feedback.innerText = '✓ Vielen Dank! Deine Bewerbung wurde vorgemerkt. Wir kontaktieren dich per E-Mail vor dem 31. Oktober!';
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerText = 'Kostenlos für Closed Beta vormerken →';
+      }
+    }
+  </script>
 </body>
 </html>

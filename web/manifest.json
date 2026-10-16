@@ -1,14 +1,19 @@
 {
-    "name": "orbit",
-    "short_name": "orbit",
+    "name": "ORBIT — Endurance Intelligence",
+    "short_name": "ORBIT",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#001F47",
+    "theme_color": "#001F47",
+    "description": "High-End Telemetrie, Training & Erholung für Ausdauersportler und Vereinstrainer.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
+        {
+            "src": "logo.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        },
         {
             "src": "icons/Icon-192.png",
             "sizes": "192x192",

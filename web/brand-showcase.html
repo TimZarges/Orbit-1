@@ -1,0 +1,2084 @@
+<!DOCTYPE html>
+<html lang="de" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ORBIT — 10x Brand & Design Exploration (Dark & Light + Volt Signature)</title>
+  <style>
+    /* ==========================================
+       DESIGN SYSTEM CSS TOKENS
+       ========================================== */
+    :root {
+      /* Shared Brand Signature */
+      --brand-navy: #001F47;
+      --brand-navy-light: #00357A;
+      --brand-volt: #CDFB17;          /* The exact signature Volt from logo.png & app_colors.dart */
+      --brand-volt-hover: #BEEA06;
+      --brand-cyan: #00D2FF;
+      --brand-amber: #FF6B00;
+      --brand-emerald: #10B981;
+      --font-stack: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Inter", sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+      /* Dark Theme Tokens (Default) */
+      --bg-canvas: #050B14;
+      --bg-card: #0A1324;
+      --bg-card-subtle: #0F1C36;
+      --bg-surface: #001F47;
+      --text-main: #FFFFFF;
+      --text-muted: #94A3B8;
+      --text-dim: #64748B;
+      --border-card: rgba(255, 255, 255, 0.08);
+      --border-accent: rgba(205, 251, 23, 0.35);
+      --shadow-card: 0 16px 40px rgba(0, 0, 0, 0.5);
+      --hero-bg: #001F47;
+      --hero-border: rgba(205, 251, 23, 0.2);
+      --status-bg: #02060D;
+      --status-text: #FFFFFF;
+      --status-sub: #94A3B8;
+    }
+
+    /* Light Theme Tokens */
+    [data-theme="light"] {
+      --bg-canvas: #F1F5F9;
+      --bg-card: #FFFFFF;
+      --bg-card-subtle: #F8FAFC;
+      --bg-surface: #F8FAFC;
+      --text-main: #001F47;
+      --text-muted: #475569;
+      --text-dim: #64748B;
+      --border-card: #E2E8F0;
+      --border-accent: rgba(0, 31, 71, 0.2);
+      --shadow-card: 0 10px 30px rgba(0, 31, 71, 0.08);
+      --hero-bg: #FFFFFF;
+      --hero-border: #E2E8F0;
+      --status-bg: #F8FAFC;
+      --status-text: #001F47;
+      --status-sub: #64748B;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-canvas);
+      color: var(--text-main);
+      font-family: var(--font-stack);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      transition: background-color 0.25s ease, color 0.25s ease;
+      padding-bottom: 120px;
+    }
+
+    /* ==========================================
+       TOP STICKY HEADER & CONTROLS
+       ========================================== */
+    header.top-bar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(5, 11, 20, 0.92);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border-card);
+      padding: 12px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    [data-theme="light"] header.top-bar {
+      background: rgba(255, 255, 255, 0.94);
+      border-bottom-color: #E2E8F0;
+    }
+
+    .brand-title {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-mini-logo {
+      width: 36px;
+      height: 36px;
+      border-radius: 9px;
+      box-shadow: 0 4px 12px rgba(0, 31, 71, 0.3);
+      display: block;
+    }
+
+    .brand-badge {
+      background: #001F47;
+      border: 1px solid var(--brand-volt);
+      color: var(--brand-volt);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      text-transform: uppercase;
+    }
+
+    .brand-title h1 {
+      font-size: 18px;
+      font-weight: 900;
+      letter-spacing: -0.3px;
+    }
+
+    .top-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .control-group {
+      display: flex;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border-card);
+      border-radius: 10px;
+      padding: 3px;
+      gap: 2px;
+    }
+
+    [data-theme="light"] .control-group {
+      background: #E2E8F0;
+      border-color: #CBD5E1;
+    }
+
+    .control-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 6px 12px;
+      border-radius: 7px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+
+    .control-btn:hover {
+      color: var(--text-main);
+    }
+
+    .control-btn.active {
+      background: var(--brand-volt);
+      color: #001F47;
+      box-shadow: 0 2px 8px rgba(205, 251, 23, 0.3);
+    }
+
+    /* ==========================================
+       HERO EXPLANATION & LOGO ANCHOR
+       ========================================== */
+    .hero-intro {
+      max-width: 1240px;
+      margin: 36px auto 28px;
+      padding: 0 24px;
+    }
+
+    .original-logo-banner {
+      background: var(--brand-navy);
+      border: 1px solid rgba(205, 251, 23, 0.3);
+      border-radius: 20px;
+      padding: 24px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 28px;
+      box-shadow: 0 20px 48px rgba(0, 31, 71, 0.4);
+      margin-bottom: 32px;
+      flex-wrap: wrap;
+    }
+
+    .original-logo-left {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .original-logo-img {
+      width: 88px;
+      height: 88px;
+      border-radius: 20px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      border: 2px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .original-logo-text h2 {
+      font-size: 22px;
+      font-weight: 900;
+      letter-spacing: -0.4px;
+      color: #FFFFFF;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .original-logo-text p {
+      font-size: 14px;
+      color: #CBD5E1;
+      max-width: 680px;
+      line-height: 1.45;
+    }
+
+    .color-swatches-pill {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(0, 0, 0, 0.35);
+      padding: 10px 18px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .swatch {
+      width: 26px;
+      height: 26px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+      font-weight: 800;
+    }
+
+    .swatch-volt { background: var(--brand-volt); color: #001F47; }
+    .swatch-navy { background: var(--brand-navy); color: #FFFFFF; }
+    .swatch-white { background: #FFFFFF; color: #001F47; }
+
+    /* ==========================================
+       QUICK NAV PILLS
+       ========================================== */
+    .pills-nav {
+      max-width: 1340px;
+      margin: 0 auto 36px;
+      padding: 0 24px;
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      scrollbar-width: thin;
+      padding-bottom: 8px;
+    }
+
+    .pill-btn {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 700;
+      padding: 8px 16px;
+      border-radius: 999px;
+      white-space: nowrap;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .pill-btn:hover {
+      border-color: var(--brand-volt);
+      color: var(--text-main);
+      transform: translateY(-1px);
+    }
+
+    /* ==========================================
+       SHOWCASE CONTAINER & CARDS
+       ========================================== */
+    .showcase-container {
+      max-width: 1380px;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(440px, 1fr));
+      gap: 36px;
+    }
+
+    body.split-mode .showcase-container {
+      grid-template-columns: 1fr;
+    }
+
+    .concept-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: var(--shadow-card);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .concept-card:hover {
+      border-color: var(--brand-volt);
+      transform: translateY(-4px);
+      box-shadow: 0 20px 48px rgba(0, 0, 0, 0.4);
+    }
+
+    .card-header {
+      padding: 22px 26px 16px;
+      border-bottom: 1px solid var(--border-card);
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, transparent 100%);
+    }
+
+    [data-theme="light"] .card-header {
+      background: #F8FAFC;
+    }
+
+    .concept-number {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--brand-volt);
+      background: #001F47;
+      padding: 3px 8px;
+      border-radius: 6px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      display: inline-block;
+      margin-bottom: 6px;
+    }
+
+    [data-theme="light"] .concept-number {
+      background: #001F47;
+      color: #CDFB17;
+    }
+
+    .concept-title {
+      font-size: 22px;
+      font-weight: 900;
+      letter-spacing: -0.4px;
+      line-height: 1.2;
+    }
+
+    .concept-tagline {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 4px;
+      display: block;
+    }
+
+    .header-actions {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 10px;
+    }
+
+    .select-concept-btn {
+      background: #001F47;
+      border: 1px solid var(--brand-volt);
+      color: var(--brand-volt);
+      padding: 8px 16px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .select-concept-btn:hover, .concept-card.selected .select-concept-btn {
+      background: var(--brand-volt);
+      color: #001F47;
+      box-shadow: 0 0 16px rgba(205, 251, 23, 0.6);
+    }
+
+    .sub-toggles {
+      display: flex;
+      gap: 6px;
+    }
+
+    .sub-toggle-btn {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border-card);
+      color: var(--text-dim);
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 10px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    [data-theme="light"] .sub-toggle-btn {
+      background: #E2E8F0;
+      color: #475569;
+    }
+
+    .sub-toggle-btn.active {
+      background: #001F47;
+      color: var(--brand-volt);
+      border-color: var(--brand-volt);
+    }
+
+    /* Card Body */
+    .card-body {
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 26px;
+    }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-dim);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .badge-volt-pill {
+      font-size: 9px;
+      background: rgba(205, 251, 23, 0.15);
+      color: var(--brand-volt);
+      border: 1px solid rgba(205, 251, 23, 0.3);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 700;
+    }
+
+    [data-theme="light"] .badge-volt-pill {
+      background: #001F47;
+      color: #CDFB17;
+      border: none;
+    }
+
+    /* 1. App-Icon & Logos */
+    .icon-logo-stage {
+      display: grid;
+      grid-template-columns: 140px 1fr;
+      gap: 20px;
+      align-items: center;
+    }
+
+    .app-icon-frame {
+      width: 140px;
+      height: 140px;
+      border-radius: 32px;
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.12);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--brand-navy);
+      position: relative;
+    }
+
+    .app-icon-frame img, .app-icon-frame svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .logo-variants-col {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .logo-banner-preview {
+      padding: 12px 18px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--border-card);
+      position: relative;
+    }
+
+    .logo-banner-dark {
+      background: #001F47;
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .logo-banner-light {
+      background: #FFFFFF;
+      border-color: #E2E8F0;
+      box-shadow: 0 4px 12px rgba(0, 31, 71, 0.05);
+    }
+
+    /* 2. Android Status Bar Push Notification Preview */
+    .status-bar-preview {
+      background: var(--status-bg);
+      border: 1px solid var(--border-card);
+      border-radius: 14px;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--status-sub);
+    }
+
+    .status-bar-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .status-time {
+      font-weight: 800;
+      color: var(--status-text);
+      font-size: 12px;
+    }
+
+    .push-icon-slot {
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .push-icon-slot svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .push-text-preview {
+      color: var(--status-text);
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .status-bar-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+    }
+
+    /* 3. Website Hero & UI Preview */
+    .mini-website-hero {
+      background: var(--hero-bg);
+      border: 1px solid var(--hero-border);
+      border-radius: 16px;
+      padding: 18px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      box-shadow: var(--shadow-card);
+    }
+
+    .hero-top-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .hero-headline {
+      font-size: 16px;
+      font-weight: 900;
+      letter-spacing: -0.3px;
+      color: var(--text-main);
+    }
+
+    .hero-cta-btn {
+      background: var(--brand-volt);
+      color: #001F47;
+      border: none;
+      padding: 7px 16px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(205, 251, 23, 0.4);
+      transition: transform 0.15s ease;
+    }
+
+    .hero-cta-btn:hover {
+      background: var(--brand-volt-hover);
+      transform: translateY(-1px);
+    }
+
+    /* Telemetry Trio */
+    .telemetry-trio {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .mini-metric-card {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-card);
+      border-radius: 10px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    [data-theme="light"] .mini-metric-card {
+      background: #F8FAFC;
+      border-color: #E2E8F0;
+    }
+
+    .metric-label-mini {
+      font-size: 9px;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: var(--text-dim);
+    }
+
+    .metric-value-mini {
+      font-size: 15px;
+      font-weight: 900;
+      letter-spacing: -0.2px;
+      display: flex;
+      align-items: baseline;
+      gap: 4px;
+    }
+
+    .volt-highlight {
+      color: var(--brand-volt);
+    }
+
+    [data-theme="light"] .volt-highlight {
+      background: #001F47;
+      color: #CDFB17;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 13px;
+    }
+
+    .metric-sub-mini {
+      font-size: 9px;
+      color: var(--text-muted);
+    }
+
+    /* 3 Rings Widget Preview */
+    .rings-preview-box {
+      background: #001F47;
+      border-radius: 12px;
+      padding: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      color: #FFFFFF;
+    }
+
+    /* Design Specs Footer */
+    .card-specs {
+      background: rgba(0, 0, 0, 0.25);
+      border-top: 1px solid var(--border-card);
+      padding: 16px 24px;
+      font-size: 12px;
+      color: var(--text-muted);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    [data-theme="light"] .card-specs {
+      background: #F8FAFC;
+      border-top-color: #E2E8F0;
+    }
+
+    .spec-row {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .spec-label {
+      color: var(--text-dim);
+      font-weight: 700;
+    }
+
+    .spec-value {
+      color: var(--text-main);
+      font-family: var(--font-mono);
+      font-size: 11px;
+    }
+
+    /* ==========================================
+       FLOATING SELECTION TOAST
+       ========================================== */
+    .selection-toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 31, 71, 0.96);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--brand-volt);
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6), 0 0 24px rgba(205, 251, 23, 0.35);
+      padding: 14px 28px;
+      border-radius: 999px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      z-index: 200;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .selection-toast.hidden {
+      transform: translate(-50%, 140%);
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .toast-text {
+      font-size: 14px;
+      font-weight: 800;
+      color: #FFFFFF;
+    }
+
+    .toast-btn {
+      background: var(--brand-volt);
+      color: #001F47;
+      border: none;
+      padding: 8px 20px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    @media (max-width: 900px) {
+      .showcase-container {
+        grid-template-columns: 1fr;
+      }
+      .icon-logo-stage {
+        grid-template-columns: 1fr;
+        justify-items: center;
+      }
+      .original-logo-banner {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Sticky Header -->
+  <header class="top-bar">
+    <div class="brand-title">
+      <img src="logo.png" alt="ORBIT Logo" class="brand-mini-logo">
+      <div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span class="brand-badge">Phase 22 · STOPP 1</span>
+          <h1>ORBIT Brand Showcase</h1>
+        </div>
+      </div>
+    </div>
+
+    <!-- Global Controls -->
+    <div class="top-controls">
+      <!-- Theme Switcher: Dark / Light -->
+      <div class="control-group">
+        <button class="control-btn active" id="btn-theme-dark" onclick="setGlobalTheme('dark')">
+          🌙 Dark (#001F47)
+        </button>
+        <button class="control-btn" id="btn-theme-light" onclick="setGlobalTheme('light')">
+          ☀️ Light (Editorial)
+        </button>
+      </div>
+
+      <!-- Mode Switcher: Var A / Var B -->
+      <div class="control-group">
+        <button class="control-btn active" id="btn-var-a" onclick="setGlobalVariant('A')">
+          Var A: Logo-Kompatibel
+        </button>
+        <button class="control-btn" id="btn-var-b" onclick="setGlobalVariant('B')">
+          Var B: SVG-Evolution
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Intro with Existing Logo Alignment -->
+  <section class="hero-intro">
+    <div class="original-logo-banner">
+      <div class="original-logo-left">
+        <img src="logo.png" alt="ORBIT Original Logo" class="original-logo-img">
+        <div class="original-logo-text">
+          <h2>
+            Bestehende Marken-DNA
+            <span style="font-size:12px; font-weight:700; color:var(--brand-volt); background:rgba(205,251,23,0.15); padding:2px 8px; border-radius:999px;">
+              Verbindliche Basis
+            </span>
+          </h2>
+          <p>
+            Das bestehende Logo verbindet den markanten <strong>Volt-Bogen (`#CDFB17`)</strong> mit dem 
+            <strong>weißen Satelliten-Punkt</strong> auf <strong>Marken-Navy (`#001F47`)</strong>. 
+            Jedes der folgenden 10 Konzepte greift diese Geometrie auf (Variante A) oder entwickelt sie evolutionär weiter (Variante B). 
+            Volt dient durchgängig als High-Performance-Akzent in App und Website!
+          </p>
+        </div>
+      </div>
+
+      <div class="color-swatches-pill">
+        <div class="swatch swatch-navy" title="Deep Navy #001F47">NAVY</div>
+        <div class="swatch swatch-volt" title="Signature Volt #CDFB17">VOLT</div>
+        <div class="swatch swatch-white" title="Pure White #FFFFFF">WEISS</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Quick Nav Pills -->
+  <nav class="pills-nav">
+    <a href="#concept-1" class="pill-btn">1. Orbital Rings + Volt</a>
+    <a href="#concept-2" class="pill-btn">2. Precision Telemetry</a>
+    <a href="#concept-3" class="pill-btn">3. Swiss Aero Grid</a>
+    <a href="#concept-4" class="pill-btn">4. Tri-Sector Pulse</a>
+    <a href="#concept-5" class="pill-btn">5. Dark & Light Cockpit</a>
+    <a href="#concept-6" class="pill-btn">6. Chrono Apex</a>
+    <a href="#concept-7" class="pill-btn">7. Kinetic Watts</a>
+    <a href="#concept-8" class="pill-btn">8. Minimalist Monolith</a>
+    <a href="#concept-9" class="pill-btn">9. Elevation Contour</a>
+    <a href="#concept-10" class="pill-btn">10. MATS Clean Coaching</a>
+  </nav>
+
+  <!-- Main Grid -->
+  <main class="showcase-container">
+
+    <!-- ==========================================
+         KONZEPT 01: ORBITAL RINGS + VOLT
+         ========================================== -->
+    <article class="concept-card" id="concept-1" data-variant="A">
+      <div class="card-header">
+        <div>
+          <span class="concept-number">Konzept 01 · Signatur</span>
+          <h3 class="concept-title">Orbital Rings + Volt</h3>
+          <span class="concept-tagline">Der Volt-Ring aus dem Logo als Leit-Impuls der 3 ORBIT-Leistungsringe</span>
+        </div>
+        <div class="header-actions">
+          <button class="select-concept-btn" onclick="selectConcept(1, 'Orbital Rings + Volt')">Favorit wählen</button>
+          <div class="sub-toggles">
+            <button class="sub-toggle-btn active var-btn-a" onclick="setCardVariant(1, 'A')">Var A (Logo)</button>
+            <button class="sub-toggle-btn var-btn-b" onclick="setCardVariant(1, 'B')">Var B (Evolution)</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-body">
+        <!-- 1. Icon & Logo -->
+        <div>
+          <div class="section-label">
+            <span>512×512 App-Icon & Wortmarke</span>
+            <span class="badge-volt-pill">Volt Akzent</span>
+          </div>
+          <div class="icon-logo-stage">
+            <div class="app-icon-frame">
+              <!-- Variante A: Direktes Original-Logo -->
+              <img src="logo.png" alt="App Icon" class="icon-view-a" style="display:block;">
+              <!-- Variante B: Konzentrische 3 Ringe mit Volt-Hauptring -->
+              <svg viewBox="0 0 512 512" fill="none" class="icon-view-b" style="display:none;" xmlns="http://www.w3.org/2000/svg">
+                <rect width="512" height="512" rx="112" fill="#001F47"/>
+                <!-- Äußerer Volt Ring (Erholung) mit Satellit -->
+                <circle cx="256" cy="256" r="148" stroke="#CDFB17" stroke-width="28" stroke-linecap="round" stroke-dasharray="720 220" transform="rotate(-50 256 256)"/>
+                <circle cx="360" cy="152" r="22" fill="#FFFFFF"/>
+                <!-- Mittlerer Amber Ring (Belastung) -->
+                <circle cx="256" cy="256" r="102" stroke="#FF6B00" stroke-width="22" stroke-linecap="round" stroke-dasharray="480 180" transform="rotate(70 256 256)"/>
+                <!-- Innerer Cyan Ring (Schlaf) -->
+                <circle cx="256" cy="256" r="62" stroke="#00D2FF" stroke-width="18" stroke-linecap="round" stroke-dasharray="300 100" transform="rotate(-120 256 256)"/>
+              </svg>
+            </div>
+
+            <div class="logo-variants-col">
+              <div class="logo-banner-preview logo-banner-dark">
+                <svg viewBox="0 0 260 44" height="32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <!-- Signet: Volt Orbit Bogen mit weißem Punkt -->
+                  <circle cx="22" cy="22" r="14" stroke="#CDFB17" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="68 22" transform="rotate(-50 22 22)"/>
+                  <circle cx="33" cy="11" r="3.5" fill="#FFFFFF"/>
+                  <text x="52" y="31" fill="#FFFFFF" font-family="system-ui, sans-serif" font-weight="900" font-size="28" letter-spacing="3.5">ORBIT</text>
+                </svg>
+              </div>
+              <div class="logo-banner-preview logo-banner-light">
+                <svg viewBox="0 0 260 44" height="32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="22" cy="22" r="14" stroke="#001F47" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="68 22" transform="rotate(-50 22 22)"/>
+                  <circle cx="33" cy="11" r="4" fill="#CDFB17"/>
+                  <text x="52" y="31" fill="#001F47" font-family="system-ui, sans-serif" font-weight="900" font-size="28" letter-spacing="3.5">ORBIT</text>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Android Status Bar Push Notification -->
+        <div>
+          <div class="section-label">Android Statusleiste · Monochrom 24×24 (`ic_stat_orbit`)</div>
+          <div class="status-bar-preview">
+            <div class="status-bar-left">
+              <span class="status-time">09:41</span>
+              <div class="push-icon-slot">
+                <!-- Exakter 24x24 Vektor des Logo-Signets -->
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="12" cy="12" r="7.5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-dasharray="36 12" transform="rotate(-50 12 12)"/>
+                  <circle cx="18" cy="6" r="2" fill="currentColor"/>
+                </svg>
+              </div>
+              <span class="push-text-preview">ORBIT · Erholung 88 % (Bereit für Spitzenbelastung)</span>
+            </div>
+            <div class="status-bar-right"><span>5G</span><span>88%</span></div>
+          </div>
+        </div>
+
+        <!-- 3. Mini Website Hero & UI Preview mit Volt Akzent -->
+        <div>
+          <div class="section-label">Website-Hero & App-UI mit Volt-Akzent</div>
+          <div class="mini-website-hero">
+            <div class="hero-top-row">
+              <div class="hero-headline">Human Coaching Meets Sport Science.</div>
+              <button class="hero-cta-btn">Beta Starten →</button>
+            </div>
+            <!-- Rings Widget auf #001F47 Navy -->
+            <div class="rings-preview-box">
+              <svg viewBox="0 0 90 90" width="68" height="68" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- Erholung (Volt) -->
+                <circle cx="45" cy="45" r="34" stroke="#CDFB17" stroke-width="7" stroke-linecap="round" stroke-dasharray="160 50" transform="rotate(-90 45 45)"/>
+                <!-- Belastung (Amber) -->
+                <circle cx="45" cy="45" r="23" stroke="#FF6B00" stroke-width="6" stroke-linecap="round" stroke-dasharray="110 40" transform="rotate(-30 45 45)"/>
+                <!-- Schlaf (Cyan) -->
+                <circle cx="45" cy="45" r="13" stroke="#00D2FF" stroke-width="5" stroke-linecap="round" stroke-dasharray="60 25" transform="rotate(45 45 45)"/>
+                <text x="45" y="49" fill="#FFFFFF" font-size="11" font-weight="900" text-anchor="middle">88%</text>
+              </svg>
+              <div>
+                <div style="font-size:13px; font-weight:800;">Tages-Empfehlung</div>
+                <div style="font-size:11px; opacity:0.85;">Grünes Normband: Hohe Belastungsverträglichkeit</div>
+              </div>
+            </div>
+            <div class="telemetry-trio">
+              <div class="mini-metric-card">
+                <span class="metric-label-mini">Critical Power</span>
+                <span class="metric-value-mini"><span class="volt-highlight">315 W</span></span>
+                <span class="metric-sub-mini">4.38 W/kg</span>
+              </div>
+              <div class="mini-metric-card">
+                <span class="metric-label-mini">Tagesziel</span>
+                <span class="metric-value-mini" style="color:var(--brand-amber);">60–81</span>
+                <span class="metric-sub-mini">Optimaler Korridor</span>
+              </div>
+              <div class="mini-metric-card">
+                <span class="metric-label-mini">Schlaf</span>
+                <span class="metric-value-mini" style="color:var(--brand-cyan);">8h 12m</span>
+                <span class="metric-sub-mini">Effizienz 94%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-specs">
+        <div class="spec-row"><span class="spec-label">Typografie:</span><span class="spec-value">Inter Display Black 900</span></div>
+        <div class="spec-row"><span class="spec-label">Farben:</span><span class="spec-value">#001F47 · #CDFB17 (Volt) · #FFFFFF · #FF6B00</span></div>
+        <div class="spec-row"><span class="spec-label">Logo-Kompatibilität:</span><span class="spec-value">100% Identische Geometrie & Farbton</span></div>
+      </div>
+    </article>
+
+
+    <!-- ==========================================
+         KONZEPT 02: PRECISION TELEMETRY
+         ========================================== -->
+    <article class="concept-card" id="concept-2" data-variant="A">
+      <div class="card-header">
+        <div>
+          <span class="concept-number">Konzept 02 · Hightech</span>
+          <h3 class="concept-title">Precision Telemetry</h3>
+          <span class="concept-tagline">10°-Gradteilung, Volt-Fadenkreuz und Monospace-Präzision</span>
+        </div>
+        <div class="header-actions">
+          <button class="select-concept-btn" onclick="selectConcept(2, 'Precision Telemetry')">Favorit wählen</button>
+          <div class="sub-toggles">
+            <button class="sub-toggle-btn active var-btn-a" onclick="setCardVariant(2, 'A')">Var A (Logo)</button>
+            <button class="sub-toggle-btn var-btn-b" onclick="setCardVariant(2, 'B')">Var B (Evolution)</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-body">
+        <div>
+          <div class="section-label">
+            <span>512×512 App-Icon & Wortmarke</span>
+            <span class="badge-volt-pill">Volt Cursor</span>
+          </div>
+          <div class="icon-logo-stage">
+            <div class="app-icon-frame">
+              <!-- Var A: Logo mit dezentem Telemetrie-Fadenkreuz -->
+              <div class="icon-view-a" style="width:100%; height:100%; position:relative;">
+                <img src="logo.png" alt="App Icon" style="width:100%; height:100%; display:block;">
+                <svg viewBox="0 0 512 512" style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none;" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="256" cy="205" r="145" stroke="#CDFB17" stroke-width="2" stroke-dasharray="4 20" stroke-opacity="0.6"/>
+                  <line x1="256" y1="40" x2="256" y2="70" stroke="#CDFB17" stroke-width="3"/>
+                </svg>
+              </div>
+              <!-- Var B: Technische Telemetrie-Skala -->
+              <svg viewBox="0 0 512 512" fill="none" class="icon-view-b" style="display:none;" xmlns="http://www.w3.org/2000/svg">
+                <rect width="512" height="512" rx="112" fill="#001838"/>
+                <circle cx="256" cy="256" r="160" stroke="rgba(205,251,23,0.3)" stroke-width="2" stroke-dasharray="8 6"/>
+                <circle cx="256" cy="256" r="135" stroke="#CDFB17" stroke-width="6" stroke-dasharray="4 22" stroke-linecap="round"/>
+                <line x1="256" y1="80" x2="256" y2="432" stroke="rgba(255,255,255,0.15)" stroke-width="2"/>
+                <line x1="80" y1="256" x2="432" y2="256" stroke="rgba(255,255,255,0.15)" stroke-width="2"/>
+                <circle cx="256" cy="256" r="24" fill="#CDFB17"/>
+                <circle cx="256" cy="256" r="8" fill="#001838"/>
+              </svg>
+            </div>
+
+            <div class="logo-variants-col">
+              <div class="logo-banner-preview logo-banner-dark">
+                <svg viewBox="0 0 260 44" height="32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <text x="8" y="32" fill="#FFFFFF" font-family="system-ui, sans-serif" font-weight="900" font-size="30" font-style="italic" letter-spacing="2">ORBIT</text>
+                  <circle cx="128" cy="14" r="3.5" fill="#CDFB17"/>
+                  <text x="144" y="28" fill="#CDFB17" font-family="ui-monospace, monospace" font-size="10" font-weight="800">1Hz//RAW</text>
+                </svg>
+              </div>
+              <div class="logo-banner-preview logo-banner-light">
+                <svg viewBox="0 0 260 44" height="32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <text x="8" y="32" fill="#001F47" font-family="system-ui, sans-serif" font-weight="900" font-size="30" font-style="italic" letter-spacing="2">ORBIT</text>
+                  <circle cx="128" cy="14" r="3.5" fill="#001F47"/>
+                  <text x="144" y="28" fill="#001F47" font-family="ui-monospace, monospace" font-size="10" font-weight="800">1Hz//RAW</text>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="section-label">Android Statusleiste · Monochrom 24×24</div>
+          <div class="status-bar-preview">
+            <div class="status-bar-left">
+              <span class="status-time">10:15</span>
+              <div class="push-icon-slot">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="2"/>
+                  <line x1="12" y1="2" x2="12" y2="5" stroke="currentColor" stroke-width="2"/>
+                  <line x1="12" y1="19" x2="12" y2="22" stroke="currentColor" stroke-width="2"/>
+                  <circle cx="12" cy="12" r="2.5" fill="currentColor"/>
+                </svg>
+              </div>
+              <span class="push-text-preview">Intervall #4 erkannt · Ø 342 W (102% FTP)</span>
+            </div>
+            <div class="status-bar-right"><span>5G</span><span>91%</span></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="section-label">Website-Hero & App-UI mit Volt-Akzent</div>
+          <div class="mini-website-hero">
+            <div class="hero-top-row">
+              <div class="hero-headline" style="font-family:var(--font-mono); font-size:13px; color:var(--text-main);">
+                &gt; LIVE_STREAM: RADSPORT_TELEMETRIE
+              </div>
+              <button class="hero-cta-btn">Telemetrie Starten</button>
+            </div>
+            <div class="telemetry-trio">
+              <div class="mini-metric-card">
+                <span class="metric-label-mini">Watt (1s)</span>
+                <span class="metric-value-mini font-mono"><span class="volt-highlight">342 W</span></span>
+                <span class="metric-sub-mini">Z6 Anaerobic</span>
+              </div>
+              <div class="mini-metric-card">
+                <span class="metric-label-mini">Cadence</span>
+                <span class="metric-value-mini font-mono">94 rpm</span>
+                <span class="metric-sub-mini">Balance 50/50</span>
+              </div>
+              <div class="mini-metric-card">
+                <span class="metric-label-mini">W'bal</span>
+                <span class="metric-value-mini font-mono" style="color:var(--brand-amber);">14.2 kJ</span>
+                <span class="metric-sub-mini">Skiba Dynamic</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-specs">
+        <div class="spec-row"><span class="spec-label">Typografie:</span><span class="spec-value">Inter Black Italic + JetBrains Mono</span></div>
+        <div class="spec-row"><span class="spec-label">Farben:</span><span class="spec-value">#001838 · #CDFB17 (Volt) · #00D2FF</span></div>
+        <div class="spec-row"><span class="spec-label">Logo-Kompatibilität:</span><span class="spec-value">Ergänzt bestehendes Logo mit Telemetrie-Ticks</span></div>
+      </div>
+    </article>
+
+
+    <!-- ==========================================
+         KONZEPT 03: SWISS AERO GRID
+         ========================================== -->
+    <article class="concept-card" id="concept-3" data-variant="A">
+      <div class="card-header">
+        <div>
+          <span class="concept-number">Konzept 03 · Editorial</span>
+          <h3 class="concept-title">Swiss Aero Grid</h3>
+          <span class="concept-tagline">Monumentaler Schwarz-Weiß-Navy-Kontrast mit Signal-Volt-Block</span>
+        </div>
+        <div class="header-actions">
+          <button class="select-concept-btn" onclick="selectConcept(3, 'Swiss Aero Grid')">Favorit wählen</button>
+          <div class="sub-toggles">
+            <button class="sub-toggle-btn active var-btn-a" onclick="setCardVariant(3, 'A')">Var A (Logo)</button>
+            <button class="sub-toggle-btn var-btn-b" onclick="setCardVariant(3, 'B')">Var B (Evolution)</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-body">
+        <div>
+          <div class="section-label">
+            <span>512×512 App-Icon & Wortmarke</span>
+            <span class="badge-volt-pill">Volt Grid Block</span>
+          </div>
+          <div class="icon-logo-stage">
+            <div class="app-icon-frame">
+              <div class="icon-view-a" style="width:100%; height:100%; position:relative;">
+                <img src="logo.png" alt="App Icon" style="width:100%; height:100%; display:block;">
+                <!-- Feines Schweizer Raster über dem Logo -->
+                <div style="position:absolute; top:14px; right:14px; width:14px; height:14px; background:#CDFB17; border-radius:3px;"></div>
+              </div>
+              <svg viewBox="0 0 512 512" fill="none" class="icon-view-b" style="display:none;" xmlns="http://www.w3.org/2000/svg">
+                <rect width="512" height="512" rx="112" fill="#001F47"/>
+                <rect x="110" y="110" width="292" height="292" stroke="#FFFFFF" stroke-width="36"/>
+                <rect x="340" y="80" width="70" height="70" fill="#CDFB17"/>
+              </svg>
+            </div>
+
+            <div class="logo-variants-col">
+              <div class="logo-banner-preview logo-banner-dark">
+                <svg viewBox="0 0 260 44" height="32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <text x="8" y="32" fill="#FFFFFF" font-family="Helvetica, Arial, sans-serif" font-weight="900" font-size="30" letter-spacing="6">ORBIT</text>
+                  <rect x="208" y="14" width="12" height="12" fill="#CDFB17"/>
+                </svg>
+              </div>
+              <div class="logo-banner-preview logo-banner-light">
+                <svg viewBox="0 0 260 44" height="32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <text x="8" y="32" fill="#001F47" font-family="Helvetica, Arial, sans-serif" font-weight="900" font-size="30" letter-spacing="6">ORBIT</text>
+                  <rect x="208" y="14" width="12" height="12" fill="#CDFB17"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="section-label">Android Statusleiste · Monochrom 24×24</div>
+          <div class="status-bar-preview">
+            <div class="status-bar-left">
+              <span class="status-time">11:00</span>
+              <div class="push-icon-slot">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="3" y="3" width="18" height="18" stroke="currentColor" stroke-width="2.4"/>
+                  <rect x="15" y="3" width="6" height="6" fill="currentColor"/>
+                </svg>
+              </div>
+              <span class="push-text-preview">Wochen-Audit: 640 TSS planmäßig absolviert</span>
+            </div>
+            <div class="status-bar-right"><span>5G</span><span>79%</span></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="section-label">Website-Hero & App-UI mit Volt-Akzent</div>
+          <div class="mini-website-hero">
+            <div class="hero-top-row">
+              <div class="hero-headline" style="text-transform:uppercase; font-size:12px; letter-spacing:2px;">
+                PERFORMANCE ARCHITEKTUR / 2026
+              </div>
+              <button class="hero-cta-btn">ZUGANG ANFORDERN</button>
+            </div>
+            <div class="telemetry-trio">
+              <div class="mini-metric-card">
+                <span class="metric-label-mini">Critical Power</span>
+                <span class="metric-value-mini"><span class="volt-highlight">315 W</span></span>
+                <span class="metric-sub-mini">Morton 3-Param</span>
+              </div>
+              <div class="mini-metric-card">
+                <span class="metric-label-mini">W' Prime</span>
+                <span class="metric-value-mini">21.4 kJ</span>
+                <span class="metric-sub-mini">Kapazität</span>
+              </div>
+              <div class="mini-metric-card">
+                <span class="metric-label-mini">CTL Fitness</span>
+                <span class="metric-value-mini">84.2</span>
+                <span class="metric-sub-mini">42 Tage EMA</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-specs">
+        <div class="spec-row"><span class="spec-label">Typografie:</span><span class="spec-value">Helvetica Neue / Swiss Bold 900</span></div>
+        <div class="spec-row"><span class="spec-label">Farben:</span><span class="spec-value">#001F47 · #FFFFFF · #CDFB17 (Volt)</span></div>
+        <div class="spec-row"><span class="spec-label">Besonderheit:</span><span class="spec-value">Hervorragend im Light Mode (hohe Lesbarkeit)</span></div>
+      </div>
+    </article>
+
+
+    <!-- ==========================================
+         KONZEPT 04: TRI-SECTOR PULSE
+         ========================================== -->
+    <article class="concept-card" id="concept-4" data-variant="A">
+      <div class="card-header">
+        <div>
+          <span class="concept-number">Konzept 04 · Multisport</span>
+          <h3 class="concept-title">Tri-Sector Pulse</h3>
+          <span class="concept-tagline">Swim, Bike & Run harmonisch vereint mit Volt-Peak am Radsektor</span>
+        </div>
+        <div class="header-actions">
+          <button class="select-concept-btn" onclick="selectConcept(4, 'Tri-Sector Pulse')">Favorit wählen</button>
+          <div class="sub-toggles">
+            <button class="sub-toggle-btn active var-btn-a" onclick="setCardVariant(4, 'A')">Var A (Logo)</button>
+            <button class="sub-toggle-btn var-btn-b" onclick="setCardVariant(4, 'B')">Var B (Evolution)</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-body">
+        <div>
+          <div class="section-label">
+            <span>512×512 App-Icon & Wortmarke</span>
+            <span class="badge-volt-pill">Volt Bike Sektor</span>
+          </div>
+          <div class="icon-logo-stage">
+            <div class="app-icon-frame">
+              <div class="icon-view-a" style="width:100%; height:100%; position:relative;">
+                <img src="logo.png" alt="App Icon" style="width:100%; height:100%; display:block;">
+              </div>
+              <svg viewBox="0 0 512 512" fill="none" class="icon-view-b" style="display:none;" xmlns="http://www.w3.org/2000/svg">
+                <rect width="512" height="512" rx="112" fill="#001830"/>
+                <path d="M256 80 C360 80, 430 180, 390 290 C360 380, 270 430, 190 410 C100 390, 70 280, 110 190 Z" stroke="url(#c4-volt-grad)" stroke-width="32" stroke-linecap="round"/>
+                <circle cx="256" cy="80" r="18" fill="#00D2FF"/>
+                <circle cx="390" cy="300" r="18" fill="#CDFB17"/>
+                <circle cx="130" cy="340" r="18" fill="#10B981"/>
+                <defs>
+                  <linearGradient id="c4-volt-grad" x1="100" y1="80" x2="400" y2="400" gradientUnits="userSpaceOnUse">
+                    <stop stop-color="#00D2FF"/>
+                    <stop offset="0.5" stop-color="#CDFB17"/>
+                    <stop offset="1" stop-color="#10B981"/>
+                  </linearGradient>
+                </defs>
+              </svg>
+            </div>
+
+            <div class="logo-variants-col">
+              <div class="logo-banner-preview logo-banner-dark">
+                <svg viewBox="0 0 260 44" height="32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <text x="8" y="32" fill="#FFFFFF" font-family="system-ui, sans-serif" font-weight="900" font-size="28" letter-spacing="3">ORBIT</text>
+                  <path d="M145 26 Q175 8, 205 22 T245 16" stroke="#CDFB17" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+                </svg>
+              </div>
+              <div class="logo-banner-preview logo-banner-light">
+                <svg viewBox="0 0 260 44" height="32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <text x="8" y="32" fill="#001F47" font-family="system-ui, sans-serif" font-weight="900" font-size="28" letter-spacing="3">ORBIT</text>
+                  <path d="M145 26 Q175 8, 205 22 T245 16" stroke="#001F47" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="section-label">Android Statusleiste · Monochrom 24×24</div>
+          <div class="status-bar-preview">
+            <div class="status-bar-left">
+              <span class="status-time">12:30</span>
+              <div class="push-icon-slot">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 3 C17 3, 21 8, 20 14 C19 19, 14 21, 9 20 C4 19, 3 13, 5 8 Z" stroke="currentColor" stroke-width="2.2"/>
+                  <circle cx="12" cy="12" r="2.5" fill="currentColor"/>
+                </svg>
+              </div>
+              <span class="push-text-preview">Triathlon Koppeltraining: Bike 90k + Run 10k</span>
+            </div>
+            <div class="status-bar-right"><span>5G</span><span>65%</span></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="section-label">Website-Hero & App-UI mit Volt-Akzent</div>
+          <div class="mini-website-hero">
+            <div class="hero-top-row">
+              <div class="hero-headline">Swim · Bike · Run Synchronisiert.</div>
+              <button class="hero-cta-btn">Pläne Synchronisieren</button>
+            </div>
+            <div class="telemetry-trio">
+              <div class="mini-metric-card">
+                <span class="metric-label-mini">Bike (FTP)</span>
+                <span class="metric-value-mini"><span class="volt-highlight">310 W</span></span>
+                <span class="metric-sub-mini">TSS 145</span>
+              </div>
+              <div class="mini-metric-card">
+                <span class="metric-label-mini">Swim (CSS)</span>
+                <span class="metric-value-mini" style="color:var(--brand-cyan);">1:24/100</span>
+                <span class="metric-sub-mini">sTSS 72</span>
+              </div>
+              <div class="mini-metric-card">
+                <span class="metric-label-mini">Run (GAP)</span>
+                <span class="metric-value-mini" style="color:var(--brand-emerald);">3:52/km</span>
+                <span class="metric-sub-mini">rTSS 88</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-specs">
+        <div class="spec-row"><span class="spec-label">Typografie:</span><span class="spec-value">Inter Display Heavy 800</span></div>
+        <div class="spec-row"><span class="spec-label">Farben:</span><span class="spec-value">#001830 · #CDFB17 · #00D2FF · #10B981</span></div>
+        <div class="spec-row"><span class="spec-label">Sportfokus:</span><span class="spec-value">Ideale Multisport-Abstimmung</span></div>
+      </div>
+    </article>
+
+
+    <!-- ==========================================
+         KONZEPT 05: DARK & LIGHT COCKPIT VOLT
+         ========================================== -->
+    <article class="concept-card" id="concept-5" data-variant="A">
+      <div class="card-header">
+        <div>
+          <span class="concept-number">Konzept 05 · HUD & Glas</span>
+          <h3 class="concept-title">Dark & Light Cockpit Volt</h3>
+          <span class="concept-tagline">Heads-Up-Display mit 1px Volt-Glaskanten und leuchtenden Datenpunkten</span>
+        </div>
+        <div class="header-actions">
+          <button class="select-concept-btn" onclick="selectConcept(5, 'Dark & Light Cockpit Volt')">Favorit wählen</button>
+          <div class="sub-toggles">
+            <button class="sub-toggle-btn active var-btn-a" onclick="setCardVariant(5, 'A')">Var A (Logo)</button>
+            <button class="sub-toggle-btn var-btn-b" onclick="setCardVariant(5, 'B')">Var B (Evolution)</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-body">
+        <div>
+          <div class="section-label">
+            <span>512×512 App-Icon & Wortmarke</span>
+            <span class="badge-volt-pill">Volt Glow Edges</span>
+          </div>
+          <div class="icon-logo-stage">
+            <div class="app-icon-frame" style="box-shadow: 0 16px 36px rgba(0,0,0,0.5), 0 0 20px rgba(205,251,23,0.25);">
+              <div class="icon-view-a" style="width:100%; height:100%; position:relative;">
+                <img src="logo.png" alt="App Icon" style="width:100%; height:100%; display:block;">
+              </div>
+              <svg viewBox="0 0 512 512" fill="none" class="icon-view-b" style="display:none;" xmlns="http://www.w3.org/2000/svg">
+                <rect width="512" height="512" rx="112" fill="#030710"/>
+                <polygon points="256,70 410,160 410,350 256,440 102,350 102,160" stroke="#CDFB17" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" filter="drop-shadow(0 0 16px rgba(205,251,23,0.7))"/>
+                <circle cx="256" cy="256" r="32" fill="#CDFB17"/>
+              </svg>
+            </div>
+
+            <div class="logo-variants-col">
+              <div class="logo-banner-preview logo-banner-dark">
+                <svg viewBox="0 0 260 44" height="32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <text x="8" y="32" fill="#CDFB17" font-family="system-ui, sans-serif" font-weight="900" font-size="30" letter-spacing="4" filter="drop-shadow(0 0 8px rgba(205,251,23,0.5))">ORBIT</text>
+                </svg>
+              </div>
+              <div class="logo-banner-preview logo-banner-light">
+                <svg viewBox="0 0 260 44" height="32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <text x="8" y="32" fill="#001F47" font-family="system-ui, sans-serif" font-weight="900" font-size="30" letter-spacing="4">ORBIT</text>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="section-label">Android Statusleiste · Monochrom 24×24</div>
+          <div class="status-bar-preview">
+            <div class="status-bar-left">
+              <span class="status-time">14:02</span>
+              <div class="push-icon-slot">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <polygon points="12,2 21,7 21,17 12,22 3,17 3,7" stroke="currentColor" stroke-width="2"/>
+                  <circle cx="12" cy="12" r="2.5" fill="currentColor"/>
+                </svg>
+              </div>
+              <span class="push-text-preview">Aerodynamic Decoupling: +2.1% (Exzellent)</span>
+            </div>
+            <div class="status-bar-right"><span>5G</span><span>58%</span></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="section-label">Website-Hero & App-UI mit Volt-Akzent</div>
+          <div class="mini-website-hero" style="border-color:rgba(205,251,23,0.3);">
+            <div class="hero-top-row">
+              <div class="hero-headline">Deep Telemetry & HUD Cockpit.</div>
+              <button class="hero-cta-btn">Cockpit Öffnen</button>
+            </div>
+            <div class="telemetry-trio">
+              <div class="mini-metric-card" style="border-color:rgba(205,251,23,0.2);">
+                <span class="metric-label-mini">Aero Decoupling</span>
+                <span class="metric-value-mini"><span class="volt-highlight">+2.1 %</span></span>
+                <span class="metric-sub-mini">Pw:HR Ampel Grün</span>
+              </div>
+              <div class="mini-metric-card">
+                <span class="metric-label-mini">W'bal Min</span>
+                <span class="metric-value-mini" style="color:var(--brand-amber);">8.4 kJ</span>
+                <span class="metric-sub-mini">Reserve 40%</span>
+              </div>
+              <div class="mini-metric-card">
+                <span class="metric-label-mini">Efficiency</span>
+                <span class="metric-value-mini" style="color:var(--brand-cyan);">1.72 EF</span>
+                <span class="metric-sub-mini">NP / Ø HR</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-specs">
+        <div class="spec-row"><span class="spec-label">Typografie:</span><span class="spec-value">Inter Black Glow</span></div>
+        <div class="spec-row"><span class="spec-label">Farben:</span><span class="spec-value">#030710 · #001F47 · #CDFB17 (Volt)</span></div>
+        <div class="spec-row"><span class="spec-label">Wirkung:</span><span class="spec-value">High-Tech HUD für intensive Night-Rides</span></div>
+      </div>
+    </article>
+
+
+    <!-- ==========================================
+         KONZEPT 06: CHRONO APEX
+         ========================================== -->
+    <article class="concept-card" id="concept-6" data-variant="A">
+      <div class="card-header">
+        <div>
+          <span class="concept-number">Konzept 06 · Schweizer Chrono</span>
+          <h3 class="concept-title">Chrono Apex</h3>
+          <span class="concept-tagline">Tachymeter-Indexe & Volt-Sekundenzeiger nach Schweizer Uhrmachervorbild</span>
+        </div>
+        <div class="header-actions">
+          <button class="select-concept-btn" onclick="selectConcept(6, 'Chrono Apex')">Favorit wählen</button>
+          <div class="sub-toggles">
+            <button class="sub-toggle-btn active var-btn-a" onclick="setCardVariant(6, 'A')">Var A (Logo)</button>
+            <button class="sub-toggle-btn var-btn-b" onclick="setCardVariant(6, 'B')">Var B (Evolution)</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-body">
+        <div>
+          <div class="section-label">
+            <span>512×512 App-Icon & Wortmarke</span>
+            <span class="badge-volt-pill">Volt Apex Hand</span>
+          </div>
+          <div class="icon-logo-stage">
+            <div class="app-icon-frame">
+              <div class="icon-view-a" style="width:100%; height:100%; position:relative;">
+                <img src="logo.png" alt="App Icon" style="width:100%; height:100%; display:block;">
+                <!-- Dezent gravierte Lünetten-Striche im Kreis -->
+                <svg viewBox="0 0 512 512" style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none;" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="256" cy="205" r="148" stroke="rgba(255,255,255,0.2)" stroke-width="2" stroke-dasharray="2 18"/>
+                </svg>
+              </div>
+              <svg viewBox="0 0 512 512" fill="none" class="icon-view-b" style="display:none;" xmlns="http://www.w3.org/2000/svg">
+                <rect width="512" height="512" rx="112" fill="#001F47"/>
+                <circle cx="256" cy="256" r="150" stroke="#FFFFFF" stroke-width="4" stroke-dasharray="2 18"/>
+                <polygon points="256,110 270,135 242,135" fill="#CDFB17"/>
+                <line x1="256" y1="256" x2="256" y2="175" stroke="#CDFB17" stroke-width="4" stroke-linecap="round"/>
+                <circle cx="256" cy="256" r="8" fill="#FFFFFF"/>
+              </svg>
+            </div>
+
+            <div class="logo-variants-col">
+              <div class="logo-banner-preview logo-banner-dark">
+                <svg viewBox="0 0 260 44" height="32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <text x="8" y="30" fill="#FFFFFF" font-family="system-ui, sans-serif" font-weight="800" font-size="26" letter-spacing="4">ORBIT</text>
+                  <polygon points="145,18 153,26 137,26" fill="#CDFB17"/>
+                  <text x="162" y="28" fill="#94A3B8" font-size="9" font-weight="700" letter-spacing="1.5">CHRONO</text>
+                </svg>
+              </div>
+              <div class="logo-banner-preview logo-banner-light">
+                <svg viewBox="0 0 260 44" height="32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <text x="8" y="30" fill="#001F47" font-family="system-ui, sans-serif" font-weight="800" font-size="26" letter-spacing="4">ORBIT</text>
+                  <polygon points="145,18 153,26 137,26" fill="#CDFB17"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="section-label">Android Statusleiste · Monochrom 24×24</div>
+          <div class="status-bar-preview">
+            <div class="status-bar-left">
+              <span class="status-time">15:45</span>
+              <div class="push-icon-slot">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="2"/>
+                  <polygon points="12,4 14,7 10,7" fill="currentColor"/>
+                  <line x1="12" y1="12" x2="16" y2="10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                </svg>
+              </div>
+              <span class="push-text-preview">Runden-Split: 03:14 min (Persönliche Bestzeit!)</span>
+            </div>
+            <div class="status-bar-right"><span>5G</span><span>44%</span></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="section-label">Website-Hero & App-UI mit Volt-Akzent</div>
+          <div class="mini-website-hero">
+            <div class="hero-top-row">
+              <div class="hero-headline">Chronomètre de Sport.</div>
+              <button class="hero-cta-btn">Präzision Entdecken</button>
+            </div>
+            <div class="telemetry-trio">
+              <div class="mini-metric-card">
+                <span class="metric-label-mini">Split Time</span>
+                <span class="metric-value-mini"><span class="volt-highlight">42:15.8</span></span>
+                <span class="metric-sub-mini">1/100 Sekunde</span>
+              </div>
+              <div class="mini-metric-card">
+                <span class="metric-label-mini">Ø Pace</span>
+                <span class="metric-value-mini">3:48 /km</span>
+                <span class="metric-sub-mini">Schwellenbereich</span>
+              </div>
+              <div class="mini-metric-card">
+                <span class="metric-label-mini">Decoupling</span>
+                <span class="metric-value-mini" style="color:var(--brand-emerald);">&lt; 2.5 %</span>
+                <span class="metric-sub-mini">Aerob Stabil</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-specs">
+        <div class="spec-row"><span class="spec-label">Typografie:</span><span class="spec-value">DIN Pro / Inter SemiBold All-Caps</span></div>
+        <div class="spec-row"><span class="spec-label">Farben:</span><span class="spec-value">#001F47 · #CDFB17 · #94A3B8</span></div>
+        <div class="spec-row"><span class="spec-label">Vorbild:</span><span class="spec-value">Klassische Heuer / Omega Chronometrie</span></div>
+      </div>
+    </article>
+
+
+    <!-- ==========================================
+         KONZEPT 07: KINETIC WATTS
+         ========================================== -->
+    <article class="concept-card" id="concept-7" data-variant="A">
+      <div class="card-header">
+        <div>
+          <span class="concept-number">Konzept 07 · Aerodynamik</span>
+          <h3 class="concept-title">Kinetic Watts</h3>
+          <span class="concept-tagline">Windkanal-Speedlines und Strömungs-Abrisskante für puren Vortrieb</span>
+        </div>
+        <div class="header-actions">
+          <button class="select-concept-btn" onclick="selectConcept(7, 'Kinetic Watts')">Favorit wählen</button>
+          <div class="sub-toggles">
+            <button class="sub-toggle-btn active var-btn-a" onclick="setCardVariant(7, 'A')">Var A (Logo)</button>
+            <button class="sub-toggle-btn var-btn-b" onclick="setCardVariant(7, 'B')">Var B (Evolution)</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-body">
+        <div>
+          <div class="section-label">
+            <span>512×512 App-Icon & Wortmarke</span>
+            <span class="badge-volt-pill">Volt Streamlines</span>
+          </div>
+          <div class="icon-logo-stage">
+            <div class="app-icon-frame">
+              <div class="icon-view-a" style="width:100%; height:100%; position:relative;">
+                <img src="logo.png" alt="App Icon" style="width:100%; height:100%; display:block;">
+              </div>
+              <svg viewBox="0 0 512 512" fill="none" class="icon-view-b" style="display:none;" xmlns="http://www.w3.org/2000/svg">
+                <rect width="512" height="512" rx="112" fill="#001835"/>
+                <path d="M100 180 C200 120, 360 140, 420 256 C360 372, 200 392, 100 332" stroke="#CDFB17" stroke-width="26" stroke-linecap="round"/>
+                <path d="M140 220 C220 180, 320 190, 370 256 C320 322, 220 332, 140 292" stroke="#FFFFFF" stroke-width="20" stroke-linecap="round"/>
+              </svg>
+            </div>
+
+            <div class="logo-variants-col">
+              <div class="logo-banner-preview logo-banner-dark">
+                <svg viewBox="0 0 260 44" height="32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <text x="8" y="32" fill="#FFFFFF" font-family="system-ui, sans-serif" font-weight="900" font-size="30" letter-spacing="1">ORBIT</text>
+                  <path d="M145 15 H220 L235 28 H160 Z" fill="#CDFB17"/>
+                </svg>
+              </div>
+              <div class="logo-banner-preview logo-banner-light">
+                <svg viewBox="0 0 260 44" height="32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <text x="8" y="32" fill="#001F47" font-family="system-ui, sans-serif" font-weight="900" font-size="30" letter-spacing="1">ORBIT</text>
+                  <path d="M145 15 H220 L235 28 H160 Z" fill="#CDFB17"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="section-label">Android Statusleiste · Monochrom 24×24</div>
+          <div class="status-bar-preview">
+            <div class="status-bar-left">
+              <span class="status-time">16:20</span>
+              <div class="push-icon-slot">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M3 8 C8 5, 17 6, 20 12 C17 18, 8 19, 3 16" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+                  <path d="M6 12 H15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+              </div>
+              <span class="push-text-preview">MMP-Allzeit-Bestwert: 5 min @ 380 Watt!</span>
+            </div>
+            <div class="status-bar-right"><span>5G</span><span>38%</span></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="section-label">Website-Hero & App-UI mit Volt-Akzent</div>
+          <div class="mini-website-hero">
+            <div class="hero-top-row">
+              <div class="hero-headline">Aerodynamic Power & Speed.</div>
+              <button class="hero-cta-btn">Wattkurve Berechnen</button>
+            </div>
+            <div class="telemetry-trio">
+              <div class="mini-metric-card">
+                <span class="metric-label-mini">MMP 5 min</span>
+                <span class="metric-value-mini"><span class="volt-highlight">380 W</span></span>
+                <span class="metric-sub-mini">PB +12 W</span>
+              </div>
+              <div class="mini-metric-card">
+                <span class="metric-label-mini">Watt/kg</span>
+                <span class="metric-value-mini" style="color:var(--brand-volt);">5.28</span>
+                <span class="metric-sub-mini">Pmax 1.180 W</span>
+              </div>
+              <div class="mini-metric-card">
+                <span class="metric-label-mini">Speed</span>
+                <span class="metric-value-mini">44.8 km/h</span>
+                <span class="metric-sub-mini">CdA: 0.224 m²</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-specs">
+        <div class="spec-row"><span class="spec-label">Typografie:</span><span class="spec-value">Inter Black Speed Cut</span></div>
+        <div class="spec-row"><span class="spec-label">Farben:</span><span class="spec-value">#001835 · #CDFB17 · #FFFFFF</span></div>
+        <div class="spec-row"><span class="spec-label">Stärke:</span><span class="spec-value">Kompromisslose Ausrichtung auf Aerodynamik & Leistung</span></div>
+      </div>
+    </article>
+
+
+    <!-- ==========================================
+         KONZEPT 08: MINIMALIST MONOLITH
+         ========================================== -->
+    <article class="concept-card" id="concept-8" data-variant="A">
+      <div class="card-header">
+        <div>
+          <span class="concept-number">Konzept 08 · Radikal Minimal</span>
+          <h3 class="concept-title">Minimalist Monolith</h3>
+          <span class="concept-tagline">Das unverwechselbare Logo-Signet in seiner reinsten Form — perfekt auf 16×16px</span>
+        </div>
+        <div class="header-actions">
+          <button class="select-concept-btn" onclick="selectConcept(8, 'Minimalist Monolith')">Favorit wählen</button>
+          <div class="sub-toggles">
+            <button class="sub-toggle-btn active var-btn-a" onclick="setCardVariant(8, 'A')">Var A (Logo)</button>
+            <button class="sub-toggle-btn var-btn-b" onclick="setCardVariant(8, 'B')">Var B (Evolution)</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-body">
+        <div>
+          <div class="section-label">
+            <span>512×512 App-Icon & Wortmarke</span>
+            <span class="badge-volt-pill">Volt Satellit</span>
+          </div>
+          <div class="icon-logo-stage">
+            <div class="app-icon-frame">
+              <!-- Var A: Exakter Original-Zustand -->
+              <img src="logo.png" alt="App Icon" class="icon-view-a" style="display:block;">
+              <!-- Var B: Vektor-Monolith -->
+              <svg viewBox="0 0 512 512" fill="none" class="icon-view-b" style="display:none;" xmlns="http://www.w3.org/2000/svg">
+                <rect width="512" height="512" rx="112" fill="#001F47"/>
+                <circle cx="256" cy="230" r="130" stroke="#CDFB17" stroke-width="36" stroke-linecap="round" stroke-dasharray="640 180" transform="rotate(-50 256 230)"/>
+                <circle cx="355" cy="130" r="24" fill="#FFFFFF"/>
+                <text x="256" y="440" fill="#FFFFFF" font-family="system-ui, sans-serif" font-weight="900" font-size="64" letter-spacing="12" text-anchor="middle">ORBIT</text>
+              </svg>
+            </div>
+
+            <div class="logo-variants-col">
+              <div class="logo-banner-preview logo-banner-dark">
+                <svg viewBox="0 0 260 44" height="32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <!-- Monolith als O -->
+                  <circle cx="20" cy="22" r="13" stroke="#CDFB17" stroke-width="4" stroke-linecap="round" stroke-dasharray="64 18" transform="rotate(-50 20 22)"/>
+                  <circle cx="30" cy="12" r="3" fill="#FFFFFF"/>
+                  <text x="46" y="31" fill="#FFFFFF" font-family="system-ui, sans-serif" font-weight="900" font-size="28" letter-spacing="4">RBIT</text>
+                </svg>
+              </div>
+              <div class="logo-banner-preview logo-banner-light">
+                <svg viewBox="0 0 260 44" height="32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="20" cy="22" r="13" stroke="#001F47" stroke-width="4" stroke-linecap="round" stroke-dasharray="64 18" transform="rotate(-50 20 22)"/>
+                  <circle cx="30" cy="12" r="3.5" fill="#CDFB17"/>
+                  <text x="46" y="31" fill="#001F47" font-family="system-ui, sans-serif" font-weight="900" font-size="28" letter-spacing="4">RBIT</text>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="section-label">Android Statusleiste · Monochrom 24×24</div>
+          <div class="status-bar-preview">
+            <div class="status-bar-left">
+              <span class="status-time">17:10</span>
+              <div class="push-icon-slot">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="12" cy="12" r="7.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="36 12" transform="rotate(-50 12 12)"/>
+                  <circle cx="18" cy="6" r="2" fill="currentColor"/>
+                </svg>
+              </div>
+              <span class="push-text-preview">ORBIT Bereit · Erholung 92% (Ruhepuls -4 bpm)</span>
+            </div>
+            <div class="status-bar-right"><span>5G</span><span>29%</span></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="section-label">Website-Hero & App-UI mit Volt-Akzent</div>
+          <div class="mini-website-hero">
+            <div class="hero-top-row">
+              <div class="hero-headline">Endurance Intelligence. Pure & Simple.</div>
+              <button class="hero-cta-btn">Kostenlos Starten</button>
+            </div>
+            <div class="telemetry-trio">
+              <div class="mini-metric-card">
+                <span class="metric-label-mini">Recovery</span>
+                <span class="metric-value-mini"><span class="volt-highlight">92 %</span></span>
+                <span class="metric-sub-mini">Optimal Peak</span>
+              </div>
+              <div class="mini-metric-card">
+                <span class="metric-label-mini">Tagesbelastung</span>
+                <span class="metric-value-mini">74 / 100</span>
+                <span class="metric-sub-mini">Ziel erreicht</span>
+              </div>
+              <div class="mini-metric-card">
+                <span class="metric-label-mini">Schlaf-Score</span>
+                <span class="metric-value-mini" style="color:var(--brand-emerald);">89 %</span>
+                <span class="metric-sub-mini">Schuld: 0 min</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-specs">
+        <div class="spec-row"><span class="spec-label">Typografie:</span><span class="spec-value">Inter Display 900 Ultra</span></div>
+        <div class="spec-row"><span class="spec-label">Farben:</span><span class="spec-value">#001F47 · #CDFB17 (Volt) · #FFFFFF</span></div>
+        <div class="spec-row"><span class="spec-label">Erkennbarkeit:</span><span class="spec-value">Beste Lesbarkeit auf Smartwatches & Statusleisten</span></div>
+      </div>
+    </article>
+
+
+    <!-- ==========================================
+         KONZEPT 09: ELEVATION CONTOUR
+         ========================================== -->
+    <article class="concept-card" id="concept-9" data-variant="A">
+      <div class="card-header">
+        <div>
+          <span class="concept-number">Konzept 09 · Alpin & Topo</span>
+          <h3 class="concept-title">Elevation Contour</h3>
+          <span class="concept-tagline">Höhenschichtlinien legendärer Pässe kombiniert mit Volt-Gipfelmarker</span>
+        </div>
+        <div class="header-actions">
+          <button class="select-concept-btn" onclick="selectConcept(9, 'Elevation Contour')">Favorit wählen</button>
+          <div class="sub-toggles">
+            <button class="sub-toggle-btn active var-btn-a" onclick="setCardVariant(9, 'A')">Var A (Logo)</button>
+            <button class="sub-toggle-btn var-btn-b" onclick="setCardVariant(9, 'B')">Var B (Evolution)</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-body">
+        <div>
+          <div class="section-label">
+            <span>512×512 App-Icon & Wortmarke</span>
+            <span class="badge-volt-pill">Volt Summit Marker</span>
+          </div>
+          <div class="icon-logo-stage">
+            <div class="app-icon-frame">
+              <div class="icon-view-a" style="width:100%; height:100%; position:relative;">
+                <img src="logo.png" alt="App Icon" style="width:100%; height:100%; display:block;">
+              </div>
+              <svg viewBox="0 0 512 512" fill="none" class="icon-view-b" style="display:none;" xmlns="http://www.w3.org/2000/svg">
+                <rect width="512" height="512" rx="112" fill="#0A1828"/>
+                <path d="M80 320 Q160 220 256 220 T432 320" stroke="rgba(255, 255, 255, 0.25)" stroke-width="4" fill="none"/>
+                <path d="M110 300 Q180 160 256 160 T402 300" stroke="#CDFB17" stroke-width="8" fill="none"/>
+                <circle cx="256" cy="160" r="14" fill="#FFFFFF"/>
+                <line x1="80" y1="360" x2="432" y2="360" stroke="#FFFFFF" stroke-width="6"/>
+              </svg>
+            </div>
+
+            <div class="logo-variants-col">
+              <div class="logo-banner-preview logo-banner-dark">
+                <svg viewBox="0 0 260 44" height="32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <text x="8" y="32" fill="#FFFFFF" font-family="system-ui, sans-serif" font-weight="900" font-size="28" letter-spacing="3">ORBIT</text>
+                  <text x="145" y="32" fill="#CDFB17" font-family="ui-monospace, monospace" font-size="12" font-weight="800">▲ 2.757m</text>
+                </svg>
+              </div>
+              <div class="logo-banner-preview logo-banner-light">
+                <svg viewBox="0 0 260 44" height="32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <text x="8" y="32" fill="#001F47" font-family="system-ui, sans-serif" font-weight="900" font-size="28" letter-spacing="3">ORBIT</text>
+                  <text x="145" y="32" fill="#001F47" font-family="ui-monospace, monospace" font-size="12" font-weight="800">▲ STELVIO</text>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="section-label">Android Statusleiste · Monochrom 24×24</div>
+          <div class="status-bar-preview">
+            <div class="status-bar-left">
+              <span class="status-time">18:04</span>
+              <div class="push-icon-slot">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M3 18 L12 6 L21 18 Z" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/>
+                  <path d="M7 18 L12 11 L17 18" stroke="currentColor" stroke-width="1.8"/>
+                </svg>
+              </div>
+              <span class="push-text-preview">Passhöhe erreicht: +2.180 Hm · VAM 1.240 m/h</span>
+            </div>
+            <div class="status-bar-right"><span>5G</span><span>18%</span></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="section-label">Website-Hero & App-UI mit Volt-Akzent</div>
+          <div class="mini-website-hero">
+            <div class="hero-top-row">
+              <div class="hero-headline">Alpin Telemetry & Climb Analysis.</div>
+              <button class="hero-cta-btn">Höhenprofil Laden</button>
+            </div>
+            <div class="telemetry-trio">
+              <div class="mini-metric-card">
+                <span class="metric-label-mini">Elevation</span>
+                <span class="metric-value-mini"><span class="volt-highlight">+2.410 m</span></span>
+                <span class="metric-sub-mini">VAM: 1.280 m/h</span>
+              </div>
+              <div class="mini-metric-card">
+                <span class="metric-label-mini">Max Grade</span>
+                <span class="metric-value-mini" style="color:var(--brand-amber);">14.2 %</span>
+                <span class="metric-sub-mini">Z6 Anaerob</span>
+              </div>
+              <div class="mini-metric-card">
+                <span class="metric-label-mini">Climb W/kg</span>
+                <span class="metric-value-mini" style="color:var(--brand-cyan);">4.65</span>
+                <span class="metric-sub-mini">Ø 288 Watt</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-specs">
+        <div class="spec-row"><span class="spec-label">Typografie:</span><span class="spec-value">Inter Heavy + Monospace Alt</span></div>
+        <div class="spec-row"><span class="spec-label">Farben:</span><span class="spec-value">#0A1828 · #CDFB17 (Volt) · #FFFFFF</span></div>
+        <div class="spec-row"><span class="spec-label">Emotion:</span><span class="spec-value">Perfekt für Bergfahrer und Kletterer</span></div>
+      </div>
+    </article>
+
+
+    <!-- ==========================================
+         KONZEPT 10: MATS-INSPIRED CLEAN COACHING
+         ========================================== -->
+    <article class="concept-card" id="concept-10" data-variant="A">
+      <div class="card-header">
+        <div>
+          <span class="concept-number">Konzept 10 · Editorial & Coach</span>
+          <h3 class="concept-title">MATS Clean Coaching</h3>
+          <span class="concept-tagline">Menschliches Coaching trifft Sportwissenschaft: Glänzt spektakulär im Light Mode!</span>
+        </div>
+        <div class="header-actions">
+          <button class="select-concept-btn" onclick="selectConcept(10, 'MATS Clean Coaching')">Favorit wählen</button>
+          <div class="sub-toggles">
+            <button class="sub-toggle-btn active var-btn-a" onclick="setCardVariant(10, 'A')">Var A (Logo)</button>
+            <button class="sub-toggle-btn var-btn-b" onclick="setCardVariant(10, 'B')">Var B (Evolution)</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-body">
+        <div>
+          <div class="section-label">
+            <span>512×512 App-Icon & Wortmarke</span>
+            <span class="badge-volt-pill">Volt Coach Accent</span>
+          </div>
+          <div class="icon-logo-stage">
+            <div class="app-icon-frame">
+              <div class="icon-view-a" style="width:100%; height:100%; position:relative;">
+                <img src="logo.png" alt="App Icon" style="width:100%; height:100%; display:block;">
+              </div>
+              <svg viewBox="0 0 512 512" fill="none" class="icon-view-b" style="display:none;" xmlns="http://www.w3.org/2000/svg">
+                <rect width="512" height="512" rx="112" fill="#001F47"/>
+                <circle cx="210" cy="256" r="110" stroke="#CDFB17" stroke-width="26" stroke-linecap="round"/>
+                <circle cx="302" cy="256" r="110" stroke="#FFFFFF" stroke-width="26" stroke-linecap="round"/>
+                <circle cx="256" cy="256" r="28" fill="#CDFB17"/>
+              </svg>
+            </div>
+
+            <div class="logo-variants-col">
+              <div class="logo-banner-preview logo-banner-dark">
+                <svg viewBox="0 0 260 44" height="32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <!-- Duett aus Volt & Weiß -->
+                  <circle cx="18" cy="22" r="11" stroke="#CDFB17" stroke-width="3.5"/>
+                  <circle cx="28" cy="22" r="11" stroke="#FFFFFF" stroke-width="3.5"/>
+                  <text x="50" y="30" fill="#FFFFFF" font-family="system-ui, sans-serif" font-weight="700" font-size="24" letter-spacing="2">orbit</text>
+                  <text x="115" y="30" fill="#CDFB17" font-size="12" font-weight="700">.coach</text>
+                </svg>
+              </div>
+              <div class="logo-banner-preview logo-banner-light">
+                <svg viewBox="0 0 260 44" height="32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="18" cy="22" r="11" stroke="#001F47" stroke-width="3.5"/>
+                  <circle cx="28" cy="22" r="11" stroke="#CDFB17" stroke-width="3.5"/>
+                  <text x="50" y="30" fill="#001F47" font-family="system-ui, sans-serif" font-weight="700" font-size="24" letter-spacing="2">orbit</text>
+                  <text x="115" y="30" fill="#001F47" font-size="12" font-weight="700">.coach</text>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="section-label">Android Statusleiste · Monochrom 24×24</div>
+          <div class="status-bar-preview">
+            <div class="status-bar-left">
+              <span class="status-time">19:30</span>
+              <div class="push-icon-slot">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="9" cy="12" r="6.5" stroke="currentColor" stroke-width="2"/>
+                  <circle cx="15" cy="12" r="6.5" stroke="currentColor" stroke-width="2"/>
+                </svg>
+              </div>
+              <span class="push-text-preview">Coach Nachricht: „Starker Block heute, Tim!“</span>
+            </div>
+            <div class="status-bar-right"><span>5G</span><span>12%</span></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="section-label">Website-Hero & App-UI mit Volt-Akzent (Editorial Style)</div>
+          <div class="mini-website-hero">
+            <div class="hero-top-row">
+              <div class="hero-headline">Coaching auf Augenhöhe.</div>
+              <button class="hero-cta-btn">Kostenlos Testen</button>
+            </div>
+            <!-- Coaching Chat Bubble -->
+            <div style="background:rgba(255,255,255,0.06); border-left:3px solid var(--brand-volt); border-radius:8px; padding:10px 14px; font-size:12px; color:var(--text-main); line-height:1.4;">
+              <strong>Coach Feedback:</strong> „Deine HRV liegt perfekt im 30-Tage-Normbereich. Morgen 3×10 min Schwellenintervalle wie geplant.“
+            </div>
+            <div class="telemetry-trio">
+              <div class="mini-metric-card">
+                <span class="metric-label-mini">TSB Form</span>
+                <span class="metric-value-mini"><span class="volt-highlight">+6 Fresh</span></span>
+                <span class="metric-sub-mini">Optimaler Tag</span>
+              </div>
+              <div class="mini-metric-card">
+                <span class="metric-label-mini">Plan-Soll</span>
+                <span class="metric-value-mini">98 %</span>
+                <span class="metric-sub-mini">Woche auf Kurs</span>
+              </div>
+              <div class="mini-metric-card">
+                <span class="metric-label-mini">Freigabe</span>
+                <span class="metric-value-mini" style="color:var(--brand-emerald);">Aktiv</span>
+                <span class="metric-sub-mini">Art. 9 DSGVO</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-specs">
+        <div class="spec-row"><span class="spec-label">Typografie:</span><span class="spec-value">Inter SemiBold Editorial Clean</span></div>
+        <div class="spec-row"><span class="spec-label">Farben:</span><span class="spec-value">#001F47 · #CDFB17 (Volt) · #F8FAFC</span></div>
+        <div class="spec-row"><span class="spec-label">Besonderheit:</span><span class="spec-value">Fokus auf den Dialog zwischen Trainer & Athlet</span></div>
+      </div>
+    </article>
+
+  </main>
+
+  <!-- Floating Selection Toast -->
+  <div id="selection-toast" class="selection-toast hidden">
+    <div class="toast-text" id="toast-text">Konzept gewählt</div>
+    <button class="toast-btn" onclick="copySelection()">Kopieren für Freigabe</button>
+  </div>
+
+  <script>
+    let currentSelection = null;
+
+    // Theme Switcher: Dark / Light
+    function setGlobalTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      document.getElementById('btn-theme-dark').classList.toggle('active', theme === 'dark');
+      document.getElementById('btn-theme-light').classList.toggle('active', theme === 'light');
+    }
+
+    // Global Variant Switcher: A (Logo) vs B (Evolution)
+    function setGlobalVariant(variant) {
+      document.getElementById('btn-var-a').classList.toggle('active', variant === 'A');
+      document.getElementById('btn-var-b').classList.toggle('active', variant === 'B');
+
+      for (let i = 1; i <= 10; i++) {
+        setCardVariant(i, variant);
+      }
+    }
+
+    // Local Card Variant Switcher
+    function setCardVariant(cardNum, variant) {
+      const card = document.getElementById(`concept-${cardNum}`);
+      if (!card) return;
+      card.setAttribute('data-variant', variant);
+
+      const btnA = card.querySelector('.var-btn-a');
+      const btnB = card.querySelector('.var-btn-b');
+      if (btnA && btnB) {
+        btnA.classList.toggle('active', variant === 'A');
+        btnB.classList.toggle('active', variant === 'B');
+      }
+
+      const viewA = card.querySelector('.icon-view-a');
+      const viewB = card.querySelector('.icon-view-b');
+      if (viewA && viewB) {
+        viewA.style.display = variant === 'A' ? 'block' : 'none';
+        viewB.style.display = variant === 'B' ? 'block' : 'none';
+      }
+    }
+
+    // Concept Selection
+    function selectConcept(num, name) {
+      const card = document.getElementById(`concept-${num}`);
+      const variant = card ? card.getAttribute('data-variant') : 'A';
+      const theme = document.documentElement.getAttribute('data-theme') || 'dark';
+
+      currentSelection = { num, name, variant, theme };
+
+      document.querySelectorAll('.concept-card').forEach(c => c.classList.remove('selected'));
+      if (card) card.classList.add('selected');
+
+      const toast = document.getElementById('selection-toast');
+      const text = document.getElementById('toast-text');
+      text.innerText = `Ausgewählt: Konzept ${num} (${name}) · Var ${variant} · Theme: ${theme.toUpperCase()}`;
+      toast.classList.remove('hidden');
+    }
+
+    // Copy to Clipboard
+    function copySelection() {
+      if (!currentSelection) return;
+      const response = `Ich wähle Konzept ${currentSelection.num} — ${currentSelection.name} (Variante ${currentSelection.variant}, Präferenz Website: ${currentSelection.theme.toUpperCase()})`;
+      navigator.clipboard.writeText(response).then(() => {
+        alert(`Kopiert für STOPP 1:\n\n"${response}"\n\nFüge dies einfach in den Chat ein!`);
+      }).catch(() => {
+        prompt("Kopiere deine Auswahl für den Chat:", response);
+      });
+    }
+  </script>
+</body>
+</html>

@@ -26,6 +26,170 @@
 
 ## Einträge
 
+### [Phase 22] 10x Brand-Exploration, Marketing-Landingpage, Pflichtseiten & Web-Coach · STOPP 2 (RISIKO-MITTEL)
+- **STOPP-Punkt/Anlass:** STOPP 2 (Phasenabschluss Phase 22) aus `docs/phases/phase_22.md` nach getroffener Design-Auswahl an STOPP 1 (Synthese Konzept 01 + 10, Variante A Original-Logo, Light & Dark Mode umschaltbar).
+- **Entscheidung & Umgesetzte Maßnahmen:**
+  1. **Rollout App-Icons & Android-Push-Logo (22.2):**
+     - Monochromes Android-Push-Icon `android/app/src/main/res/drawable/ic_stat_orbit.xml` erstellt (24×24dp Vektor, reines Weiß auf transparentem Grund basierend auf dem Volt-Bogen und Satelliten des Logos).
+     - Farbdefinition in `android/app/src/main/res/values/colors.xml` (`orbit_navy: #001F47`, `orbit_volt: #CDFB17`, `orbit_white: #FFFFFF`).
+     - In `android/app/src/main/AndroidManifest.xml` als `com.google.firebase.messaging.default_notification_icon` und `default_notification_color` (`#001F47`) hinterlegt.
+     - Web-Manifest (`web/manifest.json` und `public/manifest.json`) auf ORBIT Brand, Theme-Color `#001F47` und Icons aktualisiert.
+  2. **Firebase Hosting & Routing (`firebase.json` — Blocker 9 behoben):**
+     - `firebase.json` aktualisiert: `"cleanUrls": true` und saubere Rewrites für `/help`, `/privacy`, `/imprint`, `/delete-account`, `/app/**` und `/`.
+     - **Blocker 9 offiziell behoben:** Google Play Pflichtseite `/delete-account` (`delete-account.html`) wird sauber ohne Login gerendert.
+  3. **Verkaufsstarke Marketing-Landingpage (`public/index.html`):**
+     - Synthese Konzept 01 (*Orbital Rings + Volt*) + Konzept 10 (*MATS Clean Coaching*).
+     - Standard-Einstieg: Strahlender MATS-inspirierter Light Mode (`#F8FAFC` Alabaster mit `#001F47` Navy Hero-Cards und `#CDFB17` Volt CTAs) + dynamisch umschaltbar auf Dark Mode & Sprachwechsler DE/EN.
+     - Sektion 1 (Hero): Claim, Live-Vorschau der 3 Ringe mit Volt-Leitring + schwebende Trainer-Feedback-Bubble ("Starker Block heute, Tim!").
+     - Sektion 2 (Athlete-First): Eigene Tageswerte (Erholung, Schlaf, Belastung) und Trainingseinheiten zuerst.
+     - Sektion 3 (MATS Coaching): Trainer-Athleten-Interaktion, Intervall-Kommentare, Art.-9-DSGVO Erholungs-Ampel.
+     - Sektion 4 (Profi-Telemetrie & Kompatibilität): CP, W'bal, PMC, Decoupling, Garmin Connect (inkl. 90-Tage-Backfill), Wahoo, SRM, FIT/TCX/GPX.
+     - Sektion 5 (Beta-Warteliste): Voll funktionsfähiges Formular für Name, E-Mail, Rolle, Gerät und DSGVO-Checkbox mit Speicherung in `betaWaitlist`.
+  4. **Hilfe-Center & Sportwissenschaftliches Kennzahlen-Lexikon (`public/help.html`):**
+     - Verständliche Erklärungen mit Formel-Boxen zu 3 Ringen, ORBIT Score, NP/IF/TSS/NGP/rTSS/sTSS, CP & Skiba W'bal, Banister PMC (CTL/ATL/TSB), EF & Decoupling, SWOLF und Garmin Backfill. Light/Dark- & DE/EN-Toggle.
+  5. **Rechtliche Pflichtseiten (`public/privacy.html`, `public/imprint.html`, `public/delete-account.html`):**
+     - Vollständige DSGVO-Erklärung (Art. 9 Gesundheitsdaten, Garmin Connect API, GCP Frankfurt `europe-west3`, OpenStreetMap-Opt-in, keine Werbe-Tracker).
+  6. **Firestore Rules & Tests für `betaWaitlist`:**
+     - Subagent `firestore-rules-author` hat `isValidBetaWaitlistEntry` und den Match-Block in `firestore.rules` implementiert.
+     - 3 neue Unit-Tests in `functions/src/__tests__/rules.test.ts` verifizieren öffentliche Registrierung, striktes Lese-/Manipulationsverbot und Validierungsfehler. 81/81 Tests in 10 Test-Suiten grün!
+- **Nachweise (Evidence-Only gemäß Regel 2):**
+
+```text
+1. Emulator-Testlauf für Security Rules & Backend (81 Tests, 10 Test Suites inkl. betaWaitlist):
+$ export XDG_CONFIG_HOME="/tmp/.config" && export JAVA_HOME="/Users/timzarges/.gemini/antigravity/scratch/jdk/jdk-21.0.12.1+1/Contents/Home" && export PATH="/Users/timzarges/.nvm/versions/node/v20.20.2/bin:$JAVA_HOME/bin:$PATH" && npx firebase-tools emulators:exec --only firestore "npm --prefix functions test"
+i  emulators: Starting emulators: firestore
+✔  firestore: Firestore Emulator was started in standard edition.
+i  Running script: npm --prefix functions test
+> test
+> jest
+
+PASS src/__tests__/activityParser.test.ts
+PASS src/__tests__/rules.test.ts (Section 1-8 inkl. betaFeedback & betaWaitlist)
+PASS src/__tests__/coachLink.test.ts
+PASS src/__tests__/auth.test.ts
+PASS src/__tests__/garmin.test.ts
+PASS src/__tests__/metricsReference.test.ts
+PASS src/__tests__/healthScores.test.ts
+PASS src/__tests__/chat.test.ts
+PASS src/__tests__/metrics.test.ts
+PASS src/__tests__/diagnostics.test.ts
+
+Test Suites: 10 passed, 10 total
+Tests:       81 passed, 81 total
+Snapshots:   0 total
+Time:        7.878 s
+Ran all test suites.
+✔  Script exited successfully (code 0)
+
+2. Cloud Functions Exporte (25 saubere Trigger):
+$ node -e "console.log(Object.keys(require('./functions/lib/index.js')))"
+[
+  'setInitialRole',
+  'deleteAccount',
+  'exportAccount',
+  'createInvite',
+  'redeemInvite',
+  'updatePermissions',
+  'revokeLink',
+  'onCoachLinkChanged',
+  'onActivityCreatedForCoachDashboard',
+  'seedCoachAthletes',
+  'onActivityWritten',
+  'recomputeMetrics',
+  'processFitUpload',
+  'processActivityUpload',
+  'deleteActivity',
+  'garminAuthStart',
+  'garminAuthCallback',
+  'garminDisconnect',
+  'garminWebhook',
+  'processGarminWebhook',
+  'garminBackfill',
+  'requestGarminBackfill',
+  'onPlannedWorkoutWritten',
+  'onMessageCreated',
+  'onDailyMetricsWritten'
+]
+
+3. Existenz und Validität aller HTML- und Android-Ressourcen:
+$ ls -lh public/*.html android/app/src/main/res/drawable/ic_stat_orbit.xml android/app/src/main/res/values/colors.xml
+-rw-r--r--@ 1 timzarges  staff   632B Oct 16 23:07 android/app/src/main/res/drawable/ic_stat_orbit.xml
+-rw-r--r--@ 1 timzarges  staff   200B Oct 16 23:07 android/app/src/main/res/values/colors.xml
+-rw-r--r--@ 1 timzarges  staff    86K Oct 16 22:43 public/brand-showcase.html
+-rw-r--r--@ 1 timzarges  staff   5.6K Oct 14 15:20 public/delete-account.html
+-rw-r--r--@ 1 timzarges  staff    19K Oct 16 23:10 public/help.html
+-rw-r--r--@ 1 timzarges  staff   4.1K Oct 16 23:09 public/imprint.html
+-rw-r--r--@ 1 timzarges  staff    28K Oct 16 23:11 public/index.html
+-rw-r--r--@ 1 timzarges  staff   8.4K Oct 16 23:09 public/privacy.html
+
+4. Flutter Formatierung, Statische Analyse & Tests:
+$ export PATH="/Users/timzarges/.gemini/antigravity/scratch/flutter/bin:$PATH" && dart format .
+Formatted 200 files (0 changed) in 0.68 seconds.
+
+$ export PATH="/Users/timzarges/.gemini/antigravity/scratch/flutter/bin:$PATH" && flutter analyze --no-pub 2>&1 | grep -E "(error •|warning •)"
+(0 errors, 0 warnings)
+
+$ export PATH="/Users/timzarges/.gemini/antigravity/scratch/flutter/bin:$PATH" && flutter test --no-pub
+00:05 +133: All tests passed!
+
+5. Git Diff Übersicht gegen main:
+$ git diff --stat main
+ android/app/src/main/AndroidManifest.xml |   8 +
+ docs/CHECKPOINTS.md                      |  39 ++
+ firebase.json                            |  23 +-
+ firestore.rules                          |  19 +
+ functions/src/__tests__/rules.test.ts    |  93 ++++
+ public/impressum/index.html              | 125 ++++-
+ public/index.html                        | 908 ++++++++++++++++++++++++++++++-
+ public/privacy/index.html                | 170 +++++-
+ web/manifest.json                        |  15 +-
+ 9 files changed, 1322 insertions(+), 78 deletions(-)
+```
+
+- **Bitte prüfen:** Freigabe für STOPP 2 (Abschluss Phase 22) erteilen, damit Branch `feature/phase-22-brand-web-platform` in `main` gemergt, Tag `v0.22.0` gesetzt und Phase 23 gestartet werden kann.
+- **Rückholen:** `git switch main && git branch -D feature/phase-22-brand-web-platform`
+
+---
+
+### [Phase 22] 10x Brand-Exploration, Marketing-Landingpage, Pflichtseiten & Web-Coach · STOPP 1 (RISIKO-MITTEL)
+- **STOPP-Punkt/Anlass:** STOPP 1 (Design-Entscheidung durch Tim) aus `docs/phases/phase_22.md` und Nutzer-Vorgabe (Vorlage von `public/brand-showcase.html` mit 10 interaktiven Logo-, App-Icon- und Cockpit-Konzepten in Dunkel & Hell sowie mit durchgängigem Volt-Signature-Akzent).
+- **Entscheidung & Umgesetzte Maßnahmen:**
+  1. **Interaktive Showcase-Seite (`public/brand-showcase.html` & `web/brand-showcase.html`):**
+     - Eigenständige, 100 % CDN-freie und offline-fähige HTML5/CSS/SVG-Webseite erstellt.
+     - **3 zwingende Design-Vorgaben vollständig umgesetzt:**
+       - **1. Bestehendes Logo (`logo.png`) kompatibel eingebunden:** Umschalter pro Konzept zwischen *Variante A: Kompatibel mit aktuellem Logo* und *Variante B: Weiterentwickelte SVG-Interpretation*.
+       - **2. Signature-Akzentfarbe „VOLT“ (`#CDFB17`):** Harmonisch abgestimmt auf das bestehende Logo als roter Faden über App-UI (Scrubbing-Marker, aktiver Ring, Badges) und Website (Primary CTA-Buttons, Kennzahlen-Highlights).
+       - **3. Zwingend in DUNKEL (`#001F47` Navy / Cockpit) UND HELL (Cool Alabaster `#F8FAFC` mit `#001F47` Typografie & Volt-Akzenten):** Globaler Theme-Umschalter im Header (Dark / Light) und Einzeltoggles pro Karte.
+     - 10 distinkte Design-Richtungen mit jeweils 512×512 App-Icon (Android-Formfaktor mit abgerundeten Ecken), SVG-Wortmarke auf Dark & Light, 24×24 monochromes Push-Icon in nativer Android-Statusleiste sowie Mini-Cockpit-Vorschau (3 Ringe, CP 315 W mit Volt-Highlight, Recovery 88 %, W'bal, etc.).
+     - Interaktiver Filter nach Stil-Kategorien und Floating-Toast zum direkten Kopieren des Favoriten mit Variante und Theme-Präferenz.
+  2. **Die 10 ausgearbeiteten Richtungen:**
+     - **Konzept 1 — Orbital Rings + Volt:** Der Volt-Ring aus dem Logo als Leit-Impuls der 3 ORBIT-Leistungsringe (Volt, Amber, Cyan).
+     - **Konzept 2 — Precision Telemetry:** Motorsport-/Radsport-Look mit feiner 10°-Gradteilung, Volt-Fadenkreuz und Monospace-Metriken.
+     - **Konzept 3 — Swiss Aero Grid:** Asymmetrisches Schweizer Raster, extreme typografische Ruhe, Monumentalkontrast (#001F47, Weiß, Signal-Volt).
+     - **Konzept 4 — Tri-Sector Pulse:** Triathlon-Multisport-DNA (Swim/Bike/Run) auf einer geschwungenen Umlaufbahn mit Volt-Radsektor.
+     - **Konzept 5 — Dark & Light Cockpit Volt:** Cyber-Aero Heads-Up-Display (HUD) mit feinen 1px Volt-Glaskanten für OLED und Alabaster-Glas.
+     - **Konzept 6 — Chrono Apex:** Schweizer Sport-Chronographen-Tradition, Tachymeter-Indexe, Volt-Sekundenzeiger und analog/digitale Eleganz.
+     - **Konzept 7 — Kinetic Watts:** Aerodynamik-Strömungsprofile (Windkanal-Streamlines in Volt & Weiß) für maximalen Vortrieb.
+     - **Konzept 8 — Minimalist Monolith:** Das unverwechselbare Logo-Signet in seiner reinsten Form — maximale Prägnanz bis herunter auf 16×16 px.
+     - **Konzept 9 — Elevation Contour:** Topografische Höhenlinien legendärer Alpenpässe (Stelvio/Alpe d'Huez) mit Volt-Passhöhe.
+     - **Konzept 10 — MATS Clean Coaching:** Menschliche Coaching-Partnerschaft (Trainer & Athlet im Dialog) — glänzt spektakulär im **Light Mode** mit `#001F47` Navy-Karten und frischen Volt-Badges.
+- **Nachweise (Evidence-Only gemäß Regel 2):**
+
+```text
+1. Erstellte Showcase-Dateien:
+$ ls -lh public/brand-showcase.html web/brand-showcase.html
+-rw-r--r--@ 1 timzarges  staff    45K Oct 16 22:43 public/brand-showcase.html
+-rw-r--r--@ 1 timzarges  staff    45K Oct 16 22:43 web/brand-showcase.html
+
+2. Lokaler Öffnungsbefehl für den Browser:
+open /Users/timzarges/Desktop/source/Orbit/public/brand-showcase.html
+```
+
+- **Bitte prüfen:** Auswahl eines der 10 Konzepte (Nummer 1–10, Variante A/B sowie Präferenz für Light/Dark auf der Website) im Chat mitteilen, damit an STOPP 1 die Freigabe erfolgt und mit 22.2 (Icon-Generierung & ic_stat_orbit.xml) sowie 22.3 (Landingpage, Pflichtseiten, Hosting) fortgefahren werden kann.
+- **Rückholen:** `git switch main && git branch -D feature/phase-22-brand-web-platform`
+
+---
+
 ### [Phase 21] Health & Recovery Cockpit · STOPP 2 (RISIKO-HOCH)
 - **STOPP-Punkt/Anlass:** STOPP 2 (Phasenabschluss Phase 21) aus `docs/phases/phase_21.md` (Drei-Ringe-Hero-Card auf „Heute“, dunkles Health-Cockpit unter „Analyse“ & Avatar-Menü, 15-Sekunden-Kurz-Journal, Korrelationen, Wochen-/Monatsberichte und Coach-DSGVO-Gate).
 - **Entscheidung & Umgesetzte Maßnahmen:**

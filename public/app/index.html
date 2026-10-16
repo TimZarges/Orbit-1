@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ORBIT Web-Cockpit — Coach & Athlet Login</title>
+  <link rel="icon" type="image/png" href="/logo.png">
+  <style>
+    :root {
+      --navy: #001F47;
+      --volt: #CDFB17;
+      --bg: #050B14;
+      --card: #0A1324;
+      --text: #FFFFFF;
+      --muted: #94A3B8;
+      --border: rgba(255, 255, 255, 0.1);
+    }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Inter", sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin: 0;
+      padding: 24px;
+      box-sizing: border-box;
+      text-align: center;
+    }
+    .login-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 40px;
+      max-width: 480px;
+      width: 100%;
+      box-shadow: 0 20px 48px rgba(0, 0, 0, 0.5);
+    }
+    .logo-img {
+      width: 72px;
+      height: 72px;
+      border-radius: 18px;
+      margin-bottom: 20px;
+      box-shadow: 0 8px 24px rgba(0, 31, 71, 0.4);
+    }
+    h1 {
+      font-size: 24px;
+      font-weight: 900;
+      letter-spacing: -0.4px;
+      margin-bottom: 8px;
+    }
+    p {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.5;
+      margin-bottom: 28px;
+    }
+    .btn-login {
+      display: inline-block;
+      width: 100%;
+      background: var(--volt);
+      color: #001F47;
+      text-decoration: none;
+      padding: 14px 24px;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      box-shadow: 0 4px 16px rgba(205, 251, 23, 0.4);
+      transition: transform 0.15s ease, background-color 0.15s ease;
+      box-sizing: border-box;
+    }
+    .btn-login:hover {
+      background: #BEEA06;
+      transform: translateY(-2px);
+    }
+    .portal-info {
+      margin-top: 24px;
+      font-size: 12px;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      padding-top: 18px;
+    }
+    .portal-info a {
+      color: var(--volt);
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-card">
+    <img src="/logo.png" alt="ORBIT Logo" class="logo-img">
+    <h1>ORBIT Web-Cockpit</h1>
+    <p>
+      High-End Auswertung, Trainingsplanung & Athleten-Betreuung direkt im Browser für Trainer und Athleten.
+    </p>
+
+    <a href="/" class="btn-login">Zur ORBIT Startseite & Beta-Warteliste</a>
+
+    <div class="portal-info">
+      <div>Geschlossene Vereins-Beta · Google Play & Web</div>
+      <div style="margin-top: 6px;">
+        <a href="/help">Kennzahlen-Lexikon</a> · 
+        <a href="/privacy">Datenschutz (Art. 9)</a> · 
+        <a href="/imprint">Impressum</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

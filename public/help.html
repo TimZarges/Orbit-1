@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="de" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ORBIT — Kennzahlen-Lexikon & Sportwissenschaft</title>
+  <link rel="icon" type="image/png" href="/logo.png">
+  <style>
+    :root {
+      --navy: #001F47;
+      --navy-light: #00357A;
+      --volt: #CDFB17;
+      --amber: #FF6B00;
+      --cyan: #00D2FF;
+      --emerald: #10B981;
+      --bg: #F8FAFC;
+      --card: #FFFFFF;
+      --text: #001F47;
+      --muted: #475569;
+      --border: #E2E8F0;
+      --box-bg: #F1F5F9;
+      --font-stack: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Inter", sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    [data-theme="dark"] {
+      --bg: #050B14;
+      --card: #0A1324;
+      --text: #FFFFFF;
+      --muted: #94A3B8;
+      --border: rgba(255, 255, 255, 0.1);
+      --box-bg: #001F47;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-stack);
+      line-height: 1.6;
+      transition: background 0.2s, color 0.2s;
+      padding-bottom: 80px;
+    }
+
+    /* Header */
+    header.top-bar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    [data-theme="dark"] header.top-bar {
+      background: rgba(5, 11, 20, 0.95);
+    }
+
+    .brand-link {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--text);
+      font-weight: 900;
+      font-size: 18px;
+    }
+
+    .brand-link img { width: 34px; height: 34px; border-radius: 8px; }
+
+    .header-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .theme-toggle-btn, .lang-toggle-btn {
+      background: var(--box-bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .back-home-btn {
+      background: var(--navy);
+      color: var(--volt);
+      text-decoration: none;
+      padding: 7px 16px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+      border: 1px solid var(--volt);
+    }
+
+    /* Container */
+    .container {
+      max-width: 960px;
+      margin: 40px auto 0;
+      padding: 0 24px;
+    }
+
+    .intro-header {
+      margin-bottom: 40px;
+      text-align: center;
+    }
+
+    .intro-header h1 {
+      font-size: 36px;
+      font-weight: 900;
+      letter-spacing: -0.6px;
+      margin-bottom: 12px;
+    }
+
+    .intro-header p {
+      font-size: 16px;
+      color: var(--muted);
+      max-width: 680px;
+      margin: 0 auto;
+    }
+
+    /* Quick Filter Chips */
+    .filter-chips {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 16px;
+      margin-bottom: 32px;
+    }
+
+    .chip {
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 8px 16px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .chip:hover {
+      border-color: var(--volt);
+      color: var(--text);
+    }
+
+    /* Metric Cards */
+    .metric-section {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 32px;
+      margin-bottom: 28px;
+      box-shadow: 0 8px 24px rgba(0, 31, 71, 0.04);
+    }
+
+    .metric-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 16px;
+      gap: 16px;
+    }
+
+    .metric-title {
+      font-size: 22px;
+      font-weight: 900;
+      letter-spacing: -0.4px;
+    }
+
+    .metric-badge {
+      background: var(--navy);
+      color: var(--volt);
+      font-size: 11px;
+      font-weight: 800;
+      padding: 4px 10px;
+      border-radius: 6px;
+      white-space: nowrap;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .metric-body p {
+      font-size: 15px;
+      color: var(--muted);
+      margin-bottom: 16px;
+      line-height: 1.6;
+    }
+
+    .formula-box {
+      background: var(--box-bg);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--volt);
+      border-radius: 10px;
+      padding: 14px 18px;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--text);
+      margin: 16px 0;
+      overflow-x: auto;
+    }
+
+    .takeaway-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+      margin-top: 16px;
+    }
+
+    .takeaway-item {
+      background: rgba(0, 0, 0, 0.02);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 16px;
+    }
+
+    [data-theme="dark"] .takeaway-item {
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .takeaway-label {
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .takeaway-val {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--text);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation -->
+  <header class="top-bar">
+    <a href="/" class="brand-link">
+      <img src="/logo.png" alt="ORBIT Logo">
+      <span>ORBIT / LEXIKON</span>
+    </a>
+    <div class="header-controls">
+      <button class="theme-toggle-btn" onclick="toggleTheme()">☀️ / 🌙 Theme</button>
+      <button class="lang-toggle-btn" onclick="toggleLang()">DE / EN</button>
+      <a href="/" class="back-home-btn">← Zurück zur App</a>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="intro-header">
+      <h1 id="intro-title">Sportwissenschaftliches Kennzahlen-Lexikon</h1>
+      <p id="intro-sub">
+        Transparente Dokumentation aller ORBIT-Metriken für Athleten und Vereinstrainer. 
+        Keine Black-Box-Algorithmen – alle Formeln basieren auf publizierten sportwissenschaftlichen Standards (Skiba, Coggan, Morton, Banister).
+      </p>
+    </div>
+
+    <!-- Quick Chips -->
+    <nav class="filter-chips">
+      <a href="#three-rings" class="chip">3 ORBIT Ringe</a>
+      <a href="#orbit-score" class="chip">ORBIT Gesamt-Score</a>
+      <a href="#np-tss" class="chip">NP, IF & TSS</a>
+      <a href="#critical-power" class="chip">Critical Power & W'bal</a>
+      <a href="#pmc" class="chip">PMC: CTL / ATL / TSB</a>
+      <a href="#decoupling" class="chip">EF & Entkopplung</a>
+      <a href="#swolf" class="chip">SWOLF</a>
+      <a href="#garmin-backfill" class="chip">Garmin Backfill & Sync</a>
+    </nav>
+
+    <!-- 1. DREI RINGE -->
+    <section class="metric-section" id="three-rings">
+      <div class="metric-header">
+        <div>
+          <h2 class="metric-title">1. Die drei ORBIT-Ringe (Tagessteuerung)</h2>
+          <span style="font-size:13px; color:var(--muted);">Erholung (Volt), Tagesbelastung (Amber), Schlaf-Score (Cyan)</span>
+        </div>
+        <span class="metric-badge">Tagessteuerung</span>
+      </div>
+      <div class="metric-body">
+        <p>
+          Die drei Ringe auf dem „Heute“-Dashboard bilden das Herzstück der Tagessteuerung. Sie aggregieren Ihre physiologische Regenerationsfähigkeit und steuern die optimale Belastung des Tages:
+        </p>
+        <div class="takeaway-grid">
+          <div class="takeaway-item" style="border-top:3px solid var(--volt);">
+            <div class="takeaway-label">Ring 1: Erholung (0–100 %)</div>
+            <div class="takeaway-val">HRV (45%), RHR (25%), Schlaf (20%), Atmung (10%)</div>
+            <div style="font-size:12px; color:var(--muted); margin-top:4px;">Sigmoid-Abgleich gegen Ihre persönliche 30-Tage-Baseline. Ampel: Grün (&ge;67%), Gelb (34–66%), Rot (&le;33%).</div>
+          </div>
+          <div class="takeaway-item" style="border-top:3px solid var(--amber);">
+            <div class="takeaway-label">Ring 2: Tagesbelastung (0–100)</div>
+            <div class="takeaway-val">Dynamischer Zielkorridor</div>
+            <div style="font-size:12px; color:var(--muted); margin-top:4px;">Verbindet Trainings-TSS mit Alltagsstress. Der Zielkorridor passt sich morgens automatisch an Ihren Erholungswert an.</div>
+          </div>
+          <div class="takeaway-item" style="border-top:3px solid var(--cyan);">
+            <div class="takeaway-label">Ring 3: Schlaf (0–100 %)</div>
+            <div class="takeaway-val">Dauer, Effizienz & Schlafschuld</div>
+            <div style="font-size:12px; color:var(--muted); margin-top:4px;">Vergleicht Ist-Schlaf mit Ihrem individuellen Schlafbedarf (Basis + Belastungszuschlag + 50 % der 7-Tage-Schlafschuld).</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. ORBIT SCORE -->
+    <section class="metric-section" id="orbit-score">
+      <div class="metric-header">
+        <div>
+          <h2 class="metric-title">2. ORBIT Gesamt-Score (0–100)</h2>
+          <span style="font-size:13px; color:var(--muted);">Ganzheitlicher Leistungs- und Erholungs-Index</span>
+        </div>
+        <span class="metric-badge">Leitmetrik</span>
+      </div>
+      <div class="metric-body">
+        <p>
+          Der ORBIT Score bündelt die langfristige Trainingskonsistenz, die aktuelle Wettkampfform (TSB) und die jüngste Regenerationsqualität in einer einzigen Kennzahl (0–100):
+        </p>
+        <div class="formula-box">
+          ORBIT Score = (0.30 · Konsistenz) + (0.25 · Form TSB) + (0.25 · 7d-Erholung) + (0.20 · Schlaf)
+        </div>
+        <p>
+          Ein hoher Score (85–100) signalisiert, dass Sie über mehrere Wochen hinweg regelmäßig trainieren, sich optimal erholen und für Spitzenleistungen bereit sind.
+        </p>
+      </div>
+    </section>
+
+    <!-- 3. NP, IF, TSS -->
+    <section class="metric-section" id="np-tss">
+      <div class="metric-header">
+        <div>
+          <h2 class="metric-title">3. Normalized Power (NP), Intensity Factor (IF) & TSS</h2>
+          <span style="font-size:13px; color:var(--muted);">Physiologisch gewichtete Trainingsbelastung (Coggan-Standard)</span>
+        </div>
+        <span class="metric-badge">Physiologie</span>
+      </div>
+      <div class="metric-body">
+        <p>
+          Da physiologische Belastung nicht linear, sondern exponentiell mit der Intensität steigt (Laktatanhäufung, Glykogenverbrauch), bildet der einfache Durchschnittswert (Ø Watt) harte Intervalle nur unzureichend ab:
+        </p>
+        <div class="formula-box">
+          NP = ( (1/N) · &sum; [30s gleitender Durchschnitt P(t)]^4 )^(1/4)<br>
+          IF = NP / FTP<br>
+          TSS = ( s · NP · IF ) / ( FTP · 3600 ) · 100
+        </div>
+        <p>
+          <strong>rTSS & NGP (Laufen):</strong> Grade Adjusted Pace (GAP) korrigiert Steigungen nach Minetti et al. (2002) und berechnet die normalisierte Lauf-Pace.<br>
+          <strong>sTSS (Schwimmen):</strong> Berechnet über Critical Swim Speed (CSS / 100m) und die Dauer der Schwimmeinheit.
+        </p>
+      </div>
+    </section>
+
+    <!-- 4. CRITICAL POWER & W'BAL -->
+    <section class="metric-section" id="critical-power">
+      <div class="metric-header">
+        <div>
+          <h2 class="metric-title">4. Critical Power ($CP$, $W'$) & Skiba $W'\text{bal}$</h2>
+          <span style="font-size:13px; color:var(--muted);">Anaerobe Kapazität & dynamische Batterie-Entladung</span>
+        </div>
+        <span class="metric-badge">Bioenergetik</span>
+      </div>
+      <div class="metric-body">
+        <p>
+          Das 2-Parameter-Modell nach Monod/Scherrer teilt die Leistungsfähigkeit in zwei physiologische Komponenten:
+        </p>
+        <ul>
+          <li><strong>Critical Power ($CP$ in Watt):</strong> Die maximale aerob aufrechterhaltbare Dauerleistung ohne vorzeitige Erschöpfung.</li>
+          <li><strong>$W'$ (in Kilojoule kJ):</strong> Die endliche anaerobe Arbeitskapazität oberhalb von $CP$ (Ihre „anaerobe Streichholzschachtel“).</li>
+        </ul>
+        <div class="formula-box">
+          P(t) = CP + W' / t<br>
+          W'bal(t) = W' - &int; [ P(u) - CP ] · exp( -(t - u) / &tau; ) du &nbsp;&nbsp;(Skiba et al. 2012)
+        </div>
+        <p>
+          Im ORBIT Aktivitäts-Cockpit sehen Sie sekundengenau, wie sich Ihr $W'\text{bal}$ bei harten Attacken leert und in Erholungsphasen unterhalb von $CP$ dynamisch wieder auflädt.
+        </p>
+      </div>
+    </section>
+
+    <!-- 5. PMC -->
+    <section class="metric-section" id="pmc">
+      <div class="metric-header">
+        <div>
+          <h2 class="metric-title">5. Performance Management Chart (PMC): CTL, ATL & TSB</h2>
+          <span style="font-size:13px; color:var(--muted);">Banister Impuls-Response-Modell für Fitness, Ermüdung & Frische</span>
+        </div>
+        <span class="metric-badge">Saisonsteuerung</span>
+      </div>
+      <div class="metric-body">
+        <p>
+          Das Performance Management Chart steuert Ihre Periodisierung und das Tapering vor Wettkämpfen:
+        </p>
+        <div class="formula-box">
+          CTL(t) = CTL(t-1) + ( TSS(t) - CTL(t-1) ) / 42 &nbsp;&nbsp;(Chronische Trainingsbelastung / Fitness)<br>
+          ATL(t) = ATL(t-1) + ( TSS(t) - ATL(t-1) ) / 7 &nbsp;&nbsp;&nbsp;(Akute Trainingsbelastung / Ermüdung)<br>
+          TSB(t) = CTL(t-1) - ATL(t-1) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(Trainingsstress-Balance / Frische & Form)
+        </div>
+        <div class="takeaway-grid">
+          <div class="takeaway-item">
+            <div class="takeaway-label">TSB &gt; +10 (Frisch)</div>
+            <div class="takeaway-val">Optimal für A-Wettkämpfe</div>
+          </div>
+          <div class="takeaway-item">
+            <div class="takeaway-label">TSB -10 bis +5 (Neutral)</div>
+            <div class="takeaway-val">Solider Trainingszustand</div>
+          </div>
+          <div class="takeaway-item">
+            <div class="takeaway-label">TSB &lt; -30 (Überlastungsrisiko)</div>
+            <div class="takeaway-val">Erhöhte Verletzungsgefahr</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. ENTKLOPPLUNG -->
+    <section class="metric-section" id="decoupling">
+      <div class="metric-header">
+        <div>
+          <h2 class="metric-title">6. Efficiency Factor (EF) & Aerobic Decoupling (Pw:HR)</h2>
+          <span style="font-size:13px; color:var(--muted);">Aerobe Ausdauer & Herzfrequenz-Drift</span>
+        </div>
+        <span class="metric-badge">Aerobe Basis</span>
+      </div>
+      <div class="metric-body">
+        <p>
+          Der <strong>Efficiency Factor (EF = NP / Ø HF)</strong> misst, wie viel Vortrieb Sie pro Herzschlag erzeugen. 
+          Das <strong>Aerobic Decoupling (%)</strong> vergleicht die erste und zweite Hälfte einer gleichmäßigen Ausdauereinheit:
+        </p>
+        <div class="formula-box">
+          Decoupling (%) = [ (EF_Hälfte1 - EF_Hälfte2) / EF_Hälfte1 ] · 100
+        </div>
+        <p>
+          <strong>Ampel-Klassifikation:</strong><br>
+          <span style="color:var(--emerald); font-weight:800;">Grün (&lt; 5 %):</span> Exzellente aerobe Basis. Kein thermischer oder muskulärer Drift.<br>
+          <span style="color:var(--amber); font-weight:800;">Gelb (5–8 %):</span> Moderate Ermüdung oder unzureichende Flüssigkeitszufuhr.<br>
+          <span style="color:#EF4444; font-weight:800;">Rot (&gt; 8 %):</span> Hoher kardiovaskulärer Drift. Grundlagenausdauer muss weiter ausgebaut werden.
+        </p>
+      </div>
+    </section>
+
+    <!-- 7. SWOLF -->
+    <section class="metric-section" id="swolf">
+      <div class="metric-header">
+        <div>
+          <h2 class="metric-title">7. SWOLF (Schwimm-Effizienz)</h2>
+          <span style="font-size:13px; color:var(--muted);">Schwimmzeit + Züge pro Bahn</span>
+        </div>
+        <span class="metric-badge">Schwimmen</span>
+      </div>
+      <div class="metric-body">
+        <p>
+          SWOLF (Kombination aus „Swim“ und „Golf“) misst die Effizienz Ihres Schwimmstils (je niedriger, desto besser):
+        </p>
+        <div class="formula-box">
+          SWOLF = Zeit pro Bahn (in Sekunden) + Anzahl der Züge pro Bahn
+        </div>
+        <p>
+          Beispiel 50m-Bahn: 42 Sekunden + 34 Züge = SWOLF 76.
+        </p>
+      </div>
+    </section>
+
+    <!-- 8. GARMIN BACKFILL -->
+    <section class="metric-section" id="garmin-backfill">
+      <div class="metric-header">
+        <div>
+          <h2 class="metric-title">8. Garmin Connect 90-Tage-Backfill & Multi-Format-Upload</h2>
+          <span style="font-size:13px; color:var(--muted);">Vollautomatische Synchronisation & historische Analyse</span>
+        </div>
+        <span class="metric-badge">Schnittstellen</span>
+      </div>
+      <div class="metric-body">
+        <p>
+          ORBIT synchronisiert Aktivitäten und tägliche Vitaldaten über offizielle Schnittstellen:
+        </p>
+        <ul>
+          <li><strong>Garmin Connect Push & Ping Webhooks:</strong> Sobald Ihre Garmin-Uhr oder Ihr Edge synchronisiert, liegt die Aktivität innerhalb weniger Sekunden inklusive 1Hz-Datenströmen (Watt, HF, GPS) im ORBIT-Dashboard.</li>
+          <li><strong>Historischer 90-Tage-Backfill:</strong> Auf Knopfdruck fordert ORBIT die letzten 90 Tage in 30-Tage-Chunks von Garmin an, um Ihre PMC-Kurve und Schwellenwerte sofort mit solider Historie zu füllen.</li>
+          <li><strong>Manueller Batch-Upload:</strong> Sie können bis zu 50 <code>.fit</code>, <code>.tcx</code> oder <code>.gpx</code> Dateien (inkl. GZIP) von Wahoo, SRM oder Karoo gleichzeitig per Drag & Drop importieren.</li>
+        </ul>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    function toggleTheme() {
+      const current = document.documentElement.getAttribute('data-theme') || 'light';
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+    }
+
+    let isEn = false;
+    function toggleLang() {
+      isEn = !isEn;
+      if (isEn) {
+        document.getElementById('intro-title').innerText = 'Sports Science & Metrics Compendium';
+        document.getElementById('intro-sub').innerText = 'Transparent documentation of all ORBIT metrics for athletes and club coaches. No black-box algorithms — all formulas based on validated sports science standards.';
+      } else {
+        document.getElementById('intro-title').innerText = 'Sportwissenschaftliches Kennzahlen-Lexikon';
+        document.getElementById('intro-sub').innerText = 'Transparente Dokumentation aller ORBIT-Metriken für Athleten und Vereinstrainer. Keine Black-Box-Algorithmen – alle Formeln basieren auf publizierten sportwissenschaftlichen Standards.';
+      }
+    }
+  </script>
+</body>
+</html>
