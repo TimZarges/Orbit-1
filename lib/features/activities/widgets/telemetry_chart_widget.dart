@@ -6,14 +6,13 @@ import '../../../core/design/app_typography.dart';
 import '../models/activity_stream.dart';
 import 'telemetry_channel_chips.dart';
 
-/// Interaktives Telemetrie-Chart im Dark Cockpit (#0F172A).
+/// Interaktives Telemetrie-Chart im Dark Cockpit (#001F47 / #0F172A).
 ///
-/// Unterstützt:
-/// - LTTB-optimierte Mehrkanallinien
-/// - Weiches Höhen-Backdrop-Band
-/// - Long-Press-to-Scrub mit haptischem Feedback und HUD über dem Finger
-/// - Zeit- vs. Distanzachse
-/// - Synchrone Positionierung auf der Karte
+/// Performance-Architektur:
+/// - Statische Kanallinien (Watt, W'bal, HF, Speed, Kadenz, Höhe) sind in einem
+///   eigenen [RepaintBoundary] gekapselt und werden bei Scrub-Bewegungen NICHT neu gezeichnet.
+/// - Der Scrubbing-Cursor und das HUD sind über [ValueNotifier] entkoppelt,
+///   sodass Fingerbewegungen mit < 16 ms Frame-Zeit (60/120 FPS) gerendert werden.
 class TelemetryChartWidget extends StatefulWidget {
   final List<ActivityStreamPoint> points;
   final Set<TelemetryChannel> activeChannels;
@@ -21,6 +20,7 @@ class TelemetryChartWidget extends StatefulWidget {
   final ValueChanged<ActivityStreamPoint?>? onScrub;
   final VoidCallback? onToggleFullscreen;
   final double height;
+  final ValueNotifier<ActivityStreamPoint?>? externalScrubNotifier;
 
   const TelemetryChartWidget({
     super.key,
@@ -30,6 +30,7 @@ class TelemetryChartWidget extends StatefulWidget {
     this.onScrub,
     this.onToggleFullscreen,
     this.height = 240,
+    this.externalScrubNotifier,
   });
 
   @override
@@ -37,8 +38,22 @@ class TelemetryChartWidget extends StatefulWidget {
 }
 
 class _TelemetryChartWidgetState extends State<TelemetryChartWidget> {
-  int? _scrubIndex;
-  Offset? _scrubPosition;
+  late final ValueNotifier<int?> _scrubIndexNotifier;
+  late final ValueNotifier<Offset?> _scrubPositionNotifier;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrubIndexNotifier = ValueNotifier<int?>(null);
+    _scrubPositionNotifier = ValueNotifier<Offset?>(null);
+  }
+
+  @override
+  void dispose() {
+    _scrubIndexNotifier.dispose();
+    _scrubPositionNotifier.dispose();
+    super.dispose();
+  }
 
   void _handleLongPressStart(
       LongPressStartDetails details, BoxConstraints constraints) {
@@ -52,11 +67,10 @@ class _TelemetryChartWidgetState extends State<TelemetryChartWidget> {
   }
 
   void _handleLongPressEnd(LongPressEndDetails details) {
-    setState(() {
-      _scrubIndex = null;
-      _scrubPosition = null;
-    });
+    _scrubIndexNotifier.value = null;
+    _scrubPositionNotifier.value = null;
     widget.onScrub?.call(null);
+    widget.externalScrubNotifier?.value = null;
   }
 
   void _updateScrub(double dx, double width) {
@@ -64,16 +78,16 @@ class _TelemetryChartWidgetState extends State<TelemetryChartWidget> {
     final fraction = (dx / width).clamp(0.0, 1.0);
     final index = (fraction * (widget.points.length - 1)).round();
 
-    if (_scrubIndex != index) {
+    if (_scrubIndexNotifier.value != index) {
       HapticFeedback.selectionClick();
     }
 
-    setState(() {
-      _scrubIndex = index;
-      _scrubPosition = Offset(dx.clamp(0.0, width), 0);
-    });
+    _scrubIndexNotifier.value = index;
+    _scrubPositionNotifier.value = Offset(dx.clamp(0.0, width), 0);
 
-    widget.onScrub?.call(widget.points[index]);
+    final pt = widget.points[index];
+    widget.onScrub?.call(pt);
+    widget.externalScrubNotifier?.value = pt;
   }
 
   @override
@@ -81,7 +95,7 @@ class _TelemetryChartWidgetState extends State<TelemetryChartWidget> {
     if (widget.points.isEmpty) {
       return Container(
         height: widget.height,
-        color: const Color(0xFF0F172A),
+        color: const Color(0xFF001F47),
         alignment: Alignment.center,
         child: const Text('Keine Telemetrie-Daten vorhanden',
             style: TextStyle(color: Colors.white54)),
@@ -90,9 +104,6 @@ class _TelemetryChartWidgetState extends State<TelemetryChartWidget> {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final scrubPoint =
-            _scrubIndex != null ? widget.points[_scrubIndex!] : null;
-
         return Stack(
           clipBehavior: Clip.none,
           children: [
@@ -101,34 +112,73 @@ class _TelemetryChartWidgetState extends State<TelemetryChartWidget> {
               onLongPressMoveUpdate: (d) =>
                   _handleLongPressMoveUpdate(d, constraints),
               onLongPressEnd: _handleLongPressEnd,
+              onHorizontalDragStart: (d) =>
+                  _updateScrub(d.localPosition.dx, constraints.maxWidth),
+              onHorizontalDragUpdate: (d) =>
+                  _updateScrub(d.localPosition.dx, constraints.maxWidth),
+              onHorizontalDragEnd: (_) =>
+                  _handleLongPressEnd(const LongPressEndDetails()),
               child: Container(
                 height: widget.height,
                 width: constraints.maxWidth,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF0F172A), // Dark Cockpit Background
+                  color: const Color(0xFF001F47), // Dark Navy Cockpit
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0xFF334155)),
+                  border: Border.all(color: const Color(0xFF1E293B)),
                 ),
-                child: CustomPaint(
-                  size: Size(constraints.maxWidth, widget.height),
-                  painter: _TelemetryChartPainter(
-                    points: widget.points,
-                    activeChannels: widget.activeChannels,
-                    scrubIndex: _scrubIndex,
-                    useDistanceAxis: widget.useDistanceAxis,
-                  ),
+                child: Stack(
+                  children: [
+                    // 1. Statische Kanallinien (isoliert in RepaintBoundary für 60 FPS)
+                    RepaintBoundary(
+                      child: CustomPaint(
+                        size: Size(constraints.maxWidth, widget.height),
+                        painter: _TelemetryChartStaticPainter(
+                          points: widget.points,
+                          activeChannels: widget.activeChannels,
+                          useDistanceAxis: widget.useDistanceAxis,
+                        ),
+                      ),
+                    ),
+
+                    // 2. Entkoppelter Scrubbing Cursor (nur Cursor repainted bei Fingerbewegung)
+                    RepaintBoundary(
+                      child: ValueListenableBuilder<int?>(
+                        valueListenable: _scrubIndexNotifier,
+                        builder: (context, scrubIndex, _) {
+                          if (scrubIndex == null)
+                            return const SizedBox.shrink();
+                          return CustomPaint(
+                            size: Size(constraints.maxWidth, widget.height),
+                            painter: _TelemetryCursorPainter(
+                              pointsCount: widget.points.length,
+                              scrubIndex: scrubIndex,
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
 
-            // HUD über dem Finger
-            if (scrubPoint != null && _scrubPosition != null)
-              Positioned(
-                left: (_scrubPosition!.dx - 80)
-                    .clamp(8.0, constraints.maxWidth - 168.0),
-                top: -50,
-                child: _buildHud(scrubPoint),
-              ),
+            // 3. Floating HUD über dem Finger (nur bei aktivem Scrubbing aktualisiert)
+            ValueListenableBuilder<int?>(
+              valueListenable: _scrubIndexNotifier,
+              builder: (context, scrubIndex, _) {
+                if (scrubIndex == null) return const SizedBox.shrink();
+                final scrubPoint = widget.points[scrubIndex];
+                final scrubPos = _scrubPositionNotifier.value;
+                if (scrubPos == null) return const SizedBox.shrink();
+
+                return Positioned(
+                  left: (scrubPos.dx - 80)
+                      .clamp(8.0, constraints.maxWidth - 170.0),
+                  top: -55,
+                  child: _buildHud(scrubPoint),
+                );
+              },
+            ),
 
             // Vollbild-Button oben rechts
             if (widget.onToggleFullscreen != null)
@@ -156,7 +206,7 @@ class _TelemetryChartWidgetState extends State<TelemetryChartWidget> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E293B),
+        color: const Color(0xFF0F172A),
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: AppColors.accentVolt.withValues(alpha: 0.8)),
         boxShadow: const [
@@ -185,6 +235,14 @@ class _TelemetryChartWidgetState extends State<TelemetryChartWidget> {
                 Text('${point.power!.round()} W',
                     style: TextStyle(
                         color: TelemetryChannel.power.color,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold)),
+              if ((widget.activeChannels.contains(TelemetryChannel.wBal) ||
+                      widget.activeChannels.contains(TelemetryChannel.power)) &&
+                  point.wBalPercent != null)
+                Text("W'bal ${point.wBalPercent!.round()}%",
+                    style: TextStyle(
+                        color: TelemetryChannel.wBal.color,
                         fontSize: 10,
                         fontWeight: FontWeight.bold)),
               if (widget.activeChannels.contains(TelemetryChannel.heartRate) &&
@@ -226,22 +284,22 @@ class _TelemetryChartWidgetState extends State<TelemetryChartWidget> {
     final h = sec ~/ 3600;
     final m = (sec % 3600) ~/ 60;
     final s = sec % 60;
-    if (h > 0)
+    if (h > 0) {
       return '$h:${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
+    }
     return '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
   }
 }
 
-class _TelemetryChartPainter extends CustomPainter {
+/// Statischer Painter für die Telemetrielinien (wird durch RepaintBoundary isoliert).
+class _TelemetryChartStaticPainter extends CustomPainter {
   final List<ActivityStreamPoint> points;
   final Set<TelemetryChannel> activeChannels;
-  final int? scrubIndex;
   final bool useDistanceAxis;
 
-  _TelemetryChartPainter({
+  _TelemetryChartStaticPainter({
     required this.points,
     required this.activeChannels,
-    this.scrubIndex,
     this.useDistanceAxis = false,
   });
 
@@ -251,9 +309,8 @@ class _TelemetryChartPainter extends CustomPainter {
 
     final n = points.length;
     final w = size.width;
-    final h = size.height - 20; // Platz für Zeitachse unten
+    final h = size.height - 20;
 
-    // Maxima für Skalierung
     final maxPower = points.map((p) => p.power ?? 0.0).fold(0.0, max);
     final maxHr = points.map((p) => p.hr ?? 0.0).fold(0.0, max);
     final maxSpeed = points.map((p) => p.speedMps ?? 0.0).fold(0.0, max);
@@ -263,7 +320,7 @@ class _TelemetryChartPainter extends CustomPainter {
 
     final stepX = w / (n - 1);
 
-    // 1. Höhe als weiches Backdrop-Band (DESIGN.md §3.2)
+    // 1. Höhe als weiches Backdrop-Band
     if (activeChannels.contains(TelemetryChannel.altitude) && maxAlt > minAlt) {
       final altPath = Path();
       altPath.moveTo(0, h);
@@ -271,7 +328,7 @@ class _TelemetryChartPainter extends CustomPainter {
         final x = i * stepX;
         final a = points[i].altitudeM ?? minAlt;
         final normA = (a - minAlt) / (maxAlt - minAlt);
-        final y = h - (normA * (h * 0.45)); // Nimmt untere 45% ein
+        final y = h - (normA * (h * 0.45));
         altPath.lineTo(x, y);
       }
       altPath.lineTo(w, h);
@@ -283,40 +340,45 @@ class _TelemetryChartPainter extends CustomPainter {
       canvas.drawPath(altPath, altPaint);
     }
 
-    // 2. Kanallinien zeichnen
+    // 2. W'bal Kurve (überlagert oder eigenständig)
+    final hasWBalData = points.any((p) => p.wBalPercent != null);
+    if ((activeChannels.contains(TelemetryChannel.wBal) ||
+            activeChannels.contains(TelemetryChannel.power)) &&
+        hasWBalData) {
+      _drawLine(
+        canvas,
+        size,
+        h,
+        (p) => p.wBalPercent,
+        100.0, // 0 bis 100%
+        TelemetryChannel.wBal.color,
+        strokeWidth: 1.8,
+      );
+    }
+
+    // 3. Kanallinien
     if (activeChannels.contains(TelemetryChannel.power) && maxPower > 0) {
       _drawLine(canvas, size, h, (p) => p.power, maxPower * 1.1,
-          TelemetryChannel.power.color);
+          TelemetryChannel.power.color,
+          strokeWidth: 1.5);
     }
 
     if (activeChannels.contains(TelemetryChannel.heartRate) && maxHr > 0) {
       _drawLine(canvas, size, h, (p) => p.hr, maxHr * 1.05,
-          TelemetryChannel.heartRate.color);
+          TelemetryChannel.heartRate.color,
+          strokeWidth: 1.5);
     }
 
     if (activeChannels.contains(TelemetryChannel.speed) && maxSpeed > 0) {
       _drawLine(canvas, size, h, (p) => p.speedMps, maxSpeed * 1.1,
-          TelemetryChannel.speed.color);
+          TelemetryChannel.speed.color,
+          strokeWidth: 1.5);
     }
 
     if (activeChannels.contains(TelemetryChannel.cadence) && maxCad > 0) {
       _drawLine(canvas, size, h, (p) => p.cadence, maxCad * 1.1,
-          TelemetryChannel.cadence.color);
-    }
-
-    // 3. Scrubbing Leitlinie
-    if (scrubIndex != null && scrubIndex! < n) {
-      final scrubX = scrubIndex! * stepX;
-      final linePaint = Paint()
-        ..color = AppColors.accentVolt
-        ..strokeWidth = 1.5;
-      canvas.drawLine(Offset(scrubX, 0), Offset(scrubX, h), linePaint);
-
-      // Punkt-Marker
-      final dotPaint = Paint()
-        ..color = AppColors.accentVolt
-        ..style = PaintingStyle.fill;
-      canvas.drawCircle(Offset(scrubX, h / 2), 4, dotPaint);
+          TelemetryChannel.cadence.color,
+          strokeWidth: 1.5);
     }
   }
 
@@ -326,15 +388,16 @@ class _TelemetryChartPainter extends CustomPainter {
     double h,
     double? Function(ActivityStreamPoint) getter,
     double maxScale,
-    Color color,
-  ) {
+    Color color, {
+    double strokeWidth = 1.5,
+  }) {
     final path = Path();
     bool started = false;
     final stepX = size.width / (points.length - 1);
 
     for (int i = 0; i < points.length; i++) {
       final val = getter(points[i]);
-      if (val != null && val > 0) {
+      if (val != null && val >= 0) {
         final x = i * stepX;
         final y = h - (val / maxScale) * (h - 15);
         if (!started) {
@@ -348,16 +411,52 @@ class _TelemetryChartPainter extends CustomPainter {
 
     final paint = Paint()
       ..color = color
-      ..strokeWidth = 1.5
+      ..strokeWidth = strokeWidth
       ..style = PaintingStyle.stroke;
     canvas.drawPath(path, paint);
   }
 
   @override
-  bool shouldRepaint(covariant _TelemetryChartPainter oldDelegate) {
+  bool shouldRepaint(covariant _TelemetryChartStaticPainter oldDelegate) {
     return oldDelegate.points != points ||
         oldDelegate.activeChannels != activeChannels ||
-        oldDelegate.scrubIndex != scrubIndex ||
         oldDelegate.useDistanceAxis != useDistanceAxis;
+  }
+}
+
+/// Leichtgewichtiger Painter nur für Cursor-Linie und Indikator
+class _TelemetryCursorPainter extends CustomPainter {
+  final int pointsCount;
+  final int scrubIndex;
+
+  _TelemetryCursorPainter({
+    required this.pointsCount,
+    required this.scrubIndex,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (pointsCount < 2 || scrubIndex >= pointsCount) return;
+
+    final w = size.width;
+    final h = size.height - 20;
+    final stepX = w / (pointsCount - 1);
+    final scrubX = scrubIndex * stepX;
+
+    final linePaint = Paint()
+      ..color = AppColors.accentVolt
+      ..strokeWidth = 1.5;
+    canvas.drawLine(Offset(scrubX, 0), Offset(scrubX, h), linePaint);
+
+    final dotPaint = Paint()
+      ..color = AppColors.accentVolt
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(Offset(scrubX, h / 2), 4.5, dotPaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _TelemetryCursorPainter oldDelegate) {
+    return oldDelegate.scrubIndex != scrubIndex ||
+        oldDelegate.pointsCount != pointsCount;
   }
 }

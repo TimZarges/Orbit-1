@@ -11,6 +11,8 @@ class ActivityStreamPoint {
   final double? tempC;
   final double? coreTempC;
   final double distanceM;
+  final double? wBalJoules;
+  final double? wBalPercent;
 
   const ActivityStreamPoint({
     required this.timeSec,
@@ -24,6 +26,8 @@ class ActivityStreamPoint {
     this.tempC,
     this.coreTempC,
     this.distanceM = 0.0,
+    this.wBalJoules,
+    this.wBalPercent,
   });
 
   factory ActivityStreamPoint.fromArrays({
@@ -106,6 +110,7 @@ class ActivityStream {
   bool get hasAltitude => points.any((p) => p.altitudeM != null);
   bool get hasGps => points.any((p) => p.lat != null && p.lng != null);
   bool get hasTemp => points.any((p) => p.tempC != null || p.coreTempC != null);
+  bool get hasWBal => points.any((p) => p.wBalPercent != null);
 
   double get maxPower =>
       points.map((p) => p.power ?? 0.0).fold(0.0, (a, b) => a > b ? a : b);

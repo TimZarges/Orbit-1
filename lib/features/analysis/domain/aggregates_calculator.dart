@@ -25,12 +25,16 @@ class FitnessFatiguePoint {
   final double ctl;
   final double atl;
   final double tsb;
+  final bool isProjection;
+  final double dailyLoad;
 
   const FitnessFatiguePoint({
     required this.date,
     required this.ctl,
     required this.atl,
     required this.tsb,
+    this.isProjection = false,
+    this.dailyLoad = 0.0,
   });
 }
 
@@ -182,7 +186,75 @@ class AggregatesCalculator {
         ctl: a.ctl,
         atl: a.atl,
         tsb: a.tsb,
+        dailyLoad: a.dailyLoad,
+        isProjection: false,
       );
     }).toList();
+  }
+
+  /// Erzeugt Zeitreihenpunkte für das PMC-Diagramm inkl. 14-Tage-Zukunftsprojektion
+  /// basierend auf geplanten Workouts und dem Banister Impulse-Response Modell.
+  static List<FitnessFatiguePoint> calculatePmcWithProjection({
+    required List<DailyAggregate> aggregatesAsc,
+    List<PlannedWorkout> plannedWorkouts = const [],
+    int projectionDays = 14,
+  }) {
+    final points = <FitnessFatiguePoint>[];
+    for (final a in aggregatesAsc) {
+      points.add(FitnessFatiguePoint(
+        date: a.localDate,
+        ctl: a.ctl,
+        atl: a.atl,
+        tsb: a.tsb,
+        dailyLoad: a.dailyLoad,
+        isProjection: false,
+      ));
+    }
+
+    if (points.isEmpty) return points;
+
+    // 14-Tage-Zukunftsprojektion
+    double lastCtl = points.last.ctl;
+    double lastAtl = points.last.atl;
+    final lastDateStr = points.last.date;
+    final lastDate = DateTime.tryParse(lastDateStr) ?? DateTime.now();
+
+    final plannedMap = <String, double>{};
+    for (final p in plannedWorkouts) {
+      final plannedTss = p.plannedLoad ??
+          (p.plannedDurationSec > 0
+              ? (p.plannedDurationSec / 3600.0) * 50.0
+              : 0.0);
+      plannedMap[p.localDate] = (plannedMap[p.localDate] ?? 0.0) + plannedTss;
+    }
+
+    for (int day = 1; day <= projectionDays; day++) {
+      final nextDate = lastDate.add(Duration(days: day));
+      final nextDateStr =
+          "${nextDate.year.toString().padLeft(4, '0')}-${nextDate.month.toString().padLeft(2, '0')}-${nextDate.day.toString().padLeft(2, '0')}";
+      final dayTss = plannedMap[nextDateStr] ?? 0.0;
+
+      // Banister EMA: lambda = 1 - exp(-1 / tau)
+      final ctlLambda = 1.0 - exp(-1.0 / 42.0);
+      final atlLambda = 1.0 - exp(-1.0 / 7.0);
+
+      final nextCtl = lastCtl + (dayTss - lastCtl) * ctlLambda;
+      final nextAtl = lastAtl + (dayTss - lastAtl) * atlLambda;
+      final nextTsb = lastCtl - lastAtl;
+
+      points.add(FitnessFatiguePoint(
+        date: nextDateStr,
+        ctl: nextCtl,
+        atl: nextAtl,
+        tsb: nextTsb,
+        dailyLoad: dayTss,
+        isProjection: true,
+      ));
+
+      lastCtl = nextCtl;
+      lastAtl = nextAtl;
+    }
+
+    return points;
   }
 }

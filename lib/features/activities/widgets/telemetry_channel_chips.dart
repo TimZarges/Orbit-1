@@ -4,6 +4,7 @@ import '../../../core/design/app_typography.dart';
 /// Die auswählbaren Telemetrie-Kanäle im Analyse-Cockpit.
 enum TelemetryChannel {
   power,
+  wBal,
   heartRate,
   speed,
   cadence,
@@ -16,6 +17,8 @@ extension TelemetryChannelX on TelemetryChannel {
     switch (this) {
       case TelemetryChannel.power:
         return 'Leistung';
+      case TelemetryChannel.wBal:
+        return "W'bal";
       case TelemetryChannel.heartRate:
         return 'HF';
       case TelemetryChannel.speed:
@@ -33,6 +36,8 @@ extension TelemetryChannelX on TelemetryChannel {
     switch (this) {
       case TelemetryChannel.power:
         return 'W';
+      case TelemetryChannel.wBal:
+        return '%';
       case TelemetryChannel.heartRate:
         return 'bpm';
       case TelemetryChannel.speed:
@@ -51,6 +56,8 @@ extension TelemetryChannelX on TelemetryChannel {
     switch (this) {
       case TelemetryChannel.power:
         return const Color(0xFFF6C453); // Leistung (Gelb/Gold)
+      case TelemetryChannel.wBal:
+        return const Color(0xFFF43F5E); // W'bal (Rose / Dynamischer Tank)
       case TelemetryChannel.heartRate:
         return const Color(0xFFFF6B6B); // Herzfrequenz (Helles Korallenrot)
       case TelemetryChannel.speed:
@@ -68,6 +75,8 @@ extension TelemetryChannelX on TelemetryChannel {
     switch (this) {
       case TelemetryChannel.power:
         return Icons.bolt;
+      case TelemetryChannel.wBal:
+        return Icons.battery_charging_full;
       case TelemetryChannel.heartRate:
         return Icons.favorite;
       case TelemetryChannel.speed:

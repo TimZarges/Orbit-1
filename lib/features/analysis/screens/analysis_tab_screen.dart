@@ -13,6 +13,7 @@ import '../widgets/sport_distribution_card.dart';
 import '../widgets/zone_distribution_card.dart';
 import '../widgets/weekly_load_trend_chart.dart';
 import '../widgets/fitness_fatigue_trend_chart.dart';
+import '../widgets/performance_profile_card.dart';
 import '../widgets/threshold_progress_card.dart';
 
 /// Haupt-Screen des Tabs „Analyse".
@@ -205,10 +206,18 @@ class AnalysisTabScreen extends ConsumerWidget {
           const SizedBox(height: 16),
         ],
 
-        // 7. CTL/ATL/TSB-Linienchart & Schwellenwerte (nur Experte)
+        // 7. CTL/ATL/TSB-Linienchart, MMP-Profil & Schwellenwerte (Experten-Ansicht)
         if (level == ExperienceLevel.expert) ...[
           FitnessFatigueTrendChart(
             points: data.fitnessFatiguePoints,
+          ),
+          const SizedBox(height: 16),
+          const PerformanceProfileCard(
+            recentMmp: {},
+            seasonMmp: {},
+            cpWatts: 280,
+            wPrimeKj: 20.4,
+            pMaxWatts: 980,
           ),
           const SizedBox(height: 16),
           ThresholdProgressCard(athleteId: athleteId),

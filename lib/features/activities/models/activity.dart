@@ -52,6 +52,122 @@ class ActivitySummary {
   }
 }
 
+class ActivityMetrics {
+  final double? tss;
+  final double? np;
+  final double? iff;
+  final double? vi;
+  final double? ef;
+  final double? aerobicDecouplingPercent;
+  final String? decouplingClassification;
+  final double? brickPaceDropSecPerKm;
+  final double? cpWatts;
+  final double? wPrimeKj;
+  final String? quality;
+
+  ActivityMetrics({
+    this.tss,
+    this.np,
+    this.iff,
+    this.vi,
+    this.ef,
+    this.aerobicDecouplingPercent,
+    this.decouplingClassification,
+    this.brickPaceDropSecPerKm,
+    this.cpWatts,
+    this.wPrimeKj,
+    this.quality,
+  });
+
+  factory ActivityMetrics.fromMap(Map<String, dynamic> map) {
+    return ActivityMetrics(
+      tss: (map['tss'] as num?)?.toDouble(),
+      np: (map['np'] as num?)?.toDouble() ??
+          (map['normalizedPowerW'] as num?)?.toDouble(),
+      iff: (map['intensityFactor'] as num?)?.toDouble() ??
+          (map['if'] as num?)?.toDouble(),
+      vi: (map['vi'] as num?)?.toDouble() ??
+          (map['variabilityIndex'] as num?)?.toDouble(),
+      ef: (map['ef'] as num?)?.toDouble() ??
+          (map['efficiencyFactor'] as num?)?.toDouble(),
+      aerobicDecouplingPercent:
+          (map['aerobicDecouplingPercent'] as num?)?.toDouble(),
+      decouplingClassification: map['decouplingClassification'] as String?,
+      brickPaceDropSecPerKm: (map['brickPaceDropSecPerKm'] as num?)?.toDouble(),
+      cpWatts: (map['cpWatts'] as num?)?.toDouble(),
+      wPrimeKj: (map['wPrimeKj'] as num?)?.toDouble(),
+      quality: map['quality'] as String?,
+    );
+  }
+}
+
+class ActivityLapData {
+  final int lapIndex;
+  final int startSec;
+  final int durationSec;
+  final double distanceM;
+  final double? avgWatts;
+  final double? npWatts;
+  final double? avgHr;
+  final double? avgCadence;
+  final double? avgSpeedMps;
+  final double? avgPaceSecPerKm;
+  final double? efficiencyFactor;
+  final bool isAutoInterval;
+
+  ActivityLapData({
+    required this.lapIndex,
+    this.startSec = 0,
+    required this.durationSec,
+    this.distanceM = 0.0,
+    this.avgWatts,
+    this.npWatts,
+    this.avgHr,
+    this.avgCadence,
+    this.avgSpeedMps,
+    this.avgPaceSecPerKm,
+    this.efficiencyFactor,
+    this.isAutoInterval = false,
+  });
+
+  factory ActivityLapData.fromMap(Map<String, dynamic> map,
+      {int index = 1, bool isAuto = false}) {
+    final dur = (map['durationSec'] as num?)?.toInt() ?? 0;
+    final dist = (map['distanceM'] as num?)?.toDouble() ?? 0.0;
+    final w = (map['avgWatts'] as num?)?.toDouble() ??
+        (map['avgPowerW'] as num?)?.toDouble() ??
+        (map['avgValue'] as num?)?.toDouble();
+    final np = (map['npWatts'] as num?)?.toDouble() ??
+        (map['normalizedPowerW'] as num?)?.toDouble() ??
+        (map['npValue'] as num?)?.toDouble();
+    final hr = (map['avgHr'] as num?)?.toDouble() ??
+        (map['avgHeartRate'] as num?)?.toDouble();
+    final cad = (map['avgCadence'] as num?)?.toDouble();
+    final spd = (map['avgSpeedMps'] as num?)?.toDouble();
+    final pace = (map['avgPaceSecPerKm'] as num?)?.toDouble() ??
+        (spd != null && spd > 0 ? 1000.0 / spd : null);
+    final ef = (map['efficiencyFactor'] as num?)?.toDouble() ??
+        (w != null && hr != null && hr > 0 ? w / hr : null);
+
+    return ActivityLapData(
+      lapIndex: (map['lapIndex'] as num?)?.toInt() ??
+          (map['index'] as num?)?.toInt() ??
+          index,
+      startSec: (map['startSec'] as num?)?.toInt() ?? 0,
+      durationSec: dur,
+      distanceM: dist,
+      avgWatts: w,
+      npWatts: np,
+      avgHr: hr,
+      avgCadence: cad,
+      avgSpeedMps: spd,
+      avgPaceSecPerKm: pace,
+      efficiencyFactor: ef,
+      isAutoInterval: isAuto || (map['isAutoInterval'] as bool? ?? false),
+    );
+  }
+}
+
 class ActivityProcessing {
   final String state;
   final String? errorCode;
@@ -76,6 +192,9 @@ class Activity {
   final double durationSec;
   final double distanceM;
   final ActivitySummary? summary;
+  final ActivityMetrics? metrics;
+  final List<ActivityLapData>? laps;
+  final List<ActivityLapData>? autoIntervals;
   final ActivityProcessing? processing;
   final List<dynamic>? segments;
   final String? plannedWorkoutId;
@@ -91,6 +210,9 @@ class Activity {
     required this.durationSec,
     required this.distanceM,
     this.summary,
+    this.metrics,
+    this.laps,
+    this.autoIntervals,
     this.processing,
     this.segments,
     this.plannedWorkoutId,
@@ -102,6 +224,37 @@ class Activity {
 
   factory Activity.fromDocument(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
+
+    ActivityMetrics? metrics;
+    if (data['metrics'] != null) {
+      metrics =
+          ActivityMetrics.fromMap(data['metrics'] as Map<String, dynamic>);
+    }
+
+    List<ActivityLapData>? laps;
+    if (data['laps'] is List) {
+      final list = data['laps'] as List<dynamic>;
+      laps = list.asMap().entries.map((e) {
+        return ActivityLapData.fromMap(
+          e.value as Map<String, dynamic>,
+          index: e.key + 1,
+          isAuto: false,
+        );
+      }).toList();
+    }
+
+    List<ActivityLapData>? autoIntervals;
+    if (data['autoIntervals'] is List) {
+      final list = data['autoIntervals'] as List<dynamic>;
+      autoIntervals = list.asMap().entries.map((e) {
+        return ActivityLapData.fromMap(
+          e.value as Map<String, dynamic>,
+          index: e.key + 1,
+          isAuto: true,
+        );
+      }).toList();
+    }
+
     return Activity(
       id: doc.id,
       athleteId: data['athleteId'] as String? ?? '',
@@ -115,6 +268,9 @@ class Activity {
       summary: data['summary'] != null
           ? ActivitySummary.fromMap(data['summary'] as Map<String, dynamic>)
           : null,
+      metrics: metrics,
+      laps: laps,
+      autoIntervals: autoIntervals,
       processing: data['processing'] != null
           ? ActivityProcessing.fromMap(
               data['processing'] as Map<String, dynamic>)

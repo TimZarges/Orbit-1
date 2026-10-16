@@ -175,9 +175,12 @@ final analysisStateProvider =
   final trendPoints = AggregatesCalculator.calculate8WeekTrend(sortedDesc);
   final trendDesc = AggregatesCalculator.describeWeeklyTrend(trendPoints);
 
-  // Fitness / Fatigue Zeitreihe
-  final fitnessPoints =
-      AggregatesCalculator.calculateFitnessFatiguePoints(aggregates);
+  // Fitness / Fatigue Zeitreihe mit 14-Tage-Zukunftsprojektion
+  final fitnessPoints = AggregatesCalculator.calculatePmcWithProjection(
+    aggregatesAsc: aggregates,
+    plannedWorkouts: plannedWorkouts,
+    projectionDays: 14,
+  );
 
   return AnalysisViewState(
     timeframe: timeframe,

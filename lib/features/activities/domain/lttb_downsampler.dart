@@ -82,9 +82,10 @@ class LttbDownsampler {
     return sampled;
   }
 
-  /// Ermittelt einen repräsentativen Vergleichswert (Leistung vorrangig vor HF oder Speed).
+  /// Ermittelt einen repräsentativen Vergleichswert (Leistung vorrangig vor W'bal, HF oder Speed).
   static double _getRepresentativeValue(ActivityStreamPoint p) {
     if (p.power != null) return p.power!;
+    if (p.wBalPercent != null) return p.wBalPercent!;
     if (p.hr != null) return p.hr!;
     if (p.speedMps != null) return p.speedMps!;
     if (p.altitudeM != null) return p.altitudeM!;

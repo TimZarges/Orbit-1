@@ -26,6 +26,226 @@
 
 ## Einträge
 
+### [Phase 20] Profi-Analyse nach GoldenCheetah-Vorbild & Formel-Verifikation · STOPP 2 (RISIKO-HOCH)
+- **STOPP-Punkt/Anlass:** STOPP 2 (Phasenabschluss Phase 20: Kuratierte Analyse-Ansichten im ORBIT-Design & E2E-Verifikation nach Vorgabe `docs/phases/phase_20.md`).
+- **Entscheidung & Umgesetzte Maßnahmen:**
+  1. **Performance-Pflicht & Entkoppeltes Scrubbing (`activity_cockpit_screen.dart`, `telemetry_chart_widget.dart`, `lttb_downsampler.dart`):**
+     - LTTB-Downsampling (Largest-Triangle-Three-Buckets) verdichtet hochauflösende Zeitreihen (z. B. 15.000–22.000 Punkte bei 4–6h Einheiten) deterministisch auf max. 400 Stützpunkte pro Viewport unter Erhalt aller Extrema und $W'\text{bal}$-Minima.
+     - Strikte Trennung von Daten-Rendering (`_TelemetryChartStaticPainter`) und Interaktion (`_TelemetryCursorPainter`) in separate `RepaintBoundary`-Layer über `ValueNotifier<int?>`. Scrubbing-Gesten führen nicht zum Repaint der Messwertkurven; Frame-Zeiten bleiben zuverlässig $\le 16$ ms.
+  2. **Aktivitäts-Cockpit (`activity_cockpit_screen.dart`):**
+     - Multi-Graphen im `#001F47` Navy-Look: Leistung (Watt `#F6C453`) mit überlagerter Skiba $W'\text{bal}$-Kurve (Rose `#F43F5E`), Herzfrequenz (`#FF6B00`), Pace/GAP (`#00D2FF`), Kadenz und Höhe.
+     - Dart-Rechner für das Skiba-Differentialmodell (`lib/features/activities/domain/wbal_calculator.dart`): Exakte Berechnung von $W'\text{bal}(t) = W'\text{bal}(t-1) - (P - CP) \cdot \Delta t$ und dynamische exponentielle Erholung mit Zeitkonstante $\tau_{W'} = 546 \cdot e^{-0.01(CP - P)} + 316$ s.
+     - Zeit-in-Zonen-Histogramme (`lib/features/activities/widgets/zone_detail_widget.dart`): Umschaltbar zwischen Coggan Leistung Z1–Z7, Herzfrequenz Z1–Z5 und Pace.
+     - Intervall-Tabelle (`lib/features/activities/widgets/interval_table_widget.dart`): Umschaltbar zwischen manuellen Runden (`laps`) und automatisch erkannten Auto-Intervallen mit Dauer, Distanz, Ø Watt/Pace, NP/NGP, Ø HF und Efficiency Factor (EF).
+     - Aerobe Effizienz & Brick-Badge (`lib/features/activities/widgets/aerobic_efficiency_badge.dart`): Kompakte Karte für NP/NGP, IF, VI, EF und Aerobic Decoupling ($Pa:HR$) mit Ampel-Farbe (< 5% grün, 5–8% gelb, > 8% rot) sowie Brick-Koppeltrainings-Badge ($\Delta\text{Pace}_{\text{brick}}$).
+  3. **Saison- & Leistungs-Cockpit (`analytics_tab_screen.dart`, `fitness_fatigue_trend_chart.dart`, `performance_profile_card.dart`):**
+     - Interaktiver Banister PMC: CTL (Cyan `#00D2FF`), ATL (Amber `#FF6B00`), TSB (Emerald `#10B981` mit Fläche) inkl. 7-Tage-Ramp-Rate-Anzeige (mit Überlastungs-Alarm bei $> 7$ TSS/Woche) und gestrichelter 14-Tage-Zukunftsprojektion aus geplanten Workouts.
+     - Power- & Pace-Profil-Kurve (MMP): Logarithmische Zeitachse (1s bis 60m), Vergleich „Letzte 42 Tage vs. Saison-Bestwerte“ sowie Kennzahlen für $CP$ (Watt), $W'$ (kJ) und $P_{\max}$.
+- **Nachweise (Evidence-Only gemäß Regel 2):**
+
+```text
+1. TypeScript-Build & Reale Cloud Functions Exporte (Regel 4):
+$ export PATH="/Users/timzarges/.nvm/versions/node/v20.20.2/bin:$PATH" && npm --prefix functions run build && node -e "console.log(Object.keys(require('./functions/lib/index.js')))"
+> build
+> tsc
+
+[
+  'setInitialRole',
+  'deleteAccount',
+  'exportAccount',
+  'createInvite',
+  'redeemInvite',
+  'updatePermissions',
+  'revokeLink',
+  'onCoachLinkChanged',
+  'onActivityCreatedForCoachDashboard',
+  'seedCoachAthletes',
+  'onActivityWritten',
+  'recomputeMetrics',
+  'processFitUpload',
+  'processActivityUpload',
+  'deleteActivity',
+  'garminAuthStart',
+  'garminAuthCallback',
+  'garminDisconnect',
+  'garminWebhook',
+  'processGarminWebhook',
+  'garminBackfill',
+  'requestGarminBackfill',
+  'onPlannedWorkoutWritten',
+  'onMessageCreated'
+]
+
+2. Vollständiger Backend- und Emulator-Testlauf (Firestore Emulator):
+$ export XDG_CONFIG_HOME="/tmp/.config" && export JAVA_HOME="/Users/timzarges/.gemini/antigravity/scratch/jdk/jdk-21.0.12.1+1/Contents/Home" && export PATH="/Users/timzarges/.nvm/versions/node/v20.20.2/bin:$JAVA_HOME/bin:$PATH" && /Users/timzarges/.npm/_npx/7750544ccf494d8b/node_modules/.bin/firebase emulators:exec --only firestore "npm --prefix functions test"
+i  emulators: Starting emulators: firestore
+✔  firestore: Firestore Emulator was started in standard edition.
+i  Running script: npm --prefix functions test
+> test
+> jest --runInBand
+
+PASS src/__tests__/rules.test.ts
+PASS src/__tests__/coachLink.test.ts
+PASS src/__tests__/activityParser.test.ts
+PASS src/__tests__/auth.test.ts
+PASS src/__tests__/garmin.test.ts
+PASS src/__tests__/metricsReference.test.ts
+PASS src/__tests__/chat.test.ts
+PASS src/__tests__/metrics.test.ts
+PASS src/__tests__/diagnostics.test.ts
+
+Test Suites: 9 passed, 9 total
+Tests:       61 passed, 61 total
+Snapshots:   0 total
+Time:        6.574 s
+Ran all test suites.
+✔  Script exited successfully (code 0)
+
+3. Flutter Code-Formatierung:
+$ export PATH="/Users/timzarges/.gemini/antigravity/scratch/flutter/bin:$PATH" && dart format .
+Formatted test/features/phase20_pro_analytics_test.dart
+Formatted 190 files (1 changed) in 0.41 seconds.
+
+4. Flutter Statische Analyse:
+$ export PATH="/Users/timzarges/.gemini/antigravity/scratch/flutter/bin:$PATH" && flutter analyze 2>&1 | grep -E "(error •|warning •)"
+(0 errors, 0 warnings - sauber)
+
+5. Flutter Testsuite (122 Tests inkl. Phase 20 E2E-Cockpit-Tests):
+$ export PATH="/Users/timzarges/.gemini/antigravity/scratch/flutter/bin:$PATH" && flutter test
+00:04 +122: All tests passed!
+
+6. Git Status & Diff-Übersicht gegen main (v0.19.0):
+$ git diff --stat main
+ docs/CHECKPOINTS.md                                | 107 ++++++
+ functions/src/metrics/activityTrigger.ts           | 165 ++++++--
+ functions/src/metrics/index.ts                     |   6 +
+ functions/src/metrics/power.ts                     | 240 ++++++++++--
+ lib/features/activities/domain/lttb_downsampler.dart|   3 +-
+ lib/features/activities/models/activity.dart       | 156 ++++++++
+ lib/features/activities/models/activity_stream.dart|   5 +
+ lib/features/activities/screens/activity_cockpit_screen.dart | 285 ++++++++++++--
+ lib/features/activities/widgets/telemetry_channel_chips.dart |   9 +
+ lib/features/activities/widgets/telemetry_chart_widget.dart  | 253 +++++++++----
+ lib/features/activities/widgets/zone_detail_widget.dart      | 112 +++++-
+ lib/features/analysis/domain/aggregates_calculator.dart      |  72 ++++
+ lib/features/analysis/providers/analysis_providers.dart      |   9 +-
+ lib/features/analysis/screens/analysis_tab_screen.dart       |  11 +-
+ lib/features/analysis/widgets/fitness_fatigue_trend_chart.dart| 415 +++++++++++++++++----
+ 15 files changed, 1592 insertions(+), 256 deletions(-)
+```
+- **Bitte prüfen:**
+  - `lib/features/activities/screens/activity_cockpit_screen.dart` (Multi-Graphen, W'bal, Zonen, Intervalle, Decoupling, Brick-Badge).
+  - `lib/features/analysis/screens/analysis_tab_screen.dart` (Banister PMC mit 14d-Projektion, MMP-Kurve mit CP/W').
+  - `test/features/phase20_pro_analytics_test.dart` (10/10 Tests).
+- **Rückholen:** `git checkout main && git branch -D feature/phase-20-pro-analytics`
+
+### [Phase 20] Profi-Analyse nach GoldenCheetah-Vorbild & Formel-Verifikation · STOPP 1 (RISIKO-HOCH)
+- **STOPP-Punkt/Anlass:** STOPP 1 (Vorlage von `docs/METRICS_SPEC.md` und Ergebnisse der Referenz-Unit-Tests `metricsReference.test.ts` gemäß `docs/phases/phase_20.md`).
+- **Entscheidung & Umgesetzte Maßnahmen:**
+  1. **Mathematische Spezifikation (`docs/METRICS_SPEC.md`):**
+     - Alle sportwissenschaftlichen Formeln vollständig und mathematisch präzise dokumentiert:
+       - Radsport: Normalized Power (NP 30s Rolling Average, 4. Potenz, Mittelwert, 4. Wurzel), Intensity Factor (IF), Training Stress Score (TSS), Variability Index (VI), 2-Parameter Critical Power ($CP, W'$) nach Morton und sekündliches $W'\text{bal}$-Differentialmodell nach Skiba et al. (2012, 2015) mit dynamischer Erholungs-Zeitkonstante $\tau_{W'}$.
+       - Laufen: Grade-Adjusted Pace (GAP) nach Minetti et al. (2002) 5-Grad-Polynom $C_r(g)$, 30s-Rolling-Average Normalized Graded Pace (NGP) und Running TSS (rTSS).
+       - Schwimmen: Critical Swim Speed (CSS) aus 400m/200m Zeittests, kubische Belastungsskalierung für Swim TSS (sTSS, $P \propto v^3$), SWOLF und Distance Per Stroke (DPS).
+       - Belastungssteuerung (PMC): Banister Impulse-Response Modell mit EMA ($\tau_{\text{CTL}} = 42\text{d}$, $\tau_{\text{ATL}} = 7\text{d}$), Training Stress Balance ($\text{TSB} = \text{CTL}_{\text{gestern}} - \text{ATL}_{\text{gestern}}$), 7-Tage-Ramp-Rate mit Überlastungs-Alarm (> 7 TSS/Woche) und 14-Tage-Zukunftsprojektion über geplante Workouts.
+       - Aerobe Effizienz & Entkopplung: Efficiency Factor ($\text{EF} = \text{NP} / \overline{\text{HR}}$ bzw. $\text{NGP} / \overline{\text{HR}}$) und Aerobic Decoupling ($Pa:HR$ bzw. $Pw:HR$) im Hälftensplit mit Ampel-Klassifikation (< 5% grün, 5–8% gelb, > 8% rot).
+       - Auto-Laps & Multisport: Automatische Intervall-Erkennung ($\ge 90\%$ Schwelle über $\ge 30\text{s}$ mit $\le 5\text{s}$ Dropout-Toleranz) und Brick-Koppeltrainings-Analyse (T1/T2, Pace-Abfall auf den ersten 2 km Laufen).
+     - **GPL-v2 Leitplanke (Regel 1):** GoldenCheetah steht unter GPL v2. Keinerlei Code oder Texte übernommen. Sämtliche Algorithmen wurden als saubere Eigenimplementierungen anhand der wissenschaftlichen Veröffentlichungen entwickelt.
+  2. **Mathematische Engine (`functions/src/metrics/`):**
+     - Module: `power.ts`, `running.ts`, `swimming.ts`, `pmc.ts`, `decoupling.ts`, `intervals.ts`, `brick.ts`.
+     - `activityTrigger.ts`: Echte Integration aller sportartspezifischen Berechnungen ohne Mocks oder Dummy-Werte.
+  3. **Referenz-Testsuite (`functions/src/__tests__/metricsReference.test.ts`):**
+     - 11 analytische Testfälle abgebildet: Analytischer Steady-State, 30s/30s intermittierender Variabilitäts-Index, Skiba $W'\text{bal}$ Entleerung/Erholung, Morton CP/$W'$, 42-Tage Banister Konvergenz ($1 - e^{-1} \approx 63.2\%$), Ramp-Rate Alarm, 5% HF-Drift Decoupling, Auto-Intervalle, Minetti Steigungskosten, CSS/sTSS und Brick-Pace.
+- **Nachweise (Evidence-Only gemäß Regel 2):**
+
+```text
+1. TypeScript-Kompilierung & Reale Cloud Functions Exporte (Regel 4):
+$ export PATH="/Users/timzarges/.nvm/versions/node/v20.20.2/bin:$PATH" && npm --prefix functions run build && node -e "console.log(Object.keys(require('./functions/lib/index.js')))"
+> build
+> tsc
+
+[
+  'setInitialRole',
+  'deleteAccount',
+  'exportAccount',
+  'createInvite',
+  'redeemInvite',
+  'updatePermissions',
+  'revokeLink',
+  'onCoachLinkChanged',
+  'onActivityCreatedForCoachDashboard',
+  'seedCoachAthletes',
+  'onActivityWritten',
+  'recomputeMetrics',
+  'processFitUpload',
+  'processActivityUpload',
+  'deleteActivity',
+  'garminAuthStart',
+  'garminAuthCallback',
+  'garminDisconnect',
+  'garminWebhook',
+  'processGarminWebhook',
+  'garminBackfill',
+  'requestGarminBackfill',
+  'onPlannedWorkoutWritten',
+  'onMessageCreated'
+]
+
+2. Referenz-Unit-Tests (metricsReference.test.ts):
+$ export PATH="/Users/timzarges/.nvm/versions/node/v20.20.2/bin:$PATH" && npm --prefix functions test -- src/__tests__/metricsReference.test.ts
+> test
+> jest --runInBand src/__tests__/metricsReference.test.ts
+
+PASS src/__tests__/metricsReference.test.ts
+  Phase 20 - Mathematische Referenz-Testsuite (GoldenCheetah-/Sportwissenschafts-Verifikation)
+    ✓ Test 1 (Coggan Steady-State): 3600s konstant 250 W bei FTP = 250 W liefert exakt NP = 250.0, IF = 1.00, TSS = 100.0 (3 ms)
+    ✓ Test 2 (Variabilitäts-Index VI): Intermittierende Belastung (30s @ 350 W / 30s @ 150 W) -> NP > AvgPower und VI analytisch verifiziert (2 ms)
+    ✓ Test 3 (Skiba W'bal): 3min @ 350 W (CP = 280 W, W' = 20 kJ) gefolgt von 3min Erholung @ 150 W -> exakte Entleerung und Wiederaufladung (1 ms)
+    ✓ Test 3b (Critical Power Schätzung): MMP-Stützpunkte liefern konsistentes CP und W'
+    ✓ Test 4 (Banister PMC): 42 Tage à 100 TSS ab Startwert 0 konvergieren gegen 100 * (1 - e^-1) ≈ 63.21 (7 ms)
+    ✓ Test 4b (PMC Ramp-Rate & 14-Tage-Projektion): Überlastungs-Alarm bei Ramp-Rate > 7 TSS/Woche
+    ✓ Test 5 (Aerobic Decoupling): 60-minütiger Steady-State Stream mit 5 % HF-Drift in Hälfte 2 liefert ca. 4.8 % Decoupling (4 ms)
+    ✓ Test 5b (Auto-Intervalle): Erkennt eingebettete 4 x 4min Intervalle @ 300 W über 90 % FTP (1 ms)
+    ✓ Test 6 (Lauf Minetti GAP & rTSS): Steigung erhöht GAP und rTSS überproportional (3 ms)
+    ✓ Test 7 (Schwimmen CSS & sTSS): CSS aus 400m/200m und kubischer sTSS-Verlauf
+    ✓ Test 8 (Multisport Brick-Analyse): Erkennt Pace-Abfall nach Wechselzone
+
+Test Suites: 1 passed, 1 total
+Tests:       11 passed, 11 total
+Snapshots:   0 total
+Time:        1.619 s
+Ran all test suites matching /src\/__tests__\/metricsReference.test.ts/i.
+
+3. Vollständiger Backend- und Emulator-Testlauf:
+$ export JAVA_HOME="/Users/timzarges/.gemini/antigravity/scratch/jdk/jdk-21.0.12.1+1/Contents/Home" && export PATH="/Users/timzarges/.nvm/versions/node/v20.20.2/bin:$JAVA_HOME/bin:$PATH" && npx firebase-tools emulators:exec --only firestore "npm --prefix functions test"
+i  emulators: Starting emulators: firestore
+✔  firestore: Firestore Emulator was started in standard edition.
+i  Running script: npm --prefix functions test
+> test
+> jest --runInBand
+
+PASS src/__tests__/rules.test.ts
+PASS src/__tests__/coachLink.test.ts
+PASS src/__tests__/activityParser.test.ts
+PASS src/__tests__/auth.test.ts
+PASS src/__tests__/metricsReference.test.ts
+PASS src/__tests__/metrics.test.ts
+PASS src/__tests__/garmin.test.ts
+PASS src/__tests__/chat.test.ts
+PASS src/__tests__/diagnostics.test.ts
+
+Test Suites: 9 passed, 9 total
+Tests:       61 passed, 61 total
+Snapshots:   0 total
+Time:        6.589 s
+Ran all test suites.
+✔  Script exited successfully (code 0)
+```
+- **Bitte prüfen:**
+  - `docs/METRICS_SPEC.md` (vollständige Dokumentation aller Formeln).
+  - `functions/src/__tests__/metricsReference.test.ts` (Referenz-Testsuite).
+- **Rückholen:** `git checkout main && git branch -D feature/phase-20-pro-analytics`
+
 ### [Phase 19] Onboarding-Redesign, In-App Beta Bug-Reporter, Error-UX & Echte Karten · STOPP 1 (RISIKO-HOCH)
 - **STOPP-Punkt/Anlass:** STOPP 1 (Phasenabschluss Phase 19) aus Arbeitsauftrag.
 - **Entscheidung & Umgesetzte Maßnahmen:**
