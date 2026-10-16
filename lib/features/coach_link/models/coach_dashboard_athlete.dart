@@ -29,6 +29,12 @@ class CoachDashboardAthlete {
   final Map<String, dynamic>? raceGoal;
   final String? alert; // z.B. 'NO_ACTIVITY_7D' oder 'LOAD_SPIKE'
   final DateTime? updatedAt;
+  final bool hasHealthPermission;
+  final String coachLinkStatus;
+  final int? recoveryScore;
+  final String? recoveryTrafficLight;
+  final String? hrvTrend;
+  final int? hrvMs;
 
   const CoachDashboardAthlete({
     required this.athleteId,
@@ -49,6 +55,12 @@ class CoachDashboardAthlete {
     this.raceGoal,
     this.alert,
     this.updatedAt,
+    this.hasHealthPermission = false,
+    this.coachLinkStatus = 'ACTIVE',
+    this.recoveryScore,
+    this.recoveryTrafficLight,
+    this.hrvTrend,
+    this.hrvMs,
   });
 
   factory CoachDashboardAthlete.fromMap(String id, Map<String, dynamic> map) {
@@ -98,6 +110,14 @@ class CoachDashboardAthlete {
           : null,
       alert: map['alert'] as String?,
       updatedAt: parseDate(map['updatedAt']),
+      hasHealthPermission: map['hasHealthPermission'] as bool? ??
+          (map['permissions'] is Map &&
+              (map['permissions'] as Map)['health'] == true),
+      coachLinkStatus: map['coachLinkStatus'] as String? ?? 'ACTIVE',
+      recoveryScore: (map['recoveryScore'] as num?)?.toInt(),
+      recoveryTrafficLight: map['recoveryTrafficLight'] as String?,
+      hrvTrend: map['hrvTrend'] as String?,
+      hrvMs: (map['hrvMs'] as num?)?.toInt(),
     );
   }
 
@@ -122,6 +142,13 @@ class CoachDashboardAthlete {
       'plannedLoad7d': plannedLoad7d,
       'unreadMessagesCount': unreadMessagesCount,
       'pendingProposalsCount': pendingProposalsCount,
+      'hasHealthPermission': hasHealthPermission,
+      'coachLinkStatus': coachLinkStatus,
+      if (recoveryScore != null) 'recoveryScore': recoveryScore,
+      if (recoveryTrafficLight != null)
+        'recoveryTrafficLight': recoveryTrafficLight,
+      if (hrvTrend != null) 'hrvTrend': hrvTrend,
+      if (hrvMs != null) 'hrvMs': hrvMs,
       if (latestActivity != null) 'latestActivity': latestActivity,
       if (raceGoal != null) 'raceGoal': raceGoal,
       if (alert != null) 'alert': alert,

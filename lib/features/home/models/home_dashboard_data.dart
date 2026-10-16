@@ -2,6 +2,7 @@ import '../../calendar/models/planned_workout.dart';
 import '../../activities/models/activity.dart';
 import '../../analysis/models/daily_aggregate.dart';
 import '../../analysis/models/form_traffic_light.dart';
+import '../../health/models/daily_metrics.dart';
 import 'race_goal.dart';
 
 /// Aggregiertes Datenbündel für den Home-Tab („Heute").
@@ -10,6 +11,7 @@ class HomeDashboardData {
   final DailyAggregate? todayAggregate;
   final PlannedWorkout? todayPlannedWorkout;
   final Activity? latestActivity;
+  final DailyMetrics? todayDailyMetrics;
   final int unreadMessagesCount;
   final int pendingThresholdProposalsCount;
   final int unmatchedActivitiesCount;
@@ -23,6 +25,7 @@ class HomeDashboardData {
     this.todayAggregate,
     this.todayPlannedWorkout,
     this.latestActivity,
+    this.todayDailyMetrics,
     this.unreadMessagesCount = 0,
     this.pendingThresholdProposalsCount = 0,
     this.unmatchedActivitiesCount = 0,

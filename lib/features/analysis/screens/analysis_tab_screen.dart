@@ -15,6 +15,7 @@ import '../widgets/weekly_load_trend_chart.dart';
 import '../widgets/fitness_fatigue_trend_chart.dart';
 import '../widgets/performance_profile_card.dart';
 import '../widgets/threshold_progress_card.dart';
+import '../../health/screens/health_cockpit_screen.dart';
 
 /// Haupt-Screen des Tabs „Analyse".
 ///
@@ -99,6 +100,75 @@ class AnalysisTabScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 12),
               ],
+
+              // Schnellzugriff: Health & Recovery Cockpit
+              InkWell(
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => HealthCockpitScreen(
+                        athleteId: athleteId,
+                        athleteName: athleteName,
+                      ),
+                    ),
+                  );
+                },
+                borderRadius: BorderRadius.circular(16),
+                child: Container(
+                  padding: const EdgeInsets.all(14),
+                  margin: const EdgeInsets.only(bottom: 16),
+                  decoration: BoxDecoration(
+                    color: AppColors.navy,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: const Color(0xFF1E293B)),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: AppColors.volt.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(
+                          Icons.favorite_rounded,
+                          color: AppColors.volt,
+                          size: 20,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Health & Recovery Cockpit',
+                              style: AppTypography.title.copyWith(
+                                color: AppColors.white,
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              '3 Ringe, HRV-Baselines, Schlafschuld & Journal',
+                              style: AppTypography.label.copyWith(
+                                color: AppColors.techGrey,
+                                fontSize: 11,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Icon(
+                        Icons.arrow_forward_ios,
+                        size: 14,
+                        color: AppColors.volt,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
 
               // Zeitraum-Auswahl
               AnalysisTimeframeSelector(

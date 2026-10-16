@@ -72,6 +72,10 @@ class AppColors {
   static const Color surfaceDark = Color(0xFF1E293B);
   static const Color green = Color(0xFF10B981);
   static const Color red = Color(0xFFEF4444);
+  static const Color emerald = Color(0xFF10B981);
+  static const Color amber = Color(0xFFF59E0B);
+  static const Color coral = Color(0xFFEF4444);
+  static const Color cyan = Color(0xFF22D3EE);
   static const Color accentBlue = Color(0xFF0EA5E9);
   static const Color zone1 = z1;
   static const Color zone2 = z2;

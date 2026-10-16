@@ -17,6 +17,7 @@ import '../../features/analysis/screens/analysis_tab_screen.dart';
 import '../../features/diagnostics/screens/diagnostics_screen.dart';
 import '../../features/chat/screens/chat_screen.dart';
 import '../../features/chat/screens/chat_list_screen.dart';
+import '../../features/health/screens/health_cockpit_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 final goRouterProvider = Provider<GoRouter>((ref) {
@@ -100,6 +101,13 @@ final goRouterProvider = Provider<GoRouter>((ref) {
             GoRoute(
               path: 'analysis',
               builder: (context, state) => AnalysisTabScreen(
+                athleteId: state.uri.queryParameters['athleteId'],
+                athleteName: state.uri.queryParameters['athleteName'],
+              ),
+            ),
+            GoRoute(
+              path: 'health',
+              builder: (context, state) => HealthCockpitScreen(
                 athleteId: state.uri.queryParameters['athleteId'],
                 athleteName: state.uri.queryParameters['athleteName'],
               ),

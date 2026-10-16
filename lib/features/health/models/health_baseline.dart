@@ -42,6 +42,12 @@ class HealthBaseline {
   double? get meanSleepHours =>
       meanSleepSeconds != null ? meanSleepSeconds! / 3600.0 : null;
 
+  /// Robuster Mittelwert/Median der HRV.
+  double get meanHrv => medianHrv ?? 65.0;
+
+  /// Robuster Mittelwert/Median des Ruhepulses.
+  double get meanRestingHr => medianRestingHr ?? 50.0;
+
   /// Erzeugt eine leere Basislinie (keine Daten vorhanden).
   factory HealthBaseline.empty() {
     return const HealthBaseline(

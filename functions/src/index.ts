@@ -40,3 +40,6 @@ export { onPlannedWorkoutWritten } from "./calendar";
 
 // 6. Chat Messaging Trigger
 export { onMessageCreated } from "./chat";
+
+// 7. Health & Recovery Trigger
+export { onDailyMetricsWritten } from "./health";

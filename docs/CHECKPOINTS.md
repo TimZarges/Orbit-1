@@ -26,6 +26,270 @@
 
 ## Einträge
 
+### [Phase 21] Health & Recovery Cockpit · STOPP 2 (RISIKO-HOCH)
+- **STOPP-Punkt/Anlass:** STOPP 2 (Phasenabschluss Phase 21) aus `docs/phases/phase_21.md` (Drei-Ringe-Hero-Card auf „Heute“, dunkles Health-Cockpit unter „Analyse“ & Avatar-Menü, 15-Sekunden-Kurz-Journal, Korrelationen, Wochen-/Monatsberichte und Coach-DSGVO-Gate).
+- **Entscheidung & Umgesetzte Maßnahmen:**
+  1. **Drei-Ringe-Hero-Card auf „Heute“ (`three_rings_hero_card.dart` & `today_tab_screen.dart`):**
+     - Marken-Navy `#001F47` als Container-Hintergrundfarbe.
+     - 3 animierte Ringe: **Erholung (0–100 %)**, **Tagesbelastung (0–100)** mit visuellem Zielkorridor-Marker, **Schlaf-Score (0–100 %)**.
+     - ORBIT Gesamt-Score Badge (0–100), dynamische Tages-Empfehlung (DE/EN) und dezenter Sensor-Hinweis bei Graceful Degradation.
+     - Antippen öffnet direkt das Health-Cockpit (`/health`).
+  2. **Dunkles Health-Cockpit (`health_cockpit_screen.dart`):**
+     - Unter `lib/features/health/screens/` implementiert, Route `/health` registriert und im Avatar-Menü des Dashboards sowie auf dem Analyse-Tab verlinkt.
+     - Umschaltbare Zeiträume: 7 Tage, 30 Tage, 90 Tage.
+     - Trendcharts (`vital_trend_chart_card.dart`) für HRV (rMSSD), Ruhepuls (RHR), Schlafschuld, Atemfrequenz und Stress-/Body-Battery-Verlauf. Eingezeichnetes 30-Tage-Normband ($\mu \pm 1\sigma$) mit gestrichelter $\mu$-Mittellinie.
+     - Schlafphasen-Aufschlüsselung (`sleep_breakdown_card.dart`): Tief-, REM-, Leicht- und Wachschlaf sowie Schlafbedarf vs. Schuld.
+     - Stress & Body Battery (`stress_body_battery_card.dart`): Duale Anzeige von Alltagsstress und Energiereserve.
+     - **Medizinischer Disclaimer (Pflicht):** Gut sichtbare Hinweis-Box am Fuß der Seite (*„ORBIT ist kein Medizinprodukt... Neutrale statistische Auswertung relativ zu deinen persönlichen 30-Tage-Baselines...“*).
+  3. **15-Sekunden-Kurz-Journal & Korrelations-Engine (`daily_journal_card.dart` & `correlation_insights_card.dart`):**
+     - Schnelle Toggle-Chips für Morgenerfassung (Spätes Koffein, Alkohol, Muskelkater, Hoher Alltagsstress, Hydration gut, Späte Mahlzeit, Reise/Höhe, Gute Schlafhygiene) mit Firestore-Persistierung unter `users/{uid}/dailyMetrics/{date}/journal`.
+     - Bei $N < 14$ Einträgen: Animierter Fortschrittsbalken mit Hinweistext zur statistischen Signifikanz.
+     - Bei $N \ge 14$ Einträgen: Automatische Berechnung von $\Delta\text{HRV}$ und $\Delta\text{Schlaf}$ pro Verhaltensfaktor mit verständlichen Handlungshinweisen.
+  4. **Wochen- und Monatsberichte (`health_report_card.dart`):**
+     - Durchschnittliche Erholung, Tagesbelastung und Schlafdauer.
+     - Ampelzähler (Grün/Gelb/Rot) und akkumulierte Schlafschuld für den gewählten Zeitraum.
+  5. **Art. 9 DSGVO Coach-Gate (`coach_athletes_table.dart`):**
+     - Trainer-Dashboard zeigt die Erholungsampel des Athleten **ausschließlich** bei `permissions.health == true` UND `status == 'ACTIVE'`.
+     - Ohne explizite Einwilligung wird die Anzeige strikt gesperrt (Schloss-Symbol und Text *„Keine Freigabe (Art. 9 DSGVO)“*).
+  6. **Automatisierte Widget-Testsuite (`phase21_health_recovery_cockpit_test.dart`):**
+     - 10 umfassende Widget-Tests zur Verifikation aller UI-Komponenten, Toggle-Interaktionen, Graceful Degradation und DSGVO-Sperren.
+- **Nachweise (Evidence-Only gemäß Regel 2):**
+
+```text
+1. TypeScript-Build & Reale Cloud Functions Exporte (Regel 4):
+$ export PATH="/Users/timzarges/.nvm/versions/node/v20.20.2/bin:$PATH" && npm --prefix functions run build && node -e "console.log(Object.keys(require('./functions/lib/index.js')))"
+> build
+> tsc
+
+[
+  'setInitialRole',
+  'deleteAccount',
+  'exportAccount',
+  'createInvite',
+  'redeemInvite',
+  'updatePermissions',
+  'revokeLink',
+  'onCoachLinkChanged',
+  'onActivityCreatedForCoachDashboard',
+  'seedCoachAthletes',
+  'onActivityWritten',
+  'recomputeMetrics',
+  'processFitUpload',
+  'processActivityUpload',
+  'deleteActivity',
+  'garminAuthStart',
+  'garminAuthCallback',
+  'garminDisconnect',
+  'garminWebhook',
+  'processGarminWebhook',
+  'garminBackfill',
+  'requestGarminBackfill',
+  'onPlannedWorkoutWritten',
+  'onMessageCreated',
+  'onDailyMetricsWritten'
+]
+
+2. Kompletter Emulator-Testlauf (78 Tests, 10 Test Suites inkl. healthScores.test.ts & rules.test.ts):
+$ export XDG_CONFIG_HOME="/tmp/.config" && export JAVA_HOME="/Users/timzarges/.gemini/antigravity/scratch/jdk/jdk-21.0.12.1+1/Contents/Home" && export PATH="/Users/timzarges/.nvm/versions/node/v20.20.2/bin:$JAVA_HOME/bin:$PATH" && npx firebase-tools emulators:exec --only firestore "npm --prefix functions test"
+i  emulators: Starting emulators: firestore
+✔  firestore: Firestore Emulator was started in standard edition.
+i  Running script: npm --prefix functions test
+> test
+> jest
+
+PASS src/__tests__/activityParser.test.ts
+PASS src/__tests__/rules.test.ts
+PASS src/__tests__/coachLink.test.ts
+PASS src/__tests__/auth.test.ts
+PASS src/__tests__/garmin.test.ts
+PASS src/__tests__/metricsReference.test.ts
+PASS src/__tests__/chat.test.ts
+PASS src/__tests__/healthScores.test.ts
+PASS src/__tests__/metrics.test.ts
+PASS src/__tests__/diagnostics.test.ts
+
+Test Suites: 10 passed, 10 total
+Tests:       78 passed, 78 total
+Snapshots:   0 total
+Time:        6.937 s
+Ran all test suites.
+✔  Script exited successfully (code 0)
+
+3. Flutter Code-Formatierung & Statische Analyse:
+$ export PATH="/Users/timzarges/.gemini/antigravity/scratch/flutter/bin:$PATH" && dart format .
+Formatted 200 files (0 changed) in 0.50 seconds.
+
+$ export PATH="/Users/timzarges/.gemini/antigravity/scratch/flutter/bin:$PATH" && flutter analyze --no-pub 2>&1 | grep -E "(error •|warning •)"
+(0 errors, 0 warnings)
+
+4. Flutter Testlauf (133 Tests inkl. Phase 21 Widget-Test-Suite):
+$ export PATH="/Users/timzarges/.gemini/antigravity/scratch/flutter/bin:$PATH" && flutter test --no-pub
+00:05 +133: All tests passed!
+
+5. Git Status & Geänderte Dateien:
+$ git status --short
+ M docs/CHECKPOINTS.md
+ M functions/src/index.ts
+ M lib/core/design/app_colors.dart
+ M lib/core/routing/app_router.dart
+ M lib/features/activities/screens/today_tab_screen.dart
+ M lib/features/analysis/screens/analysis_tab_screen.dart
+ M lib/features/coach_link/models/coach_dashboard_athlete.dart
+ M lib/features/coach_link/widgets/coach_athletes_table.dart
+ M lib/features/dashboard/screens/dashboard_screen.dart
+ M lib/features/health/models/daily_metrics.dart
+ M lib/features/health/models/health_baseline.dart
+ M lib/features/home/models/home_dashboard_data.dart
+ M lib/features/home/providers/home_dashboard_provider.dart
+ M lib/features/home/widgets/home_hero_card.dart
+?? docs/HEALTH_SCORES.md
+?? functions/src/__tests__/healthScores.test.ts
+?? functions/src/health/
+?? lib/features/health/domain/health_score_calculator.dart
+?? lib/features/health/screens/
+?? lib/features/health/widgets/correlation_insights_card.dart
+?? lib/features/health/widgets/daily_journal_card.dart
+?? lib/features/health/widgets/health_report_card.dart
+?? lib/features/health/widgets/sleep_breakdown_card.dart
+?? lib/features/health/widgets/stress_body_battery_card.dart
+?? lib/features/health/widgets/three_rings_hero_card.dart
+?? lib/features/health/widgets/vital_trend_chart_card.dart
+?? test/features/phase21_health_recovery_cockpit_test.dart
+```
+
+- **Bitte prüfen:** Freigabe für STOPP 2 (Phasenabschluss Phase 21) erteilen, damit Branch `feature/phase-21-health-recovery-cockpit` in `main` gemergt, Tag `v0.21.0` gesetzt und Phase 22 vorbereitet werden kann.
+- **Rückholen:** `git switch main && git branch -D feature/phase-21-health-recovery-cockpit`
+
+---
+
+### [Phase 21] Health & Recovery Cockpit · STOPP 1 (RISIKO-HOCH)
+- **STOPP-Punkt/Anlass:** STOPP 1 (Vorlage von `docs/HEALTH_SCORES.md` und Ergebnisse der Backend-Unit-Tests `healthScores.test.ts` inkl. Graceful Degradation, Schlafschuld und Korrelationen gemäß `docs/phases/phase_21.md`).
+- **Entscheidung & Umgesetzte Maßnahmen:**
+  1. **Mathematische Spezifikation (`docs/HEALTH_SCORES.md`):**
+     - Vollständige, transparente Dokumentation aller Formeln unter strikter Einhaltung der Leitplanken:
+       - **Markenrecht:** Keine geschützten Drittanbieter-Begriffe (wie „Whoop“ oder „Strain“), sondern eigene offene **0–100 Skalen** (ORBIT Erholung %, Tagesbelastung, Schlaf-Score %, ORBIT Score).
+       - **Medizinischer Disclaimer:** Sämtliche Feedback-Texte sind neutral und relativ zum individuellen 30-Tage-Normbereich formuliert (*„Außerhalb deines 30-Tage-Normbereichs“*), kein Medizinprodukt, keine Krankheitswarnungen.
+       - **30-Tage-Baselines & Normbänder:** Exponentiell/rollierend gewichteter 30-Tage-Mittelwert ($\mu$) und Standardabweichung ($\sigma$) für nächtliche HRV (rMSSD in ms), Ruhepuls (RHR in bpm), Schlafdauer, Atemfrequenz und Body Battery. Normband definiert als $[\mu - \sigma, \; \mu + \sigma]$.
+       - **ORBIT Erholungs-Score (0–100 %):** Gewichtete Sigmoid-/Z-Score-Formel aus HRV vs. 30d-Baseline (45 %), RHR vs. Baseline (invertiert, 25 %), Schlaf-Score (20 %) und Atemfrequenz/Body Battery (10 %). Ampel-Klassen: Grün (67–100 %: *Bereit für Spitzenbelastung*), Gelb (34–66 %: *Moderat trainieren*), Rot (0–33 %: *Fokus auf Regeneration*).
+       - **Graceful Degradation (Pflicht):** Ältere Garmin-Uhren liefern teils keine nächtliche HRV oder Atemfrequenz. Dynamische Gewichtsnormierung ($w'_i = w_i / \sum w_{\text{verfügbar}}$) verhindert zuverlässig `NaN` oder `0` und liefert stets valide Ergebnisse.
+       - **ORBIT Tagesbelastung (0–100) & Dynamischer Zielkorridor:** Logarithmisch gedämpfte Kombination aus Trainings-TSS und Alltagsstress/Kalorien. Berechnet den optimalen Tagesziel-Korridor abhängig vom morgendlichen Erholungs-Score (z. B. Erholung 85 % $\to$ Zielkorridor 60–81; Erholung 20 % $\to$ Zielkorridor 10–31).
+       - **Schlafbedarf & Schlafschuld:** Basisbedarf (7.75 h) + Aufschlag aus gestriger Tagesbelastung + 50 % der akkumulierten 7-Tage-Schlafschuld (gedeckelt auf 6.0 h). 4-Faktoren-Schlaf-Score (Dauer vs. Bedarf 50 %, Effizienz 25 %, Tief+REM 15 %, Konsistenz 10 %).
+       - **Finaler ORBIT Gesamt-Score (0–100):** Harmonisierter Leit-Index aus Konsistenz (30 %), TSB/Form (25 %), 7-Tage-Erholungsdurchschnitt (25 %) und Schlaf (20 %).
+       - **Journal-Korrelations-Engine:** Statistische Erkennung von Verhaltensmustern (Alkohol senkt HRV, spätes Koffein verkürzt Tiefschlaf etc.) ab $N \ge 14$ Einträgen mit neutralen, verständlichen Sprachsätzen (DE/EN).
+  2. **Mathematische Backend-Engine (`functions/src/health/`):**
+     - Module: `baselines.ts`, `recovery.ts`, `strain.ts`, `sleep.ts`, `orbitScore.ts`, `correlations.ts`, `healthTrigger.ts`, `types.ts`, `index.ts`.
+     - Cloud Function Trigger `onDailyMetricsWritten`: Lauscht auf Änderungen in `users/{uid}/dailyMetrics/{date}`, berechnet bei Rohdaten-Updates alle Scores idempotent und aktualisiert das Tagesdokument mit `scoresVersion: "1"`.
+  3. **Unit-Testsuite (`functions/src/__tests__/healthScores.test.ts`):**
+     - 17/17 Tests grün: Baselines ($\mu, \sigma$), Sigmoid-Sensitivität, Erholungs-Ampel (Grün/Gelb/Rot), Graceful Degradation bei fehlender HRV/Atemfrequenz, Leerdaten-Fallback, Tagesbelastung & dynamischer Zielkorridor, 7-Tage-Schlafschuld-Akkumulation, ORBIT Gesamt-Score und Journal-Korrelations-Erkennung.
+- **Nachweise (Evidence-Only gemäß Regel 2):**
+
+```text
+1. TypeScript-Build & Reale Cloud Functions Exporte (Regel 4):
+$ export PATH="/Users/timzarges/.nvm/versions/node/v20.20.2/bin:$PATH" && npm --prefix functions run build && node -e "console.log(Object.keys(require('./functions/lib/index.js')))"
+> build
+> tsc
+
+[
+  'setInitialRole',
+  'deleteAccount',
+  'exportAccount',
+  'createInvite',
+  'redeemInvite',
+  'updatePermissions',
+  'revokeLink',
+  'onCoachLinkChanged',
+  'onActivityCreatedForCoachDashboard',
+  'seedCoachAthletes',
+  'onActivityWritten',
+  'recomputeMetrics',
+  'processFitUpload',
+  'processActivityUpload',
+  'deleteActivity',
+  'garminAuthStart',
+  'garminAuthCallback',
+  'garminDisconnect',
+  'garminWebhook',
+  'processGarminWebhook',
+  'garminBackfill',
+  'requestGarminBackfill',
+  'onPlannedWorkoutWritten',
+  'onMessageCreated',
+  'onDailyMetricsWritten'
+]
+
+2. Unit-Tests Health & Recovery Engine (healthScores.test.ts):
+$ export PATH="/Users/timzarges/.nvm/versions/node/v20.20.2/bin:$PATH" && npm --prefix functions test -- src/__tests__/healthScores.test.ts
+> test
+> jest --runInBand src/__tests__/healthScores.test.ts
+
+PASS src/__tests__/healthScores.test.ts
+  Phase 21 - Health & Recovery Score Engine
+    1. Rolllierende 30-Tage-Baselines
+      ✓ berechnet Mittelwert und Standardabweichung für eine 30-Tage-Serie exakt (1 ms)
+      ✓ liefert undefined bei weniger als 3 validen Messwerten
+      ✓ extrahiert alle 5 Baselines aus DailyHealthInput Historie
+    2. ORBIT Erholungs-Score
+      ✓ liefert GRÜN (>= 67 %) bei überdurchschnittlicher Erholung (1 ms)
+      ✓ liefert ROT (<= 33 %) bei hoher vegetativer Belastung / Übermüdung
+      ✓ liefert GELB (34–66 %) im soliden Normalbereich
+      ✓ prüft die mathematische Sensitivität der logistischen Sigmoid-Funktion
+    3. Graceful Degradation (Fehlende Sensoren auf älteren Garmin-Uhren)
+      ✓ berechnet Erholungs-Score ohne HRV und Atemfrequenz ohne NaN oder 0 (1 ms)
+      ✓ verarbeitet komplett leere Messwerte mit sicherem 50 % YELLOW Fallback
+    4. ORBIT Tagesbelastung (0–100) & Dynamischer Zielkorridor
+      ✓ berechnet logarithmische Belastungsskala für Ruhetag, Training und Wettkampf (1 ms)
+      ✓ passt den optimalen Belastungs-Zielkorridor dynamisch an den Erholungs-Score an
+    5. Schlafbedarf & 7-Tage-Schlafschuld
+      ✓ akkumuliert Schlafschuld über 7 Tage mit Deckelung auf 6.0 Stunden
+      ✓ berechnet Schlafbedarf mit Belastungsaufschlag und 50 % Schuldabbau
+      ✓ berechnet 4-Faktoren-Schlaf-Score gewichtet (1 ms)
+    6. Finaler ORBIT Gesamt-Score
+      ✓ berechnet harmonischen Leit-Index aus Konsistenz, TSB, Erholung und Schlaf
+    7. Journal-Korrelations-Engine
+      ✓ erkennt statistisch bedeutsame Einflüsse von spätem Koffein und Alkohol
+      ✓ gibt leeres Array zurück bei weniger als 14 Tagen Historie (1 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       17 passed, 17 total
+Snapshots:   0 total
+Time:        1.658 s
+Ran all test suites matching /src\/__tests__\/healthScores.test.ts/i.
+
+3. Vollständiger Backend- und Emulator-Testlauf (Firestore Emulator):
+$ export XDG_CONFIG_HOME="/tmp/.config" && export JAVA_HOME="/Users/timzarges/.gemini/antigravity/scratch/jdk/jdk-21.0.12.1+1/Contents/Home" && export PATH="/Users/timzarges/.nvm/versions/node/v20.20.2/bin:$JAVA_HOME/bin:$PATH" && /Users/timzarges/.npm/_npx/7750544ccf494d8b/node_modules/.bin/firebase emulators:exec --only firestore "npm --prefix functions test"
+i  emulators: Starting emulators: firestore
+✔  firestore: Firestore Emulator was started in standard edition.
+i  Running script: npm --prefix functions test
+> test
+> jest --runInBand
+
+PASS src/__tests__/rules.test.ts
+PASS src/__tests__/coachLink.test.ts
+PASS src/__tests__/activityParser.test.ts
+PASS src/__tests__/healthScores.test.ts
+PASS src/__tests__/auth.test.ts
+PASS src/__tests__/garmin.test.ts
+PASS src/__tests__/metricsReference.test.ts
+PASS src/__tests__/chat.test.ts
+PASS src/__tests__/metrics.test.ts
+PASS src/__tests__/diagnostics.test.ts
+
+Test Suites: 10 passed, 10 total
+Tests:       78 passed, 78 total
+Snapshots:   0 total
+Time:        7.484 s
+Ran all test suites.
+✔  Script exited successfully (code 0)
+
+4. Flutter Statische Analyse:
+$ export PATH="/Users/timzarges/.gemini/antigravity/scratch/flutter/bin:$PATH" && flutter analyze 2>&1 | grep -E "(error •|warning •)"
+(0 errors, 0 warnings - sauber)
+```
+- **Bitte prüfen:**
+  - `docs/HEALTH_SCORES.md` (vollständige mathematische Formelspezifikation).
+  - `functions/src/__tests__/healthScores.test.ts` (Referenz-Unit-Tests).
+- **Rückholen:** `git checkout main && git branch -D feature/phase-21-health-recovery-cockpit`
+
 ### [Phase 20] Profi-Analyse nach GoldenCheetah-Vorbild & Formel-Verifikation · STOPP 2 (RISIKO-HOCH)
 - **STOPP-Punkt/Anlass:** STOPP 2 (Phasenabschluss Phase 20: Kuratierte Analyse-Ansichten im ORBIT-Design & E2E-Verifikation nach Vorgabe `docs/phases/phase_20.md`).
 - **Entscheidung & Umgesetzte Maßnahmen:**

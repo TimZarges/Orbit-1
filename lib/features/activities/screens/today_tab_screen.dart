@@ -9,6 +9,7 @@ import '../../beta_feedback/widgets/beta_bug_reporter_sheet.dart';
 
 import '../../coach_link/providers/athlete_context_provider.dart';
 import '../../health/widgets/readiness_card.dart';
+import '../../health/screens/health_cockpit_screen.dart';
 import '../../analysis/widgets/form_traffic_light_card.dart';
 import '../../calendar/widgets/workout_detail_sheet.dart';
 import '../../diagnostics/screens/diagnostics_screen.dart';
@@ -351,9 +352,15 @@ class TodayTabScreen extends ConsumerWidget {
         return HomeHeroCard(
           actualLoad: data.actualLoadToday,
           plannedWorkout: data.todayPlannedWorkout,
+          dailyMetrics: data.todayDailyMetrics,
           onWorkoutTap: data.todayPlannedWorkout != null
               ? () => showWorkoutDetailSheet(context, data.todayPlannedWorkout!)
               : null,
+          onOpenHealthCockpit: () => Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => HealthCockpitScreen(athleteId: athleteId),
+            ),
+          ),
         );
 
       case HomeCardType.raceCountdown:

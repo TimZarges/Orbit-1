@@ -87,6 +87,11 @@ class CoachAthletesTable extends ConsumerWidget {
               label:
                   Text('Form', style: TextStyle(fontWeight: FontWeight.bold)),
             ),
+            // Erholung (Art. 9 DSGVO)
+            const DataColumn(
+              label: Text('Erholung (Art. 9)',
+                  style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
             // Compliance 7d
             DataColumn(
               label: const Text('Soll/Ist (7T)',
@@ -199,6 +204,10 @@ class CoachAthletesTable extends ConsumerWidget {
                 // Form
                 DataCell(
                   _buildFormBadge(athlete.formStatus, athlete.tsb),
+                ),
+                // Erholung (Art. 9 DSGVO Gate)
+                DataCell(
+                  _buildHealthRecoveryCell(athlete),
                 ),
                 // Compliance
                 DataCell(
@@ -341,6 +350,78 @@ class CoachAthletesTable extends ConsumerWidget {
         '$label (${tsb >= 0 ? "+$tsb" : tsb})',
         style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: fg),
       ),
+    );
+  }
+
+  /// Rendert die Trainer-Erholungsampel unter strikter Einhaltung von Art. 9 DSGVO.
+  ///
+  /// Wird nur angezeigt, wenn [athlete.hasHealthPermission] wahr ist und der Status
+  /// der Verknüpfung aktiv ist. Andernfalls wird ein gesperrtes Schloss-Symbol angezeigt.
+  Widget _buildHealthRecoveryCell(CoachDashboardAthlete athlete) {
+    if (!athlete.hasHealthPermission || athlete.coachLinkStatus != 'ACTIVE') {
+      return Tooltip(
+        message: 'Gesundheitsdaten nicht freigegeben (Art. 9 DSGVO)',
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.lock_outline, size: 14, color: Colors.grey.shade500),
+            const SizedBox(width: 4),
+            Text(
+              'Gesperrt (Art. 9)',
+              style: TextStyle(
+                fontSize: 11,
+                color: Colors.grey.shade500,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final score = athlete.recoveryScore ?? 65;
+    final trafficLight = athlete.recoveryTrafficLight ?? 'GREEN';
+    final Color badgeColor;
+    final Color textColor;
+    if (trafficLight == 'GREEN') {
+      badgeColor = AppColors.emerald.withValues(alpha: 0.15);
+      textColor = AppColors.emerald;
+    } else if (trafficLight == 'RED') {
+      badgeColor = AppColors.coral.withValues(alpha: 0.15);
+      textColor = AppColors.coral;
+    } else {
+      badgeColor = AppColors.amber.withValues(alpha: 0.15);
+      textColor = AppColors.amber;
+    }
+
+    final hrvTrendIcon = athlete.hrvTrend == 'DOWN'
+        ? Icons.trending_down
+        : (athlete.hrvTrend == 'UP' ? Icons.trending_up : Icons.trending_flat);
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+          decoration: BoxDecoration(
+            color: badgeColor,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: textColor.withValues(alpha: 0.5)),
+          ),
+          child: Text(
+            '$score %',
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.bold,
+              color: textColor,
+            ),
+          ),
+        ),
+        if (athlete.hrvTrend != null) ...[
+          const SizedBox(width: 4),
+          Icon(hrvTrendIcon, size: 14, color: textColor),
+        ],
+      ],
     );
   }
 }

@@ -99,6 +99,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           onTap: () => context.go('/workout-builder'),
                         ),
                         PopupMenuItem(
+                          value: 'health',
+                          child: const Text('Gesundheit & Baselines'),
+                          onTap: () => context.go('/health'),
+                        ),
+                        PopupMenuItem(
                           value: 'diagnostics',
                           child: const Text('Leistungsdiagnostik'),
                           onTap: () => context.go('/diagnostics'),

@@ -7,9 +7,10 @@ import '../../activities/models/activity.dart';
 import '../../analysis/models/daily_aggregate.dart';
 import '../../analysis/domain/form_calculator.dart';
 import '../../analysis/models/form_traffic_light.dart';
+import '../../health/models/daily_metrics.dart';
 
 /// Gebündelter Provider für das Home-Dashboard („Heute").
-/// Führt maximal 4 Firestore-Reads pro Aufruf durch und cacht das Ergebnis.
+/// Führt maximal 5 Firestore-Reads pro Aufruf durch und cacht das Ergebnis.
 final homeDashboardProvider =
     FutureProvider.family<HomeDashboardData, String>((ref, athleteId) async {
   final firestore = FirebaseFirestore.instance;
@@ -26,6 +27,16 @@ final homeDashboardProvider =
         .doc(todayStr)
         .get();
     final todayAgg = aggDoc.exists ? DailyAggregate.fromDocument(aggDoc) : null;
+
+    // 1b. Tages-Gesundheitsdaten & Scores laden
+    final dailyDoc = await firestore
+        .collection('users')
+        .doc(athleteId)
+        .collection('dailyMetrics')
+        .doc(todayStr)
+        .get();
+    final todayDaily =
+        dailyDoc.exists ? DailyMetrics.fromFirestore(dailyDoc) : null;
 
     // 2. Heutiges geplantes Workout laden
     final planSnap = await firestore
@@ -87,6 +98,7 @@ final homeDashboardProvider =
       todayAggregate: todayAgg,
       todayPlannedWorkout: todayPlan,
       latestActivity: latestAct,
+      todayDailyMetrics: todayDaily,
       pendingThresholdProposalsCount: pendingPropsCount,
       formTrafficLight: formLight,
       raceGoal: raceGoal,
@@ -99,6 +111,52 @@ final homeDashboardProvider =
       todayLocalDate: todayStr,
       isBrandNewUser: false,
       isDemo: true,
+      todayDailyMetrics: DailyMetrics(
+        localDate: todayStr,
+        sleepSeconds: 28800, // 8.0h
+        sleepScore: 88,
+        restingHrBpm: 49,
+        hrvMs: 68,
+        bodyBattery: 85,
+        recovery: const RecoveryData(
+          score: 82,
+          classification: 'GREEN',
+          recommendationDe:
+              'Exzellente Erholung. Bereit für Schwellenintervalle und intensive Einheiten.',
+          recommendationEn:
+              'Excellent recovery. Primed for threshold intervals and demanding sessions.',
+          weightsUsed: {
+            'hrv': 0.45,
+            'rhr': 0.25,
+            'sleep': 0.20,
+            'respOrBb': 0.10,
+          },
+        ),
+        strain: const StrainData(
+          score: 42,
+          trainingTss: 45.0,
+          alltagLoad: 18.0,
+          totalRawLoad: 63.0,
+          targetMin: 58,
+          targetMax: 80,
+        ),
+        sleep: const SleepScoreData(
+          score: 88,
+          needHours: 7.8,
+          actualHours: 8.0,
+          accumulatedDebtHours: 0.4,
+          durationScore: 100,
+          efficiencyScore: 92,
+          stagesScore: 88,
+        ),
+        orbitScore: const OrbitScoreData(
+          score: 84,
+          consistencyScore: 90,
+          tsbScore: 85,
+          recoveryAvg7d: 80,
+          sleepAvg7d: 84,
+        ),
+      ),
       todayPlannedWorkout: PlannedWorkout(
         id: 'plan_demo',
         athleteId: athleteId,
