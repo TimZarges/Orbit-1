@@ -18,6 +18,7 @@ import '../../features/diagnostics/screens/diagnostics_screen.dart';
 import '../../features/chat/screens/chat_screen.dart';
 import '../../features/chat/screens/chat_list_screen.dart';
 import '../../features/health/screens/health_cockpit_screen.dart';
+import '../../features/activities/screens/activity_detail_loader.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 final goRouterProvider = Provider<GoRouter>((ref) {
@@ -111,6 +112,13 @@ final goRouterProvider = Provider<GoRouter>((ref) {
                 athleteId: state.uri.queryParameters['athleteId'],
                 athleteName: state.uri.queryParameters['athleteName'],
               ),
+            ),
+            GoRoute(
+              path: 'activities/:id',
+              builder: (context, state) {
+                final activityId = state.pathParameters['id'] ?? '';
+                return ActivityDetailLoader(activityId: activityId);
+              },
             ),
             GoRoute(
               path: 'workout-builder',

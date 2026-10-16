@@ -43,3 +43,11 @@ export { onMessageCreated } from "./chat";
 
 // 7. Health & Recovery Trigger
 export { onDailyMetricsWritten } from "./health";
+
+// 8. Push Notifications & Scheduled Briefings
+export {
+  sendMorningRecoveryBriefing,
+  sendWeeklySummaryNotification,
+  sendTestPushNotification,
+} from "./notifications";
+

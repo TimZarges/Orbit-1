@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import '../../../core/design/app_colors.dart';
 import '../../../core/design/app_typography.dart';
+import '../../home/models/race_goal.dart';
 import '../domain/aggregates_calculator.dart';
 
 /// Interaktiver Performance Management Chart (PMC) nach Banister.
@@ -12,12 +13,15 @@ import '../domain/aggregates_calculator.dart';
 /// - TSB (Form, Emerald #10B981 mit schattierter Fläche zur Nulllinie)
 /// - 7-Tage-Ramp-Rate-Anzeige inkl. Überlastungswarnung bei > 7 TSS/Woche
 /// - 14-Tage-Zukunftsprojektion mit gestrichelten Linien
+/// - Wettkampf-Flaggen (A=Volt #CDFB17, B=Cyan #00D2FF, C=Weiß) inkl. Taper-Zielkorridor (TSB +10 bis +25)
 class FitnessFatigueTrendChart extends StatefulWidget {
   final List<FitnessFatiguePoint> points;
+  final List<RaceGoal>? races;
 
   const FitnessFatigueTrendChart({
     super.key,
     required this.points,
+    this.races,
   });
 
   @override
@@ -58,6 +62,17 @@ class _FitnessFatigueTrendChartState extends State<FitnessFatigueTrendChart> {
         (historicalPoints.isNotEmpty ? historicalPoints.length - 1 : 0);
     final activePoint =
         widget.points[activeIndex.clamp(0, widget.points.length - 1)];
+
+    // Eventuell am aktiven Tag anstehendes Rennen finden
+    RaceGoal? activeRace;
+    if (widget.races != null && widget.races!.isNotEmpty) {
+      for (final r in widget.races!) {
+        if (r.date == activePoint.date) {
+          activeRace = r;
+          break;
+        }
+      }
+    }
 
     final maxVal = widget.points.map((p) => max(p.ctl, p.atl)).fold(0.0, max);
     final minTsb = widget.points.map((p) => p.tsb).fold(0.0, min);
@@ -217,6 +232,7 @@ class _FitnessFatigueTrendChartState extends State<FitnessFatigueTrendChart> {
                       size: Size(constraints.maxWidth, 160),
                       painter: _FitnessFatiguePainter(
                         points: widget.points,
+                        races: widget.races,
                         maxVal: maxVal > 0 ? maxVal * 1.15 : 100.0,
                         minTsb: minTsb,
                         maxTsb: maxTsb,
@@ -229,16 +245,29 @@ class _FitnessFatigueTrendChartState extends State<FitnessFatigueTrendChart> {
             ),
             const SizedBox(height: 8),
 
-            // Projektions-Hinweis
+            // Projektions-Hinweis & Wettkampf-Info
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'Gestrichelte Linie = 14-Tage-Projektion aus geplanten Workouts',
-                  style: TextStyle(
-                    color: Colors.grey.shade500,
-                    fontSize: 10,
-                    fontStyle: FontStyle.italic,
+                Expanded(
+                  child: Text(
+                    activeRace != null
+                        ? '🏁 ${activeRace.title} (${activeRace.priority}-Rennen, Taper-Ziel: +10..+25 TSB)'
+                        : 'Gestrichelte Linie = 14-Tage-Projektion aus geplanten Workouts',
+                    style: TextStyle(
+                      color: activeRace != null
+                          ? AppColors.navy
+                          : Colors.grey.shade500,
+                      fontSize: 10,
+                      fontWeight: activeRace != null
+                          ? FontWeight.bold
+                          : FontWeight.normal,
+                      fontStyle: activeRace != null
+                          ? FontStyle.normal
+                          : FontStyle.italic,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 if (_hoverIndex != null)
@@ -291,6 +320,7 @@ class _LegendItem extends StatelessWidget {
 
 class _FitnessFatiguePainter extends CustomPainter {
   final List<FitnessFatiguePoint> points;
+  final List<RaceGoal>? races;
   final double maxVal;
   final double minTsb;
   final double maxTsb;
@@ -298,6 +328,7 @@ class _FitnessFatiguePainter extends CustomPainter {
 
   _FitnessFatiguePainter({
     required this.points,
+    this.races,
     required this.maxVal,
     required this.minTsb,
     required this.maxTsb,
@@ -386,6 +417,95 @@ class _FitnessFatiguePainter extends CustomPainter {
         ..color = AppColors.navy.withValues(alpha: 0.4)
         ..strokeWidth = 1.0;
       _drawDashedLine(canvas, Offset(projX, 0), Offset(projX, h), todayPaint);
+    }
+
+    // 3.5. Wettkampf-Flaggen (A-, B-, C-Rennen) & Taper-Zielkorridor
+    if (races != null && races!.isNotEmpty) {
+      for (final race in races!) {
+        final raceIdx = points.indexWhere((p) => p.date == race.date);
+        if (raceIdx >= 0) {
+          final raceX = raceIdx * stepX;
+          final isA = race.isARace;
+          final isB = race.isBRace;
+
+          final flagColor = isA
+              ? AppColors.volt
+              : (isB ? const Color(0xFF00D2FF) : Colors.white);
+          final textColor =
+              (isA || isB) ? AppColors.navy : const Color(0xFF475569);
+          final letter = race.priority.toUpperCase();
+
+          // 1. Taper-Zielkorridor für A- und B-Wettkämpfe (TSB +10 bis +25)
+          if (isA || isB) {
+            final yTaperTop = zeroY - (25 / (maxVal * 0.5)) * 28;
+            final yTaperBottom = zeroY - (10 / (maxVal * 0.5)) * 28;
+            final corridorRect = Rect.fromLTRB(
+              raceX - 10,
+              yTaperTop.clamp(0.0, h),
+              raceX + 10,
+              yTaperBottom.clamp(0.0, h),
+            );
+            final corridorPaint = Paint()
+              ..color = flagColor.withValues(alpha: isA ? 0.35 : 0.20)
+              ..style = PaintingStyle.fill;
+            canvas.drawRRect(
+              RRect.fromRectAndRadius(corridorRect, const Radius.circular(4)),
+              corridorPaint,
+            );
+          }
+
+          // 2. Vertikale gestrichelte Fahnenstange
+          final polePaint = Paint()
+            ..color = isA
+                ? AppColors.volt
+                : (isB ? const Color(0xFF00D2FF) : Colors.grey.shade400)
+            ..strokeWidth = isA ? 1.5 : 1.0;
+          _drawDashedLine(
+              canvas, Offset(raceX, 20), Offset(raceX, h), polePaint);
+
+          // 3. Flaggen-Badge am oberen Rand (y = 2 bis 18)
+          final badgeRect = RRect.fromRectAndRadius(
+            Rect.fromCenter(center: Offset(raceX, 10), width: 18, height: 16),
+            const Radius.circular(3),
+          );
+
+          // Hintergrund der Flagge
+          final badgePaint = Paint()
+            ..color = flagColor
+            ..style = PaintingStyle.fill;
+          canvas.drawRRect(badgeRect, badgePaint);
+
+          // Rand für C-Rennen (weiß)
+          if (!isA && !isB) {
+            final borderPaint = Paint()
+              ..color = Colors.grey.shade400
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = 1.0;
+            canvas.drawRRect(badgeRect, borderPaint);
+          }
+
+          // Buchstabe (A, B, C) zentriert auf der Flagge
+          final textPainter = TextPainter(
+            text: TextSpan(
+              text: letter,
+              style: TextStyle(
+                color: textColor,
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            textDirection: TextDirection.ltr,
+          )..layout();
+
+          textPainter.paint(
+            canvas,
+            Offset(
+              raceX - (textPainter.width / 2),
+              10 - (textPainter.height / 2),
+            ),
+          );
+        }
+      }
     }
 
     // 4. Hover Indikator
@@ -492,6 +612,7 @@ class _FitnessFatiguePainter extends CustomPainter {
   bool shouldRepaint(covariant _FitnessFatiguePainter oldDelegate) {
     return oldDelegate.points != points ||
         oldDelegate.hoverIndex != hoverIndex ||
-        oldDelegate.maxVal != maxVal;
+        oldDelegate.maxVal != maxVal ||
+        oldDelegate.races != races;
   }
 }

@@ -96,15 +96,41 @@ class NotificationService {
   /// Verarbeitet eingehende Deep Links aus Notification Clicks.
   static void handleNotificationClick(
       BuildContext context, Map<String, dynamic> data) {
-    final type = data['type'] as String?;
+    // 1. Explizite Route prüfen (z. B. '/activities/act_123', '/health', '/thresholds')
+    final explicitRoute = data['route'] as String?;
+    if (explicitRoute != null && explicitRoute.isNotEmpty) {
+      context.push(explicitRoute);
+      return;
+    }
+
+    final type = (data['type'] as String?)?.toUpperCase();
     switch (type) {
+      case 'ACTIVITY':
+      case 'ACTIVITY_ANALYSIS':
+        final activityId = data['activityId'] as String?;
+        if (activityId != null && activityId.isNotEmpty) {
+          context.push('/activities/$activityId');
+        } else {
+          context.push('/');
+        }
+        break;
+      case 'HEALTH':
+      case 'RECOVERY_BRIEFING':
+        context.push('/health');
+        break;
+      case 'THRESHOLD':
+        context.push('/thresholds');
+        break;
       case 'CHAT':
         final chatId = data['chatId'] as String?;
         if (chatId != null && chatId.isNotEmpty) {
           context.push('/chat/$chatId');
+        } else {
+          context.push('/chats');
         }
         break;
       case 'WORKOUT':
+      case 'CALENDAR':
         context.push('/calendar');
         break;
       case 'DIAGNOSTICS':

@@ -10,6 +10,9 @@ import 'firebase_options_dev.dart';
 
 import 'core/design/app_theme.dart';
 import 'core/routing/app_router.dart';
+import 'core/config/app_config.dart';
+import 'core/config/app_check_service.dart';
+import 'core/utils/crash_reporter.dart';
 import 'package:orbit/l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
@@ -37,6 +40,10 @@ void main() async {
             .useFunctionsEmulator(localHostString, 5001);
       }
     }
+
+    // App Check (Play Integrity / Debug Provider) & Crashlytics Opt-in Guard
+    await AppCheckService.initialize();
+    await CrashReporter.initialize(hasConsent: false);
   } catch (e) {
     debugPrint('Initialization error: $e');
   }
@@ -56,25 +63,27 @@ class OrbitApp extends ConsumerWidget {
     final goRouter = ref.watch(goRouterProvider);
     final settings = ref.watch(settingsControllerProvider);
 
-    return RepaintBoundary(
-      key: orbitRepaintBoundaryKey,
-      child: MaterialApp.router(
-        title: 'ORBIT',
-        theme: AppTheme.lightTheme,
-        darkTheme: AppTheme.darkTheme,
-        themeMode: settings.themeMode,
-        locale: Locale(settings.languageCode),
-        localizationsDelegates: const [
-          AppLocalizations.delegate,
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
-        supportedLocales: const [
-          Locale('de', ''),
-          Locale('en', ''),
-        ],
-        routerConfig: goRouter,
+    return VersionGateWrapper(
+      child: RepaintBoundary(
+        key: orbitRepaintBoundaryKey,
+        child: MaterialApp.router(
+          title: 'ORBIT',
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: settings.themeMode,
+          locale: Locale(settings.languageCode),
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: const [
+            Locale('de', ''),
+            Locale('en', ''),
+          ],
+          routerConfig: goRouter,
+        ),
       ),
     );
   }

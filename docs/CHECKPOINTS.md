@@ -26,6 +26,163 @@
 
 ## Einträge
 
+### [Phase 23] Push-Notifications mit ORBIT-Logo, Wettkampf-Ziele (A/B/C), App Check & Hardening · STOPP 1 (RISIKO-MITTEL)
+- **STOPP-Punkt/Anlass:** STOPP 1 (Phasenabschluss Phase 23) aus `docs/phases/phase_23.md`. Vollständige Implementierung aller drei Arbeitspakete:
+  1. Push-Notifications mit ORBIT-Logo, Deep-Linking, Quiet Time & Scheduled Briefings (23.1).
+  2. Wettkampf-Ziele (A/B/C-Priorisierung, HUD-Countdown & vertikale Flaggen im PMC-Chart mit 14-Tage-Taper-Projektion) (23.2).
+  3. Beta-Hardening: Firestore Version Gate, Feature Flags, Maintenance Mode, App Check Guard, DSGVO-konforme Crashlytics-Sanitization & Build-Version im Profil (23.3).
+- **Entscheidung & Umgesetzte Maßnahmen:**
+  1. **Push-Notifications (23.1):**
+     - FCM Payload nutzt monochromes Statusleisten-Icon `ic_stat_orbit` mit Navy-Akzent `#001F47` (`notification.android.icon = 'ic_stat_orbit'`, `notification.android.color = '#001F47'`).
+     - Strikter **Quiet Time Schutz** (`isQuietTime`, Standard: 22:00–07:00 Europe/Berlin) für nicht-zeitkritische Benachrichtigungen; bypassbar nur bei `bypassQuietTime: true`.
+     - Granulare Opt-in/Opt-out Kategorien pro Nutzer: `activityAnalyzed`, `coachWorkouts`, `thresholdSuggestions`, `dailyRecoveryBriefing`, `weeklySummary`.
+     - Deep-Linking Unterstützung in Flutter (`/activities/:id`, `/health`, `/calendar`, `/thresholds`, `/chat`).
+     - 2nd-Gen Scheduled Functions in `europe-west3` (Frankfurt):
+       - `sendMorningRecoveryBriefing`: Täglich um 07:30 Uhr Europe/Berlin mit Recovery-Score und 3-Ringe-Status.
+       - `sendWeeklySummaryNotification`: Sonntags um 19:00 Uhr Europe/Berlin mit Wochen-TSS, Stunden und Einheiten.
+     - Event-Trigger:
+       - `sendActivityAnalyzedPush` direkt in `onActivityWritten` nach erfolgreicher Metrik-Berechnung.
+       - `sendWorkoutUpdatePush` in `onPlannedWorkoutWritten` bei Trainer-Zuweisung.
+  2. **Wettkampf-Planung & Saison-Ziele (A/B/C) (23.2):**
+     - Firestore Subcollection `users/{uid}/races/{raceId}` mit Schema: `title`, `date`, `priority` (`A`, `B`, `C`), `sport`, `distanceLabel`, `targetTimeSec`, `targetPowerWatts`, `notes`.
+     - Subagent `firestore-rules-author` hat `isValidRaceDoc` und Match-Block in `firestore.rules` implementiert (Owner + berechtigter Coach).
+     - UI: `RaceCountdownCard` auf der Startseite mit segmentierten Badges (A=Volt `#CDFB17`, B=Cyan `#00D2FF`, C=Muted Slate), Countdown in Tagen/Wochen, Ziel-Watt und Ziel-Pace/Zeit.
+     - BottomSheet `edit_race_goal_sheet.dart` zur schnellen Erfassung und Bearbeitung aller A/B/C-Ziele.
+     - **PMC-Chart (`fitness_fatigue_trend_chart.dart`)**:
+       - Vertikale Wettkampf-Flaggen mit Event-Tag (A=Volt, B=Cyan, C=Weiß).
+       - Taper-Projektion für die letzten 14 Tage vor dem A-Wettkampf mit Zielkorridor (TSB $+10$ bis $+25$).
+       - HUD-Interaktion: Zeigt beim Hovern über den Renntag den Wettkampfnamen und die Zielwerte im HUD an.
+  3. **Beta-Hardening, Version Gate & App Check (23.3):**
+     - Remote Config / Firestore Version Gate (`/app_config/mobile`):
+       - `VersionGateWrapper`: Erzwingt Vollbild-Blocker mit Update-Button, falls `minRequiredBuild > currentBuild`.
+       - Wartungsmodus-Screen bei `maintenanceMode: true`.
+     - App Check Service: `AppCheckService.initialize()` mit Play Integrity (Android), Apple DeviceCheck (iOS) und Debug-Provider für Dev/Emulatoren.
+     - DSGVO-konforme Crashlytics-Integration (`crash_reporter.dart`): Standardmäßig vollständig deaktiviert (`opt-in = false`), E-Mail- und Bearer-Token-Redaktion vor Logging, keine Gesundheitsdaten (HRV, Watt, Schlaf).
+     - Profil-Footer: Exakte App-Version, Build-Nummer und Server-Region: `ORBIT v1.0.0 (Build 1) • Closed Beta • Server-Region: europe-west3 (Frankfurt)`.
+- **Nachweise (Evidence-Only gemäß Regel 2):**
+
+```text
+1. Cloud Functions Export-Baum (28 saubere Funktionen):
+$ node -e "console.log(Object.keys(require('./functions/lib/index.js')))"
+[
+  'setInitialRole',
+  'deleteAccount',
+  'exportAccount',
+  'createInvite',
+  'redeemInvite',
+  'updatePermissions',
+  'revokeLink',
+  'onCoachLinkChanged',
+  'onActivityCreatedForCoachDashboard',
+  'seedCoachAthletes',
+  'onActivityWritten',
+  'recomputeMetrics',
+  'processFitUpload',
+  'processActivityUpload',
+  'deleteActivity',
+  'garminAuthStart',
+  'garminAuthCallback',
+  'garminDisconnect',
+  'garminWebhook',
+  'processGarminWebhook',
+  'garminBackfill',
+  'requestGarminBackfill',
+  'onPlannedWorkoutWritten',
+  'onMessageCreated',
+  'onDailyMetricsWritten',
+  'sendMorningRecoveryBriefing',
+  'sendWeeklySummaryNotification',
+  'sendTestPushNotification'
+]
+
+2. Push-Notification Unit Tests (10/10 Tests grün):
+$ npm --prefix functions test -- src/__tests__/notifications.test.ts
+PASS src/__tests__/notifications.test.ts
+  Phase 23.1: Push Notifications & Quiet Time Unit Tests
+    isQuietTime
+      ✓ returns false if config is undefined or enabled is false (1 ms)
+      ✓ correctly handles window across midnight (22:00 to 07:00) (10 ms)
+      ✓ correctly handles daytime quiet window (e.g. Siesta 13:00 to 15:00)
+    sendSystemNotification
+      ✓ aborts when user document does not exist
+      ✓ aborts when user has opted out of category (1 ms)
+      ✓ aborts during quiet hours when bypassQuietTime is false
+      ✓ sends successfully with ORBIT icon and Navy accent color (1 ms)
+    Push Helpers
+      ✓ sendActivityAnalyzedPush formats body with TSS and Best-Watts
+      ✓ sendWorkoutUpdatePush formats coach name and date (1 ms)
+      ✓ sendThresholdSuggestionPush includes FTP increment
+
+Test Suites: 1 passed, 1 total
+Tests:       10 passed, 1 total
+Time:        1.21 s
+
+3. Emulator-Testlauf für Security Rules & Backend (95 Tests, 11 Test Suites grün):
+$ firebase emulators:exec --only firestore "npm --prefix functions test"
+i  emulators: Starting emulators: firestore
+✔  firestore: Firestore Emulator was started in standard edition.
+i  Running script: npm --prefix functions test
+> test
+> jest --runInBand
+
+PASS src/__tests__/rules.test.ts (Suites 1-10 inkl. betaFeedback, betaWaitlist, races & app_config)
+PASS src/__tests__/coachLink.test.ts
+PASS src/__tests__/activityParser.test.ts
+PASS src/__tests__/auth.test.ts
+PASS src/__tests__/garmin.test.ts
+PASS src/__tests__/notifications.test.ts
+PASS src/__tests__/metricsReference.test.ts
+PASS src/__tests__/healthScores.test.ts
+PASS src/__tests__/chat.test.ts
+PASS src/__tests__/diagnostics.test.ts
+PASS src/__tests__/metrics.test.ts
+
+Test Suites: 11 passed, 11 total
+Tests:       95 passed, 95 total
+Snapshots:   0 total
+Time:        7.188 s
+Ran all test suites.
+✔  Script exited successfully (code 0)
+
+4. Flutter Formatierung, Statische Analyse & Tests:
+$ dart format --output=none --set-exit-if-changed .
+Formatted 207 files (0 changed) in 0.50 seconds.
+
+$ flutter analyze --no-pub 2>&1 | grep -E "(error •|warning •)" | wc -l
+0 (0 errors, 0 warnings)
+
+$ flutter test --no-pub test/features/phase23_notifications_races_hardening_test.dart
+00:01 +12: All tests passed!
+
+$ flutter test --no-pub
+00:05 +145: All tests passed!
+
+5. Git Diff Übersicht gegen main:
+$ git diff --stat main
+ firestore.rules                                    |  34 ++
+ functions/src/__tests__/rules.test.ts              | 147 +++++++
+ functions/src/calendar/index.ts                    |  58 ++-
+ functions/src/index.ts                             |   8 +
+ functions/src/metrics/activityTrigger.ts           |  14 +
+ functions/src/notifications/index.ts               | 342 ++++++++++++++-
+ lib/core/routing/app_router.dart                   |   8 +
+ lib/core/utils/crash_reporter.dart                 |  85 +++-
+ .../analysis/screens/analysis_tab_screen.dart      |  12 +-
+ .../widgets/fitness_fatigue_trend_chart.dart       | 137 +++++-
+ lib/features/home/models/race_goal.dart            | 102 ++++-
+ .../home/widgets/edit_race_goal_sheet.dart         | 466 +++++++++++++++------
+ lib/features/home/widgets/race_countdown_card.dart | 275 ++++++++----
+ .../services/notification_service.dart             |  28 +-
+ lib/features/profile/screens/profile_screen.dart   |  25 ++
+ lib/main.dart                                      |  47 ++-
+ 16 files changed, 1496 insertions(+), 292 deletions(-)
+```
+
+- **Bitte prüfen:** Freigabe für STOPP 1 (Abschluss Phase 23) erteilen, damit alle Dateien in Git gestaged und committed werden, der Fast-Forward-Merge in `main` erfolgt, das Git-Tag `v0.23.0` gesetzt wird und Phase 24 (Generalprobe & Play Store Beta Vorbereitung) beginnen kann.
+- **Rückholen:** `git switch main && git branch -D feature/phase-23-notifications-races-hardening`
+
+---
+
 ### [Phase 22] 10x Brand-Exploration, Marketing-Landingpage, Pflichtseiten & Web-Coach · STOPP 2 (RISIKO-MITTEL)
 - **STOPP-Punkt/Anlass:** STOPP 2 (Phasenabschluss Phase 22) aus `docs/phases/phase_22.md` nach getroffener Design-Auswahl an STOPP 1 (Synthese Konzept 01 + 10, Variante A Original-Logo, Light & Dark Mode umschaltbar).
 - **Entscheidung & Umgesetzte Maßnahmen:**

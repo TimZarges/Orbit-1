@@ -627,4 +627,151 @@ describe("Firestore Security Rules Tests (RULES_TESTPLAN.md)", () => {
       );
     });
   });
+
+  // ===============================================================
+  // 9. Wettkampf-Planung & Saison-Ziele (Phase 23.2)
+  // ===============================================================
+  describe("9. Wettkampf-Planung & Saison-Ziele (users/{uid}/races — Phase 23.2)", () => {
+    it("erlaubt dem Athleten das Erstellen, Lesen, Aktualisieren und Löschen eigener Rennen", async () => {
+      const aliceDb = testEnv.authenticatedContext("alice").firestore();
+
+      // Erstellen eines A-Hauptwettkampfs
+      await assertSucceeds(
+        aliceDb.collection("users").doc("alice").collection("races").doc("race_ironman").set({
+          userId: "alice",
+          title: "Ironman 70.3 Kraichgau",
+          date: "2026-05-24",
+          priority: "A",
+          sport: "TRIATHLON",
+          distanceLabel: "Mitteldistanz",
+          targetTimeSec: 16200, // 4:30:00
+          targetPowerWatts: 265,
+          notes: "Taper startet 14 Tage vor dem Event.",
+        })
+      );
+
+      // Lesen
+      const snap = await aliceDb.collection("users").doc("alice").collection("races").doc("race_ironman").get();
+      expect(snap.exists).toBe(true);
+
+      // Aktualisieren
+      await assertSucceeds(
+        aliceDb.collection("users").doc("alice").collection("races").doc("race_ironman").update({
+          targetPowerWatts: 270,
+        })
+      );
+
+      // Löschen
+      await assertSucceeds(
+        aliceDb.collection("users").doc("alice").collection("races").doc("race_ironman").delete()
+      );
+    });
+
+    it("blockiert ungültige Wettkampf-Dokumente (ungültige Priorität, falsche userId, fehlende Pflichtfelder)", async () => {
+      const aliceDb = testEnv.authenticatedContext("alice").firestore();
+
+      // Ungültige Priorität 'X'
+      await assertFails(
+        aliceDb.collection("users").doc("alice").collection("races").doc("race_bad_prio").set({
+          userId: "alice",
+          title: "Test Race",
+          date: "2026-06-01",
+          priority: "X",
+        })
+      );
+
+      // Falsche userId
+      await assertFails(
+        aliceDb.collection("users").doc("alice").collection("races").doc("race_bad_user").set({
+          userId: "eve",
+          title: "Test Race",
+          date: "2026-06-01",
+          priority: "A",
+        })
+      );
+
+      // Fehlendes Datum
+      await assertFails(
+        aliceDb.collection("users").doc("alice").collection("races").doc("race_no_date").set({
+          userId: "alice",
+          title: "Test Race",
+          priority: "A",
+        })
+      );
+    });
+
+    it("erlaubt verknüpftem Coach mit Kalender-Freigabe den Zugriff und sperrt unberechtigte Dritte", async () => {
+      // Setup Coach Link alice_bob mit calendar = true
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        await context.firestore().collection("coachLinks").doc("alice_bob").set({
+          athleteId: "alice",
+          coachId: "bob",
+          status: "ACTIVE",
+          permissions: { calendar: true, activities: false, health: false },
+        });
+
+        await context.firestore().collection("users").doc("alice").collection("races").doc("race_frankfurt").set({
+          userId: "alice",
+          title: "Eschborn-Frankfurt",
+          date: "2026-05-01",
+          priority: "B",
+          sport: "BIKE",
+        });
+      });
+
+      const bobDb = testEnv.authenticatedContext("bob").firestore();
+      const eveDb = testEnv.authenticatedContext("eve").firestore();
+
+      // Bob (Trainer mit Kalender-Freigabe) darf lesen
+      await assertSucceeds(
+        bobDb.collection("users").doc("alice").collection("races").doc("race_frankfurt").get()
+      );
+
+      // Eve (unbeteiligt) darf weder lesen noch schreiben
+      await assertFails(
+        eveDb.collection("users").doc("alice").collection("races").doc("race_frankfurt").get()
+      );
+      await assertFails(
+        eveDb.collection("users").doc("alice").collection("races").doc("race_frankfurt").update({
+          title: "Gehackt",
+        })
+      );
+    });
+  });
+
+  // ===============================================================
+  // 10. App Config & Version Gate (Phase 23.3)
+  // ===============================================================
+  describe("10. App Config & Version Gate (app_config — Phase 23.3)", () => {
+    it("erlaubt öffentlichen Lesezugriff auf Version-Gate & Feature-Flags, verbietet aber Client-Schreibzugriffe", async () => {
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        await context.firestore().collection("app_config").doc("version_gate").set({
+          minRequiredBuild: 1,
+          latestBuild: 2,
+          updateUrl: "https://app.orbit.training/download",
+          maintenanceMode: false,
+          featureFlags: { experimental_mmp: true },
+        });
+      });
+
+      const anonDb = testEnv.unauthenticatedContext().firestore();
+      const aliceDb = testEnv.authenticatedContext("alice").firestore();
+
+      // Öffentliches Lesen erlaubt (auch unauthentifiziert vor dem Login)
+      await assertSucceeds(anonDb.collection("app_config").doc("version_gate").get());
+      await assertSucceeds(aliceDb.collection("app_config").doc("version_gate").get());
+
+      // Schreibzugriffe vom Client strikt verboten
+      await assertFails(
+        anonDb.collection("app_config").doc("version_gate").update({ minRequiredBuild: 999 })
+      );
+      await assertFails(
+        aliceDb.collection("app_config").doc("version_gate").update({ minRequiredBuild: 999 })
+      );
+      await assertFails(
+        aliceDb.collection("app_config").doc("version_gate").delete()
+      );
+    });
+  });
 });
+

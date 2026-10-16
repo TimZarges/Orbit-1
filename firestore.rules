@@ -58,6 +58,12 @@ service cloud.firestore {
     //
     // Collection: betaWaitlist/{entryId}
     // Fields: email, name, role, device, consentGiven, createdAt
+    //
+    // Subcollection: users/{uid}/races/{raceId}
+    // Fields: title, date, priority, sport, distanceLabel, targetTimeSec, targetPowerWatts, notes, userId, createdAt, updatedAt
+    //
+    // Collection: app_config/{configId}
+    // Fields: minRequiredBuild, latestBuild, updateUrl, maintenanceMode, featureFlags
     // ===============================================================
 
     // ===============================================================
@@ -226,6 +232,22 @@ service cloud.firestore {
              data.keys().size() <= 10;
     }
 
+    function isValidRaceDoc(data, userId) {
+      let requiredOk = ('title' in data && 'date' in data && 'priority' in data);
+      let titleOk = checkStringSize(data.title, 1, 150);
+      let dateOk = checkStringSize(data.date, 8, 12);
+      let priorityOk = data.priority in ['A', 'B', 'C'];
+      let sportOk = !('sport' in data) || data.sport in ['BIKE', 'RUN', 'SWIM', 'TRIATHLON', 'OTHER'];
+      let distanceOk = !('distanceLabel' in data) || checkOptionalStringSize(data.distanceLabel, 1, 100);
+      let notesOk = !('notes' in data) || checkOptionalStringSize(data.notes, 1, 2000);
+      let timeOk = !('targetTimeSec' in data) || (data.targetTimeSec is number && data.targetTimeSec >= 0);
+      let powerOk = !('targetPowerWatts' in data) || (data.targetPowerWatts is number && data.targetPowerWatts >= 0);
+      let userOk = !('userId' in data) || data.userId == userId;
+      let sizeOk = data.keys().size() <= 15;
+      
+      return requiredOk && titleOk && dateOk && priorityOk && sportOk && distanceOk && notesOk && timeOk && powerOk && userOk && sizeOk;
+    }
+
     // ===============================================================
     // Security Rules
     // ===============================================================
@@ -300,6 +322,13 @@ service cloud.firestore {
         allow read: if isOwner(userId);
         allow create, update: if isOwner(userId) && isValidPreferenceDoc(request.resource.data);
         allow delete: if isOwner(userId);
+      }
+
+      match /races/{raceId} {
+        allow read: if isOwner(userId) || (isAuthenticated() && isCoachForCalendar(userId));
+        allow create: if (isOwner(userId) || (isAuthenticated() && isCoachForCalendar(userId))) && isValidRaceDoc(request.resource.data, userId);
+        allow update: if (isOwner(userId) || (isAuthenticated() && isCoachForCalendar(userId))) && isValidRaceDoc(request.resource.data, userId);
+        allow delete: if isOwner(userId) || (isAuthenticated() && isCoachForCalendar(userId));
       }
     }
 
@@ -416,6 +445,11 @@ service cloud.firestore {
     match /betaWaitlist/{entryId} {
       allow create: if isValidBetaWaitlistEntry(request.resource.data);
       allow read, update, delete: if false;
+    }
+
+    match /app_config/{configId} {
+      allow read: if true;
+      allow write: if false; // Server/Admin only
     }
   }
 }

@@ -125,6 +125,20 @@ export const onActivityWritten = onDocumentWritten("activities/{activityId}", as
 
   // Tägliche Aggregation für den Kalendertag aktualisieren
   await updateAggregates(uid, data.localDate);
+
+  // Push-Benachrichtigung: Aktivitäts-Analyse fertig
+  try {
+    const { sendActivityAnalyzedPush } = await import("../notifications");
+    await sendActivityAnalyzedPush({
+      recipientId: uid,
+      activityId: event.params.activityId,
+      sport,
+      tss: calculatedTss,
+      bestWatt: calculatedNp > 0 ? calculatedNp : undefined,
+    });
+  } catch (_) {
+    // Push-Fehler fangen
+  }
 });
 
 async function updateAggregates(uid: string, localDate: string | undefined) {

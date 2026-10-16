@@ -16,6 +16,8 @@ import '../widgets/fitness_fatigue_trend_chart.dart';
 import '../widgets/performance_profile_card.dart';
 import '../widgets/threshold_progress_card.dart';
 import '../../health/screens/health_cockpit_screen.dart';
+import '../../home/models/race_goal.dart';
+import '../../races/providers/races_provider.dart';
 
 /// Haupt-Screen des Tabs „Analyse".
 ///
@@ -182,7 +184,13 @@ class AnalysisTabScreen extends ConsumerWidget {
 
               // Async State Handling
               analysisAsync.when(
-                data: (data) => _buildContent(context, data, experienceLevel),
+                data: (data) {
+                  final races =
+                      ref.watch(racesStreamProvider).valueOrNull ?? [];
+                  final raceGoals = races.map(RaceGoal.fromRace).toList();
+                  return _buildContent(
+                      context, data, experienceLevel, raceGoals);
+                },
                 loading: () => _buildLoadingSkeleton(),
                 error: (err, stack) =>
                     _buildErrorCard(context, ref, err.toString()),
@@ -198,6 +206,7 @@ class AnalysisTabScreen extends ConsumerWidget {
     BuildContext context,
     AnalysisViewState data,
     ExperienceLevel level,
+    List<RaceGoal> races,
   ) {
     if (!data.hasData) {
       return _buildEmptyState(context);
@@ -280,6 +289,7 @@ class AnalysisTabScreen extends ConsumerWidget {
         if (level == ExperienceLevel.expert) ...[
           FitnessFatigueTrendChart(
             points: data.fitnessFatiguePoints,
+            races: races,
           ),
           const SizedBox(height: 16),
           const PerformanceProfileCard(
