@@ -16,3 +16,6 @@
 
 # Keep models for JSON serialization if needed
 -keepattributes *Annotation*,Signature,InnerClasses,EnclosingMethod
+
+# Play Store Split Install / Deferred Components (Flutter Engine optional references)
+-dontwarn com.google.android.play.core.**
