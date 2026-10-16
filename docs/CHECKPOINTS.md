@@ -146,20 +146,39 @@ $ ls -lh docs/beta/
 -rw-r--r--@ 1 timzarges  staff   5.9K Oct 17 00:11 TESTPLAN_ROLES.md
 -rw-r--r--@ 1 timzarges  staff   9.4K Oct 14 15:20 TODO_INVENTORY.md
 
-6. Git Diff Übersicht gegen main:
+5. Android Release-APK Build (minified mit R8, ProGuard Keep-Rules):
+$ export ANDROID_HOME="/Users/timzarges/Library/Android/sdk" && export JAVA_HOME="/Users/timzarges/.gemini/antigravity/scratch/jdk/jdk-21.0.12.1+1/Contents/Home" && export PATH="/Users/timzarges/.gemini/antigravity/scratch/flutter/bin:$JAVA_HOME/bin:$ANDROID_HOME/cmdline-tools/latest/bin:$PATH" && flutter build apk --release
+Running Gradle task 'assembleRelease'...                           42,1s
+✓ Built build/app/outputs/flutter-apk/app-release.apk (64.5MB / 62MB Dateigröße)
+
+6. Cloud Deployment Live-Verifikation (europe-west3 Frankfurt):
+- Firestore Security Rules, Storage Rules & Indexes:
+  $ npx firebase-tools deploy --only firestore,storage
+  ✔  Deploy complete!
+- Web Hosting (Landingpage, /delete-account, /privacy, /imprint, /help):
+  $ npx firebase-tools deploy --only hosting
+  ✔  Deploy complete! Live URL: https://orbit-app-mvp.web.app
+- Cloud Functions (alle 28 Funktionen inkl. garminWebhook, onDailyMetricsWritten, Push-Engine):
+  $ npx firebase-tools deploy --only functions --force
+  ✔  Deploy complete! 28 Cloud Functions aktiv in europe-west3.
+
+7. Git Diff Übersicht gegen main:
 $ git diff --stat main
+ android/app/build.gradle.kts                       |   9 +-
+ android/app/proguard-rules.pro                     |   3 +
  firestore.indexes.json                             |  47 +++
  functions/package.json                             |   3 +-
  functions/src/__tests__/corpusStress.test.ts       | 330 +++++++++++++++++++++
  functions/src/scripts/verifyFitCorpus.ts           | 297 +++++++++++++++++++
  test/features/phase24_stress_performance_test.dart | 231 +++++++++++++++
- 5 files changed, 907 insertions(+), 1 deletion(-)
+ 7 files changed, 915 insertions(+), 6 deletions(-)
 ```
 
 - **Bitte prüfen:**
   - **Status:** `[WARTE AUF LIVE-ABNAHME DURCH TIM AUF PIXEL 10 PRO / PLAY CONSOLE]`
   - Gemäß Regel 1 & 2 aus `AGENTS.md` hakt der Agent das Release-Gate **nicht** eigenmächtig ab.
-  - Prüfe die Nachweise, führe ggf. den Release-Build und Test auf dem Pixel 10 Pro durch und erteile danach die finale Freigabe für Phase 24!
+  - APK-Speicherort für Pixel 10 Pro: `build/app/outputs/flutter-apk/app-release.apk`.
+  - Prüfe die Nachweise, führe den Test auf dem Pixel 10 Pro durch (siehe `docs/beta/TESTPLAN_ROLES.md`) und erteile danach die finale Freigabe für Phase 24!
 - **Rückholen:** `git switch main && git branch -D feature/phase-24-beta-release-candidate`
 
 ---
