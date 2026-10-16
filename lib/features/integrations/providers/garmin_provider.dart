@@ -69,9 +69,9 @@ class GarminService {
     await callable.call();
   }
 
-  /// Fordert einen Aktivitäten-Backfill der letzten X Tage an
-  Future<void> triggerBackfill({int days = 30}) async {
-    final callable = _functions.httpsCallable('garminBackfill');
+  /// Fordert einen Aktivitäten- und Gesundheits-Backfill der letzten X Tage an (Standard 90 Tage)
+  Future<void> triggerBackfill({int days = 90}) async {
+    final callable = _functions.httpsCallable('requestGarminBackfill');
     await callable.call({'days': days});
   }
 }

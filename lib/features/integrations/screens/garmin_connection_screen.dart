@@ -139,7 +139,8 @@ class _GarminConnectionScreenState
           setState(() => _isLoading = false);
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-                content: Text('Garmin-Verbindung wurde erfolgreich getrennt.')),
+              content: Text('Garmin-Verbindung wurde erfolgreich getrennt.'),
+            ),
           );
         }
       } catch (e) {
@@ -156,14 +157,15 @@ class _GarminConnectionScreenState
   Future<void> _triggerBackfill() async {
     setState(() => _isLoading = true);
     try {
-      await ref.read(garminServiceProvider).triggerBackfill(days: 30);
+      await ref.read(garminServiceProvider).triggerBackfill(days: 90);
       if (mounted) {
         setState(() => _isLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             backgroundColor: Color(0xFF0EA5E9),
             content: Text(
-                'Historischer Import (30 Tage) wurde bei Garmin angefordert!'),
+              'Historischer Import (90 Tage) wurde bei Garmin angefordert!',
+            ),
           ),
         );
       }
@@ -319,7 +321,8 @@ class _GarminConnectionScreenState
                               ? 'Garmin ID: ${status.garminUserId}'
                               : 'Neue Aktivitäten werden automatisch importiert',
                           style: TextStyle(
-                              color: theme.colorScheme.onSurfaceVariant),
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
                         ),
                       ),
                       if (status.isBackfillInProgress) ...[
@@ -338,9 +341,10 @@ class _GarminConnectionScreenState
                             ),
                           ),
                           subtitle: Text(
-                            'Deine Aktivitäten der letzten 30 Tage werden geladen.',
+                            'Synchronisiere Historie (${status.targetDays} Tage)... ${status.receivedActivities} Einheiten empfangen',
                             style: TextStyle(
-                                color: theme.colorScheme.onSurfaceVariant),
+                              color: theme.colorScheme.onSurfaceVariant,
+                            ),
                           ),
                         ),
                       ],
@@ -356,7 +360,7 @@ class _GarminConnectionScreenState
                       ? null
                       : _triggerBackfill,
                   icon: const Icon(Icons.history),
-                  label: const Text('Letzte 30 Tage nachladen (Backfill)'),
+                  label: const Text('Historische Daten laden (letzte 90 Tage)'),
                 ),
 
                 const SizedBox(height: 16),
@@ -393,7 +397,8 @@ class _GarminConnectionScreenState
                         )
                       : const Icon(Icons.link),
                   label: Text(
-                      _isLoading ? 'Wird geöffnet...' : 'Mit Garmin verbinden'),
+                    _isLoading ? 'Wird geöffnet...' : 'Mit Garmin verbinden',
+                  ),
                 ),
 
                 // Bestätigungscode Eingabebereich
@@ -417,8 +422,11 @@ class _GarminConnectionScreenState
                       children: [
                         Row(
                           children: [
-                            const Icon(Icons.vpn_key_outlined,
-                                size: 22, color: Color(0xFF0EA5E9)),
+                            const Icon(
+                              Icons.vpn_key_outlined,
+                              size: 22,
+                              color: Color(0xFF0EA5E9),
+                            ),
                             const SizedBox(width: 10),
                             Text(
                               'Bestätigungscode eingeben',

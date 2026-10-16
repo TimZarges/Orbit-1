@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:orbit/core/design/app_colors.dart';
-import 'package:orbit/core/design/app_typography.dart';
-import 'package:orbit/core/design/app_spacing.dart';
+import '../../../core/design/app_colors.dart';
+import '../../../core/design/app_typography.dart';
+import '../../../core/design/app_spacing.dart';
 
 import '../../coach_link/providers/athlete_context_provider.dart';
 import '../../health/widgets/readiness_card.dart';
@@ -50,14 +50,19 @@ class TodayTabScreen extends ConsumerWidget {
         },
         child: homeDataAsync.when(
           data: (data) => _buildDashboardContent(
-              context, ref, athleteId, data, uploadState),
+            context,
+            ref,
+            athleteId,
+            data,
+            uploadState,
+          ),
           loading: () => _buildLoadingSkeleton(context),
           error: (error, stack) =>
               _buildErrorState(context, ref, athleteId, error),
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        tooltip: 'FIT-Datei importieren',
+        tooltip: 'Aktivitäten importieren (.fit, .tcx, .gpx)',
         backgroundColor: AppColors.navy,
         foregroundColor: AppColors.volt,
         onPressed: uploadState.isUploading
@@ -68,7 +73,9 @@ class TodayTabScreen extends ConsumerWidget {
                 width: 24,
                 height: 24,
                 child: CircularProgressIndicator(
-                    strokeWidth: 2, color: AppColors.volt),
+                  strokeWidth: 2,
+                  color: AppColors.volt,
+                ),
               )
             : const Icon(Icons.add),
       ),
@@ -132,22 +139,51 @@ class TodayTabScreen extends ConsumerWidget {
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(color: AppColors.volt),
                       ),
-                      child: const Row(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(
-                                strokeWidth: 2, color: AppColors.navy),
+                          Row(
+                            children: [
+                              const SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: AppColors.navy,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  uploadState.statusMessage ??
+                                      'Aktivitätsdateien werden hochgeladen und verarbeitet...',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 13,
+                                    color: AppColors.navy,
+                                  ),
+                                ),
+                              ),
+                              if (uploadState.totalFiles > 0)
+                                Text(
+                                  '${uploadState.currentFileIndex}/${uploadState.totalFiles}',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 12,
+                                    color: AppColors.navy,
+                                  ),
+                                ),
+                            ],
                           ),
-                          SizedBox(width: 12),
-                          Expanded(
-                            child: Text(
-                              'Aktivitätsdatei wird hochgeladen und verarbeitet...',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 13,
-                                  color: AppColors.navy),
+                          const SizedBox(height: 8),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(4),
+                            child: LinearProgressIndicator(
+                              value: uploadState.progress,
+                              backgroundColor:
+                                  AppColors.navy.withValues(alpha: 0.12),
+                              color: AppColors.navy,
+                              minHeight: 6,
                             ),
                           ),
                         ],
@@ -175,10 +211,20 @@ class TodayTabScreen extends ConsumerWidget {
                   // Karten-Rendering
                   if (isWide)
                     _buildWideLayout(
-                        context, ref, athleteId, data, visibleCards)
+                      context,
+                      ref,
+                      athleteId,
+                      data,
+                      visibleCards,
+                    )
                   else
                     _buildCompactLayout(
-                        context, ref, athleteId, data, visibleCards),
+                      context,
+                      ref,
+                      athleteId,
+                      data,
+                      visibleCards,
+                    ),
                 ],
               ),
             ),
@@ -278,7 +324,8 @@ class TodayTabScreen extends ConsumerWidget {
           onThresholdsTap: () {
             Navigator.of(context).push(
               MaterialPageRoute(
-                  builder: (_) => DiagnosticsScreen(athleteId: athleteId)),
+                builder: (_) => DiagnosticsScreen(athleteId: athleteId),
+              ),
             );
           },
           onChatTap: () {
@@ -290,7 +337,8 @@ class TodayTabScreen extends ConsumerWidget {
             // Zeigt Kalender zur Zuordnung
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                  content: Text('Öffne Kalender, um Aktivitäten zuzuordnen.')),
+                content: Text('Öffne Kalender, um Aktivitäten zuzuordnen.'),
+              ),
             );
           },
         );
@@ -395,8 +443,11 @@ class TodayTabScreen extends ConsumerWidget {
                       ),
                     ],
                   ),
-                  child: const Icon(Icons.directions_run,
-                      size: 40, color: AppColors.volt),
+                  child: const Icon(
+                    Icons.directions_run,
+                    size: 40,
+                    color: AppColors.volt,
+                  ),
                 ),
               ),
               const SizedBox(height: 24),
@@ -413,7 +464,7 @@ class TodayTabScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 32),
 
-              // FIT Upload Button
+              // Multi-Format Batch-Upload Button
               ElevatedButton.icon(
                 onPressed: uploadState.isUploading
                     ? null
@@ -425,16 +476,23 @@ class TodayTabScreen extends ConsumerWidget {
                         width: 18,
                         height: 18,
                         child: CircularProgressIndicator(
-                            strokeWidth: 2, color: AppColors.navy),
+                          strokeWidth: 2,
+                          color: AppColors.navy,
+                        ),
                       )
                     : const Icon(Icons.upload_file),
-                label: const Text('FIT-Datei hochladen'),
+                label: Text(
+                  uploadState.isUploading
+                      ? (uploadState.statusMessage ?? 'Lade Dateien hoch...')
+                      : 'Aktivitäten importieren (.fit, .tcx, .gpx)',
+                ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.volt,
                   foregroundColor: AppColors.navy,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   elevation: 0,
                 ),
               ),
@@ -456,7 +514,8 @@ class TodayTabScreen extends ConsumerWidget {
                   side: const BorderSide(color: AppColors.navy),
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
               ),
               const SizedBox(height: 24),
@@ -520,7 +579,11 @@ class TodayTabScreen extends ConsumerWidget {
 
   /// Fehlerzustand mit Wiederholen-Button
   Widget _buildErrorState(
-      BuildContext context, WidgetRef ref, String athleteId, Object error) {
+    BuildContext context,
+    WidgetRef ref,
+    String athleteId,
+    Object error,
+  ) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24.0),
@@ -549,7 +612,8 @@ class TodayTabScreen extends ConsumerWidget {
                 backgroundColor: AppColors.navy,
                 foregroundColor: AppColors.white,
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10)),
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
             ),
           ],

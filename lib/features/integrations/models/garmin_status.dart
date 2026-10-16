@@ -11,6 +11,9 @@ class GarminStatus {
   final DateTime? connectedAt;
   final DateTime? lastSyncAt;
   final bool isBackfillInProgress;
+  final int receivedActivities;
+  final int receivedHealthDays;
+  final int targetDays;
   final String? errorMessage;
 
   const GarminStatus({
@@ -19,6 +22,9 @@ class GarminStatus {
     this.connectedAt,
     this.lastSyncAt,
     this.isBackfillInProgress = false,
+    this.receivedActivities = 0,
+    this.receivedHealthDays = 0,
+    this.targetDays = 90,
     this.errorMessage,
   });
 
@@ -43,6 +49,11 @@ class GarminStatus {
 
     final backfillData = data['backfill'] as Map<String, dynamic>?;
     final isBackfill = backfillData?['state'] == 'IN_PROGRESS';
+    final receivedActivities =
+        (backfillData?['receivedActivities'] as num?)?.toInt() ?? 0;
+    final receivedHealthDays =
+        (backfillData?['receivedHealthDays'] as num?)?.toInt() ?? 0;
+    final targetDays = (backfillData?['targetDays'] as num?)?.toInt() ?? 90;
 
     return GarminStatus(
       state: state,
@@ -54,6 +65,9 @@ class GarminStatus {
           ? DateTime.tryParse(data['lastSyncAt'].toString())
           : null,
       isBackfillInProgress: isBackfill,
+      receivedActivities: receivedActivities,
+      receivedHealthDays: receivedHealthDays,
+      targetDays: targetDays,
       errorMessage: data['errorMessage'] as String?,
     );
   }

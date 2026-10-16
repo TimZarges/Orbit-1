@@ -23,7 +23,7 @@ export { seedCoachAthletes } from "./seeds/seed_coach_athletes";
 export { onActivityWritten, recomputeMetrics } from "./metrics/index";
 
 // 4. Activity Import & Storage Triggers
-export { processFitUpload } from "./import/index";
+export { processFitUpload, processActivityUpload } from "./import/index";
 export { deleteActivity } from "./import/deleteActivity";
 export {
   garminAuthStart,
@@ -32,6 +32,7 @@ export {
   garminWebhook,
   processGarminWebhook,
   garminBackfill,
+  requestGarminBackfill,
 } from "./import/garmin";
 
 // 5. Calendar Planning Trigger

@@ -1,33 +1,10 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
-import { defineSecret } from "firebase-functions/params";
 import * as admin from "firebase-admin";
 import axios from "axios";
 import * as crypto from "crypto";
-
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const OAuth = require("oauth-1.0a");
-
-// Secrets aus Google Cloud Secret Manager
-const garminConsumerKey = defineSecret("GARMIN_CONSUMER_KEY");
-const garminConsumerSecret = defineSecret("GARMIN_CONSUMER_SECRET");
+import { executeGarminBackfill, getOAuthClient, garminConsumerKey, garminConsumerSecret } from "./backfill";
 
 const CALLBACK_URL = "https://orbit-app-mvp.web.app/callback/garmin";
-
-/**
- * Erstellt eine signierte OAuth 1.0a Instanz mit HMAC-SHA1.
- */
-function getOAuthClient(consumerKey: string, consumerSecret: string) {
-  return new OAuth({
-    consumer: {
-      key: consumerKey,
-      secret: consumerSecret,
-    },
-    signature_method: "HMAC-SHA1",
-    hash_function(baseString: string, key: string) {
-      return crypto.createHmac("sha1", key).update(baseString).digest("base64");
-    },
-  });
-}
 
 /**
  * 1. Schritt: Startet den OAuth 1.0a Flow.
@@ -45,7 +22,7 @@ export const garminAuthStart = onCall(
     const secret = garminConsumerSecret.value();
 
     if (!key || !secret) {
-      throw new HttpsError("failed-precondition", "Garmin credentials are not configured.");
+      throw new HttpsError("failed-precondition", "Garmin credentials are not configured in Secret Manager.");
     }
 
     const oauth = getOAuthClient(key, secret);
@@ -93,7 +70,7 @@ export const garminAuthStart = onCall(
 
 /**
  * 2. Schritt: Tauscht den verifizierten Request Token gegen den permanenten Access Token ein.
- * Holt zugleich die permanente Garmin User ID ab (wichtig für den Webhook!).
+ * Holt die Garmin User ID ab, setzt den Schnellindex und stößt automatisch den 90-Tage-Backfill an.
  */
 export const garminAuthCallback = onCall(
   { secrets: [garminConsumerKey, garminConsumerSecret] },
@@ -103,7 +80,7 @@ export const garminAuthCallback = onCall(
       throw new HttpsError("unauthenticated", "User must be authenticated.");
     }
 
-    const { oauthToken, oauthVerifier } = request.data;
+    const { oauthToken, oauthVerifier } = request.data || {};
     if (!oauthVerifier) {
       throw new HttpsError("invalid-argument", "Missing oauthVerifier.");
     }
@@ -111,8 +88,14 @@ export const garminAuthCallback = onCall(
     const key = garminConsumerKey.value();
     const secret = garminConsumerSecret.value();
 
+    if (!key || !secret) {
+      throw new HttpsError("failed-precondition", "Garmin credentials are not configured in Secret Manager.");
+    }
+
+    const db = admin.firestore();
+
     // Gespeichertes Secret des Request Tokens laden
-    const stateDoc = await admin.firestore().collection("users").doc(uid).collection("private").doc("garminOAuth1").get();
+    const stateDoc = await db.collection("users").doc(uid).collection("private").doc("garminOAuth1").get();
     if (!stateDoc.exists) {
       throw new HttpsError("not-found", "No pending Garmin OAuth session found.");
     }
@@ -174,8 +157,8 @@ export const garminAuthCallback = onCall(
         }
       }
 
-      // 1. Tokens sicher speichern (NUR in private)
-      await admin.firestore().collection("users").doc(uid).collection("private").doc("integrations").set({
+      // 1. Tokens sicher speichern (NUR in private, Art. 9 / Sicherheitsregel)
+      await db.collection("users").doc(uid).collection("private").doc("integrations").set({
         garmin: {
           version: "OAUTH1",
           oauthToken: accessToken,
@@ -185,17 +168,32 @@ export const garminAuthCallback = onCall(
         },
       }, { merge: true });
 
-      // 2. Temporäres Auth-Dokument löschen
+      // 2. Schnellindex anlegen (ermöglicht Webhook-Lookup in wenigen Millisekunden)
+      if (garminUserId) {
+        await db.collection("garminUsers").doc(garminUserId).set({
+          uid,
+          connectedAt: admin.firestore.FieldValue.serverTimestamp(),
+        }, { merge: true });
+      }
+
+      // 3. Temporäres Auth-Dokument löschen
       await stateDoc.ref.delete();
 
-      // 3. Öffentlichen Status aktualisieren (Client-lesbar für UI)
-      await admin.firestore().collection("users").doc(uid).collection("integrationStatus").doc("garmin").set({
+      // 4. Öffentlichen Status aktualisieren (Client-lesbar für UI)
+      await db.collection("users").doc(uid).collection("integrationStatus").doc("garmin").set({
         state: "CONNECTED",
         provider: "GARMIN",
         garminUserId: garminUserId,
         connectedAt: admin.firestore.FieldValue.serverTimestamp(),
         lastSyncAt: null,
-      });
+      }, { merge: true });
+
+      // 5. Automatischer 90-Tage Backfill direkt nach erfolgreicher Kopplung (Anforderung 18.1.3)
+      try {
+        await executeGarminBackfill(uid, 90, { key, secret });
+      } catch (backfillErr: any) {
+        console.warn("Automatischer Garmin-Backfill nach Login fehlgeschlagen:", backfillErr.message);
+      }
 
       return { success: true, garminUserId };
     } catch (error: any) {
@@ -206,7 +204,7 @@ export const garminAuthCallback = onCall(
 );
 
 /**
- * 3. Schritt: Trennt die Garmin-Verbindung und löscht alle Tokens.
+ * 3. Schritt: Trennt die Garmin-Verbindung, löscht Tokens und Schnellindex.
  */
 export const garminDisconnect = onCall(async (request) => {
   const uid = request.auth?.uid;
@@ -216,17 +214,27 @@ export const garminDisconnect = onCall(async (request) => {
 
   const db = admin.firestore();
 
+  // Aktuelle Garmin User ID auslesen
+  const statusDoc = await db.collection("users").doc(uid).collection("integrationStatus").doc("garmin").get();
+  const garminUserId = statusDoc.data()?.garminUserId;
+
   // Tokens löschen
   await db.collection("users").doc(uid).collection("private").doc("integrations").update({
     garmin: admin.firestore.FieldValue.delete(),
   });
 
+  // Schnellindex löschen
+  if (garminUserId) {
+    await db.collection("garminUsers").doc(garminUserId).delete();
+  }
+
   // Status auf getrennt setzen
   await db.collection("users").doc(uid).collection("integrationStatus").doc("garmin").set({
     state: "DISCONNECTED",
     provider: "GARMIN",
+    garminUserId: admin.firestore.FieldValue.delete(),
     disconnectedAt: admin.firestore.FieldValue.serverTimestamp(),
-  });
+  }, { merge: true });
 
   return { success: true };
 });

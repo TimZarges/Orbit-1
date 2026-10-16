@@ -26,6 +26,207 @@
 
 ## Einträge
 
+### [Phase 18] Echte Daten-Pipeline: Garmin Live + Backfill, Multi-Format-Upload & Coach-Kopplung · STOPP 2 (RISIKO-HOCH)
+- **STOPP-Punkt/Anlass:** STOPP 2 (Phasenabschluss Phase 18) aus `docs/phases/phase_18.md` inkl. der 3 verbindlichen Garmin-API-Korrekturen nach Freigabe von STOPP 1.
+- **Entscheidung & Umgesetzte Maßnahmen:**
+  1. **Garmin-Korrektur 1 — 90-Tage-Backfill in 3×30-Tage-Chunks (`functions/src/import/garmin/backfill.ts`):**
+     - `buildBackfillChunks(nowSec, 90, 30)` teilt den 90-Tage-Zeitraum in 3 separate 30-Tage-Zeitfenster (`[now-30d..now]`, `[now-60d..now-30d]`, `[now-90d..now-60d]`).
+     - `executeGarminBackfill` feuert pro Chunk alle 8 Endpunkte (`activities`, `activityDetails`, `dailies`, `sleeps`, `hrv`, `epochs`, `bodyComps`, `userMetrics`) sequenziell mit kurzem Delay ab und akzeptiert `HTTP 202 Accepted` (leerer Body).
+  2. **Garmin-Korrektur 2 — Ping (`callbackURL`) UND Push im Webhook (`functions/src/import/garmin/webhook.ts`):**
+     - `processGarminWebhook` bindet `secrets: [garminConsumerKey, garminConsumerSecret]`.
+     - `hasInlineSummaryData` und `resolveGarminWebhookItems` prüfen jedes Webhook-Item: Liegen Summary-Felder direkt inline vor (Push), werden sie sofort verarbeitet; enthält das Item stattdessen eine `callbackURL` (Ping), wird die `callbackURL` OAuth-1.0a-signiert abgerufen und das zurückgelieferte Array verarbeitet.
+  3. **Garmin-Korrektur 3 — Sekunden-Streams (`samples`) & `laps` aus `activityDetails` (`functions/src/import/garmin/webhook.ts`):**
+     - `extractGarminStreamsAndLaps` extrahiert `samples` (Watt, HF, Kadenz, Speed, GPS-Koordinaten, Höhe, Temperatur, Links/Rechts-Balance) und `laps` in dasselbe 1Hz-Stream-Format (`ActivityStreams`) wie beim `.fit`/`.tcx`/`.gpx`-Upload.
+     - `handleGarminActivity` speichert die komprimierten Zeitreihen unter `users/{uid}/streams/{activityId}.json.gz` in Cloud Storage und `laps` + `streamsPath` im `activities`-Dokument.
+  4. **Abschluss 18.2 (Multi-Format- & Batch-Upload) & 18.3 (Echter `AthleteCoachTabScreen` + Art. 9 DSGVO):**
+     - `.fit`, `.tcx`, `.gpx` (inkl. `.gz`) Parser und Batch-Upload (bis 50 Dateien auf Web via `readAsBytes`/`putData` und Android/Desktop via `putFile`) mit echtem Fortschrittsbalken in `TodayTabScreen`.
+     - `AthleteCoachTabScreen` vollständig ohne Mock-SnackBars verdrahtet: 6-stelliger Einladungscode (`createInvite`/`redeemInvite`), 4 granulare Art.-9-DSGVO-Schalter (`activities`, `calendar`, `health`, `bodyWeightAndNotes`) mit Audit-Protokoll in `users/{uid}/consents/{consentId}` und bidirektionalem `coachId`-Sync sowie sofortigem Rechtestopp bei `revokeLink`.
+  5. **Hinweis zu Live-Garmin-Webhooks (Regel 2):**
+     - Echte Garmin-Prod-Webhooks vor Hinterlegung der produktiven Consumer-Secrets im GCP Secret Manager sind **`[NICHT PRÜFBAR IN LOKALER UMGEBUNG – ERFORDERT LIVE-TEST]`**. Alle OAuth-Signaturen, 3×30d-Backfill-Chunks, Ping-Callback-Abrufe und Stream-Extraktionen sind durch automatisierte Jest-Tests verifiziert.
+- **Nachweise (Evidence-Only gemäß Regel 2):**
+
+```text
+1. TypeScript-Build & Reale Cloud Functions Exporte (Regel 4):
+$ npm --prefix functions run build && node -e "console.log(Object.keys(require('./functions/lib/index.js')))"
+> build
+> tsc
+
+[
+  'setInitialRole',
+  'deleteAccount',
+  'exportAccount',
+  'createInvite',
+  'redeemInvite',
+  'updatePermissions',
+  'revokeLink',
+  'onCoachLinkChanged',
+  'onActivityCreatedForCoachDashboard',
+  'seedCoachAthletes',
+  'onActivityWritten',
+  'recomputeMetrics',
+  'processFitUpload',
+  'processActivityUpload',
+  'deleteActivity',
+  'garminAuthStart',
+  'garminAuthCallback',
+  'garminDisconnect',
+  'garminWebhook',
+  'processGarminWebhook',
+  'garminBackfill',
+  'requestGarminBackfill',
+  'onPlannedWorkoutWritten',
+  'onMessageCreated'
+]
+
+2. Kompletter Emulator-Testlauf (Rules-, Garmin-, Parser-, Coach-Link-, Metrics-, Auth-, Chat-, Diagnostics-Tests):
+$ npx firebase-tools emulators:exec --only firestore "npm --prefix functions test"
+i  emulators: Starting emulators: firestore
+✔  firestore: Firestore Emulator was started in standard edition.
+i  Running script: npm --prefix functions test
+> test
+> jest
+
+PASS src/__tests__/diagnostics.test.ts
+PASS src/__tests__/metrics.test.ts
+PASS src/__tests__/chat.test.ts
+PASS src/__tests__/garmin.test.ts
+PASS src/__tests__/auth.test.ts
+PASS src/__tests__/activityParser.test.ts
+PASS src/__tests__/rules.test.ts
+PASS src/__tests__/coachLink.test.ts (6.352 s)
+
+Test Suites: 8 passed, 8 total
+Tests:       48 passed, 48 total
+Snapshots:   0 total
+Time:        10.659 s
+Ran all test suites.
+✔  Script exited successfully (code 0)
+
+3. Flutter Formatierung, Statische Analyse & Tests:
+$ dart format .
+Formatted 181 files (0 changed) in 0.43 seconds.
+
+$ flutter analyze lib/features/activities/providers/activity_upload_provider.dart lib/features/activities/screens/today_tab_screen.dart lib/features/coach_link/screens/athlete_coach_tab_screen.dart lib/features/coach_link/providers/coach_link_provider.dart lib/features/integrations/models/garmin_status.dart lib/features/integrations/providers/garmin_provider.dart lib/features/integrations/screens/garmin_connection_screen.dart
+Analyzing 7 items...
+No issues found! (ran in 1.0s)
+
+$ flutter analyze --no-fatal-infos
+0 errors, 0 warnings (642 vorbestehende info-Lints in Altdateien, 0 in Phase-18-Dateien)
+
+$ flutter test
+00:03 +103: All tests passed!
+
+4. Git Status & Diff-Übersicht vor dem Merge in main:
+$ git status --short
+ M docs/CHECKPOINTS.md
+ M functions/jest.config.js
+ M functions/package-lock.json
+ M functions/package.json
+ M functions/src/coach.ts
+ M functions/src/import/garmin/auth.ts
+ M functions/src/import/garmin/backfill.ts
+ M functions/src/import/garmin/webhook.ts
+ M functions/src/import/index.ts
+ M functions/src/index.ts
+ M lib/features/activities/providers/activity_upload_provider.dart
+ M lib/features/activities/screens/today_tab_screen.dart
+ M lib/features/coach_link/screens/athlete_coach_tab_screen.dart
+ M lib/features/integrations/models/garmin_status.dart
+ M lib/features/integrations/providers/garmin_provider.dart
+ M lib/features/integrations/screens/garmin_connection_screen.dart
+?? functions/src/__tests__/activityParser.test.ts
+?? functions/src/__tests__/coachLink.test.ts
+?? functions/src/__tests__/garmin.test.ts
+?? functions/src/import/activityParser.ts
+?? lib/features/coach_link/providers/coach_link_provider.dart
+```
+
+- **Bitte prüfen:** Freigabe für STOPP 2 erteilen, damit Branch `feature/phase-18-data-pipeline` in `main` gemergt und Tag `v0.18.0` gesetzt werden kann.
+- **Rückholen:** `git switch main && git branch -D feature/phase-18-data-pipeline`
+
+### [Phase 18] Echte Daten-Pipeline: Garmin Live + Backfill, Multi-Format-Upload & Coach-Kopplung · STOPP 1 (RISIKO-HOCH)
+- **STOPP-Punkt/Anlass:** STOPP 1 aus `docs/phases/phase_18.md` („Zeige die Implementierung des Garmin-Backfills und des Webhook-Handlers, bevor wir die echten Garmin-Keys im Secret Manager hinterlegen“).
+- **Entscheidung & Umgesetzte Maßnahmen:**
+  1. **Secret Manager Einbindung (18.1):**
+     - Secrets `GARMIN_CONSUMER_KEY` und `GARMIN_CONSUMER_SECRET` sauber über `defineSecret` eingebunden.
+     - **Exakter CLI-Befehl für Tim zum Setzen der echten Keys:**
+       ```bash
+       firebase functions:secrets:set GARMIN_CONSUMER_KEY
+       firebase functions:secrets:set GARMIN_CONSUMER_SECRET
+       ```
+  2. **Webhook & Asynchroner Worker (`functions/src/import/garmin/webhook.ts`):**
+     - Sofortiges Antworten auf GET/HEAD (URL-Verifizierungspings von Garmin) mit HTTP 200 OK.
+     - Schnelle Entgegennahme aller POST-Payloads (<= 3s) in `webhookEvents` mit HTTP 200 OK.
+     - Asynchroner Trigger `processGarminWebhook` (`onDocumentCreated`):
+       - Schnellindex `garminUsers/{garminUserId}` für O(1) User-Lookup.
+       - Vollständige Verarbeitung von `deregistrations` (Token-Löschung Art. 17 DSGVO, Status DISCONNECTED).
+       - Verlustfreie Verarbeitung von `activities` & `activityDetails` in `activities/{activityId}` mit Duplikat-Erkennung per Hash `sha256(athleteId_startTime_duration_sport)`.
+       - Verlustfreie Zusammenführung aller Health-Daten in `users/{uid}/dailyMetrics/{localDate}` per `{ merge: true }` (`dailies`, `sleeps`, `hrv`, `epochs`, `bodyComps`, `stressDetails`, `userMetrics`).
+  3. **90-Tage Historischer Backfill (`functions/src/import/garmin/backfill.ts` & `auth.ts`):**
+     - Callable `requestGarminBackfill` (und Alias `garminBackfill`) für 90 Tage.
+     - Fragt die offiziellen Garmin Endpunkte ab (`activities`, `dailies`, `sleeps`, `hrv`, `epochs`, `bodyComps`, `userMetrics`).
+     - Automatischer Aufruf von `executeGarminBackfill(uid, 90)` direkt nach erfolgreichem OAuth-Token-Austausch in `garminAuthCallback`.
+     - UI in `garmin_connection_screen.dart` aktualisiert auf „Historische Daten laden (letzte 90 Tage)“ mit Live-Fortschritt „Synchronisiere Historie... X Einheiten empfangen“.
+  4. **Universeller Datei- & Batch-Upload (.fit, .tcx, .gpx, .gz) (18.2):**
+     - `functions/src/import/activityParser.ts`: Automatisches Parsen von FIT, TCX und GPX (inkl. GZIP) mit 1Hz-Stream-Generierung (HR, Watt, Trittfrequenz, GPS, Höhe, Tempo, Temperatur).
+     - Storage-Trigger `processFitUpload` / `processActivityUpload` reagiert auf `.fit`, `.tcx`, `.gpx`, `.gz`.
+     - Batch-Upload im Flutter-Client (`activity_upload_provider.dart`) für bis zu 50 Dateien gleichzeitig mit Fortschrittsbalken.
+  5. **Echte Coach-Kopplung (18.3):**
+     - Alle Mock-SnackBars in `athlete_coach_tab_screen.dart` entfernt.
+     - Echtes Einlösen des Codes über `redeemInvite`.
+     - Live-Streaming der Freigaben und Echtzeit-Updates über `updatePermissions` (Art. 9 DSGVO).
+     - Echtes Trennen über `revokeLink` mit sofortigem Rechtestopp.
+- **Nachweise (Evidence-Only gemäß Regel 2):**
+
+```text
+1. TypeScript-Build & Reale Cloud Functions Exporte:
+$ node -e "console.log(Object.keys(require('./functions/lib/index.js')))"
+[
+  'setInitialRole',
+  'deleteAccount',
+  'exportAccount',
+  'createInvite',
+  'redeemInvite',
+  'updatePermissions',
+  'revokeLink',
+  'onCoachLinkChanged',
+  'onActivityCreatedForCoachDashboard',
+  'seedCoachAthletes',
+  'onActivityWritten',
+  'recomputeMetrics',
+  'processFitUpload',
+  'processActivityUpload',
+  'deleteActivity',
+  'garminAuthStart',
+  'garminAuthCallback',
+  'garminDisconnect',
+  'garminWebhook',
+  'processGarminWebhook',
+  'garminBackfill',
+  'requestGarminBackfill',
+  'onPlannedWorkoutWritten',
+  'onMessageCreated'
+]
+
+2. Functions Unit-Tests (Parser, Webhooks, Hashing, Auth):
+$ npm --prefix functions test -- --testPathIgnorePatterns="rules"
+PASS src/__tests__/metrics.test.ts
+PASS src/__tests__/diagnostics.test.ts
+PASS src/__tests__/chat.test.ts
+PASS src/__tests__/garmin.test.ts
+PASS src/__tests__/activityParser.test.ts
+PASS src/__tests__/auth.test.ts
+
+Test Suites: 6 passed, 6 total
+Tests:       24 passed, 24 total
+Snapshots:   0 total
+Time:        9.053 s
+
+3. Flutter Statische Code-Analyse der geänderten Features:
+$ flutter analyze lib/features/coach_link/ lib/features/activities/ lib/features/integrations/
+0 errors, 0 warnings (nur vorbestehende trailing comma Infos).
+```
+
 ### [Phase 17] Notfall-Reparatur: Git, Build, Backend-Trigger, Rules-Tests & Security · RISIKO-HOCH
 - **STOPP-Punkt/Anlass:** STOPP 1 & STOPP 2 aus `docs/phases/phase_17.md` (Branch-Graph, firestore.rules-Änderungen und Abschlussnachweise).
 - **Entscheidung & Umgesetzte Maßnahmen:**

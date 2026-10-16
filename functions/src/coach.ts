@@ -5,105 +5,10 @@ import * as crypto from "crypto";
 export * from "./coach/dashboard";
 export * from "./seeds/seed_coach_athletes";
 
-// Helper function to generate a random invite code
+// Erzeugt einen 6-stelligen alphanumerischen Einladungscode
 function generateInviteCode(): string {
-  return crypto.randomBytes(4).toString("hex").toUpperCase();
+  return crypto.randomBytes(3).toString("hex").toUpperCase();
 }
-
-export const createInvite = onCall(async (request) => {
-  const uid = request.auth?.uid;
-  if (!uid) {
-    throw new HttpsError("unauthenticated", "Must be logged in.");
-  }
-
-  const userDoc = await admin.firestore().collection("users").doc(uid).get();
-  if (userDoc.data()?.role !== "TRAINER") {
-    throw new HttpsError("permission-denied", "Only trainers can create invites.");
-  }
-
-  const code = generateInviteCode();
-  const db = admin.firestore();
-  
-  await db.collection("invites").doc(code).set({
-    coachId: uid,
-    expiresAt: admin.firestore.Timestamp.fromDate(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)), // 7 Days
-    maxUses: 10,
-    usedBy: []
-  });
-
-  return { code };
-});
-
-export const redeemInvite = onCall(async (request) => {
-  const uid = request.auth?.uid;
-  if (!uid) {
-    throw new HttpsError("unauthenticated", "Must be logged in.");
-  }
-
-  const { code } = request.data;
-  if (!code) {
-    throw new HttpsError("invalid-argument", "Code is required.");
-  }
-
-  const db = admin.firestore();
-  return db.runTransaction(async (transaction) => {
-    const inviteRef = db.collection("invites").doc(code);
-    const inviteDoc = await transaction.get(inviteRef);
-
-    if (!inviteDoc.exists) {
-      throw new HttpsError("not-found", "Invite not found.");
-    }
-
-    const inviteData = inviteDoc.data()!;
-    if (inviteData.expiresAt.toDate() < new Date()) {
-      throw new HttpsError("failed-precondition", "Invite expired.");
-    }
-
-    if (inviteData.usedBy.length >= inviteData.maxUses) {
-      throw new HttpsError("failed-precondition", "Invite usage limit reached.");
-    }
-
-    if (inviteData.usedBy.includes(uid)) {
-      throw new HttpsError("already-exists", "You already used this invite.");
-    }
-
-    const coachId = inviteData.coachId;
-    const linkId = `${uid}_${coachId}`;
-    const linkRef = db.collection("coachLinks").doc(linkId);
-
-    // Update athlete user doc
-    const userRef = db.collection("users").doc(uid);
-    
-    // Add to usedBy
-    const newUsedBy = [...inviteData.usedBy, uid];
-    transaction.update(inviteRef, { usedBy: newUsedBy });
-
-    // Create coachLink
-    transaction.set(linkRef, {
-      athleteId: uid,
-      coachId: coachId,
-      status: "ACTIVE",
-      permissions: {
-        calendar: true,
-        activities: true,
-        health: false
-      },
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
-      updatedAt: admin.firestore.FieldValue.serverTimestamp()
-    });
-
-    // Update user
-    transaction.update(userRef, {
-      coachId: coachId,
-      "consents.coachSharing": {
-        at: admin.firestore.FieldValue.serverTimestamp(),
-        version: "v1"
-      }
-    });
-
-    return { success: true, coachId };
-  });
-});
 
 /**
  * Löscht das Feld `coachId` aus allen Dokumenten einer Query in Chunks von maximal 400 Operationen.
@@ -132,50 +37,238 @@ async function clearCoachIdFromQuery(query: admin.firestore.Query): Promise<numb
   return totalUpdated;
 }
 
+/**
+ * Setzt das Feld `coachId` auf allen Dokumenten einer Query in Chunks von maximal 400 Operationen.
+ */
+async function setCoachIdOnQuery(query: admin.firestore.Query, coachId: string): Promise<number> {
+  const snapshot = await query.get();
+  if (snapshot.empty) return 0;
+
+  const db = admin.firestore();
+  let totalUpdated = 0;
+  const docs = snapshot.docs;
+  const CHUNK_SIZE = 400;
+
+  for (let i = 0; i < docs.length; i += CHUNK_SIZE) {
+    const chunk = docs.slice(i, i + CHUNK_SIZE);
+    const batch = db.batch();
+    for (const doc of chunk) {
+      batch.update(doc.ref, {
+        coachId,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+    }
+    await batch.commit();
+    totalUpdated += chunk.length;
+  }
+  return totalUpdated;
+}
+
+export const createInvite = onCall(async (request) => {
+  const uid = request.auth?.uid;
+  if (!uid) {
+    throw new HttpsError("unauthenticated", "Must be logged in.");
+  }
+
+  const userDoc = await admin.firestore().collection("users").doc(uid).get();
+  if (userDoc.data()?.role !== "TRAINER") {
+    throw new HttpsError("permission-denied", "Only trainers can create invites.");
+  }
+
+  const code = generateInviteCode();
+  const db = admin.firestore();
+
+  await db.collection("invites").doc(code).set({
+    coachId: uid,
+    expiresAt: admin.firestore.Timestamp.fromDate(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)), // 7 Days
+    maxUses: 10,
+    usedBy: [],
+  });
+
+  return { code };
+});
+
+export const redeemInvite = onCall(async (request) => {
+  const uid = request.auth?.uid;
+  if (!uid) {
+    throw new HttpsError("unauthenticated", "Must be logged in.");
+  }
+
+  const rawCode = request.data?.code;
+  const code = typeof rawCode === "string" ? rawCode.trim().toUpperCase() : "";
+  if (!code) {
+    throw new HttpsError("invalid-argument", "Code is required.");
+  }
+
+  const db = admin.firestore();
+  const txResult = await db.runTransaction(async (transaction) => {
+    const inviteRef = db.collection("invites").doc(code);
+    const inviteDoc = await transaction.get(inviteRef);
+
+    if (!inviteDoc.exists) {
+      throw new HttpsError("not-found", "Invite not found.");
+    }
+
+    const inviteData = inviteDoc.data()!;
+    if (inviteData.expiresAt.toDate() < new Date()) {
+      throw new HttpsError("failed-precondition", "Invite expired.");
+    }
+
+    if (inviteData.usedBy.length >= inviteData.maxUses) {
+      throw new HttpsError("failed-precondition", "Invite usage limit reached.");
+    }
+
+    if (inviteData.usedBy.includes(uid)) {
+      throw new HttpsError("already-exists", "You already used this invite.");
+    }
+
+    const coachId = inviteData.coachId;
+    const linkId = `${uid}_${coachId}`;
+    const linkRef = db.collection("coachLinks").doc(linkId);
+    const userRef = db.collection("users").doc(uid);
+
+    const initialPermissions = {
+      calendar: true,
+      activities: true,
+      health: false,
+      bodyWeightAndNotes: false,
+    };
+
+    // Add to usedBy
+    const newUsedBy = [...inviteData.usedBy, uid];
+    transaction.update(inviteRef, { usedBy: newUsedBy });
+
+    // Create coachLink
+    transaction.set(linkRef, {
+      athleteId: uid,
+      coachId: coachId,
+      status: "ACTIVE",
+      permissions: initialPermissions,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    // Update user
+    transaction.set(userRef, {
+      coachId: coachId,
+      consents: {
+        coachSharing: {
+          at: admin.firestore.FieldValue.serverTimestamp(),
+          version: "v1",
+          coachId,
+          permissions: initialPermissions,
+        },
+      },
+    }, { merge: true });
+
+    // Audit-Log-Eintrag (Art. 9 DSGVO)
+    const auditRef = userRef.collection("consents").doc();
+    transaction.set(auditRef, {
+      type: "COACH_LINK_REDEEMED",
+      coachId,
+      permissions: initialPermissions,
+      version: "v1",
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    return { success: true, coachId };
+  });
+
+  // Bestehende Aktivitäten und Trainingspläne für den neuen Trainer freischalten
+  await setCoachIdOnQuery(
+    db.collection("activities").where("athleteId", "==", uid),
+    txResult.coachId
+  );
+  await setCoachIdOnQuery(
+    db.collection("plannedWorkouts").where("athleteId", "==", uid),
+    txResult.coachId
+  );
+
+  return txResult;
+});
+
 export const updatePermissions = onCall(async (request) => {
   const uid = request.auth?.uid;
   if (!uid) {
     throw new HttpsError("unauthenticated", "Must be logged in.");
   }
 
-  const { coachId, permissions } = request.data;
+  const { coachId, permissions } = request.data || {};
   if (!coachId || !permissions) {
     throw new HttpsError("invalid-argument", "coachId and permissions are required.");
   }
   const linkId = `${uid}_${coachId}`;
-  
+
   const db = admin.firestore();
   const linkRef = db.collection("coachLinks").doc(linkId);
   const linkDoc = await linkRef.get();
   if (!linkDoc.exists) {
     throw new HttpsError("not-found", "Link not found.");
   }
-  if (linkDoc.data()?.athleteId !== uid) {
+  const linkData = linkDoc.data()!;
+  if (linkData.athleteId !== uid) {
     throw new HttpsError("permission-denied", "Only the athlete can update sharing permissions.");
   }
-  
+
+  const normalizedPermissions = {
+    activities: Boolean(permissions.activities),
+    calendar: Boolean(permissions.calendar),
+    health: Boolean(permissions.health),
+    bodyWeightAndNotes: Boolean(permissions.bodyWeightAndNotes ?? linkData.permissions?.bodyWeightAndNotes ?? false),
+  };
+
   await linkRef.update({
-    permissions,
-    updatedAt: admin.firestore.FieldValue.serverTimestamp()
+    permissions: normalizedPermissions,
+    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
   });
 
-  // DSGVO-Bereinigung: Wenn Aktivitäten-Recht entzogen wird, coachId entfernen
-  if (permissions.activities === false) {
+  // Art. 9 DSGVO Audit-Log-Eintrag mit Zeitstempel schreiben
+  const userRef = db.collection("users").doc(uid);
+  await userRef.collection("consents").add({
+    type: "COACH_PERMISSIONS_UPDATED",
+    coachId,
+    previousPermissions: linkData.permissions || {},
+    permissions: normalizedPermissions,
+    version: "v1",
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  await userRef.set({
+    consents: {
+      coachSharing: {
+        at: admin.firestore.FieldValue.serverTimestamp(),
+        version: "v1",
+        coachId,
+        permissions: normalizedPermissions,
+      },
+    },
+  }, { merge: true });
+
+  // DSGVO-Synchronisation für Aktivitäten
+  if (normalizedPermissions.activities === false) {
     const activitiesQuery = db.collection("activities")
       .where("athleteId", "==", uid)
       .where("coachId", "==", coachId);
     await clearCoachIdFromQuery(activitiesQuery);
+  } else {
+    const activitiesQuery = db.collection("activities")
+      .where("athleteId", "==", uid);
+    await setCoachIdOnQuery(activitiesQuery, coachId);
   }
 
-  // DSGVO-Bereinigung: Wenn Kalender-Recht entzogen wird, coachId entfernen
-  if (permissions.calendar === false) {
+  // DSGVO-Synchronisation für Kalender / Trainingspläne
+  if (normalizedPermissions.calendar === false) {
     const workoutsQuery = db.collection("plannedWorkouts")
       .where("athleteId", "==", uid)
       .where("coachId", "==", coachId);
     await clearCoachIdFromQuery(workoutsQuery);
+  } else {
+    const workoutsQuery = db.collection("plannedWorkouts")
+      .where("athleteId", "==", uid);
+    await setCoachIdOnQuery(workoutsQuery, coachId);
   }
-  
-  return { success: true };
+
+  return { success: true, permissions: normalizedPermissions };
 });
 
 export const revokeLink = onCall(async (request) => {
@@ -184,12 +277,12 @@ export const revokeLink = onCall(async (request) => {
     throw new HttpsError("unauthenticated", "Must be logged in.");
   }
 
-  const { linkId } = request.data;
+  const { linkId } = request.data || {};
   if (!linkId) {
     throw new HttpsError("invalid-argument", "linkId is required.");
   }
   const db = admin.firestore();
-  
+
   const linkRef = db.collection("coachLinks").doc(linkId);
   const linkDoc = await linkRef.get();
 
@@ -208,14 +301,22 @@ export const revokeLink = onCall(async (request) => {
   // 1. Link-Status auf REVOKED setzen
   await linkRef.update({
     status: "REVOKED",
-    updatedAt: admin.firestore.FieldValue.serverTimestamp()
+    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
   });
 
-  // 2. coachId vom Athleten-Dokument entfernen & Art. 9 Consent aktualisieren
+  // 2. coachId vom Athleten-Dokument entfernen & Art. 9 Consent-Widerruf dokumentieren
   const userRef = db.collection("users").doc(athleteId);
   await userRef.update({
     coachId: admin.firestore.FieldValue.delete(),
-    "consents.coachSharingRevokedAt": admin.firestore.FieldValue.serverTimestamp()
+    "consents.coachSharingRevokedAt": admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  await userRef.collection("consents").add({
+    type: "COACH_LINK_REVOKED",
+    coachId,
+    revokedBy: uid,
+    version: "v1",
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
   });
 
   // 3. Denormalisiertes coachId-Feld von allen Aktivitäten des Athleten entfernen (DSGVO Art. 9)
@@ -238,7 +339,7 @@ export const revokeLink = onCall(async (request) => {
     if (chatDoc.exists) {
       await chatRef.update({
         status: "REVOKED",
-        updatedAt: admin.firestore.FieldValue.serverTimestamp()
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       });
     }
   }
