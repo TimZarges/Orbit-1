@@ -8,6 +8,7 @@ import '../../coach_link/screens/trainer_athletes_tab_screen.dart';
 import '../../activities/screens/today_tab_screen.dart';
 import '../../calendar/screens/calendar_screen.dart';
 import '../../analysis/screens/analysis_tab_screen.dart';
+import '../../beta_feedback/widgets/beta_bug_reporter_sheet.dart';
 import '../../workout_builder/screens/workout_template_library_screen.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
@@ -50,6 +51,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           : AppBar(
               title: Text(_currentIndex == 0 ? 'Orbit' : titles[_currentIndex]),
               actions: [
+                const BetaBugReportIconButton(),
                 IconButton(
                   icon: const Icon(Icons.chat_bubble_outline),
                   tooltip: 'Nachrichten',

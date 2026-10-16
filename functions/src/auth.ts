@@ -11,7 +11,7 @@ export const setInitialRole = onCall(async (request) => {
     throw new HttpsError("unauthenticated", "User must be logged in.");
   }
 
-  const { role, profile, consents } = request.data;
+  const { role, profile, consents, thresholds, settings } = request.data;
   
   if (role !== "ATHLETE" && role !== "TRAINER") {
     throw new HttpsError("invalid-argument", "Invalid role specified.");
@@ -43,11 +43,11 @@ export const setInitialRole = onCall(async (request) => {
     coachId: null,
     profile: {
       ...profile,
-      timezone: profile?.timezone || "UTC", // Fallback
+      timezone: profile?.timezone || "Europe/Berlin",
     },
     settings: {
-      units: "metric",
-      language: "de",
+      units: settings?.units === "imperial" ? "imperial" : "metric",
+      language: settings?.language || "de",
       themeMode: "system",
       notifications: {
         chat: true,
@@ -55,13 +55,32 @@ export const setInitialRole = onCall(async (request) => {
         dailyReminder: false,
         newActivity: true,
         weeklySummary: true,
-      }
+      },
     },
     consents: {
       healthData: consents?.healthData || null,
-      privacyVersion: consents?.privacyVersion || "v0",
-    }
+      privacyVersion: consents?.privacyVersion || "v1",
+    },
   }, { merge: true });
+
+  if (thresholds && typeof thresholds === "object" && !thresholds.autoEstimate) {
+    const thresholdDocRef = userRef.collection("thresholdHistory").doc("initial");
+    const todayIso = new Date().toISOString().split("T")[0];
+    batch.set(thresholdDocRef, {
+      effectiveFrom: todayIso,
+      ...(typeof thresholds.restingHrBpm === "number" ? { restingHrBpm: thresholds.restingHrBpm } : {}),
+      ...(typeof thresholds.maxHrBpm === "number" ? { maxHrBpm: thresholds.maxHrBpm } : {}),
+      ...(typeof thresholds.ftpW === "number" ? { ftpW: thresholds.ftpW } : {}),
+      ...(typeof thresholds.runThresholdPaceSecPerKm === "number"
+        ? { runThresholdPaceSecPerKm: thresholds.runThresholdPaceSecPerKm }
+        : {}),
+      ...(typeof thresholds.swimCssSecPer100m === "number"
+        ? { swimCssSecPer100m: thresholds.swimCssSecPer100m }
+        : {}),
+      source: "MANUAL",
+      createdAt: now,
+    });
+  }
 
   await batch.commit();
 

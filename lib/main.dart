@@ -13,6 +13,7 @@ import 'core/routing/app_router.dart';
 import 'package:orbit/l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
+import 'features/beta_feedback/widgets/beta_bug_reporter_sheet.dart';
 import 'features/settings/providers/settings_provider.dart';
 
 void main() async {
@@ -55,23 +56,26 @@ class OrbitApp extends ConsumerWidget {
     final goRouter = ref.watch(goRouterProvider);
     final settings = ref.watch(settingsControllerProvider);
 
-    return MaterialApp.router(
-      title: 'ORBIT',
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: settings.themeMode,
-      locale: Locale(settings.languageCode),
-      localizationsDelegates: const [
-        AppLocalizations.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      supportedLocales: const [
-        Locale('de', ''),
-        Locale('en', ''),
-      ],
-      routerConfig: goRouter,
+    return RepaintBoundary(
+      key: orbitRepaintBoundaryKey,
+      child: MaterialApp.router(
+        title: 'ORBIT',
+        theme: AppTheme.lightTheme,
+        darkTheme: AppTheme.darkTheme,
+        themeMode: settings.themeMode,
+        locale: Locale(settings.languageCode),
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: const [
+          Locale('de', ''),
+          Locale('en', ''),
+        ],
+        routerConfig: goRouter,
+      ),
     );
   }
 }

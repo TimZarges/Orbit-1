@@ -26,6 +26,123 @@
 
 ## Einträge
 
+### [Phase 19] Onboarding-Redesign, In-App Beta Bug-Reporter, Error-UX & Echte Karten · STOPP 1 (RISIKO-HOCH)
+- **STOPP-Punkt/Anlass:** STOPP 1 (Phasenabschluss Phase 19) aus Arbeitsauftrag.
+- **Entscheidung & Umgesetzte Maßnahmen:**
+  1. **19.1 Geführtes Mobile-First Onboarding (`OnboardingScreen`):**
+     - Schritt 1: Rolle (ATHLETE / TRAINER), Anzeigename, Sportarten (`TRIATHLON`, `BIKE`, `RUN`, `SWIM`, `STRENGTH`), Erfahrungsstufe (`SIMPLE`, `ADVANCED`, `EXPERT`), Einheiten (`metric`/`imperial`).
+     - Schritt 2: Schwellenwerte (Ruhe-HF, Max-HF, FTP, Schwellen-Pace, CSS) inkl. Info-Tooltips UND der Pflicht-Option *„Ich kenne meine Werte noch nicht – automatisch aus meinen ersten Trainings berechnen“* (`autoEstimateThresholds: true`), damit kein Nutzer im Onboarding blockiert wird. Backend `setInitialRole` legt bei echten Werten den ersten `thresholdHistory`-Eintrag an.
+     - Schritt 3: Datenquellen-Auswahl für Garmin Connect (inkl. 90-Tage-Backfill Checkbox), manuellen `.fit`/`.tcx`/`.gpx`-Upload oder „Später verbinden“.
+     - Schritt 4: Optionaler 6-stelliger Trainer-Einladungscode + transparente Art. 9 DSGVO Gesundheitsdaten-Einwilligung (Checkbox schaltet erst den Abschluss-Button frei).
+  2. **19.2 Zentrales Error-Handling (`OrbitErrorHandler`) & In-App Beta Bug-Reporter (`betaFeedback`):**
+     - `OrbitErrorHandler`: Übersetzt rohe technische Exceptions zweisprachig (DE/EN) in klare Handlungshinweise (`canRetry`, Retry/Report-Aktionen). Maskiert personenbezogene Daten (E-Mails, OAuth-Tokens, Secrets) und führt einen 20-Einträge Ringpuffer für Diagnose-Logs.
+     - `OrbitErrorBanner`: Edles Fehler-Banner mit Aktionsbuttons („Erneut versuchen“ / „Problem melden“).
+     - `BetaBugReporterSheet` & `BetaBugReportIconButton`: Universelles Icon in der AppBar (`Dashboard`, `ActivityCockpit`, `Onboarding`) und Direkt-Button in Fehlerbannern. Öffnet Bottom-Sheet mit Kategorie (`BUG_CRASH`, `WRONG_CALCULATION`, `GARMIN_UPLOAD`, `DESIGN_SUGGESTION`), Freitext, Opt-in für Diagnose-Metadaten (Route, App-Version, Gerät, letzte 20 anonymisierte Logs) sowie Screenshot des aktuellen Bildschirms via `RepaintBoundary` (`orbitRepaintBoundaryKey`).
+     - **Firestore & Storage Security Rules:** `/betaFeedback/{reportId}` erlaubt authentifizierten Nutzern nur das Erstellen (`create`) eigener Reports und das Lesen (`read`) ausschließlich eigener Reports; fremde Reports sind unlesbar; `update` und `delete` sind strikt verboten (`allow update, delete: if false`). Cloud Storage `betaFeedback/{userId}/{fileName}` speichert optionale PNG-Screenshots (≤ 5 MB).
+  3. **19.3 Echte Kartenkacheln (`flutter_map`) statt 40px Canvas Grid (`Blocker 7`):**
+     - Abhängigkeiten `flutter_map: ^8.3.2` und `latlong2: ^0.10.1` integriert.
+     - `TelemetryMapWidget`:
+       - **Ohne Karten-Opt-in (DSGVO-Default):** Vollständig interaktive GPS-Polylinie vor edlem `#001F47` Navy-Hintergrund ohne jeden externen HTTP-Request an Kartenserver (Zero-IP-Leak).
+       - **Mit aktivierten Kacheln:** Bestätigungsdialog für CartoDB Dark Matter / OpenStreetMap-Kacheln.
+       - **Zonen-Farbcodierung:** Umschaltbar nach Herzfrequenz-Zone (Z1–Z5), Watt-Zone (Z1–Z7 nach Coggan) oder Pace/Speed.
+       - **Marker & Scrubbing:** Start- (Grün), Ziel- (Rot), Split-Marker sowie live synchronisierter Volt-Marker beim Scrubbing über die Telemetrie-Diagramme.
+- **Nachweise (Evidence-Only gemäß Regel 2):**
+
+```text
+1. TypeScript-Build & Reale Cloud Functions Exporte (Regel 4):
+$ export PATH="/Users/timzarges/.nvm/versions/node/v20.20.2/bin:$PATH" && npm --prefix functions run build && node -e "console.log(Object.keys(require('./functions/lib/index.js')))"
+> build
+> tsc
+
+[
+  'setInitialRole',
+  'deleteAccount',
+  'exportAccount',
+  'createInvite',
+  'redeemInvite',
+  'updatePermissions',
+  'revokeLink',
+  'onCoachLinkChanged',
+  'onActivityCreatedForCoachDashboard',
+  'seedCoachAthletes',
+  'onActivityWritten',
+  'recomputeMetrics',
+  'processFitUpload',
+  'processActivityUpload',
+  'deleteActivity',
+  'garminAuthStart',
+  'garminAuthCallback',
+  'garminDisconnect',
+  'garminWebhook',
+  'processGarminWebhook',
+  'garminBackfill',
+  'requestGarminBackfill',
+  'onPlannedWorkoutWritten',
+  'onMessageCreated'
+]
+
+2. Backend- & Rules-Emulator-Testlauf (Firestore Emulator):
+$ export JAVA_HOME="/Users/timzarges/.gemini/antigravity/scratch/jdk/jdk-21.0.12.1+1/Contents/Home" && export PATH="/Users/timzarges/.nvm/versions/node/v20.20.2/bin:$JAVA_HOME/bin:$PATH" && npx firebase-tools emulators:exec --only firestore "npm --prefix functions test"
+i  emulators: Starting emulators: firestore
+✔  firestore: Firestore Emulator was started in standard edition.
+i  Running script: npm --prefix functions test
+> test
+> jest --runInBand
+
+PASS src/__tests__/rules.test.ts (Section 1-7 inkl. betaFeedback Security Rules)
+PASS src/__tests__/coachLink.test.ts
+PASS src/__tests__/activityParser.test.ts
+PASS src/__tests__/garmin.test.ts
+PASS src/__tests__/auth.test.ts
+PASS src/__tests__/chat.test.ts
+PASS src/__tests__/diagnostics.test.ts
+PASS src/__tests__/metrics.test.ts
+
+Test Suites: 8 passed, 8 total
+Tests:       50 passed, 50 total
+Snapshots:   0 total
+Time:        6.017 s
+Ran all test suites.
+✔  Script exited successfully (code 0)
+
+3. Flutter Code-Formatierung & Analyse:
+$ export PATH="/Users/timzarges/.gemini/antigravity/scratch/flutter/bin:$PATH" && dart format .
+Formatted lib/core/error/orbit_error_handler.dart
+Formatted lib/features/activities/widgets/telemetry_map_widget.dart
+Formatted lib/features/beta_feedback/widgets/beta_bug_reporter_sheet.dart
+Formatted lib/features/onboarding/screens/onboarding_screen.dart
+Formatted test/features/phase19_onboarding_ux_maps_test.dart
+Formatted 185 files (5 changed) in 0.55 seconds.
+
+$ export PATH="/Users/timzarges/.gemini/antigravity/scratch/flutter/bin:$PATH" && flutter analyze 2>&1 | grep -E "(error •|warning •)"
+(0 errors, 0 warnings - Exit 1)
+
+4. Flutter Testlauf (112 Tests inkl. Phase 19 Test-Suite):
+$ export PATH="/Users/timzarges/.gemini/antigravity/scratch/flutter/bin:$PATH" && flutter test
+00:03 +112: All tests passed!
+
+5. Git Status & Diff-Übersicht gegen main (v0.18.0):
+$ git diff --stat main
+ docs/DATA_MODEL.md                                 |   20 +
+ docs/DECISIONS.md                                  |   21 +
+ firestore.rules                                    |   27 +
+ functions/package.json                             |    2 +-
+ functions/src/__tests__/rules.test.ts              |   82 ++
+ functions/src/auth.ts                              |   33 +-
+ .../screens/activity_cockpit_screen.dart           |    2 +
+ .../activities/screens/today_tab_screen.dart       |   69 +-
+ .../activities/widgets/telemetry_map_widget.dart   |  575 ++++++---
+ .../dashboard/screens/dashboard_screen.dart        |    2 +
+ .../onboarding/screens/onboarding_screen.dart      | 1329 ++++++++++++++++----
+ lib/main.dart                                      |   38 +-
+ pubspec.lock                                       |  210 +++-
+ pubspec.yaml                                       |    3 +
+ storage.rules                                      |    9 +
+ 15 files changed, 1977 insertions(+), 445 deletions(-)
+```
+
+---
+
 ### [Phase 18] Echte Daten-Pipeline: Garmin Live + Backfill, Multi-Format-Upload & Coach-Kopplung · STOPP 2 (RISIKO-HOCH)
 - **STOPP-Punkt/Anlass:** STOPP 2 (Phasenabschluss Phase 18) aus `docs/phases/phase_18.md` inkl. der 3 verbindlichen Garmin-API-Korrekturen nach Freigabe von STOPP 1.
 - **Entscheidung & Umgesetzte Maßnahmen:**

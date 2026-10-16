@@ -270,3 +270,24 @@
   3. Null Runtime-Overhead und keine Abhängigkeit von generiertem `*.freezed.dart`-Code.
   4. Einfacheres Refactoring und direktere Fehlermeldungen des Dart-Analyzers.
 - **Alternativen:** Nachträgliche Umstellung aller über 40 Modelle auf `@freezed` (verworfen wegen hohem Regressionsrisiko und ohne Mehrwert für den Beta-Launch).
+
+### 2026-10-16: Phase 19: Onboarding-Redesign, In-App Beta Bug-Reporter, Error-UX & Echte Kartenkacheln
+- **Kontext:** Google Play Store Beta-Launch erfordert einen reibungslosen Einstieg ohne Blockaden (Nutzer kennen teils ihre Schwellenwerte nicht), zentrales Error-Handling ohne rohe Firebase-Exceptions, einen DSGVO-konformen In-App Feedback-Kanal und echte Kartenkacheln (`flutter_map`) anstelle des 40px-Canvas-Gitters.
+- **Entscheidung & Begründung:**
+  1. **Mobile-First 4-Schritte-Onboarding:**
+     - Schritt 1: Rolle (ATHLETE / TRAINER), Anzeigename, Sportarten, Erfahrungsstufe, Einheiten.
+     - Schritt 2: Schwellenwerte inkl. Pflicht-Option *„Ich kenne meine Werte noch nicht – automatisch aus meinen ersten Trainings berechnen“* (`autoEstimateThresholds: true`), damit kein Nutzer blockiert wird.
+     - Schritt 3: Datenquelle (Garmin Connect mit 90-Tage-Backfill, Datei-Upload `.fit`/`.tcx`/`.gpx`, Später verbinden).
+     - Schritt 4: Optionaler 6-stelliger Trainer-Einladungscode + expliziter Art. 9 DSGVO Gesundheitsdaten-Consent.
+  2. **Zentrales Error-Handling & Beta Bug-Reporter (`betaFeedback`):**
+     - `OrbitErrorHandler` übersetzt Fehler zweisprachig (DE/EN) und führt einen 20-Einträge-Ringpuffer mit strikter PII-/Token-Sanitisierung.
+     - `BetaBugReportIconButton` in der App-Bar und `OrbitErrorBanner` ermöglichen 1-Klick-Feedback.
+     - Firestore Security Rules für `/betaFeedback/{reportId}` erlauben authentifizierten Nutzern nur das Erstellen eigener Berichte und das Lesen eigener Reports; fremde Reports sind unlesbar; `update` und `delete` sind strikt verboten.
+     - Cloud Storage `betaFeedback/{userId}/{fileName}` speichert optionale PNG-Screenshots (≤ 5 MB).
+  3. **Echte Karten (`flutter_map`) & DSGVO-Opt-in:**
+     - Standardmäßig rendert `TelemetryMapWidget` den farbcodierten GPS-Track (HF-, Watt- oder Pace-Zone) auf `#001F47` Navy ohne externe Netzanfragen (Zero-IP-Leak).
+     - Erst nach expliziter Bestätigung im DSGVO-Dialog werden CartoDB Dark Matter / OpenStreetMap-Kacheln dynamisch eingeblendet.
+     - Synchronisation mit Scrubbing-Marker und Start-/Ziel-/Split-Markern.
+- **Alternativen:**
+  - Pflichteingabe physiologischer Werte im Onboarding (verworfen, da Hürde für Neunutzer zu hoch).
+  - Fremde Fehlertracker wie Sentry ohne In-App-Bug-Reporter (verworfen wegen Drittanbieter-Datenschutz und mangelnder Einbindung in Beta-Feedback-Workflows).

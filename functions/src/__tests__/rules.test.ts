@@ -452,4 +452,86 @@ describe("Firestore Security Rules Tests (RULES_TESTPLAN.md)", () => {
       );
     });
   });
+
+  // ===============================================================
+  // 7. In-App Beta-Bug-Reporter (Phase 19.2)
+  // ===============================================================
+  describe("7. In-App Beta-Bug-Reporter (betaFeedback — Phase 19.2)", () => {
+    it("erlaubt authentifizierten Nutzern das Anlegen eigener Bug-Reports in betaFeedback", async () => {
+      const aliceDb = testEnv.authenticatedContext("alice").firestore();
+
+      await assertSucceeds(
+        aliceDb.collection("betaFeedback").doc("rep_alice_1").set({
+          userId: "alice",
+          category: "BUG_CRASH",
+          description: "Beim Öffnen der Aktivität flackert das Chart kurz.",
+          includeDiagnostics: true,
+          diagnostics: {
+            route: "/analysis",
+            appVersion: "1.0.0+1 (v0.19.0-beta)",
+            deviceInfo: "android",
+            recentLogs: ["[2026-10-16T10:00:00Z] code=unavailable"],
+          },
+          screenshotPath: "betaFeedback/alice/rep_alice_1.png",
+          createdAt: "2026-10-16T10:00:00.000Z",
+        })
+      );
+    });
+
+    it("verhindert das Lesen fremder Bug-Reports sowie Identitätsfälschung und Manipulation", async () => {
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        await context.firestore().collection("betaFeedback").doc("rep_alice_1").set({
+          userId: "alice",
+          category: "GARMIN_UPLOAD",
+          description: "FIT-Upload dauerte 5 Sekunden.",
+          includeDiagnostics: false,
+        });
+      });
+
+      const aliceDb = testEnv.authenticatedContext("alice").firestore();
+      const bobDb = testEnv.authenticatedContext("coachBob").firestore();
+      const anonDb = testEnv.unauthenticatedContext().firestore();
+
+      // Eigener Report darf gelesen werden
+      await assertSucceeds(
+        aliceDb.collection("betaFeedback").doc("rep_alice_1").get()
+      );
+
+      // Fremder Report darf NICHT gelesen werden!
+      await assertFails(
+        bobDb.collection("betaFeedback").doc("rep_alice_1").get()
+      );
+      await assertFails(
+        anonDb.collection("betaFeedback").doc("rep_alice_1").get()
+      );
+
+      // Identitätsfälschung beim Anlegen verboten
+      await assertFails(
+        bobDb.collection("betaFeedback").doc("rep_forged").set({
+          userId: "alice",
+          category: "BUG_CRASH",
+          description: "Gefälschter Report",
+        })
+      );
+
+      // Ungültige Kategorie verboten
+      await assertFails(
+        aliceDb.collection("betaFeedback").doc("rep_invalid_cat").set({
+          userId: "alice",
+          category: "HACK_CATEGORY",
+          description: "Test",
+        })
+      );
+
+      // Nachträgliches Ändern oder Löschen verboten
+      await assertFails(
+        aliceDb.collection("betaFeedback").doc("rep_alice_1").update({
+          description: "Geändert",
+        })
+      );
+      await assertFails(
+        aliceDb.collection("betaFeedback").doc("rep_alice_1").delete()
+      );
+    });
+  });
 });

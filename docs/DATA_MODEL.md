@@ -116,6 +116,25 @@ id, name, columns: string[], filters: map, sortColumn: string, sortAscending: bo
 ### `webhookEvents/{id}` (nur Server)
 Roh-Payloads von Anbietern. Eine Firestore-getriggerte Function verarbeitet sie (inkl. Retry). Status: `RECEIVED|PROCESSED|FAILED`.
 
+### `betaFeedback/{reportId}` (Phase 19: In-App Beta Bug Reporter)
+Feedback- und Fehlerberichte aus dem Beta-Cockpit:
+```
+reportId: string (UUIDv4)
+userId: string (request.auth.uid)
+category: "BUG_CRASH" | "WRONG_CALCULATION" | "GARMIN_UPLOAD" | "DESIGN_SUGGESTION"
+description: string (1..5000 Zeichen)
+includeDiagnostics: bool
+diagnostics?: {
+  route: string,
+  appVersion: string,
+  deviceInfo: string,
+  recentLogs: string[] (max. 20 anonymisierte Logzeilen)
+}
+screenshotPath?: string (z. B. "betaFeedback/{userId}/{reportId}.png")
+createdAt: timestamp
+```
+*Rules:* `create` durch jeden authentifizierten Nutzer (nur eigene `userId`), `read` nur für eigene Reports (`resource.data.userId == request.auth.uid`), kein `update` oder `delete` durch Clients.
+
 ## Storage-Pfade
 - `users/{uid}/fit/{activityId}.fit`
 - `users/{uid}/streams/{activityId}.json.gz`
@@ -143,6 +162,7 @@ Roh-Payloads von Anbietern. Eine Firestore-getriggerte Function verarbeitet sie 
   }
   ```
 - `chats/{chatId}/attachments/{file}` (Größen- und Typlimit in Rules)
+- `betaFeedback/{userId}/{fileName}` (Phase 19: Screenshots zum Bug-Report, nur Bildformate image/* ≤ 5 MB, nur eigener `userId`-Pfad schreib-/lesbar)
 
 ## Indizes
 Composite-Indizes in `firestore.indexes.json`, z. B. `activities (athleteId, localDate desc)`, `activities (coachId, localDate desc)`, `plannedWorkouts (athleteId, localDate)`, `plannedWorkouts (coachId, localDate)`.

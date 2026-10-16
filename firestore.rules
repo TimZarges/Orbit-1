@@ -52,6 +52,9 @@ service cloud.firestore {
     //
     // Subcollection: users/{uid}/preferences/{prefId}
     // Fields: name, columns, filters, sort, ...
+    //
+    // Collection: betaFeedback/{reportId} (and beta_feedback/{reportId})
+    // Fields: userId, category, description, includeDiagnostics, diagnostics, screenshotPath, createdAt, status
     // ===============================================================
 
     // ===============================================================
@@ -195,6 +198,18 @@ service cloud.firestore {
       let appVersionOk = !('appVersion' in data) || checkStringSize(data.appVersion, 1, 50);
       let languageOk = !('language' in data) || checkStringSize(data.language, 1, 20);
       return tokenOk && platformOk && appVersionOk && languageOk;
+    }
+
+    function isValidBetaFeedbackCreate(data) {
+      let hasRequired = 'userId' in data && 'category' in data && 'description' in data;
+      let userIdOk = data.userId == request.auth.uid;
+      let categoryOk = data.category in ['BUG_CRASH', 'WRONG_CALCULATION', 'GARMIN_UPLOAD', 'DESIGN_SUGGESTION'];
+      let descriptionOk = checkStringSize(data.description, 1, 5000);
+      let includeDiagnosticsOk = !('includeDiagnostics' in data) || data.includeDiagnostics is bool;
+      let diagnosticsOk = !('diagnostics' in data) || data.diagnostics == null || (data.diagnostics is map && data.diagnostics.keys().size() <= 15);
+      let screenshotPathOk = !('screenshotPath' in data) || checkOptionalStringSize(data.screenshotPath, 1, 500);
+      let sizeOk = data.keys().size() <= 15;
+      return hasRequired && userIdOk && categoryOk && descriptionOk && includeDiagnosticsOk && diagnosticsOk && screenshotPathOk && sizeOk;
     }
 
     // ===============================================================
@@ -370,6 +385,18 @@ service cloud.firestore {
     match /coachDashboard/{coachId}/athletes/{athleteId} {
       allow read: if isAuthenticated() && request.auth.uid == coachId;
       allow write: if false; // Only Cloud Functions
+    }
+
+    match /betaFeedback/{reportId} {
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated() && isValidBetaFeedbackCreate(request.resource.data);
+      allow update, delete: if false;
+    }
+
+    match /beta_feedback/{reportId} {
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated() && isValidBetaFeedbackCreate(request.resource.data);
+      allow update, delete: if false;
     }
   }
 }

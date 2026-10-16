@@ -3,6 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/design/app_colors.dart';
 import '../../../core/design/app_typography.dart';
 import '../../../core/design/app_spacing.dart';
+import '../../../core/error/orbit_error_handler.dart';
+import '../../beta_feedback/models/beta_feedback_report.dart';
+import '../../beta_feedback/widgets/beta_bug_reporter_sheet.dart';
 
 import '../../coach_link/providers/athlete_context_provider.dart';
 import '../../health/widgets/readiness_card.dart';
@@ -192,18 +195,19 @@ class TodayTabScreen extends ConsumerWidget {
                   ],
 
                   if (uploadState.error != null) ...[
-                    Container(
-                      margin: const EdgeInsets.only(bottom: AppSpacing.p12),
-                      padding: const EdgeInsets.all(AppSpacing.p12),
-                      decoration: BoxDecoration(
-                        color: Colors.red.shade50,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.red.shade200),
-                      ),
-                      child: Text(
-                        'Upload-Fehler: ${uploadState.error}',
-                        style:
-                            TextStyle(color: Colors.red.shade800, fontSize: 13),
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: AppSpacing.p12),
+                      child: OrbitErrorBanner(
+                        error: uploadState.error!,
+                        contextHint: 'ActivityUpload',
+                        onRetry: () => ref
+                            .read(activityUploadProvider.notifier)
+                            .pickAndUpload(),
+                        onReportIssue: () => showBetaBugReporterSheet(
+                          context,
+                          initialCategory: BetaFeedbackCategory.garminUpload,
+                          initialDescription: uploadState.error,
+                        ),
                       ),
                     ),
                   ],
@@ -577,7 +581,7 @@ class TodayTabScreen extends ConsumerWidget {
     );
   }
 
-  /// Fehlerzustand mit Wiederholen-Button
+  /// Fehlerzustand mit Wiederholen- und Problem-melden-Button
   Widget _buildErrorState(
     BuildContext context,
     WidgetRef ref,
@@ -587,36 +591,17 @@ class TodayTabScreen extends ConsumerWidget {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.cloud_off_outlined, size: 56, color: Colors.grey),
-            const SizedBox(height: 16),
-            const Text(
-              'Dashboard konnte nicht geladen werden',
-              style: AppTypography.title,
-              textAlign: TextAlign.center,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 480),
+          child: OrbitErrorBanner(
+            error: error,
+            contextHint: 'HomeDashboard',
+            onRetry: () => ref.refresh(homeDashboardProvider(athleteId)),
+            onReportIssue: () => showBetaBugReporterSheet(
+              context,
+              initialCategory: BetaFeedbackCategory.bugCrash,
             ),
-            const SizedBox(height: 8),
-            Text(
-              '$error',
-              style: AppTypography.label.copyWith(color: Colors.grey.shade600),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton.icon(
-              onPressed: () => ref.refresh(homeDashboardProvider(athleteId)),
-              icon: const Icon(Icons.refresh),
-              label: const Text('Erneut versuchen'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.navy,
-                foregroundColor: AppColors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );

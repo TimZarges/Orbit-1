@@ -15,6 +15,7 @@ import '../widgets/telemetry_map_widget.dart';
 import '../widgets/power_duration_curve_widget.dart';
 import '../widgets/zone_detail_widget.dart';
 import '../../analysis/models/zone_distribution.dart';
+import '../../beta_feedback/widgets/beta_bug_reporter_sheet.dart';
 
 /// Tiefenansicht einer Aktivität im Dark Cockpit (#0F172A).
 ///
@@ -156,6 +157,7 @@ class _ActivityCockpitScreenState extends ConsumerState<ActivityCockpitScreen> {
               ? widget.activity.title
               : 'Cockpit'),
           actions: [
+            const BetaBugReportIconButton(),
             IconButton(
               icon: const Icon(Icons.screen_rotation_outlined,
                   color: Colors.white70),
