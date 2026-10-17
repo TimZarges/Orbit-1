@@ -4,7 +4,8 @@ import 'package:intl/intl.dart';
 import '../../../core/design/app_colors.dart';
 import '../../../core/design/app_typography.dart';
 import '../../../core/metrics/term_resolver.dart';
-import '../../auth/providers/user_provider.dart';
+import '../../settings/providers/settings_provider.dart';
+import '../../beta_feedback/widgets/beta_bug_reporter_sheet.dart';
 import '../models/activity.dart';
 import '../providers/activity_actions_provider.dart';
 import 'activity_cockpit_screen.dart';
@@ -100,25 +101,15 @@ class ActivityDetailScreen extends ConsumerWidget {
     final dateStr = DateFormat('dd.MM.yyyy, HH:mm').format(localTime);
     final sportColor = _getSportColor(activity.sport);
 
-    // Erfahrungsstufe aus Profil ermitteln
-    final userDoc = ref.watch(userDocumentProvider).valueOrNull;
-    final profile = userDoc?['profile'];
-    final expLevelStr =
-        (profile is Map ? profile['experienceLevel'] : null) as String?;
-    final ExperienceLevel experienceLevel;
-    if (expLevelStr == 'EXPERT') {
-      experienceLevel = ExperienceLevel.expert;
-    } else if (expLevelStr == 'ADVANCED') {
-      experienceLevel = ExperienceLevel.advanced;
-    } else {
-      experienceLevel = ExperienceLevel.beginner;
-    }
+    // Erfahrungsstufe aus Einstellungen / Provider reaktiv ermitteln
+    final experienceLevel = ref.watch(settingsProvider).experienceLevel;
 
     return Scaffold(
       backgroundColor: AppColors.lightBackground,
       appBar: AppBar(
         title: const Text('Aktivität'),
         actions: [
+          const BetaBugReportIconButton(),
           IconButton(
             icon: const Icon(Icons.delete_outline),
             onPressed: () => _confirmDelete(context, ref),
@@ -264,19 +255,23 @@ class ActivityDetailScreen extends ConsumerWidget {
                     value:
                         '${summary!.avgCadence!.round()} ${activity.sport.toUpperCase() == 'BIKE' ? 'rpm' : 'spm'}',
                   ),
-                // Belastungs-Metriken über TermResolver
-                _MetricCard(
-                  title: TermResolver.resolve(MetricTerm.tss, experienceLevel),
-                  value: '45', // Standard-Schätzung falls noch nicht berechnet
-                ),
+                // Belastungs-Metriken über TermResolver (nur bei Fortgeschritten & Experte)
+                if (experienceLevel != ExperienceLevel.beginner)
+                  _MetricCard(
+                    title:
+                        TermResolver.resolve(MetricTerm.tss, experienceLevel),
+                    value: '45',
+                  ),
               ],
             ),
 
             const SizedBox(height: 24),
 
-            // Zonenverteilung als beschrifteter Balken
-            _buildActivityZoneBar(),
-            const SizedBox(height: 24),
+            // Zonenverteilung nur bei Fortgeschritten & Experte
+            if (experienceLevel != ExperienceLevel.beginner) ...[
+              _buildActivityZoneBar(),
+              const SizedBox(height: 24),
+            ],
 
             // Segments (Multisport)
             if (activity.segments != null && activity.segments!.isNotEmpty) ...[
@@ -312,9 +307,9 @@ class ActivityDetailScreen extends ConsumerWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: const Color(0xFF0F172A),
+                color: const Color(0xFF002A5C),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFF334155)),
+                border: Border.all(color: const Color(0xFF003D82)),
               ),
               child: Column(
                 children: [
@@ -329,7 +324,9 @@ class ActivityDetailScreen extends ConsumerWidget {
                     },
                     icon: const Icon(Icons.analytics_outlined,
                         color: AppColors.navy),
-                    label: const Text('Analyse-Cockpit öffnen'),
+                    label: Text(experienceLevel == ExperienceLevel.beginner
+                        ? 'Details & Kurven ansehen'
+                        : 'Analyse-Cockpit öffnen'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.accentVolt,
                       foregroundColor: AppColors.navy,
@@ -339,7 +336,9 @@ class ActivityDetailScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Telemetrie mit Kanalwahl, synchroner GPS-Strecke und Power-Duration-Kurve.',
+                    experienceLevel == ExperienceLevel.expert
+                        ? 'Vollständige wissenschaftliche Telemetrie: CP/W\', W\'bal-Depletion, Decoupling & GPS.'
+                        : 'Telemetrie mit synchroner GPS-Strecke und Leistungsdaten.',
                     textAlign: TextAlign.center,
                     style: AppTypography.label.copyWith(color: Colors.white70),
                   ),

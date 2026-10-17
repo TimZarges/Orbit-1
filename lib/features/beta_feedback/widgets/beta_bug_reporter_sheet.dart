@@ -12,6 +12,7 @@ import 'package:uuid/uuid.dart';
 import '../../../core/design/app_colors.dart';
 import '../../../core/design/app_typography.dart';
 import '../../../core/error/orbit_error_handler.dart';
+import '../../../core/config/app_config.dart';
 import '../models/beta_feedback_report.dart';
 
 /// GlobalKey für das [RepaintBoundary] um die App zur optionalen Screenshot-Aufnahme.
@@ -138,7 +139,7 @@ class _BetaBugReporterSheetState extends State<BetaBugReporterSheet> {
   bool _isSubmitting = false;
   String? _validationError;
 
-  static const String appVersionString = '1.0.0+1 (v0.19.0-beta)';
+  static String get appVersionString => AppInfo.fullVersionString;
 
   @override
   void initState() {

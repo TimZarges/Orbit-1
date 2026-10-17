@@ -17,7 +17,9 @@ class MockAuthService implements AuthService {
 }
 
 void main() {
-  testWidgets('SettingsScreen zeigt Abmelden-Option und führt signOut bei Bestätigung aus', (tester) async {
+  testWidgets(
+      'SettingsScreen zeigt Abmelden-Option und führt signOut bei Bestätigung aus',
+      (tester) async {
     final mockAuth = MockAuthService();
 
     await tester.pumpWidget(
@@ -42,7 +44,8 @@ void main() {
 
     // Verify confirmation dialog
     expect(find.text('Abmelden?'), findsOneWidget);
-    expect(find.text('Möchtest du dich wirklich von ORBIT abmelden?'), findsOneWidget);
+    expect(find.text('Möchtest du dich wirklich von ORBIT abmelden?'),
+        findsOneWidget);
 
     // Tap Abbrechen
     await tester.tap(find.text('Abbrechen'));

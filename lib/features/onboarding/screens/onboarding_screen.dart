@@ -1,4 +1,8 @@
+import 'dart:convert';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -7,6 +11,7 @@ import '../../../core/design/app_typography.dart';
 import '../../../core/error/orbit_error_handler.dart';
 import '../../../core/widgets/info_term.dart';
 import '../../activities/providers/activity_upload_provider.dart';
+import '../../auth/providers/auth_provider.dart';
 import '../../auth/providers/user_provider.dart';
 import '../../beta_feedback/models/beta_feedback_report.dart';
 import '../../beta_feedback/widgets/beta_bug_reporter_sheet.dart';
@@ -30,6 +35,14 @@ class OnboardingSubmissionData {
   final String? inviteCode;
   final bool healthConsentAccepted;
 
+  // Erweiterte Profilfelder (Phase 29)
+  final int? birthYear;
+  final double? weightKg;
+  final int? heightCm;
+  final String? photoBase64;
+  final String? email;
+  final String? password;
+
   const OnboardingSubmissionData({
     required this.role,
     required this.displayName,
@@ -45,10 +58,16 @@ class OnboardingSubmissionData {
     required this.selectedDataSource,
     this.inviteCode,
     required this.healthConsentAccepted,
+    this.birthYear,
+    this.weightKg,
+    this.heightCm,
+    this.photoBase64,
+    this.email,
+    this.password,
   });
 }
 
-/// Geführter Mobile-First 4-Schritte-Onboarding-Assistent für Athleten und Trainer (Phase 19.1).
+/// Geführter Mobile-First 4-Schritte-Onboarding-Assistent für Athleten und Trainer (Phase 29 Onboarding-First).
 class OnboardingScreen extends ConsumerStatefulWidget {
   final Future<void> Function(OnboardingSubmissionData data)?
       onCompleteOverride;
@@ -69,9 +88,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   // Schritt 1: Rolle & Profil
   String _selectedRole = 'ATHLETE';
   final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _birthYearController = TextEditingController();
+  final TextEditingController _weightController = TextEditingController();
+  final TextEditingController _heightController = TextEditingController();
   final List<String> _selectedSports = ['BIKE', 'RUN'];
   String _experienceLevel = 'ADVANCED';
   String _units = 'metric';
+  String? _photoBase64;
 
   // Schritt 2: Physiologische Basiswerte & Zonen
   bool _autoEstimateThresholds = false;
@@ -85,8 +108,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   String _selectedDataSource = 'LATER'; // 'GARMIN' | 'FILE_UPLOAD' | 'LATER'
   bool _garminBackfill90Days = true;
 
-  // Schritt 4: Coach-Link & DSGVO
+  // Schritt 4: Coach-Link & Datenschutz & Kontoerstellung
   final TextEditingController _inviteCodeController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
   bool _gdprHealthConsent = false;
 
   bool _isSubmitting = false;
@@ -103,16 +128,20 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   @override
   void dispose() {
     _nameController.dispose();
+    _birthYearController.dispose();
+    _weightController.dispose();
+    _heightController.dispose();
     _restingHrController.dispose();
     _maxHrController.dispose();
     _ftpController.dispose();
     _runPaceController.dispose();
     _swimCssController.dispose();
     _inviteCodeController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
     super.dispose();
   }
 
-  /// Parst "mm:ss" oder Sekunden-String in Sekunden (z. B. "4:30" -> 270).
   int? _parsePaceSeconds(String raw) {
     final trimmed = raw.trim();
     if (trimmed.isEmpty) return null;
@@ -143,7 +172,16 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       case 2:
         return _selectedDataSource.isNotEmpty;
       case 3:
-        return _gdprHealthConsent && !_isSubmitting;
+        bool isAuth = false;
+        try {
+          isAuth = FirebaseAuth.instance.currentUser != null;
+        } catch (_) {
+          isAuth = true;
+        }
+        final hasCreds = isAuth ||
+            (_emailController.text.trim().isNotEmpty &&
+                _passwordController.text.trim().length >= 6);
+        return _gdprHealthConsent && hasCreds && !_isSubmitting;
       default:
         return false;
     }
@@ -169,6 +207,21 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     }
   }
 
+  Future<void> _pickImage() async {
+    try {
+      final file = await FilePicker.pickFile(
+        type: FileType.image,
+      );
+
+      if (file != null) {
+        final bytes = await file.readAsBytes();
+        setState(() {
+          _photoBase64 = 'data:image/jpeg;base64,${base64Encode(bytes)}';
+        });
+      }
+    } catch (_) {}
+  }
+
   Future<void> _finishOnboarding() async {
     if (!_gdprHealthConsent) return;
 
@@ -184,7 +237,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     final nameParts = displayName.split(RegExp(r'\s+'));
     final firstName = nameParts.first;
     final lastName = nameParts.length > 1 ? nameParts.sublist(1).join(' ') : '';
-
     final code = _inviteCodeController.text.trim().toUpperCase();
 
     final submission = OnboardingSubmissionData(
@@ -202,12 +254,32 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       selectedDataSource: _selectedDataSource,
       inviteCode: code.isNotEmpty ? code : null,
       healthConsentAccepted: _gdprHealthConsent,
+      birthYear: int.tryParse(_birthYearController.text.trim()),
+      weightKg: double.tryParse(_weightController.text.trim()),
+      heightCm: int.tryParse(_heightController.text.trim()),
+      photoBase64: _photoBase64,
+      email: _emailController.text.trim(),
+      password: _passwordController.text.trim(),
     );
 
     try {
       if (widget.onCompleteOverride != null) {
         await widget.onCompleteOverride!(submission);
       } else {
+        // Falls noch nicht eingeloggt: Neues Konto in Firebase Auth anlegen
+        if (FirebaseAuth.instance.currentUser == null) {
+          final email = _emailController.text.trim();
+          final password = _passwordController.text.trim();
+          if (email.isNotEmpty && password.isNotEmpty) {
+            await ref
+                .read(authServiceProvider)
+                .signUpWithEmail(email, password);
+          }
+        }
+
+        final uid = FirebaseAuth.instance.currentUser?.uid;
+
+        // Cloud Function setInitialRole aufrufen (Frankfurt europe-west3)
         final functions = FirebaseFunctions.instanceFor(region: 'europe-west3');
         await functions.httpsCallable('setInitialRole').call({
           'role': submission.role,
@@ -219,11 +291,20 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             'sports': submission.sports,
             'experienceLevel': submission.experienceLevel,
             'autoEstimateThresholds': submission.autoEstimateThresholds,
+            if (submission.birthYear != null) 'birthYear': submission.birthYear,
+            if (submission.weightKg != null) 'weightKg': submission.weightKg,
+            if (submission.heightCm != null) 'heightCm': submission.heightCm,
+            if (submission.photoBase64 != null)
+              'photoUrl': submission.photoBase64,
+            if (submission.restingHrBpm != null)
+              'restingHrBpm': submission.restingHrBpm,
+            if (submission.maxHrBpm != null) 'maxHrBpm': submission.maxHrBpm,
             'timezone': 'Europe/Berlin',
           },
           'settings': {
             'units': submission.units,
             'language': 'de',
+            'experienceLevel': submission.experienceLevel.toLowerCase(),
           },
           'thresholds': {
             'autoEstimate': submission.autoEstimateThresholds,
@@ -245,15 +326,37 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           },
         });
 
-        // Falls ein 6-stelliger Trainer-Einladungscode angegeben wurde, direkt einlösen
-        if (submission.inviteCode != null &&
-            submission.inviteCode!.isNotEmpty) {
-          await ref
-              .read(coachLinkServiceProvider)
-              .redeemInvite(submission.inviteCode!);
+        // Zusätzlicher Merge-Write in Firestore users/{uid}
+        if (uid != null) {
+          await FirebaseFirestore.instance.collection('users').doc(uid).set({
+            'profile': {
+              'displayName': submission.displayName,
+              'firstName': firstName,
+              'lastName': lastName,
+              if (submission.birthYear != null)
+                'birthYear': submission.birthYear,
+              if (submission.weightKg != null) 'weightKg': submission.weightKg,
+              if (submission.heightCm != null) 'heightCm': submission.heightCm,
+              if (submission.photoBase64 != null)
+                'photoUrl': submission.photoBase64,
+              'sports': submission.sports,
+              'sportTypes': submission.sports,
+              'experienceLevel': submission.experienceLevel,
+            },
+          }, SetOptions(merge: true)).catchError((_) {});
         }
 
-        // Gewählte Datenquelle aus Schritt 3 anstoßen
+        // Trainer-Einladungscode einlösen falls vorhanden
+        if (submission.inviteCode != null &&
+            submission.inviteCode!.isNotEmpty) {
+          try {
+            await ref
+                .read(coachLinkServiceProvider)
+                .redeemInvite(submission.inviteCode!);
+          } catch (_) {}
+        }
+
+        // Datenquelle anstoßen
         if (submission.selectedDataSource == 'GARMIN') {
           await ref.read(garminServiceProvider).startGarminAuth();
         } else if (submission.selectedDataSource == 'FILE_UPLOAD') {
@@ -286,18 +389,18 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       'Rolle & Profil',
       'Basiswerte & Zonen',
       'Datenquelle verbinden',
-      'Coach-Link & Datenschutz',
+      'Konto & Datenschutz',
     ];
 
     return Scaffold(
-      backgroundColor: AppColors.greyLight,
+      backgroundColor: AppColors.navy,
       appBar: AppBar(
-        backgroundColor: AppColors.white,
+        backgroundColor: Colors.transparent,
         elevation: 0,
         leading: _currentStep > 0
             ? IconButton(
                 key: const Key('onboarding_back_button'),
-                icon: const Icon(Icons.arrow_back, color: AppColors.navy),
+                icon: const Icon(Icons.arrow_back, color: AppColors.white),
                 onPressed: _goBack,
               )
             : null,
@@ -306,23 +409,35 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           children: [
             Text(
               'Schritt ${_currentStep + 1} von $_totalSteps',
-              style: AppTypography.label.copyWith(color: AppColors.techGrey),
+              style: AppTypography.label.copyWith(color: AppColors.volt),
             ),
             Text(
               stepTitles[_currentStep],
-              style: AppTypography.title.copyWith(color: AppColors.navy),
+              style: AppTypography.title
+                  .copyWith(color: AppColors.white, fontSize: 16),
             ),
           ],
         ),
-        actions: const [
-          BetaBugReportIconButton(),
+        actions: [
+          TextButton(
+            onPressed: () => context.go('/login'),
+            child: const Text(
+              'Anmelden',
+              style: TextStyle(
+                color: AppColors.volt,
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+              ),
+            ),
+          ),
+          const BetaBugReportIconButton(),
         ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(6),
           child: LinearProgressIndicator(
             value: (_currentStep + 1) / _totalSteps,
-            backgroundColor: AppColors.cardBorder,
-            color: AppColors.navy,
+            backgroundColor: const Color(0xFF003D82),
+            color: AppColors.volt,
             minHeight: 6,
           ),
         ),
@@ -332,6 +447,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           children: [
             Expanded(
               child: SingleChildScrollView(
+                keyboardDismissBehavior:
+                    ScrollViewKeyboardDismissBehavior.onDrag,
                 padding: const EdgeInsets.all(16),
                 child: Center(
                   child: ConstrainedBox(
@@ -381,26 +498,73 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     }
   }
 
-  /// Schritt 1: Rolle (Athlet / Trainer), Name, Hauptsportart(en), Erfahrungsstufe & Metrisches System.
+  /// Schritt 1: Rolle (Athlet / Trainer), Profilbild, Name, Alter, Gewicht, Größe, Sportarten & Erfahrungsstufe.
   Widget _buildStep1RoleAndProfile() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
           'Willkommen bei ORBIT',
-          style: AppTypography.headline.copyWith(color: AppColors.navy),
+          style: AppTypography.headline
+              .copyWith(color: AppColors.white, fontSize: 24),
         ),
         const SizedBox(height: 6),
         Text(
-          'Richte dein Profil in 4 kurzen Schritten für präzise Leistungsdiagnostik und Trainingssteuerung ein.',
-          style: AppTypography.bodySmall.copyWith(color: AppColors.techGrey),
+          'Richte dein Profil für sportwissenschaftliche Leistungsdiagnostik und Trainingssteuerung ein.',
+          style: AppTypography.bodySmall.copyWith(color: Colors.white70),
         ),
         const SizedBox(height: 20),
+
+        // Profilbild & Foto-Upload
+        Center(
+          child: Stack(
+            children: [
+              CircleAvatar(
+                radius: 46,
+                backgroundColor: const Color(0xFF002A5C),
+                backgroundImage: _photoBase64 != null
+                    ? MemoryImage(base64Decode(_photoBase64!.split(',').last))
+                    : null,
+                child: _photoBase64 == null
+                    ? const Icon(Icons.person, size: 48, color: AppColors.volt)
+                    : null,
+              ),
+              Positioned(
+                bottom: 0,
+                right: 0,
+                child: CircleAvatar(
+                  radius: 16,
+                  backgroundColor: AppColors.volt,
+                  child: IconButton(
+                    padding: EdgeInsets.zero,
+                    icon: const Icon(Icons.camera_alt,
+                        size: 16, color: AppColors.navy),
+                    onPressed: _pickImage,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 8),
+        Center(
+          child: TextButton.icon(
+            onPressed: _pickImage,
+            icon: const Icon(Icons.add_photo_alternate_outlined,
+                size: 16, color: AppColors.volt),
+            label: const Text(
+              'Profilbild hinzufügen (optional)',
+              style: TextStyle(color: AppColors.volt, fontSize: 13),
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+
         Text(
           'Deine Rolle',
           style: AppTypography.body.copyWith(
             fontWeight: FontWeight.bold,
-            color: AppColors.navy,
+            color: AppColors.white,
           ),
         ),
         const SizedBox(height: 10),
@@ -430,26 +594,117 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           ],
         ),
         const SizedBox(height: 20),
+
         TextField(
           key: const Key('onboarding_name_field'),
           controller: _nameController,
+          style: const TextStyle(color: AppColors.white),
           decoration: InputDecoration(
             labelText: 'Dein Name (Vor- und Nachname)',
+            labelStyle: const TextStyle(color: Colors.white70),
             hintText: 'z. B. Lukas Bergmann',
-            prefixIcon: const Icon(Icons.person_outline),
+            hintStyle: const TextStyle(color: Colors.white38),
+            prefixIcon: const Icon(Icons.person_outline, color: AppColors.volt),
             filled: true,
-            fillColor: AppColors.white,
-            border: OutlineInputBorder(
+            fillColor: const Color(0xFF002A5C),
+            enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Color(0xFF003D82)),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: AppColors.volt, width: 2),
             ),
           ),
         ),
+        const SizedBox(height: 14),
+
+        Row(
+          children: [
+            Expanded(
+              child: TextField(
+                controller: _birthYearController,
+                keyboardType: TextInputType.number,
+                style: const TextStyle(color: AppColors.white),
+                decoration: InputDecoration(
+                  labelText: 'Geburtsjahr',
+                  labelStyle: const TextStyle(color: Colors.white70),
+                  hintText: '1995',
+                  hintStyle: const TextStyle(color: Colors.white38),
+                  filled: true,
+                  fillColor: const Color(0xFF002A5C),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: Color(0xFF003D82)),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide:
+                        const BorderSide(color: AppColors.volt, width: 2),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: TextField(
+                controller: _weightController,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                style: const TextStyle(color: AppColors.white),
+                decoration: InputDecoration(
+                  labelText: 'Gewicht (kg)',
+                  labelStyle: const TextStyle(color: Colors.white70),
+                  hintText: '75.0',
+                  hintStyle: const TextStyle(color: Colors.white38),
+                  filled: true,
+                  fillColor: const Color(0xFF002A5C),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: Color(0xFF003D82)),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide:
+                        const BorderSide(color: AppColors.volt, width: 2),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: TextField(
+                controller: _heightController,
+                keyboardType: TextInputType.number,
+                style: const TextStyle(color: AppColors.white),
+                decoration: InputDecoration(
+                  labelText: 'Größe (cm)',
+                  labelStyle: const TextStyle(color: Colors.white70),
+                  hintText: '180',
+                  hintStyle: const TextStyle(color: Colors.white38),
+                  filled: true,
+                  fillColor: const Color(0xFF002A5C),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: Color(0xFF003D82)),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide:
+                        const BorderSide(color: AppColors.volt, width: 2),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
         const SizedBox(height: 20),
+
         Text(
           'Hauptsportart(en)',
           style: AppTypography.body.copyWith(
             fontWeight: FontWeight.bold,
-            color: AppColors.navy,
+            color: AppColors.white,
           ),
         ),
         const SizedBox(height: 8),
@@ -467,15 +722,19 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               avatar: Icon(
                 icon,
                 size: 18,
-                color: isSelected ? AppColors.volt : AppColors.navy,
+                color: isSelected ? AppColors.navy : AppColors.volt,
               ),
               label: Text(label),
               selected: isSelected,
-              selectedColor: AppColors.navy,
-              checkmarkColor: AppColors.volt,
+              selectedColor: AppColors.volt,
+              backgroundColor: const Color(0xFF002A5C),
+              checkmarkColor: AppColors.navy,
               labelStyle: TextStyle(
-                color: isSelected ? AppColors.white : AppColors.navy,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                color: isSelected ? AppColors.navy : AppColors.white,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+              ),
+              side: BorderSide(
+                color: isSelected ? AppColors.volt : const Color(0xFF003D82),
               ),
               onSelected: (selected) {
                 setState(() {
@@ -490,75 +749,85 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           }).toList(),
         ),
         const SizedBox(height: 20),
+
         Text(
           'Erfahrungsstufe (Datendichte)',
           style: AppTypography.body.copyWith(
             fontWeight: FontWeight.bold,
-            color: AppColors.navy,
+            color: AppColors.white,
           ),
         ),
         const SizedBox(height: 8),
-        SegmentedButton<String>(
-          segments: const [
-            ButtonSegment(
-              value: 'SIMPLE',
-              label: Text('Einfach'),
+
+        // Robuste Auswahl-Karten ohne Wortumbruch-Fehler
+        Column(
+          children: [
+            _ExperienceCard(
+              title: 'Einfach',
+              description:
+                  'Fokus auf Grundwerte: 3 Ringe, Dauer, Distanz, Ø Puls & Watt, Kalorien.',
+              selected: _experienceLevel == 'SIMPLE',
+              onTap: () => setState(() => _experienceLevel = 'SIMPLE'),
             ),
-            ButtonSegment(
-              value: 'ADVANCED',
-              label: Text('Fortgeschritten'),
+            const SizedBox(height: 8),
+            _ExperienceCard(
+              title: 'Fortgeschritten',
+              description:
+                  'Zusätzlich Trainingszonen (Z1–Z7), Belastungspunkte & Form-Ampel.',
+              selected: _experienceLevel == 'ADVANCED',
+              onTap: () => setState(() => _experienceLevel = 'ADVANCED'),
             ),
-            ButtonSegment(
-              value: 'EXPERT',
-              label: Text('Experte'),
+            const SizedBox(height: 8),
+            _ExperienceCard(
+              title: 'Experte',
+              description:
+                  'Volle sportwissenschaftliche Telemetrie inkl. CP, W\'bal & Aerobic Decoupling.',
+              selected: _experienceLevel == 'EXPERT',
+              onTap: () => setState(() => _experienceLevel = 'EXPERT'),
             ),
           ],
-          selected: {_experienceLevel},
-          onSelectionChanged: (selection) {
-            setState(() => _experienceLevel = selection.first);
-          },
         ),
-        const SizedBox(height: 20),
+        const SizedBox(height: 18),
+
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           decoration: BoxDecoration(
-            color: AppColors.white,
+            color: const Color(0xFF002A5C),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.cardBorder),
+            border: Border.all(color: const Color(0xFF003D82)),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Expanded(
-                child: Row(
-                  children: [
-                    const Icon(Icons.straighten,
-                        color: AppColors.navy, size: 20),
-                    const SizedBox(width: 8),
-                    Flexible(
-                      child: Text(
-                        'Einheiten',
-                        style: AppTypography.body.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
+              const Row(
+                children: [
+                  Icon(Icons.straighten, color: AppColors.volt, size: 20),
+                  SizedBox(width: 8),
+                  Text(
+                    'Einheiten-System',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.white,
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
               DropdownButton<String>(
                 key: const Key('onboarding_units_dropdown'),
                 value: _units,
+                dropdownColor: const Color(0xFF002A5C),
+                style: const TextStyle(color: AppColors.white),
                 underline: const SizedBox.shrink(),
                 items: const [
                   DropdownMenuItem(
                     value: 'metric',
-                    child: Text('Metrisch (km, kg, °C)'),
+                    child: Text('Metrisch (km, kg, °C)',
+                        style: TextStyle(color: AppColors.white)),
                   ),
                   DropdownMenuItem(
                     value: 'imperial',
-                    child: Text('Imperial (mi, lbs, °F)'),
+                    child: Text('Imperial (mi, lbs, °F)',
+                        style: TextStyle(color: AppColors.white)),
                   ),
                 ],
                 onChanged: (val) {
@@ -574,23 +843,22 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     );
   }
 
-  /// Schritt 2: Physiologische Basiswerte & Zonen inkl. Pflicht-Option zur automatischen Berechnung.
+  /// Schritt 2: Physiologische Basiswerte & Zonen inkl. automatischer Schätzung.
   Widget _buildStep2Thresholds() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
           'Physiologische Basiswerte & Zonen',
-          style: AppTypography.headline.copyWith(color: AppColors.navy),
+          style: AppTypography.headline
+              .copyWith(color: AppColors.white, fontSize: 24),
         ),
         const SizedBox(height: 6),
         Text(
           'Deine Schwellenwerte bilden die Grundlage für deine Zonen Z1–Z7 und deine Trainingsbelastung.',
-          style: AppTypography.bodySmall.copyWith(color: AppColors.techGrey),
+          style: AppTypography.bodySmall.copyWith(color: Colors.white70),
         ),
         const SizedBox(height: 16),
-
-        // Pflicht-Option: "Ich kenne meine Werte noch nicht – automatisch aus meinen ersten Trainings berechnen"
         InkWell(
           key: const Key('onboarding_auto_estimate_button'),
           borderRadius: BorderRadius.circular(16),
@@ -602,12 +870,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           child: Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: _autoEstimateThresholds ? AppColors.navy : AppColors.white,
+              color: const Color(0xFF002A5C),
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
                 color: _autoEstimateThresholds
                     ? AppColors.volt
-                    : AppColors.navy.withValues(alpha: 0.25),
+                    : const Color(0xFF003D82),
                 width: _autoEstimateThresholds ? 2 : 1,
               ),
             ),
@@ -617,8 +885,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   _autoEstimateThresholds
                       ? Icons.check_circle
                       : Icons.auto_fix_high_outlined,
-                  color:
-                      _autoEstimateThresholds ? AppColors.volt : AppColors.navy,
+                  color: AppColors.volt,
                   size: 28,
                 ),
                 const SizedBox(width: 14),
@@ -630,19 +897,14 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         'Ich kenne meine Werte noch nicht – automatisch aus meinen ersten Trainings berechnen',
                         style: AppTypography.body.copyWith(
                           fontWeight: FontWeight.bold,
-                          color: _autoEstimateThresholds
-                              ? AppColors.white
-                              : AppColors.navy,
+                          color: AppColors.white,
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         'ORBIT analysiert deine ersten Fahrten, Läufe und Schwimmeinheiten und schlägt dir passende Schwellenwerte vor.',
-                        style: AppTypography.bodySmall.copyWith(
-                          color: _autoEstimateThresholds
-                              ? Colors.white70
-                              : AppColors.techGrey,
-                        ),
+                        style: AppTypography.bodySmall
+                            .copyWith(color: Colors.white70),
                       ),
                     ],
                   ),
@@ -652,7 +914,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           ),
         ),
         const SizedBox(height: 20),
-
         AnimatedOpacity(
           duration: const Duration(milliseconds: 200),
           opacity: _autoEstimateThresholds ? 0.45 : 1.0,
@@ -668,7 +929,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   hint: 'z. B. 50',
                   infoTitle: 'Ruhe-Herzfrequenz (RHR)',
                   infoDescription:
-                      'Dein niedrigster Puls in völliger Ruhe (am besten morgens nach dem Aufwachen gemessen). Wichtig für Erholungs- und Herzfrequenzreserve-Berechnungen.',
+                      'Dein niedrigster Puls in völliger Ruhe (am besten morgens nach dem Aufwachen gemessen).',
                   keyboardType: TextInputType.number,
                 ),
                 const SizedBox(height: 12),
@@ -679,7 +940,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   hint: 'z. B. 190',
                   infoTitle: 'Maximale Herzfrequenz (HFmax)',
                   infoDescription:
-                      'Die höchste Herzfrequenz, die du unter maximaler Ausbelastung erreichen kannst. Steuert deine Herzfrequenz-Zonen Z1 bis Z5.',
+                      'Die höchste Herzfrequenz unter maximaler Ausbelastung. Steuert deine HF-Zonen Z1 bis Z5.',
                   keyboardType: TextInputType.number,
                 ),
                 const SizedBox(height: 12),
@@ -690,7 +951,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   hint: 'z. B. 260',
                   infoTitle: 'FTP (Functional Threshold Power)',
                   infoDescription:
-                      'Die höchste durchschnittliche Wattleistung, die du für ca. eine Stunde konstant treten kannst. Basis für Zonen Z1–Z7, Normalized Power und TSS.',
+                      'Die höchste durchschnittliche Wattleistung, die du für ca. eine Stunde treten kannst.',
                   keyboardType: TextInputType.number,
                 ),
                 const SizedBox(height: 12),
@@ -701,7 +962,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   hint: 'z. B. 4:30',
                   infoTitle: 'Lauf-Schwellen-Pace',
                   infoDescription:
-                      'Dein Tempo an der anaeroben Schwelle (ca. 10-km- bis Halbmarathon-Wettkampftempo). Steuert deine Lauf-Zonen und Lauf-Belastung.',
+                      'Dein Tempo an der anaeroben Schwelle (ca. 10-km- bis Halbmarathon-Wettkampftempo).',
                   keyboardType: TextInputType.text,
                 ),
                 const SizedBox(height: 12),
@@ -713,7 +974,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   hint: 'z. B. 1:35',
                   infoTitle: 'CSS (Critical Swim Speed)',
                   infoDescription:
-                      'Deine aerobe Schwellengeschwindigkeit im Wasser pro 100 Meter (ermittelt z. B. aus einem 400m- und 200m-Zeitfahren).',
+                      'Deine aerobe Schwellengeschwindigkeit im Wasser pro 100 Meter.',
                   keyboardType: TextInputType.text,
                 ),
               ],
@@ -736,9 +997,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: const Color(0xFF002A5C),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.cardBorder),
+        border: Border.all(color: const Color(0xFF003D82)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -750,7 +1011,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   label,
                   style: AppTypography.bodySmall.copyWith(
                     fontWeight: FontWeight.w600,
-                    color: AppColors.navy,
+                    color: AppColors.white,
                   ),
                 ),
               ),
@@ -765,11 +1026,20 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             key: fieldKey,
             controller: controller,
             keyboardType: keyboardType,
+            style: const TextStyle(color: AppColors.white),
             decoration: InputDecoration(
               hintText: hint,
+              hintStyle: const TextStyle(color: Colors.white38),
               isDense: true,
-              border: OutlineInputBorder(
+              filled: true,
+              fillColor: AppColors.navy,
+              enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
+                borderSide: const BorderSide(color: Color(0xFF003D82)),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: const BorderSide(color: AppColors.volt, width: 2),
               ),
             ),
           ),
@@ -778,19 +1048,20 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     );
   }
 
-  /// Schritt 3: Datenquelle verbinden (Garmin 90-Tage-Backfill, Datei-Upload .fit/.tcx/.gpx, Später verbinden).
+  /// Schritt 3: Datenquelle verbinden.
   Widget _buildStep3DataSource() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
           'Datenquelle verbinden',
-          style: AppTypography.headline.copyWith(color: AppColors.navy),
+          style: AppTypography.headline
+              .copyWith(color: AppColors.white, fontSize: 24),
         ),
         const SizedBox(height: 6),
         Text(
           'Verbinde dein Garmin-Konto für automatischen Sync inkl. 90-Tage-Historie oder lade deine erste Trainingsdatei hoch.',
-          style: AppTypography.bodySmall.copyWith(color: AppColors.techGrey),
+          style: AppTypography.bodySmall.copyWith(color: Colors.white70),
         ),
         const SizedBox(height: 20),
         _DataSourceCard(
@@ -807,10 +1078,14 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   contentPadding: EdgeInsets.zero,
                   dense: true,
                   value: _garminBackfill90Days,
-                  activeColor: AppColors.navy,
+                  activeColor: AppColors.volt,
+                  checkColor: AppColors.navy,
                   title: const Text(
                     'Letzte 90 Tage direkt nach dem Verbinden importieren',
-                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                    style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.white),
                   ),
                   onChanged: (v) =>
                       setState(() => _garminBackfill90Days = v ?? true),
@@ -820,7 +1095,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         const SizedBox(height: 12),
         _DataSourceCard(
           key: const Key('onboarding_source_upload'),
-          title: 'Erste Trainingsdatei (.fit / .tcx / .gpx) manuell hochladen',
+          title: 'Erste Trainingsdatei (.fit / .tcx / .gpx) hochladen',
           subtitle:
               'Ideal für Wahoo, SRM, Zwift oder zum direkten Ausprobieren (Einzel- oder Batch-Upload).',
           icon: Icons.upload_file_outlined,
@@ -832,7 +1107,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           key: const Key('onboarding_source_later'),
           title: 'Später verbinden',
           subtitle:
-              'Du kannst Garmin Connect oder Datei-Uploads jederzeit in den Einstellungen oder auf dem „Heute“-Tab starten.',
+              'Du kannst Garmin Connect oder Datei-Uploads jederzeit in den Einstellungen oder auf dem Dashboard starten.',
           icon: Icons.schedule_outlined,
           selected: _selectedDataSource == 'LATER',
           onTap: () => setState(() => _selectedDataSource = 'LATER'),
@@ -841,42 +1116,131 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     );
   }
 
-  /// Schritt 4: Optionaler 6-stelliger Trainer-Einladungscode & transparente Art. 9 DSGVO-Einwilligungen.
+  /// Schritt 4: Konto-Erstellung, optionaler Trainer-Code & transparente deutsche Datenschutz-Garantie.
   Widget _buildStep4CoachAndGdpr() {
+    bool isAuth = false;
+    try {
+      isAuth = FirebaseAuth.instance.currentUser != null;
+    } catch (_) {
+      isAuth = true;
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
           'Trainer-Kopplung & Datenschutz',
-          style: AppTypography.headline.copyWith(color: AppColors.navy),
+          style: AppTypography.headline
+              .copyWith(color: AppColors.white, fontSize: 24),
         ),
         const SizedBox(height: 6),
         Text(
-          'Optional kannst du dich direkt per 6-stelligem Code mit deinem Trainer verbinden. Alle Gesundheitsdaten unterliegen deinem vollen Widerrufsrecht.',
-          style: AppTypography.bodySmall.copyWith(color: AppColors.techGrey),
+          'Deine Daten werden sicher in Deutschland gespeichert und geschützt.',
+          style: AppTypography.bodySmall.copyWith(color: Colors.white70),
         ),
         const SizedBox(height: 20),
-        if (_selectedRole == 'ATHLETE') ...[
+        if (!isAuth) ...[
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColors.white,
+              color: const Color(0xFF002A5C),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.cardBorder),
+              border: Border.all(color: const Color(0xFF003D82)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
-                    const Icon(Icons.link, color: AppColors.navy),
+                    const Icon(Icons.lock_outline, color: AppColors.volt),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Dein ORBIT-Konto',
+                      style: AppTypography.title
+                          .copyWith(color: AppColors.white, fontSize: 16),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Erstelle deine Zugangsdaten, um dein Profil und deine Trainingsdaten jederzeit auf allen Geräten sicher abzurufen.',
+                  style:
+                      AppTypography.bodySmall.copyWith(color: Colors.white70),
+                ),
+                const SizedBox(height: 14),
+                TextField(
+                  key: const Key('onboarding_email_field'),
+                  controller: _emailController,
+                  style: const TextStyle(color: AppColors.white),
+                  keyboardType: TextInputType.emailAddress,
+                  decoration: InputDecoration(
+                    labelText: 'E-Mail-Adresse',
+                    labelStyle: const TextStyle(color: Colors.white70),
+                    prefixIcon:
+                        const Icon(Icons.email_outlined, color: AppColors.volt),
+                    filled: true,
+                    fillColor: AppColors.navy,
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Color(0xFF003D82)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide:
+                          const BorderSide(color: AppColors.volt, width: 2),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  key: const Key('onboarding_password_field'),
+                  controller: _passwordController,
+                  style: const TextStyle(color: AppColors.white),
+                  obscureText: true,
+                  decoration: InputDecoration(
+                    labelText: 'Passwort (mindestens 6 Zeichen)',
+                    labelStyle: const TextStyle(color: Colors.white70),
+                    prefixIcon:
+                        const Icon(Icons.lock_outline, color: AppColors.volt),
+                    filled: true,
+                    fillColor: AppColors.navy,
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Color(0xFF003D82)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide:
+                          const BorderSide(color: AppColors.volt, width: 2),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+        ],
+        if (_selectedRole == 'ATHLETE') ...[
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: const Color(0xFF002A5C),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFF003D82)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.link, color: AppColors.volt),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         'Einladungscode vom Trainer (optional)',
                         style: AppTypography.body.copyWith(
                           fontWeight: FontWeight.bold,
-                          color: AppColors.navy,
+                          color: AppColors.white,
                         ),
                       ),
                     ),
@@ -884,10 +1248,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'Hast du einen 6-stelligen Code von deinem Vereinstrainer erhalten? Du kannst ihn auch jederzeit später im Tab „Coach“ eingeben.',
-                  style: AppTypography.bodySmall.copyWith(
-                    color: AppColors.techGrey,
-                  ),
+                  'Hast du einen 6-stelligen Code von deinem Vereinstrainer? Du kannst ihn auch später im Tab „Coach“ eingeben.',
+                  style:
+                      AppTypography.bodySmall.copyWith(color: Colors.white70),
                 ),
                 const SizedBox(height: 12),
                 TextField(
@@ -895,25 +1258,36 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   controller: _inviteCodeController,
                   textCapitalization: TextCapitalization.characters,
                   maxLength: 6,
+                  style: const TextStyle(
+                      color: AppColors.white, fontWeight: FontWeight.bold),
                   decoration: InputDecoration(
                     labelText: '6-stelliger Code (z. B. 4A8F2C)',
+                    labelStyle: const TextStyle(color: Colors.white70),
                     counterText: '',
-                    border: OutlineInputBorder(
+                    filled: true,
+                    fillColor: AppColors.navy,
+                    enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Color(0xFF003D82)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide:
+                          const BorderSide(color: AppColors.volt, width: 2),
                     ),
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
         ],
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: AppColors.white,
+            color: const Color(0xFF002A5C),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.cardBorder),
+            border: Border.all(color: const Color(0xFF003D82)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -921,39 +1295,43 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               Row(
                 children: [
                   const Icon(Icons.verified_user_outlined,
-                      color: AppColors.navy),
+                      color: AppColors.volt),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'Datenschutz & Art. 9 DSGVO Einwilligung',
+                      'Datenschutz & Sicherheit',
                       style: AppTypography.body.copyWith(
                         fontWeight: FontWeight.bold,
-                        color: AppColors.navy,
+                        color: AppColors.white,
                       ),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 12),
               Text(
-                '• Speicherung ausschließlich in der EU (Frankfurt, europe-west3).\n'
-                '• Deine Trainings- und Gesundheitsdaten (Herzfrequenz, HRV, Schlaf, Wattwerte) werden nur zur Leistungs- und Erholungsanalyse verarbeitet.\n'
-                '• Ein verbundener Trainer sieht Gesundheitsdaten nur bei deiner expliziten Freigabe; nach Trennung endet der Zugriff sofort.\n'
-                '• Du kannst deine Daten jederzeit als JSON exportieren oder dein Konto rückstandslos löschen.',
+                '• Sicherer Serverstandort Deutschland – Geschützt nach strengen deutschen und europäischen Datenschutzgesetzen.\n'
+                '• Deine Trainings- und Gesundheitsdaten (Herzfrequenz, HRV, Schlaf, Wattwerte) dienen ausschließlich deiner persönlichen Leistungs- und Erholungsanalyse.\n'
+                '• Dein Vereinstrainer sieht deine Daten nur, wenn du ihn ausdrücklich freischaltest; bei einer Trennung endet der Zugriff sofort.\n'
+                '• Du behältst die volle Kontrolle: Du kannst alle deine Daten jederzeit exportieren oder dein Konto rückstandslos löschen.',
                 style: AppTypography.bodySmall.copyWith(
-                  color: AppColors.techGrey,
-                  height: 1.45,
+                  color: Colors.white70,
+                  height: 1.5,
                 ),
               ),
-              const Divider(height: 24),
+              const Divider(height: 24, color: Color(0xFF003D82)),
               CheckboxListTile(
                 key: const Key('onboarding_gdpr_consent_checkbox'),
                 contentPadding: EdgeInsets.zero,
                 value: _gdprHealthConsent,
-                activeColor: AppColors.navy,
+                activeColor: AppColors.volt,
+                checkColor: AppColors.navy,
                 title: const Text(
-                  'Ich willige ausdrücklich in die Verarbeitung meiner Trainings- und Gesundheitsdaten gemäß Art. 9 Abs. 2 lit. a DSGVO ein.',
-                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                  'Ich willige in die geschützte Verarbeitung meiner Trainings- und Gesundheitsdaten zur Analyse ein.',
+                  style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 13,
+                      color: AppColors.white),
                 ),
                 onChanged: (val) {
                   setState(() => _gdprHealthConsent = val ?? false);
@@ -972,8 +1350,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
       decoration: const BoxDecoration(
-        color: AppColors.white,
-        border: Border(top: BorderSide(color: AppColors.cardBorder)),
+        color: Color(0xFF002A5C),
+        border: Border(top: BorderSide(color: Color(0xFF003D82))),
       ),
       child: Center(
         child: ConstrainedBox(
@@ -989,20 +1367,22 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               ),
               onPressed: _canProceedFromCurrentStep ? _goNext : null,
               style: ElevatedButton.styleFrom(
-                backgroundColor: isLastStep ? AppColors.volt : AppColors.navy,
-                foregroundColor: isLastStep ? AppColors.navy : AppColors.white,
+                backgroundColor: isLastStep ? AppColors.volt : AppColors.volt,
+                foregroundColor: AppColors.navy,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
+                elevation: 0,
               ),
               child: _isSubmitting
                   ? const SizedBox(
                       width: 22,
                       height: 22,
-                      child: CircularProgressIndicator(strokeWidth: 2),
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2, color: AppColors.navy),
                     )
                   : Text(
-                      isLastStep ? 'ORBIT starten' : 'Weiter',
+                      isLastStep ? 'Konto erstellen & ORBIT starten' : 'Weiter',
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
@@ -1040,10 +1420,10 @@ class _RoleOptionCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: selected ? AppColors.navy : AppColors.white,
+          color: selected ? AppColors.volt : const Color(0xFF002A5C),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: selected ? AppColors.volt : AppColors.cardBorder,
+            color: selected ? AppColors.volt : const Color(0xFF003D82),
             width: selected ? 2 : 1,
           ),
         ),
@@ -1052,22 +1432,94 @@ class _RoleOptionCard extends StatelessWidget {
           children: [
             Icon(
               icon,
-              color: selected ? AppColors.volt : AppColors.navy,
+              color: selected ? AppColors.navy : AppColors.volt,
               size: 28,
             ),
             const SizedBox(height: 10),
             Text(
               title,
               style: AppTypography.title.copyWith(
-                color: selected ? AppColors.white : AppColors.navy,
+                color: selected ? AppColors.navy : AppColors.white,
+                fontSize: 16,
               ),
             ),
             const SizedBox(height: 4),
             Text(
               subtitle,
               style: AppTypography.bodySmall.copyWith(
-                color: selected ? Colors.white70 : AppColors.techGrey,
+                color: selected
+                    ? AppColors.navy.withValues(alpha: 0.8)
+                    : Colors.white70,
                 fontSize: 12,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ExperienceCard extends StatelessWidget {
+  final String title;
+  final String description;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _ExperienceCard({
+    required this.title,
+    required this.description,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(14),
+      onTap: onTap,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: selected ? AppColors.volt : const Color(0xFF002A5C),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: selected ? AppColors.volt : const Color(0xFF003D82),
+            width: selected ? 2 : 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              selected ? Icons.radio_button_checked : Icons.radio_button_off,
+              color: selected ? AppColors.navy : AppColors.volt,
+              size: 20,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                      color: selected ? AppColors.navy : AppColors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    description,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: selected
+                          ? AppColors.navy.withValues(alpha: 0.85)
+                          : Colors.white70,
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
@@ -1105,10 +1557,10 @@ class _DataSourceCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: AppColors.white,
+          color: const Color(0xFF002A5C),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: selected ? AppColors.navy : AppColors.cardBorder,
+            color: selected ? AppColors.volt : const Color(0xFF003D82),
             width: selected ? 2 : 1,
           ),
         ),
@@ -1120,12 +1572,12 @@ class _DataSourceCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: selected ? AppColors.navy : AppColors.greyLight,
+                    color: selected ? AppColors.volt : AppColors.navy,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
                     icon,
-                    color: selected ? AppColors.volt : AppColors.navy,
+                    color: selected ? AppColors.navy : AppColors.volt,
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -1157,7 +1609,7 @@ class _DataSourceCard extends StatelessWidget {
                         title,
                         style: AppTypography.body.copyWith(
                           fontWeight: FontWeight.bold,
-                          color: AppColors.navy,
+                          color: AppColors.white,
                         ),
                       ),
                     ],
@@ -1167,7 +1619,7 @@ class _DataSourceCard extends StatelessWidget {
                   selected
                       ? Icons.radio_button_checked
                       : Icons.radio_button_off,
-                  color: selected ? AppColors.navy : AppColors.techGrey,
+                  color: selected ? AppColors.volt : Colors.white38,
                 ),
               ],
             ),
@@ -1175,11 +1627,11 @@ class _DataSourceCard extends StatelessWidget {
             Text(
               subtitle,
               style: AppTypography.bodySmall.copyWith(
-                color: AppColors.techGrey,
+                color: Colors.white70,
               ),
             ),
             if (footer != null) ...[
-              const Divider(height: 16),
+              const Divider(height: 16, color: Color(0xFF003D82)),
               footer!,
             ],
           ],

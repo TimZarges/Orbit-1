@@ -48,7 +48,9 @@ class _AdminFeedbackScreenState extends ConsumerState<AdminFeedbackScreen> {
     } catch (_) {}
 
     final bool isAdmin = widget.isAdminOverride ??
-        (userDoc?['isAdmin'] == true || authEmail == 'tim@orbit.training');
+        (userDoc?['isAdmin'] == true ||
+            authEmail == 'tim@orbit.training' ||
+            authEmail == 'tim.zarges@gmail.com');
 
     // Zweistufige Query gemäß KORREKTUR 1 (DSGVO):
     Stream<QuerySnapshot>? defaultStream;
@@ -63,7 +65,6 @@ class _AdminFeedbackScreenState extends ConsumerState<AdminFeedbackScreen> {
               : FirebaseFirestore.instance
                   .collection('betaFeedback')
                   .where('userId', isEqualTo: currentUid)
-                  .orderBy('createdAt', descending: true)
                   .snapshots();
         }
       } catch (_) {}
@@ -126,7 +127,8 @@ class _AdminFeedbackScreenState extends ConsumerState<AdminFeedbackScreen> {
                 final docs = snapshot.data?.docs ?? [];
                 final allReports = docs
                     .map((d) => BetaFeedbackReport.fromFirestore(d))
-                    .toList();
+                    .toList()
+                  ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
                 // Filtern nach Status & Kategorie
                 final filtered = allReports.where((r) {
@@ -356,42 +358,65 @@ class _AdminFeedbackScreenState extends ConsumerState<AdminFeedbackScreen> {
           // Metadaten & Aktionen
           Row(
             children: [
-              Text(
-                '${report.createdAt.day}.${report.createdAt.month}.${report.createdAt.year}',
-                style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 11),
+              Expanded(
+                child: Wrap(
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: 6,
+                  runSpacing: 4,
+                  children: [
+                    Text(
+                      '${report.createdAt.day}.${report.createdAt.month}.${report.createdAt.year}',
+                      style: const TextStyle(
+                          color: Color(0xFF94A3B8), fontSize: 11),
+                    ),
+                    if (report.screenshotPath != null)
+                      const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.image_outlined,
+                              size: 14, color: AppColors.volt),
+                          SizedBox(width: 2),
+                          Text(
+                            'Screenshot',
+                            style:
+                                TextStyle(color: AppColors.volt, fontSize: 11),
+                          ),
+                        ],
+                      ),
+                    if (report.diagnostics != null)
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.info_outline,
+                              size: 14, color: Color(0xFF94A3B8)),
+                          const SizedBox(width: 2),
+                          Text(
+                            report.diagnostics!.deviceInfo,
+                            style: const TextStyle(
+                                color: Color(0xFF94A3B8), fontSize: 10),
+                          ),
+                        ],
+                      ),
+                  ],
+                ),
               ),
-              if (report.screenshotPath != null) ...[
-                const SizedBox(width: 8),
-                const Icon(Icons.image_outlined,
-                    size: 14, color: AppColors.volt),
-                const SizedBox(width: 2),
-                const Text(
-                  'Screenshot',
-                  style: TextStyle(color: AppColors.volt, fontSize: 11),
-                ),
-              ],
-              if (report.diagnostics != null) ...[
-                const SizedBox(width: 8),
-                const Icon(Icons.info_outline,
-                    size: 14, color: Color(0xFF94A3B8)),
-                const SizedBox(width: 2),
-                Text(
-                  report.diagnostics!.deviceInfo,
-                  style:
-                      const TextStyle(color: Color(0xFF94A3B8), fontSize: 10),
-                ),
-              ],
-              const Spacer(),
               TextButton(
+                style: TextButton.styleFrom(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  minimumSize: const Size(0, 28),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
                 onPressed: () => _showTicketDetails(context, report),
                 child: const Text(
-                  'Details ansehen',
+                  'Details',
                   style: TextStyle(color: AppColors.volt, fontSize: 12),
                 ),
               ),
               if (isAdmin)
                 PopupMenuButton<String>(
                   tooltip: 'Status ändern',
+                  padding: EdgeInsets.zero,
                   icon: const Icon(Icons.more_vert,
                       color: Colors.white70, size: 18),
                   color: const Color(0xFF002A5C),

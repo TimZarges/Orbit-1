@@ -7,7 +7,6 @@ import '../controllers/workout_builder_controller.dart';
 import '../models/workout_builder_models.dart';
 import '../models/workout_template.dart';
 import '../repositories/workout_template_repository.dart';
-import '../widgets/workout_block_editor_sheet.dart';
 import '../widgets/workout_profile_chart.dart';
 
 /// Screen für die Erstellung und Bearbeitung strukturierter Trainingseinheiten.
@@ -36,6 +35,7 @@ class _WorkoutBuilderScreenState extends ConsumerState<WorkoutBuilderScreen> {
   late final TextEditingController _textController;
   late final WorkoutBuilderParams _params;
   bool _isSyncing = false;
+  bool _showTextEditor = false;
 
   @override
   void initState() {
@@ -104,20 +104,47 @@ class _WorkoutBuilderScreenState extends ConsumerState<WorkoutBuilderScreen> {
             _buildSportSelector(state.sport, notifier),
             const SizedBox(height: 12),
 
-            // 2. Text-Kurzeingabe mit Syntax-Hinweisen
-            _buildTextInputCard(state, notifier),
-            const SizedBox(height: 16),
+            // Modus-Umschalter: Reiner visueller Block-Modus (Standard) vs. Text-Code
+            SegmentedButton<bool>(
+              segments: const [
+                ButtonSegment<bool>(
+                  value: false,
+                  icon: Icon(Icons.view_agenda_outlined, size: 16),
+                  label: Text('Visuelle Blöcke'),
+                ),
+                ButtonSegment<bool>(
+                  value: true,
+                  icon: Icon(Icons.code, size: 16),
+                  label: Text('Text-Code'),
+                ),
+              ],
+              selected: {_showTextEditor},
+              onSelectionChanged: (set) {
+                if (set.isNotEmpty) {
+                  setState(() => _showTextEditor = set.first);
+                }
+              },
+            ),
+            const SizedBox(height: 14),
 
-            // 3. Live-Profilgrafik
+            // 2. Live-Profilgrafik
             WorkoutProfileChart(
               structure: state.structure,
-              height: 140,
+              height: 130,
             ),
             const SizedBox(height: 12),
 
-            // 4. Kennzahlen-Leiste (Dauer, Distanz, ORBIT Score)
+            // 3. Kennzahlen-Leiste (Dauer, Distanz, ORBIT Score)
             _buildMetricsSummaryBar(state),
-            const SizedBox(height: 12),
+            const SizedBox(height: 14),
+
+            // 4. Haupt-Editor je nach Modus
+            if (_showTextEditor)
+              _buildTextInputCard(state, notifier)
+            else
+              _buildDirectBlockEditor(context, state, notifier),
+
+            const SizedBox(height: 14),
 
             // 5. Zonenverteilung
             _buildZoneDistributionCard(state),
@@ -129,18 +156,6 @@ class _WorkoutBuilderScreenState extends ConsumerState<WorkoutBuilderScreen> {
               _buildAssumptionsCard(state),
               const SizedBox(height: 12),
             ],
-
-            // 7. Einstieg in den Block-Editor
-            OutlinedButton.icon(
-              style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
-              ),
-              icon: const Icon(Icons.dashboard_customize_outlined),
-              label: const Text('Visuellen Block-Editor öffnen'),
-              onPressed: () => _openBlockEditor(context),
-            ),
             const SizedBox(height: 24),
           ],
         ),
@@ -150,8 +165,8 @@ class _WorkoutBuilderScreenState extends ConsumerState<WorkoutBuilderScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
           child: ElevatedButton.icon(
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.navy,
-              foregroundColor: Colors.white,
+              backgroundColor: AppColors.volt,
+              foregroundColor: AppColors.navy,
               padding: const EdgeInsets.symmetric(vertical: 14),
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12)),
@@ -498,13 +513,364 @@ class _WorkoutBuilderScreenState extends ConsumerState<WorkoutBuilderScreen> {
     );
   }
 
-  void _openBlockEditor(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => WorkoutBlockEditorSheet(params: _params),
+  Widget _buildDirectBlockEditor(
+    BuildContext context,
+    WorkoutBuilderState state,
+    WorkoutBuilderNotifier notifier,
+  ) {
+    final blocks = state.structure?.blocks ?? [];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // Schnell-Bausteine Leiste
+        const Row(
+          children: [
+            Icon(Icons.bolt, size: 16, color: AppColors.volt),
+            SizedBox(width: 6),
+            Text(
+              'Baustein hinzufügen',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              _buildQuickAddButton(
+                label: '+ Warmup',
+                color: AppColors.z2,
+                onTap: () => notifier.addBlock(
+                  const StepBlock(
+                    role: WorkoutRole.warmup,
+                    target: WorkoutTarget.duration(600), // 10 min
+                    intensity: ZoneIntensity.single(1),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              _buildQuickAddButton(
+                label: '+ Intervall (Z4)',
+                color: AppColors.z4,
+                onTap: () => notifier.addBlock(
+                  const StepBlock(
+                    role: WorkoutRole.work,
+                    target: WorkoutTarget.duration(240), // 4 min
+                    intensity: ZoneIntensity.single(4),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              _buildQuickAddButton(
+                label: '+ Pause (Z1)',
+                color: AppColors.z1,
+                onTap: () => notifier.addBlock(
+                  const StepBlock(
+                    role: WorkoutRole.rest,
+                    target: WorkoutTarget.duration(120), // 2 min
+                    intensity: ZoneIntensity.single(1),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              _buildQuickAddButton(
+                label: '+ 4x Schleife',
+                color: AppColors.volt,
+                textColor: AppColors.navy,
+                onTap: () => notifier.addBlock(
+                  const RepeatBlock(
+                    count: 4,
+                    blocks: [
+                      StepBlock(
+                        role: WorkoutRole.work,
+                        target: WorkoutTarget.duration(180), // 3 min
+                        intensity: ZoneIntensity.single(4),
+                      ),
+                      StepBlock(
+                        role: WorkoutRole.rest,
+                        target: WorkoutTarget.duration(120), // 2 min
+                        intensity: ZoneIntensity.single(1),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              _buildQuickAddButton(
+                label: '+ Cooldown',
+                color: AppColors.z1,
+                onTap: () => notifier.addBlock(
+                  const StepBlock(
+                    role: WorkoutRole.cooldown,
+                    target: WorkoutTarget.duration(600), // 10 min
+                    intensity: ZoneIntensity.single(1),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 14),
+
+        // Liste der Trainingsblöcke
+        if (blocks.isEmpty)
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppColors.cardBorder),
+            ),
+            child: const Center(
+              child: Text(
+                'Keine Blöcke vorhanden. Wähle oben einen Baustein aus!',
+                style: TextStyle(color: Colors.grey, fontSize: 13),
+              ),
+            ),
+          )
+        else
+          for (int i = 0; i < blocks.length; i++) ...[
+            _buildInteractiveBlockCard(
+              context: context,
+              block: blocks[i],
+              index: i,
+              totalBlocks: blocks.length,
+              notifier: notifier,
+              sport: state.sport,
+            ),
+            const SizedBox(height: 8),
+          ],
+      ],
     );
+  }
+
+  Widget _buildQuickAddButton({
+    required String label,
+    required Color color,
+    Color textColor = Colors.white,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: textColor,
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInteractiveBlockCard({
+    required BuildContext context,
+    required WorkoutBlock block,
+    required int index,
+    required int totalBlocks,
+    required WorkoutBuilderNotifier notifier,
+    required String sport,
+  }) {
+    if (block is StepBlock) {
+      final zoneNum = block.intensity is ZoneIntensity
+          ? (block.intensity as ZoneIntensity).low
+          : 2;
+      final color = AppColors.zoneColor(zoneNum);
+      final durationMin =
+          ((block.target.durationSec ?? 300) / 60).toStringAsFixed(0);
+
+      String roleName;
+      switch (block.role) {
+        case WorkoutRole.warmup:
+          roleName = 'Warmup';
+          break;
+        case WorkoutRole.work:
+          roleName = 'Belastung';
+          break;
+        case WorkoutRole.rest:
+          roleName = 'Pause';
+          break;
+        case WorkoutRole.cooldown:
+          roleName = 'Cooldown';
+          break;
+        default:
+          roleName = 'Intervall';
+      }
+
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: AppColors.cardBorder),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Text(
+                roleName,
+                style: TextStyle(
+                  color: color,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                '$durationMin min @ Z$zoneNum',
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                ),
+              ),
+            ),
+            if (index > 0)
+              IconButton(
+                icon: const Icon(Icons.arrow_upward, size: 18),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                onPressed: () => notifier.moveBlock(index, index - 1),
+                tooltip: 'Nach oben',
+              ),
+            const SizedBox(width: 6),
+            if (index < totalBlocks - 1)
+              IconButton(
+                icon: const Icon(Icons.arrow_downward, size: 18),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                onPressed: () => notifier.moveBlock(index, index + 1),
+                tooltip: 'Nach unten',
+              ),
+            const SizedBox(width: 6),
+            IconButton(
+              icon: const Icon(Icons.copy, size: 18),
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+              onPressed: () => notifier.duplicateBlock(index),
+              tooltip: 'Duplizieren',
+            ),
+            const SizedBox(width: 6),
+            IconButton(
+              icon: const Icon(Icons.delete_outline,
+                  size: 18, color: Colors.redAccent),
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+              onPressed: () => notifier.deleteBlock(index),
+              tooltip: 'Löschen',
+            ),
+          ],
+        ),
+      );
+    } else if (block is RepeatBlock) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: AppColors.cardBorder),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: AppColors.volt.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: AppColors.volt),
+                  ),
+                  child: Text(
+                    '${block.count}x Wiederholung',
+                    style: const TextStyle(
+                      color: AppColors.navy,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+                const Spacer(),
+                if (index > 0)
+                  IconButton(
+                    icon: const Icon(Icons.arrow_upward, size: 18),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                    onPressed: () => notifier.moveBlock(index, index - 1),
+                  ),
+                const SizedBox(width: 6),
+                if (index < totalBlocks - 1)
+                  IconButton(
+                    icon: const Icon(Icons.arrow_downward, size: 18),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                    onPressed: () => notifier.moveBlock(index, index + 1),
+                  ),
+                const SizedBox(width: 6),
+                IconButton(
+                  icon: const Icon(Icons.copy, size: 18),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  onPressed: () => notifier.duplicateBlock(index),
+                ),
+                const SizedBox(width: 6),
+                IconButton(
+                  icon: const Icon(Icons.delete_outline,
+                      size: 18, color: Colors.redAccent),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  onPressed: () => notifier.deleteBlock(index),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Wrap(
+              spacing: 6,
+              children: block.blocks.map((sub) {
+                if (sub is StepBlock) {
+                  final z = sub.intensity is ZoneIntensity
+                      ? (sub.intensity as ZoneIntensity).low
+                      : 4;
+                  final dur =
+                      ((sub.target.durationSec ?? 180) / 60).toStringAsFixed(0);
+                  return Chip(
+                    label: Text('$dur m @ Z$z'),
+                    backgroundColor:
+                        AppColors.zoneColor(z).withValues(alpha: 0.2),
+                    labelStyle: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.zoneColor(z),
+                    ),
+                    padding: EdgeInsets.zero,
+                  );
+                }
+                return const SizedBox.shrink();
+              }).toList(),
+            ),
+          ],
+        ),
+      );
+    }
+    return const SizedBox.shrink();
   }
 
   Future<void> _scheduleInCalendar(

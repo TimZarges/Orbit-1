@@ -4,6 +4,8 @@ import '../../../core/design/app_colors.dart';
 import '../../../core/design/app_typography.dart';
 import '../../../core/design/app_spacing.dart';
 import '../../../core/error/orbit_error_handler.dart';
+import '../../../core/metrics/term_resolver.dart';
+import '../../settings/providers/settings_provider.dart';
 import '../../beta_feedback/models/beta_feedback_report.dart';
 import '../../beta_feedback/widgets/beta_bug_reporter_sheet.dart';
 
@@ -109,8 +111,13 @@ class TodayTabScreen extends ConsumerWidget {
       raceGoal: data.raceGoal,
     );
 
-    final visibleCards =
-        const HomeCardResolver().resolveVisibleCards(cardContext);
+    final experienceLevel = ref.watch(settingsProvider).experienceLevel;
+    final visibleCards = const HomeCardResolver()
+        .resolveVisibleCards(cardContext)
+        .where((c) =>
+            experienceLevel != ExperienceLevel.beginner ||
+            c != HomeCardType.formTrafficLight)
+        .toList();
 
     if (visibleCards.length == 1 &&
         visibleCards.first == HomeCardType.emptyGetStarted) {

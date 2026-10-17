@@ -44,7 +44,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
     final titles = isTrainer
         ? ['Athleten', 'Kalender', 'Analyse', 'Bibliothek']
-        : ['Heute', 'Plan', 'Analyse', 'Coach'];
+        : ['Heute', 'Kalender', 'Analyse', 'Coach'];
 
     return Scaffold(
       appBar: _currentIndex == 1
@@ -197,7 +197,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 BottomNavigationBarItem(
                   icon: Icon(Icons.calendar_month_outlined),
                   activeIcon: Icon(Icons.calendar_month),
-                  label: 'Plan',
+                  label: 'Kalender',
                 ),
                 BottomNavigationBarItem(
                   icon: Icon(Icons.query_stats_outlined),

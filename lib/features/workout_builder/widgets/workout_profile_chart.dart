@@ -68,7 +68,7 @@ class WorkoutProfileChart extends StatelessWidget {
         padding: padding,
         decoration: BoxDecoration(
           color: const Color(
-              0xFF0F172A), // Dark cockpit background for high contrast
+              0xFF002A5C), // Dark cockpit background for high contrast
           borderRadius: BorderRadius.circular(12),
           border:
               Border.all(color: AppColors.cardBorder.withValues(alpha: 0.2)),

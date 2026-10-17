@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../core/design/app_colors.dart';
 import '../../../core/design/app_typography.dart';
 import '../../calendar/models/planned_workout.dart';
+import '../../workout_builder/widgets/today_workout_preview_card.dart';
 import '../models/daily_metrics.dart';
 
 /// Die zentrale 3-Ringe-Hero-Card auf Deep-Navy-Hintergrund (#001F47) aus Phase 21.
@@ -112,29 +113,32 @@ class _ThreeRingsHeroCardState extends State<ThreeRingsHeroCard>
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'HEUTE',
-                    style: AppTypography.label.copyWith(
-                      color: AppColors.white.withValues(alpha: 0.6),
-                      fontSize: 11,
-                      letterSpacing: 1.2,
-                      fontWeight: FontWeight.bold,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'HEUTE',
+                      style: AppTypography.label.copyWith(
+                        color: AppColors.white.withValues(alpha: 0.6),
+                        fontSize: 11,
+                        letterSpacing: 1.2,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 2),
-                  const Text(
-                    'Tagesform & Ringe',
-                    style: TextStyle(
-                      color: AppColors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+                    const SizedBox(height: 2),
+                    const Text(
+                      'Tagesform & Ringe',
+                      style: TextStyle(
+                        color: AppColors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
+              const SizedBox(width: 8),
               // ORBIT Gesamt-Score Badge
               InkWell(
                 onTap: widget.onOpenHealthCockpit,
@@ -331,71 +335,15 @@ class _ThreeRingsHeroCardState extends State<ThreeRingsHeroCard>
             ),
           ],
 
-          // 5. Heutiges Training (falls vorhanden)
+          // 5. Heutiges Training mit visuellem Block-Profil & Soll-/Ist-Ampel
           if (hasPlan) ...[
             const SizedBox(height: 16),
-            const Divider(color: Color(0xFF1E293B), height: 1),
+            const Divider(color: Color(0xFF003D82), height: 1),
             const SizedBox(height: 14),
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(9),
-                  decoration: BoxDecoration(
-                    color: _getSportColor(widget.plannedWorkout!.sport)
-                        .withValues(alpha: 0.18),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(
-                    _getSportIcon(widget.plannedWorkout!.sport),
-                    color: _getSportColor(widget.plannedWorkout!.sport),
-                    size: 22,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        widget.plannedWorkout!.title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: AppColors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        '${_formatDuration(widget.plannedWorkout!.plannedDurationSec)}'
-                        '${widget.plannedWorkout!.plannedLoad != null ? " · ${widget.plannedWorkout!.plannedLoad!.round()} TSS" : ""}',
-                        style: TextStyle(
-                          color: AppColors.white.withValues(alpha: 0.7),
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 8),
-                TextButton(
-                  onPressed: widget.onWorkoutTap,
-                  style: TextButton.styleFrom(
-                    foregroundColor: AppColors.volt,
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text('Details'),
-                      SizedBox(width: 2),
-                      Icon(Icons.arrow_forward_ios, size: 12),
-                    ],
-                  ),
-                ),
-              ],
+            TodayWorkoutPreviewCard(
+              workout: widget.plannedWorkout!,
+              actualLoad: widget.actualLoad,
+              onTap: widget.onWorkoutTap,
             ),
           ],
         ],
@@ -429,14 +377,18 @@ class _ThreeRingsHeroCardState extends State<ThreeRingsHeroCard>
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    label,
-                    style: TextStyle(
-                      color: AppColors.white.withValues(alpha: 0.7),
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
+                  Expanded(
+                    child: Text(
+                      label,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: AppColors.white.withValues(alpha: 0.7),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
+                  const SizedBox(width: 4),
                   Text(
                     value,
                     style: const TextStyle(
@@ -450,6 +402,8 @@ class _ThreeRingsHeroCardState extends State<ThreeRingsHeroCard>
               const SizedBox(height: 1),
               Text(
                 subtext,
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
                 style: TextStyle(
                   color: AppColors.white.withValues(alpha: 0.5),
                   fontSize: 11,
@@ -460,47 +414,6 @@ class _ThreeRingsHeroCardState extends State<ThreeRingsHeroCard>
         ),
       ],
     );
-  }
-
-  Color _getSportColor(String sport) {
-    switch (sport.toUpperCase()) {
-      case 'BIKE':
-      case 'CYCLING':
-        return AppColors.amber;
-      case 'RUN':
-      case 'RUNNING':
-        return AppColors.cyan;
-      case 'SWIM':
-      case 'SWIMMING':
-        return const Color(0xFF38BDF8);
-      default:
-        return AppColors.volt;
-    }
-  }
-
-  IconData _getSportIcon(String sport) {
-    switch (sport.toUpperCase()) {
-      case 'BIKE':
-      case 'CYCLING':
-        return Icons.directions_bike;
-      case 'RUN':
-      case 'RUNNING':
-        return Icons.directions_run;
-      case 'SWIM':
-      case 'SWIMMING':
-        return Icons.pool;
-      default:
-        return Icons.fitness_center;
-    }
-  }
-
-  String _formatDuration(int seconds) {
-    final hours = seconds ~/ 3600;
-    final minutes = (seconds % 3600) ~/ 60;
-    if (hours > 0) {
-      return '${hours}h ${minutes}m';
-    }
-    return '${minutes}m';
   }
 }
 

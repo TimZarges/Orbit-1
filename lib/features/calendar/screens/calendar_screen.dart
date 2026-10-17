@@ -134,9 +134,9 @@ class CalendarScreen extends ConsumerWidget {
     WeekSummary summary,
   ) {
     final compliance = summary.durationCompliancePercentage;
-    final cardBg = isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC);
+    final cardBg = isDark ? const Color(0xFF002A5C) : const Color(0xFFF8FAFC);
     final cardBorder =
-        isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0);
+        isDark ? const Color(0xFF003D82) : const Color(0xFFE2E8F0);
 
     final plannedHours = (summary.plannedDurationSec / 3600).toStringAsFixed(1);
     final actualHours = (summary.actualDurationSec / 3600).toStringAsFixed(1);
@@ -147,7 +147,7 @@ class CalendarScreen extends ConsumerWidget {
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
         color: cardBg,
         borderRadius: BorderRadius.circular(12),
@@ -157,21 +157,31 @@ class CalendarScreen extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Wochensoll: ${actualHours}h von ${plannedHours}h (${compliance.toStringAsFixed(0)} %)',
-                style: theme.textTheme.labelMedium
-                    ?.copyWith(fontWeight: FontWeight.bold),
+              Expanded(
+                child: Text(
+                  'Wochensoll: ${actualHours}h von ${plannedHours}h (${compliance.toStringAsFixed(0)} %)',
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: isDark ? AppColors.white : AppColors.navy,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
+              const SizedBox(width: 8),
               Text(
                 '${summary.completedWorkoutsCount}/${summary.totalPlannedWorkoutsCount} Einheiten',
-                style: theme.textTheme.labelSmall
-                    ?.copyWith(color: const Color(0xFF64748B)),
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: isDark
+                      ? const Color(0xFF94A3B8)
+                      : const Color(0xFF64748B),
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
           ClipRRect(
             borderRadius: BorderRadius.circular(4),
             child: LinearProgressIndicator(
@@ -180,7 +190,7 @@ class CalendarScreen extends ConsumerWidget {
                       : 0.0)
                   .clamp(0.0, 1.0),
               backgroundColor:
-                  isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                  isDark ? const Color(0xFF001F47) : const Color(0xFFE2E8F0),
               color: progressColor,
               minHeight: 6,
             ),
@@ -304,6 +314,7 @@ class CalendarScreen extends ConsumerWidget {
     final workoutsAsync =
         ref.watch(athleteCurrentMonthWorkoutsProvider(athleteId));
     final workouts = workoutsAsync.valueOrNull ?? [];
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final firstDayOfMonth = DateTime(selectedDate.year, selectedDate.month, 1);
     final lastDayOfMonth =
@@ -351,9 +362,34 @@ class CalendarScreen extends ConsumerWidget {
               final dayDate =
                   DateTime(selectedDate.year, selectedDate.month, dayNum);
               final dayStr = DateFormat('yyyy-MM-dd').format(dayDate);
+              final todayStr = DateFormat('yyyy-MM-dd').format(DateTime.now());
+              final isToday = dayStr == todayStr;
+              final isSelected = dayStr == selectedDayStr;
               final dayWorkouts =
                   workouts.where((w) => w.localDate == dayStr).toList();
-              final isSelected = dayStr == selectedDayStr;
+
+              Color? cellBg;
+              Border? cellBorder;
+              Color textColor;
+
+              if (isToday) {
+                cellBg = AppColors.volt;
+                textColor = AppColors.navy;
+                cellBorder = Border.all(color: AppColors.volt, width: 2);
+              } else if (isSelected) {
+                cellBg = isDark
+                    ? const Color(0xFF003D82)
+                    : AppColors.volt.withValues(alpha: 0.25);
+                textColor = isDark ? AppColors.white : AppColors.navy;
+                cellBorder = Border.all(color: AppColors.volt, width: 1.5);
+              } else {
+                cellBg = isDark ? const Color(0xFF00224D) : null;
+                textColor = isDark ? AppColors.white : AppColors.navy;
+                cellBorder = Border.all(
+                  color: isDark ? const Color(0xFF003366) : Colors.black12,
+                  width: 0.5,
+                );
+              }
 
               return InkWell(
                 onTap: () {
@@ -364,13 +400,9 @@ class CalendarScreen extends ConsumerWidget {
                 child: Container(
                   margin: const EdgeInsets.all(2),
                   decoration: BoxDecoration(
-                    color: isSelected
-                        ? AppColors.navyLight.withValues(alpha: 0.15)
-                        : null,
+                    color: cellBg,
                     borderRadius: BorderRadius.circular(8),
-                    border: isSelected
-                        ? Border.all(color: AppColors.navyLight)
-                        : null,
+                    border: cellBorder,
                   ),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -378,28 +410,47 @@ class CalendarScreen extends ConsumerWidget {
                       Text(
                         '$dayNum',
                         style: TextStyle(
-                          fontWeight:
-                              isSelected ? FontWeight.bold : FontWeight.normal,
+                          fontWeight: (isToday || isSelected)
+                              ? FontWeight.bold
+                              : FontWeight.normal,
+                          color: textColor,
                         ),
                       ),
                       if (dayWorkouts.isNotEmpty)
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            for (int i = 0;
-                                i < dayWorkouts.length.clamp(0, 3);
-                                i++)
-                              Container(
-                                width: 5,
-                                height: 5,
-                                margin:
-                                    const EdgeInsets.symmetric(horizontal: 1),
-                                decoration: const BoxDecoration(
-                                  color: Color(0xFF10B981),
-                                  shape: BoxShape.circle,
-                                ),
-                              ),
-                          ],
+                        Padding(
+                          padding: const EdgeInsets.only(top: 2),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              for (int i = 0;
+                                  i < dayWorkouts.length.clamp(0, 4);
+                                  i++) ...[
+                                () {
+                                  final w = dayWorkouts[i];
+                                  final sColor = _getSportColor(w.sport);
+                                  final isDone = w.isCompleted;
+
+                                  return Container(
+                                    width: 6,
+                                    height: 6,
+                                    margin: const EdgeInsets.symmetric(
+                                        horizontal: 1),
+                                    decoration: BoxDecoration(
+                                      color:
+                                          isDone ? sColor : Colors.transparent,
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: isToday && !isDone
+                                            ? AppColors.navy
+                                            : sColor,
+                                        width: 1.5,
+                                      ),
+                                    ),
+                                  );
+                                }(),
+                              ],
+                            ],
+                          ),
                         ),
                     ],
                   ),
@@ -484,5 +535,20 @@ class CalendarScreen extends ConsumerWidget {
         );
       },
     );
+  }
+
+  Color _getSportColor(String sport) {
+    switch (sport.toUpperCase()) {
+      case 'BIKE':
+        return AppColors.sportBike;
+      case 'RUN':
+        return AppColors.sportRun;
+      case 'SWIM':
+        return AppColors.sportSwim;
+      case 'STRENGTH':
+        return AppColors.sportStrength;
+      default:
+        return const Color(0xFF94A3B8);
+    }
   }
 }

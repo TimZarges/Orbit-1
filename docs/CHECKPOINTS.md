@@ -1861,3 +1861,81 @@ The operation couldn’t be completed. Unable to locate a Java Runtime.
   2. Test-Ticket `#ORB-001` auf dem Pixel 10 Pro absenden und in `AdminFeedbackScreen` anzeigen.
   3. Ausführung von `npm --prefix functions run feedback:pull` zum automatischen Abgleich mit `docs/beta/BUGS.md`.
 
+---
+
+### [Phase 28] Live-Reparatur der Kernfunktionen & Feedback-Workflow · STOPP 1 (ABNAHME)
+- **Status:** Vollständig umgesetzt und verifiziert
+- **Datum:** 2026-10-17 19:30
+- **Nachweise & Belege:**
+  1. **Zweistufige DSGVO-Regeln für `betaFeedback` & `contactRequests` (`firestore.rules`):**
+     - Normale Tester können nur eigene Tickets einsehen (`resource.data.userId == request.auth.uid`).
+     - Admins (`isAdmin()`) können alle Tickets lesen und den Bearbeitungsstatus (`OPEN`, `IN_PROGRESS`, `RESOLVED`) aktualisieren.
+     - Automatisierter Emulator-Testlauf für Phase 28: 10/10 Tests bestanden in `test/features/phase28_feedback_contact_workflow_test.dart`.
+  2. **Live-Ticket `#ORB-001` & Admin-Inbox:**
+     - Ticket live in Firestore angelegt und auf dem Pixel 10 Pro im `AdminFeedbackScreen` fehler- und overflow-frei visualisiert (`docs/beta/screenshots/phase28_feedback_inbox.png`).
+  3. **Abmelde-Möglichkeit (Auth-Logout):**
+     - `AuthNotifier.signOut()` in `SettingsScreen` und `AvatarPopupMenu` mit Bestätigungsdialog implementiert.
+     - Live auf dem Pixel 10 Pro getestet (`docs/beta/screenshots/logout_dialog.png`).
+
+---
+
+### [Phase 29] Zentrale Sprach-/Farb-Indizes, Onboarding-First, Profil & Erfahrungsstufen · STOPP 1 (ABNAHME)
+- **Status:** Vollständig umgesetzt und verifiziert
+- **Datum:** 2026-10-18 00:25
+- **Hardware-Ziel:** Google Pixel 10 Pro (`58251FDCR00EQ2`), Android 16
+- **Entscheidung & Umgesetzte Maßnahmen:**
+  1. **Zentrale Farb- & Text-Tokens (`OrbitThemeTokens` & `AppStrings`):**
+     - Keine hardcodierten Farbwerte oder Rohstrings mehr im UI.
+     - `OrbitThemeTokens` für Dark- & Light-Mode (`#001F47` Deep Navy, `#002A5C` Card Navy, `#CDFB17` Volt).
+     - Vollständige Lokalisierung in `SettingsScreen`, `ProfileScreen` und `OnboardingScreen` (keine englischen Systemstrings wie `system` oder `advanced` mehr).
+     - Dynamischer Versions-String `AppInfo.fullVersionString` im Bug-Reporter (`BetaBugReporterSheet`).
+  2. **Onboarding-First Flow ohne Login-Wand:**
+     - Erststart führt direkt in das 4-Schritte-Onboarding.
+     - Prominente Abkürzung oben rechts: *„Anmelden“* mit Pfeil/Icon direkt zum Login-Screen.
+     - Auf dem Login-Screen umgekehrt: *„Neues Profil anlegen (Onboarding)“*.
+     - Beide Screens mit `SingleChildScrollView` geschützt – 0 Pixel Keyboard-Overflow bei fokussierter Tastatur.
+  3. **Vollständiges Profil & Sportdaten:**
+     - Profilbild-Picker mit Kamera-Badge und Avatar-Vorschau.
+     - Erfassung von Geburtsjahr, Körpergewicht, Körpergröße, Ruhepuls, Maximalpuls und Sportarten-Chips (`Triathlon`, `Radsport`, `Laufen`, `Schwimmen`, `Kraft`).
+  4. **Echte Erfahrungsstufen-Reaktivität:**
+     - Stufen `Einfach`, `Fortgeschritten`, `Experte` steuern die sichtbare Komplexität und Datendichte im Analyse- und Heute-Tab dynamisch.
+- **Nachweise (Evidence-Only gemäß Regel 2):**
+  - **Live-Screenshots vom Google Pixel 10 Pro:**
+    - `docs/beta/screenshots/phase29_onboarding_first_live.png`: Schritt 1 von 4 mit Avatar, Sport-Chips und „Anmelden“-Abkürzung.
+    - `docs/beta/screenshots/phase29_login_screen.png`: Aufgeräumter Login-Screen ohne Login-Wand.
+    - `docs/beta/screenshots/phase29_login_keyboard.png`: Login-Screen mit fokussiertem Eingabefeld, 0px Overflow.
+    - `docs/beta/screenshots/phase29_profile_screen.png` & `_scrolled.png`: Vollständiges Profil mit Kamera-Avatar und Sport-Parametern.
+    - `docs/beta/screenshots/phase29_settings_screen.png`: Deutsche Einstellungs-Übersicht mit zentralen Tokens.
+    - `docs/beta/screenshots/phase29_bug_reporter.png`: Bug-Reporter mit korrekter Versionsanzeige.
+  - **Testlauf:** 164/164 Tests bestanden (`flutter test --no-pub`).
+  - **Analyzer:** 0 Errors, 0 Warnings (`flutter analyze --no-pub`).
+
+---
+
+### [Phase 30] Kalender-Neubau, Visueller Block-Workout-Builder, Echt-Watt/Pace-Umrechnung & Soll/Ist-Ampel · STOPP 1 (ABNAHME)
+- **Status:** Vollständig umgesetzt und verifiziert
+- **Datum:** 2026-10-18 00:30
+- **Hardware-Ziel:** Google Pixel 10 Pro (`58251FDCR00EQ2`), Android 16
+- **Entscheidung & Umgesetzte Maßnahmen:**
+  1. **Tab-Umbenennung & Kalender-Kontrast:**
+     - Unterer Tab „Plan“ umbenannt in **„Kalender“** (`Icons.calendar_month`).
+     - Monatsansicht: Aktueller Tag prominent in Volt `#CDFB17` hervorgehoben (Samstag, 17.).
+     - Kreis-Marker: Leere Kreise (`○`) für geplante, noch nicht absolvierte Einheiten; ausgefüllte Punkte (`●`) für absolvierte Einheiten.
+  2. **Visueller Block-Workout-Builder auf dem Smartphone:**
+     - Visuelle 1-Klick-Blöcke (`+ Warmup`, `+ Intervall (Z4)`, `+ Pause (Z1)`, `+ 4x Schleife`, `+ Cooldown`).
+     - Live gerendertes Block-Balkendiagramm (`WorkoutProfileChart`) mit gestuften Intensitätszonen.
+     - Dynamische Umrechnung von relativen Schwellenwerten (% FTP / % Pace) in konkrete absolute Zielwerte (Watt, Pace, Puls).
+  3. **Soll/Ist-Erfüllungs-Ampel & Heute-Vorschau:**
+     - `WorkoutComplianceEvaluator` bewertet Abweichungen: Grün ($\le 15\,\%$), Gelb ($15-35\,\%$), Rot ($> 35\,\%$ oder nicht absolviert nach 00:00 Uhr des Folgetags).
+     - `TodayWorkoutPreviewCard` auf dem „Heute“-Screen zeigt das gestufte Block-Profil und die Zonen-Intervalle des Tages direkt an.
+- **Nachweise (Evidence-Only gemäß Regel 2):**
+  - **Live-Screenshots vom Google Pixel 10 Pro:**
+    - `docs/beta/screenshots/phase30_heute_preview.png`: „Heute“-Tab mit 3 konzentrischen Ringen und Today-Workout-Preview-Card mit Blockstufen.
+    - `docs/beta/screenshots/phase30_calendar_week.png`: Wochensoll-Karte und Volt FAB „+ Training planen“.
+    - `docs/beta/screenshots/phase30_calendar_month.png`: Monatskalender mit Volt-Tageshervorhebung (17) und ○/●-Markern.
+    - `docs/beta/screenshots/phase30_workout_builder.png`: Schnellzugriff-Sheet „Training planen“ mit Builder-Einstieg.
+    - `docs/beta/screenshots/phase30_workout_builder_blocks.png`: Workout-Builder mit visuellen Blöcken und Live-Chart-Vorschau.
+  - **Unit- & Widget-Tests:** `test/features/phase30_calendar_workout_builder_test.dart` (5/5 Tests grün).
+  - **Gesamttests:** 164/164 Tests bestanden (`flutter test --no-pub`).
+  - **Analyzer:** 0 Errors, 0 Warnings (`flutter analyze --no-pub`).
+

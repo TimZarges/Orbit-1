@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/design/app_colors.dart';
 import '../../../core/design/app_typography.dart';
 import '../../../core/metrics/term_resolver.dart';
-import '../../auth/providers/user_provider.dart';
+import '../../settings/providers/settings_provider.dart';
 import '../providers/analysis_providers.dart';
 import '../widgets/analysis_timeframe_selector.dart';
 import '../widgets/form_traffic_light_card.dart';
@@ -45,19 +45,8 @@ class AnalysisTabScreen extends ConsumerWidget {
       });
     }
 
-    final userDoc = ref.watch(userDocumentProvider).valueOrNull;
-    final profile = userDoc?['profile'];
-    final expLevelStr =
-        (profile is Map ? profile['experienceLevel'] : null) as String?;
-
-    final ExperienceLevel experienceLevel;
-    if (expLevelStr == 'EXPERT') {
-      experienceLevel = ExperienceLevel.expert;
-    } else if (expLevelStr == 'ADVANCED') {
-      experienceLevel = ExperienceLevel.advanced;
-    } else {
-      experienceLevel = ExperienceLevel.beginner;
-    }
+    // Erfahrungsstufe reaktiv aus den App-Einstellungen beziehen
+    final experienceLevel = ref.watch(settingsProvider).experienceLevel;
 
     final selectedTimeframe = ref.watch(selectedAnalysisTimeframeProvider);
     final analysisAsync = ref.watch(analysisStateProvider);

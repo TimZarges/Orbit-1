@@ -46,7 +46,8 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       final isLoggingIn = state.matchedLocation == '/login';
 
       if (!isAuth) {
-        return isLoggingIn ? null : '/login';
+        final isOnboarding = state.matchedLocation == '/onboarding';
+        return (isLoggingIn || isOnboarding) ? null : '/onboarding';
       }
 
       // Wenn eingeloggt, prüfe das Onboarding

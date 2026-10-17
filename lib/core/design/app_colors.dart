@@ -9,7 +9,8 @@ class AppColors {
   // Surfaces
   static const Color white = Color(0xFFFFFFFF);
   static const Color greyLight = Color(0xFFF8FAFC);
-  static const Color cockpit = Color(0xFF0F172A);
+  static const Color cockpit = Color(0xFF001F47);
+  static const Color cardDark = Color(0xFF002A5C);
   static const Color cardBorder = Color(0xFFE2E8F0);
 
   // Zones Z1-Z7
@@ -65,11 +66,10 @@ class AppColors {
   static const Color accentVolt = volt;
   static const Color techGrey = Color(0xFF64748B);
   static const Color lightBackground = Color(0xFFF8FAFC);
-  static const Color cardDark = Color(0xFF0F172A);
-  static const Color borderDark = Color(0xFF1E293B);
+  static const Color borderDark = Color(0xFF003D82);
   static const Color textSecondaryDark = Color(0xFF94A3B8);
   static const Color textTertiaryDark = Color(0xFF64748B);
-  static const Color surfaceDark = Color(0xFF1E293B);
+  static const Color surfaceDark = Color(0xFF002A5C);
   static const Color green = Color(0xFF10B981);
   static const Color red = Color(0xFFEF4444);
   static const Color emerald = Color(0xFF10B981);
