@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:orbit/features/settings/providers/settings_provider.dart';
 import 'package:orbit/features/settings/models/app_settings.dart';
 import 'package:orbit/features/settings/widgets/privacy_settings_sheet.dart';
+import 'package:orbit/features/auth/providers/auth_provider.dart';
 import 'package:orbit/core/metrics/term_resolver.dart';
 
 class SettingsScreen extends ConsumerWidget {
@@ -140,6 +141,51 @@ class SettingsScreen extends ConsumerWidget {
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
               PrivacySettingsSheet.show(context);
+            },
+          ),
+
+          const Divider(),
+
+          // Abmelden
+          ListTile(
+            leading: const Icon(Icons.logout, color: Colors.redAccent),
+            title: const Text(
+              'Abmelden',
+              style: TextStyle(
+                color: Colors.redAccent,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            subtitle: const Text('Aus diesem Konto abmelden'),
+            onTap: () async {
+              final confirm = await showDialog<bool>(
+                context: context,
+                builder: (ctx) => AlertDialog(
+                  title: const Text('Abmelden?'),
+                  content: const Text(
+                      'Möchtest du dich wirklich von ORBIT abmelden?'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(ctx).pop(false),
+                      child: const Text('Abbrechen'),
+                    ),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.redAccent,
+                      ),
+                      onPressed: () => Navigator.of(ctx).pop(true),
+                      child: const Text(
+                        'Abmelden',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+
+              if (confirm == true) {
+                await ref.read(authServiceProvider).signOut();
+              }
             },
           ),
         ],

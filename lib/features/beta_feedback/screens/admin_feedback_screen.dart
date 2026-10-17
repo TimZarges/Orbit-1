@@ -48,8 +48,7 @@ class _AdminFeedbackScreenState extends ConsumerState<AdminFeedbackScreen> {
     } catch (_) {}
 
     final bool isAdmin = widget.isAdminOverride ??
-        (userDoc?['isAdmin'] == true ||
-            authEmail == 'tim@orbit.training');
+        (userDoc?['isAdmin'] == true || authEmail == 'tim@orbit.training');
 
     // Zweistufige Query gemäß KORREKTUR 1 (DSGVO):
     Stream<QuerySnapshot>? defaultStream;
@@ -70,9 +69,8 @@ class _AdminFeedbackScreenState extends ConsumerState<AdminFeedbackScreen> {
       } catch (_) {}
     }
 
-    final Stream<QuerySnapshot> stream = widget.streamOverride ??
-        defaultStream ??
-        const Stream.empty();
+    final Stream<QuerySnapshot> stream =
+        widget.streamOverride ?? defaultStream ?? const Stream.empty();
 
     return Scaffold(
       backgroundColor: AppColors.navy,

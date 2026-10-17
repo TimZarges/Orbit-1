@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../../auth/providers/auth_provider.dart';
 import '../../auth/providers/user_provider.dart';
 import '../../coach_link/screens/athlete_coach_tab_screen.dart';
 import '../../coach_link/screens/trainer_athletes_tab_screen.dart';
@@ -126,11 +127,33 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                             value: '/settings',
                             child: Text('Einstellungen'),
                           ),
+                          const PopupMenuDivider(),
+                          const PopupMenuItem(
+                            value: 'logout',
+                            child: Row(
+                              children: [
+                                Icon(Icons.logout,
+                                    size: 18, color: Colors.redAccent),
+                                SizedBox(width: 8),
+                                Text(
+                                  'Abmelden',
+                                  style: TextStyle(
+                                    color: Colors.redAccent,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ],
                       );
 
                       if (selected != null && btnContext.mounted) {
-                        btnContext.push(selected);
+                        if (selected == 'logout') {
+                          await ref.read(authServiceProvider).signOut();
+                        } else {
+                          btnContext.push(selected);
+                        }
                       }
                     },
                   ),
