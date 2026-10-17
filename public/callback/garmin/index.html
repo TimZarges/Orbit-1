@@ -129,8 +129,9 @@
             <div id="copy-status" class="alert-success">✓ In die Zwischenablage kopiert!</div>
 
             <div class="btn-group">
-                <button class="btn btn-primary" onclick="copyVerifier()">Code kopieren</button>
-                <button class="btn btn-secondary" onclick="returnToOrbit()">Tab schließen & zu ORBIT zurückkehren</button>
+                <a id="orbit-app-btn" class="btn btn-primary" href="#">In ORBIT App öffnen</a>
+                <button class="btn btn-secondary" onclick="copyVerifier()">Code kopieren</button>
+                <button class="btn btn-secondary" onclick="returnToOrbit()">Fenster schließen</button>
             </div>
         </div>
 
@@ -138,7 +139,7 @@
             <h2>Fast fertig!</h2>
             <p>Es wurde noch kein Bestätigungscode übergeben. Wenn du den Login bei Garmin gestartet hast, wirst du automatisch hierher weitergeleitet.</p>
             <div class="btn-group">
-                <button class="btn btn-secondary" onclick="returnToOrbit()">Zurück zu ORBIT</button>
+                <a id="orbit-app-fallback-btn" class="btn btn-primary" href="orbit://oauth/garmin">Zurück zu ORBIT</a>
             </div>
         </div>
     </div>
@@ -147,6 +148,8 @@
         const urlParams = new URLSearchParams(window.location.search);
         const verifier = urlParams.get('oauth_verifier');
         const token = urlParams.get('oauth_token');
+
+        const appDeepLink = 'orbit://oauth/garmin' + window.location.search;
 
         function returnToOrbit() {
             if (verifier) {
@@ -159,7 +162,7 @@
                     return;
                 } catch (e) {}
             }
-            window.location.href = 'http://localhost:3000/#/settings/garmin' + (verifier ? '?oauth_verifier=' + encodeURIComponent(verifier) : '');
+            window.location.href = appDeepLink;
         }
 
         if (verifier) {
@@ -167,9 +170,10 @@
             document.getElementById('success-view').style.display = 'block';
             document.getElementById('verifier-display').innerText = verifier;
 
-            // Link zur lokalen Web-App mit Parametern bestücken
-            const returnUrl = 'http://localhost:3000/settings/garmin?oauth_verifier=' + encodeURIComponent(verifier) + (token ? '&oauth_token=' + encodeURIComponent(token) : '');
-            document.getElementById('orbit-app-btn').href = returnUrl;
+            const appBtn = document.getElementById('orbit-app-btn');
+            if (appBtn) {
+                appBtn.href = appDeepLink;
+            }
 
             // PostMessage an Opener senden (falls in Popup/Tab geöffnet)
             try {
@@ -188,6 +192,13 @@
                     const bc = new BroadcastChannel('orbit_garmin_auth');
                     bc.postMessage({ oauthVerifier: verifier, oauthToken: token });
                 }
+            } catch (e) {}
+
+            // Automatische Weiterleitung zur ORBIT Android App per Deep-Link
+            try {
+                setTimeout(() => {
+                    window.location.href = appDeepLink;
+                }, 300);
             } catch (e) {}
         }
 

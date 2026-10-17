@@ -193,7 +193,7 @@ export async function executeGarminBackfill(
  * Callable Function: Fordert einen historischen 90-Tage-Backfill bei Garmin an.
  */
 export const requestGarminBackfill = onCall(
-  { secrets: [garminConsumerKey, garminConsumerSecret] },
+  { secrets: [garminConsumerKey, garminConsumerSecret], enforceAppCheck: false },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {

@@ -1,6 +1,10 @@
-/// Kategorien für den In-App Beta-Bug- & Feedback-Reporter.
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+/// Kategorien für den In-App Beta-Bug- & Feedback-Reporter (Phase 28.2).
 enum BetaFeedbackCategory {
   bugCrash('BUG_CRASH'),
+  featureIdea('FEATURE_IDEA'),
+  supportQuestion('SUPPORT_QUESTION'),
   wrongCalculation('WRONG_CALCULATION'),
   garminUpload('GARMIN_UPLOAD'),
   designSuggestion('DESIGN_SUGGESTION');
@@ -13,13 +17,17 @@ enum BetaFeedbackCategory {
     final isEn = languageCode.toLowerCase().startsWith('en');
     switch (this) {
       case BetaFeedbackCategory.bugCrash:
-        return isEn ? 'Bug / Crash' : 'Bug / Absturz';
+        return isEn ? 'Bug / Crash' : 'Fehler / Bug';
+      case BetaFeedbackCategory.featureIdea:
+        return isEn ? 'Feature / Idea' : 'Verbesserung / Idee';
+      case BetaFeedbackCategory.supportQuestion:
+        return isEn ? 'Question / Support' : 'Frage / Support';
       case BetaFeedbackCategory.wrongCalculation:
-        return isEn ? 'Wrong Calculation' : 'Falsche Berechnung';
+        return isEn ? 'Calculation' : 'Falsche Berechnung';
       case BetaFeedbackCategory.garminUpload:
-        return isEn ? 'Garmin / Upload Issue' : 'Garmin / Upload-Problem';
+        return isEn ? 'Garmin / Upload' : 'Garmin / Upload';
       case BetaFeedbackCategory.designSuggestion:
-        return isEn ? 'Design / Suggestion' : 'Design / Vorschlag';
+        return isEn ? 'Design / UI' : 'Design / Layout';
     }
   }
 
@@ -64,6 +72,8 @@ class BetaFeedbackReport {
   final bool includeDiagnostics;
   final BetaDiagnosticsPayload? diagnostics;
   final String? screenshotPath;
+  final String? ticketId;
+  final String status;
   final DateTime createdAt;
 
   const BetaFeedbackReport({
@@ -74,8 +84,40 @@ class BetaFeedbackReport {
     required this.includeDiagnostics,
     this.diagnostics,
     this.screenshotPath,
+    this.ticketId,
+    this.status = 'OPEN',
     required this.createdAt,
   });
+
+  factory BetaFeedbackReport.fromFirestore(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>? ?? {};
+    final diagData = data['diagnostics'] as Map<String, dynamic>?;
+    return BetaFeedbackReport(
+      id: doc.id,
+      userId: data['userId'] as String? ?? '',
+      category: BetaFeedbackCategory.fromWire(data['category'] as String?),
+      description: data['description'] as String? ?? '',
+      includeDiagnostics: data['includeDiagnostics'] as bool? ?? false,
+      ticketId: data['ticketId'] as String?,
+      status: data['status'] as String? ?? 'OPEN',
+      screenshotPath: data['screenshotPath'] as String?,
+      diagnostics: diagData != null
+          ? BetaDiagnosticsPayload(
+              route: diagData['route'] as String? ?? '',
+              appVersion: diagData['appVersion'] as String? ?? '',
+              deviceInfo: diagData['deviceInfo'] as String? ?? '',
+              recentLogs: (diagData['recentLogs'] as List<dynamic>?)
+                      ?.map((e) => e.toString())
+                      .toList() ??
+                  [],
+            )
+          : null,
+      createdAt: data['createdAt'] is Timestamp
+          ? (data['createdAt'] as Timestamp).toDate()
+          : DateTime.tryParse(data['createdAt']?.toString() ?? '') ??
+              DateTime.now(),
+    );
+  }
 
   Map<String, dynamic> toJson() {
     return {
@@ -86,6 +128,8 @@ class BetaFeedbackReport {
       if (includeDiagnostics && diagnostics != null)
         'diagnostics': diagnostics!.toJson(),
       if (screenshotPath != null) 'screenshotPath': screenshotPath,
+      if (ticketId != null) 'ticketId': ticketId,
+      'status': status,
       'createdAt': createdAt.toUtc().toIso8601String(),
     };
   }

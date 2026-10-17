@@ -72,50 +72,68 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     }
                   },
                 ),
-                IconButton(
-                  icon: const CircleAvatar(
-                    radius: 16,
-                    child: Icon(Icons.person, size: 16),
+                Builder(
+                  builder: (btnContext) => IconButton(
+                    icon: const CircleAvatar(
+                      radius: 16,
+                      child: Icon(Icons.person, size: 16),
+                    ),
+                    onPressed: () async {
+                      final RenderBox button =
+                          btnContext.findRenderObject() as RenderBox;
+                      final RenderBox overlay = Overlay.of(btnContext)
+                          .context
+                          .findRenderObject() as RenderBox;
+                      final RelativeRect position = RelativeRect.fromRect(
+                        Rect.fromPoints(
+                          button.localToGlobal(Offset.zero, ancestor: overlay),
+                          button.localToGlobal(
+                              button.size.bottomRight(Offset.zero),
+                              ancestor: overlay),
+                        ),
+                        Offset.zero & overlay.size,
+                      );
+
+                      final selected = await showMenu<String>(
+                        context: btnContext,
+                        position: position,
+                        items: const [
+                          PopupMenuItem(
+                            value: '/profile',
+                            child: Text('Profil'),
+                          ),
+                          PopupMenuItem(
+                            value: '/templates',
+                            child: Text('Workout-Vorlagen'),
+                          ),
+                          PopupMenuItem(
+                            value: '/workout-builder',
+                            child: Text('Workout Builder'),
+                          ),
+                          PopupMenuItem(
+                            value: '/health',
+                            child: Text('Gesundheit & Baselines'),
+                          ),
+                          PopupMenuItem(
+                            value: '/diagnostics',
+                            child: Text('Leistungsdiagnostik'),
+                          ),
+                          PopupMenuItem(
+                            value: '/admin/feedback',
+                            child: Text('Beta-Feedback Inbox'),
+                          ),
+                          PopupMenuItem(
+                            value: '/settings',
+                            child: Text('Einstellungen'),
+                          ),
+                        ],
+                      );
+
+                      if (selected != null && btnContext.mounted) {
+                        btnContext.push(selected);
+                      }
+                    },
                   ),
-                  onPressed: () {
-                    showMenu(
-                      context: context,
-                      position: const RelativeRect.fromLTRB(
-                          100, kToolbarHeight, 0, 0),
-                      items: [
-                        PopupMenuItem(
-                          value: 'profile',
-                          child: const Text('Profil'),
-                          onTap: () => context.go('/profile'),
-                        ),
-                        PopupMenuItem(
-                          value: 'templates',
-                          child: const Text('Workout-Vorlagen'),
-                          onTap: () => context.go('/templates'),
-                        ),
-                        PopupMenuItem(
-                          value: 'builder',
-                          child: const Text('Workout Builder'),
-                          onTap: () => context.go('/workout-builder'),
-                        ),
-                        PopupMenuItem(
-                          value: 'health',
-                          child: const Text('Gesundheit & Baselines'),
-                          onTap: () => context.go('/health'),
-                        ),
-                        PopupMenuItem(
-                          value: 'diagnostics',
-                          child: const Text('Leistungsdiagnostik'),
-                          onTap: () => context.go('/diagnostics'),
-                        ),
-                        PopupMenuItem(
-                          value: 'settings',
-                          child: const Text('Einstellungen'),
-                          onTap: () => context.go('/settings'),
-                        ),
-                      ],
-                    );
-                  },
                 ),
               ],
             ),

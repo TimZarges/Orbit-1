@@ -54,7 +54,10 @@ service cloud.firestore {
     // Fields: name, columns, filters, sort, ...
     //
     // Collection: betaFeedback/{reportId} (and beta_feedback/{reportId})
-    // Fields: userId, category, description, includeDiagnostics, diagnostics, screenshotPath, createdAt, status
+    // Fields: userId, category, description, includeDiagnostics, diagnostics, screenshotPath, ticketId, status, createdAt
+    //
+    // Collection: contactRequests/{requestId}
+    // Fields: name, email, category, message, createdAt, status
     //
     // Collection: betaWaitlist/{entryId}
     // Fields: email, name, role, device, consentGiven, createdAt
@@ -212,14 +215,28 @@ service cloud.firestore {
     function isValidBetaFeedbackCreate(data) {
       let hasRequired = 'userId' in data && 'category' in data && 'description' in data;
       let userIdOk = data.userId == request.auth.uid;
-      let categoryOk = data.category in ['BUG_CRASH', 'WRONG_CALCULATION', 'GARMIN_UPLOAD', 'DESIGN_SUGGESTION'];
+      let categoryOk = data.category in ['BUG_CRASH', 'FEATURE_IDEA', 'SUPPORT_QUESTION', 'WRONG_CALCULATION', 'GARMIN_UPLOAD', 'DESIGN_SUGGESTION'];
       let descriptionOk = checkStringSize(data.description, 1, 5000);
       let includeDiagnosticsOk = !('includeDiagnostics' in data) || data.includeDiagnostics is bool;
       let diagnosticsOk = !('diagnostics' in data) || data.diagnostics == null || (data.diagnostics is map && data.diagnostics.keys().size() <= 15);
       let screenshotPathOk = !('screenshotPath' in data) || checkOptionalStringSize(data.screenshotPath, 1, 500);
+      let ticketIdOk = !('ticketId' in data) || checkOptionalStringSize(data.ticketId, 1, 20);
+      let statusOk = !('status' in data) || data.status in ['OPEN', 'IN_PROGRESS', 'RESOLVED'];
       let sizeOk = data.keys().size() <= 15;
-      return hasRequired && userIdOk && categoryOk && descriptionOk && includeDiagnosticsOk && diagnosticsOk && screenshotPathOk && sizeOk;
+      return hasRequired && userIdOk && categoryOk && descriptionOk && includeDiagnosticsOk && diagnosticsOk && screenshotPathOk && ticketIdOk && statusOk && sizeOk;
     }
+
+    function isValidContactRequest(data) {
+      let hasRequired = 'name' in data && 'email' in data && 'message' in data;
+      let nameOk = 'name' in data && checkStringSize(data.name, 1, 100);
+      let emailOk = 'email' in data && checkStringSize(data.email, 5, 200);
+      let messageOk = 'message' in data && checkStringSize(data.message, 1, 5000);
+      let categoryOk = !('category' in data) || data.category in ['SUPPORT', 'BUG', 'FEEDBACK', 'PARTNERSHIP', 'OTHER'];
+      let statusOk = !('status' in data) || data.status in ['OPEN', 'IN_PROGRESS', 'RESOLVED'];
+      let sizeOk = data.keys().size() <= 10;
+      return hasRequired && nameOk && emailOk && messageOk && categoryOk && statusOk && sizeOk;
+    }
+
 
     function isValidBetaWaitlistEntry(data) {
       return ('email' in data && 'name' in data && 'role' in data && 'device' in data && 'consentGiven' in data) &&
@@ -444,6 +461,11 @@ service cloud.firestore {
 
     match /betaWaitlist/{entryId} {
       allow create: if isValidBetaWaitlistEntry(request.resource.data);
+      allow read, update, delete: if false;
+    }
+
+    match /contactRequests/{requestId} {
+      allow create: if isValidContactRequest(request.resource.data);
       allow read, update, delete: if false;
     }
 

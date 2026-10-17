@@ -6,6 +6,7 @@ import '../../features/calendar/screens/calendar_screen.dart';
 import '../../features/profile/screens/thresholds_screen.dart';
 import '../../features/settings/screens/settings_screen.dart';
 import '../../features/integrations/screens/garmin_connection_screen.dart';
+import '../../features/beta_feedback/screens/admin_feedback_screen.dart';
 import '../design/widget_gallery.dart';
 import '../../features/auth/screens/login_screen.dart';
 import '../../features/onboarding/screens/onboarding_screen.dart';
@@ -71,94 +72,112 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const OnboardingScreen(),
       ),
       GoRoute(
-          path: '/',
-          builder: (context, state) => const DashboardScreen(),
-          routes: [
-            GoRoute(
-              path: 'profile',
-              builder: (context, state) => const ProfileScreen(),
+        path: '/',
+        builder: (context, state) => const DashboardScreen(),
+        routes: [
+          GoRoute(
+            path: 'profile',
+            builder: (context, state) => const ProfileScreen(),
+          ),
+          GoRoute(
+            path: 'thresholds',
+            builder: (context, state) => const ThresholdsScreen(),
+          ),
+          GoRoute(
+            path: 'diagnostics',
+            builder: (context, state) {
+              final athleteId = state.uri.queryParameters['athleteId'] ??
+                  FirebaseAuth.instance.currentUser?.uid ??
+                  '';
+              return DiagnosticsScreen(athleteId: athleteId);
+            },
+          ),
+          GoRoute(
+            path: 'calendar',
+            builder: (context, state) => const CalendarScreen(),
+          ),
+          GoRoute(
+            path: 'templates',
+            builder: (context, state) => const WorkoutTemplateLibraryScreen(),
+          ),
+          GoRoute(
+            path: 'analysis',
+            builder: (context, state) => AnalysisTabScreen(
+              athleteId: state.uri.queryParameters['athleteId'],
+              athleteName: state.uri.queryParameters['athleteName'],
             ),
-            GoRoute(
-              path: 'thresholds',
-              builder: (context, state) => const ThresholdsScreen(),
+          ),
+          GoRoute(
+            path: 'health',
+            builder: (context, state) => HealthCockpitScreen(
+              athleteId: state.uri.queryParameters['athleteId'],
+              athleteName: state.uri.queryParameters['athleteName'],
             ),
-            GoRoute(
-              path: 'diagnostics',
-              builder: (context, state) {
-                final athleteId = state.uri.queryParameters['athleteId'] ??
-                    FirebaseAuth.instance.currentUser?.uid ??
-                    '';
-                return DiagnosticsScreen(athleteId: athleteId);
-              },
+          ),
+          GoRoute(
+            path: 'activities/:id',
+            builder: (context, state) {
+              final activityId = state.pathParameters['id'] ?? '';
+              return ActivityDetailLoader(activityId: activityId);
+            },
+          ),
+          GoRoute(
+            path: 'workout-builder',
+            builder: (context, state) => WorkoutBuilderScreen(
+              sport: state.uri.queryParameters['sport'] ?? 'BIKE',
+              targetLocalDate: state.uri.queryParameters['date'],
             ),
-            GoRoute(
-              path: 'calendar',
-              builder: (context, state) => const CalendarScreen(),
-            ),
-            GoRoute(
-              path: 'templates',
-              builder: (context, state) => const WorkoutTemplateLibraryScreen(),
-            ),
-            GoRoute(
-              path: 'analysis',
-              builder: (context, state) => AnalysisTabScreen(
-                athleteId: state.uri.queryParameters['athleteId'],
-                athleteName: state.uri.queryParameters['athleteName'],
-              ),
-            ),
-            GoRoute(
-              path: 'health',
-              builder: (context, state) => HealthCockpitScreen(
-                athleteId: state.uri.queryParameters['athleteId'],
-                athleteName: state.uri.queryParameters['athleteName'],
-              ),
-            ),
-            GoRoute(
-              path: 'activities/:id',
-              builder: (context, state) {
-                final activityId = state.pathParameters['id'] ?? '';
-                return ActivityDetailLoader(activityId: activityId);
-              },
-            ),
-            GoRoute(
-              path: 'workout-builder',
-              builder: (context, state) => WorkoutBuilderScreen(
-                sport: state.uri.queryParameters['sport'] ?? 'BIKE',
-                targetLocalDate: state.uri.queryParameters['date'],
-              ),
-            ),
-            GoRoute(
-              path: 'chat/:chatId',
-              builder: (context, state) {
-                final chatId = state.pathParameters['chatId'] ?? '';
-                final athleteId = state.uri.queryParameters['athleteId'];
-                final name = state.uri.queryParameters['name'] ?? 'Coach';
-                return ChatScreen(
-                  chatId: chatId,
-                  athleteId: athleteId,
-                  otherUserName: name,
-                );
-              },
-            ),
-            GoRoute(
-              path: 'chats',
-              builder: (context, state) => const ChatListScreen(),
-            ),
-            GoRoute(
-              path: 'settings',
-              builder: (context, state) => const SettingsScreen(),
-              routes: [
-                GoRoute(
-                  path: 'garmin',
-                  builder: (context, state) => GarminConnectionScreen(
-                    initialVerifier:
-                        state.uri.queryParameters['oauth_verifier'],
-                    initialToken: state.uri.queryParameters['oauth_token'],
-                  ),
+          ),
+          GoRoute(
+            path: 'chat/:chatId',
+            builder: (context, state) {
+              final chatId = state.pathParameters['chatId'] ?? '';
+              final athleteId = state.uri.queryParameters['athleteId'];
+              final name = state.uri.queryParameters['name'] ?? 'Coach';
+              return ChatScreen(
+                chatId: chatId,
+                athleteId: athleteId,
+                otherUserName: name,
+              );
+            },
+          ),
+          GoRoute(
+            path: 'chats',
+            builder: (context, state) => const ChatListScreen(),
+          ),
+          GoRoute(
+            path: 'settings',
+            builder: (context, state) => const SettingsScreen(),
+            routes: [
+              GoRoute(
+                path: 'garmin',
+                builder: (context, state) => GarminConnectionScreen(
+                  initialVerifier: state.uri.queryParameters['oauth_verifier'],
+                  initialToken: state.uri.queryParameters['oauth_token'],
                 ),
-              ],
-            ),
-          ]),
+              ),
+            ],
+          ),
+        ],
+      ),
+      GoRoute(
+        path: '/oauth/garmin',
+        builder: (context, state) => GarminConnectionScreen(
+          initialVerifier: state.uri.queryParameters['oauth_verifier'],
+          initialToken: state.uri.queryParameters['oauth_token'],
+        ),
+      ),
+      GoRoute(
+        path: '/callback/garmin',
+        builder: (context, state) => GarminConnectionScreen(
+          initialVerifier: state.uri.queryParameters['oauth_verifier'],
+          initialToken: state.uri.queryParameters['oauth_token'],
+        ),
+      ),
+      GoRoute(
+        path: '/admin/feedback',
+        builder: (context, state) => const AdminFeedbackScreen(),
+      ),
       GoRoute(
         path: '/gallery',
         builder: (context, state) => const WidgetGalleryScreen(),

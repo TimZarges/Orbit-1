@@ -38,6 +38,20 @@ class _GarminConnectionScreenState
   }
 
   @override
+  void didUpdateWidget(GarminConnectionScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.initialVerifier != null &&
+        widget.initialVerifier!.isNotEmpty &&
+        widget.initialVerifier != oldWidget.initialVerifier) {
+      _verifierController.text = widget.initialVerifier!;
+      _pendingOauthToken = widget.initialToken;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _submitVerifier();
+      });
+    }
+  }
+
+  @override
   void dispose() {
     _verifierController.dispose();
     super.dispose();

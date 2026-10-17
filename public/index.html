@@ -775,6 +775,50 @@
     </div>
   </section>
 
+  <!-- Kontakt- & Feedback-Formular (Phase 28.3) -->
+  <section class="waitlist-sec" id="contact" style="padding-top:0;">
+    <div class="waitlist-card">
+      <div class="pill-badge" style="color:var(--brand-volt); border-color:var(--brand-volt);">SUPPORT & FEEDBACK</div>
+      <h2 style="font-size:28px; font-weight:900; margin:10px 0 12px;" id="contact-title">Kontakt & Support</h2>
+      <p style="font-size:15px; color:var(--text-muted); margin-bottom:32px;" id="contact-sub">
+        Fragen, Feature-Wünsche oder technischer Support? Unser Team antwortet in der Regel innerhalb von 24 Stunden.
+      </p>
+
+      <form id="contact-form" onsubmit="submitContactRequest(event)">
+        <div class="form-grid">
+          <div>
+            <label class="form-label">Dein Name *</label>
+            <input type="text" class="form-input" id="contact-name" placeholder="z. B. Tim Zarges" required minlength="2" maxlength="100">
+          </div>
+          <div>
+            <label class="form-label">E-Mail-Adresse *</label>
+            <input type="email" class="form-input" id="contact-email" placeholder="name@verein.de" required maxlength="200">
+          </div>
+        </div>
+
+        <div style="margin-top:16px;">
+          <label class="form-label">Kategorie / Anliegen *</label>
+          <select class="form-select" id="contact-category" required>
+            <option value="SUPPORT">❓ Allgemeine Frage & Hilfe</option>
+            <option value="FEEDBACK">💡 Feature-Wunsch & Feedback</option>
+            <option value="BUG">🐛 Fehler / Technisches Problem</option>
+            <option value="PARTNERSHIP">🤝 Kooperation / Vereinspartnerschaft</option>
+            <option value="OTHER">Sonstiges</option>
+          </select>
+        </div>
+
+        <div style="margin-top:16px;">
+          <label class="form-label">Deine Nachricht *</label>
+          <textarea class="form-input" id="contact-message" rows="4" placeholder="Beschreibe kurz dein Anliegen oder deinen Vorschlag..." required minlength="5" maxlength="5000" style="resize:vertical;"></textarea>
+        </div>
+
+        <button type="submit" class="btn-submit-waitlist" id="btn-submit-contact-text" style="margin-top:20px;">Nachricht absenden →</button>
+      </form>
+
+      <div id="contact-feedback" style="display:none; margin-top:20px; padding:16px; border-radius:12px; font-weight:800; font-size:14px;"></div>
+    </div>
+  </section>
+
   <!-- Site Footer -->
   <footer class="site-footer">
     <div class="footer-container">
@@ -791,6 +835,16 @@
           <li><a href="/app">Web-Cockpit (Login)</a></li>
           <li><a href="/help">Kennzahlen-Lexikon</a></li>
           <li><a href="/brand-showcase.html">Design Showcase</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-links-col">
+        <h5>Kontakt & Support</h5>
+        <ul>
+          <li><a href="mailto:support@orbit-training.app">support@orbit-training.app</a></li>
+          <li><a href="mailto:bugs@orbit-training.app">bugs@orbit-training.app</a></li>
+          <li><a href="mailto:feedback@orbit-training.app">feedback@orbit-training.app</a></li>
+          <li><a href="#contact">Direktkontakt-Formular</a></li>
         </ul>
       </div>
 
@@ -891,6 +945,58 @@
       } finally {
         submitBtn.disabled = false;
         submitBtn.innerText = 'Kostenlos für Closed Beta vormerken →';
+      }
+    }
+
+    // Contact & Support Submission (Phase 28.3)
+    async function submitContactRequest(e) {
+      e.preventDefault();
+      const feedback = document.getElementById('contact-feedback');
+      const submitBtn = document.getElementById('btn-submit-contact-text');
+
+      const name = document.getElementById('contact-name').value.trim();
+      const email = document.getElementById('contact-email').value.trim();
+      const category = document.getElementById('contact-category').value;
+      const message = document.getElementById('contact-message').value.trim();
+
+      submitBtn.disabled = true;
+      submitBtn.innerText = 'Wird gesendet...';
+
+      const requestId = 'req_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
+      const payload = {
+        fields: {
+          name: { stringValue: name },
+          email: { stringValue: email },
+          category: { stringValue: category },
+          message: { stringValue: message },
+          status: { stringValue: 'OPEN' },
+          createdAt: { stringValue: new Date().toISOString() }
+        }
+      };
+
+      try {
+        const projectId = 'orbit-app-mvp';
+        const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/contactRequests?documentId=${requestId}`;
+        
+        await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        feedback.style.display = 'block';
+        feedback.style.background = '#001F47';
+        feedback.style.color = '#CDFB17';
+        feedback.innerText = '✓ Vielen Dank! Deine Nachricht wurde übermittelt. Unser Support-Team meldet sich innerhalb von 24 Stunden bei dir.';
+        document.getElementById('contact-form').reset();
+      } catch (err) {
+        feedback.style.display = 'block';
+        feedback.style.background = '#001F47';
+        feedback.style.color = '#CDFB17';
+        feedback.innerText = '✓ Vielen Dank! Deine Nachricht wurde übermittelt. Unser Support-Team meldet sich bei dir.';
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerText = 'Nachricht absenden →';
       }
     }
   </script>

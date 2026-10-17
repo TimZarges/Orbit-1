@@ -773,5 +773,73 @@ describe("Firestore Security Rules Tests (RULES_TESTPLAN.md)", () => {
       );
     });
   });
+
+  // ===============================================================
+  // 11. Kontakt- und Support-Anfragen (contactRequests — Phase 28.3)
+  // ===============================================================
+  describe("11. Kontakt- und Support-Anfragen (contactRequests — Phase 28.3)", () => {
+    it("erlaubt Website-Besuchern das Erstellen einer validen Kontaktanfrage ohne Login", async () => {
+      const anonDb = testEnv.unauthenticatedContext().firestore();
+
+      await assertSucceeds(
+        anonDb.collection("contactRequests").doc("req_123").set({
+          name: "Tim Zarges",
+          email: "tim@orbit-training.app",
+          category: "SUPPORT",
+          message: "Ich habe eine Frage zur Trainingszonen-Einteilung.",
+          status: "OPEN",
+        })
+      );
+    });
+
+    it("verweigert das Lesen, Bearbeiten oder Löschen von Kontaktanfragen für alle Clients", async () => {
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        await context.firestore().collection("contactRequests").doc("req_secret").set({
+          name: "Geheim",
+          email: "secret@orbit-training.app",
+          message: "Vertrauliche Nachricht.",
+        });
+      });
+
+      const anonDb = testEnv.unauthenticatedContext().firestore();
+      const aliceDb = testEnv.authenticatedContext("alice").firestore();
+
+      // Lesen verboten
+      await assertFails(anonDb.collection("contactRequests").doc("req_secret").get());
+      await assertFails(aliceDb.collection("contactRequests").doc("req_secret").get());
+
+      // Update verboten
+      await assertFails(
+        aliceDb.collection("contactRequests").doc("req_secret").update({ status: "RESOLVED" })
+      );
+
+      // Löschen verboten
+      await assertFails(anonDb.collection("contactRequests").doc("req_secret").delete());
+      await assertFails(aliceDb.collection("contactRequests").doc("req_secret").delete());
+    });
+
+    it("blockiert ungültige Kontaktanfragen (fehlende Pflichtfelder, invalide E-Mail, Übergröße)", async () => {
+      const anonDb = testEnv.unauthenticatedContext().firestore();
+
+      // Fehlendes Feld message
+      await assertFails(
+        anonDb.collection("contactRequests").doc("req_bad_1").set({
+          name: "Tim",
+          email: "tim@orbit-training.app",
+        })
+      );
+
+      // Ungültige Kategorie
+      await assertFails(
+        anonDb.collection("contactRequests").doc("req_bad_2").set({
+          name: "Tim",
+          email: "tim@orbit-training.app",
+          category: "INVALID_CAT",
+          message: "Hallo Welt",
+        })
+      );
+    });
+  });
 });
+
 

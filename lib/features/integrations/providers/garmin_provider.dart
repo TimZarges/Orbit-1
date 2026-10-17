@@ -37,10 +37,12 @@ class GarminService {
 
       if (authUrl != null && authUrl.isNotEmpty) {
         final uri = Uri.parse(authUrl);
-        if (await canLaunchUrl(uri)) {
-          await launchUrl(uri, mode: LaunchMode.externalApplication);
-          return result.data['oauthToken'] as String?;
+        final launched =
+            await launchUrl(uri, mode: LaunchMode.externalApplication);
+        if (!launched) {
+          await launchUrl(uri, mode: LaunchMode.inAppBrowserView);
         }
+        return result.data['oauthToken'] as String?;
       }
       return null;
     } catch (e) {

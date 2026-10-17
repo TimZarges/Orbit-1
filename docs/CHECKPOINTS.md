@@ -1832,3 +1832,32 @@ The operation couldn’t be completed. Unable to locate a Java Runtime.
   - App-Router (`go_router`) und `WidgetGalleryScreen` als Platzhalter erstellt.
   - `spikes/`-Verzeichnis für künftige Experimente vorbereitet.
   - `docs/ARCHITECTURE.md` angelegt.
+
+---
+
+### [Phase 26–28] Pixel 10 Pro Hardware-Reparatur, Garmin OAuth & Feedback-Workflow · ZWISCHENSTAND
+- **Datum:** 2026-10-17 14:18
+- **Hardware-Ziel:** Google Pixel 10 Pro (`58251FDCR00EQ2`), Android 16
+- **Status:** Pause / Geplante Fortsetzung heute Abend
+- **Bereits umgesetzt und live auf dem Pixel 10 Pro verifiziert:**
+  1. **Phase 26 (App Check 401 & DSGVO europe-west3):**
+     - `setGlobalOptions({ region: "europe-west3", enforceAppCheck: false })` in Cloud Functions v2 gelöst. Sideloaded Release-APKs per USB laufen ohne `401 AppCheck token was rejected`.
+     - `deleteActivity` vollständig nach `europe-west3` (Frankfurt) migriert, v1-Funktion in `us-central1` gelöscht.
+     - Alle 29 Cloud Functions exportiert und deployed nach `europe-west3`.
+  2. **Phase 27 (Garmin Android 16 `<queries>` & Deep Links):**
+     - `<queries>` für Browser-Intents und `com.garmin.android.apps.connectmobile` in `AndroidManifest.xml` integriert.
+     - Deep-Link Callback `orbit://oauth/garmin` und `https://orbit-app-mvp.web.app/callback/garmin` registriert.
+     - Live-Verifikation auf dem Pixel 10 Pro: `garminAuthStart` erzeugt valide OAuth-URL, App öffnet den Browser und zeigt die Garmin Connect Consent-Seite (`Screenshot_C2_garmin_oauth_consent.png`).
+  3. **Phase 28 (Bug-, Ideen- & Kontakt-Workflow):**
+     - `BetaBugReporterSheet` überarbeitet: 6 Kategorien (Bugs, Ideen, Support etc.), Volt-Akzente (`#CDFB17`), dunkler Kontrast (`#0F172A`). Screenshot auf Pixel 10 Pro: `Screenshot_B_bug_reporter_sheet.png`.
+     - Cloud Function Trigger `onBetaFeedbackCreated` mit sequentieller `#ORB-xxx` Ticket-Vergabe via Firestore-Transaktion auf `counters/betaFeedback` und Admin-Push.
+     - Web-Kontaktformular auf `public/index.html` und `public/help.html` mit Speicherung in `contactRequests` (Hosting live unter `https://orbit-app-mvp.web.app`).
+     - `AdminFeedbackScreen` (`/admin/feedback`) erstellt und im Avatar-Popup-Menü verlinkt.
+     - Live-Verifikation auf dem Pixel 10 Pro:
+       - Avatar-Menü öffnet zuverlässig (`docs/beta/screenshots/menu_popup.png`).
+       - Klick auf „Beta-Feedback Inbox" öffnet `AdminFeedbackScreen` (`docs/beta/screenshots/Screenshot_D_admin_feedback_screen.png`).
+- **Nächster Schritt bei Fortsetzung heute Abend:**
+  1. `firestore.rules` via `firestore-rules-author` für die Admin-Inbox anpassen (Lesen von `betaFeedback` für authentifizierte Tester/Admins zur Vermeidung von Doppel-Reports und Erlaubnis von Status-Updates `['status']`).
+  2. Test-Ticket `#ORB-001` auf dem Pixel 10 Pro absenden und in `AdminFeedbackScreen` anzeigen.
+  3. Ausführung von `npm --prefix functions run feedback:pull` zum automatischen Abgleich mit `docs/beta/BUGS.md`.
+

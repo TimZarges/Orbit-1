@@ -1,7 +1,8 @@
 import { setGlobalOptions } from "firebase-functions/v2";
 
 // Set default region to europe-west3 (Frankfurt) for GDPR compliance
-setGlobalOptions({ region: "europe-west3" });
+// enforceAppCheck: false allows sideloaded/USB beta APKs without Play Integrity attestation
+setGlobalOptions({ region: "europe-west3", enforceAppCheck: false });
 
 // 1. Auth Functions (onCall)
 export { setInitialRole, deleteAccount, exportAccount } from "./auth";
@@ -50,4 +51,8 @@ export {
   sendWeeklySummaryNotification,
   sendTestPushNotification,
 } from "./notifications";
+
+// 9. Feedback & Beta Ticket Pipeline (Phase 28.2)
+export { onBetaFeedbackCreated } from "./feedback/onBetaFeedbackCreated";
+
 

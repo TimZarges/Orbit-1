@@ -39,6 +39,14 @@
         "destination": "/delete-account.html"
       },
       {
+        "source": "/callback/garmin",
+        "destination": "/callback/garmin/index.html"
+      },
+      {
+        "source": "/callback/garmin/**",
+        "destination": "/callback/garmin/index.html"
+      },
+      {
         "source": "/app/**",
         "destination": "/app/index.html"
       }

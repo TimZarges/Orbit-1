@@ -11,7 +11,7 @@ const CALLBACK_URL = "https://orbit-app-mvp.web.app/callback/garmin";
  * Ruft den Garmin Request Token ab und gibt die Authentifizierungs-URL zurück.
  */
 export const garminAuthStart = onCall(
-  { secrets: [garminConsumerKey, garminConsumerSecret] },
+  { secrets: [garminConsumerKey, garminConsumerSecret], enforceAppCheck: false },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -73,7 +73,7 @@ export const garminAuthStart = onCall(
  * Holt die Garmin User ID ab, setzt den Schnellindex und stößt automatisch den 90-Tage-Backfill an.
  */
 export const garminAuthCallback = onCall(
-  { secrets: [garminConsumerKey, garminConsumerSecret] },
+  { secrets: [garminConsumerKey, garminConsumerSecret], enforceAppCheck: false },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -206,7 +206,9 @@ export const garminAuthCallback = onCall(
 /**
  * 3. Schritt: Trennt die Garmin-Verbindung, löscht Tokens und Schnellindex.
  */
-export const garminDisconnect = onCall(async (request) => {
+export const garminDisconnect = onCall(
+  { enforceAppCheck: false },
+  async (request) => {
   const uid = request.auth?.uid;
   if (!uid) {
     throw new HttpsError("unauthenticated", "User must be authenticated.");

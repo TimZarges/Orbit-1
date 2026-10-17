@@ -11,7 +11,8 @@
     "logs": "firebase functions:log",
     "test": "jest --runInBand",
     "test:rules": "jest src/__tests__/rules.test.ts --runInBand",
-    "verify:corpus": "tsc && node lib/scripts/verifyFitCorpus.js"
+    "verify:corpus": "tsc && node lib/scripts/verifyFitCorpus.js",
+    "feedback:pull": "tsc && node lib/scripts/pullFeedback.js"
   },
   "engines": {
     "node": "20"

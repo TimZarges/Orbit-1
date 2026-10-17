@@ -4,6 +4,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:uuid/uuid.dart';
 import '../../coach_link/providers/athlete_context_provider.dart';
+import '../../home/providers/home_dashboard_provider.dart';
 
 class ActivityUploadState {
   final bool isUploading;
@@ -144,6 +145,10 @@ class ActivityUploadNotifier extends StateNotifier<ActivityUploadState> {
           successfulUploads: successCount,
           progress: (i + 1) / total,
         );
+      }
+
+      if (successCount > 0) {
+        ref.invalidate(homeDashboardProvider(athleteId));
       }
 
       state = ActivityUploadState(
