@@ -26,6 +26,81 @@
 
 ## Einträge
 
+### [Phase 25] Autonomer Live-Hardware-Testlauf & E2E-Audit auf dem Google Pixel 10 Pro · STOPP 1 (RISIKO-HOCH)
+- **STOPP-Punkt/Anlass:** STOPP 1 (Vorlage von `docs/beta/PIXEL10_LIVE_AUDIT.md`, der 18 ADB-Screenshots unter `docs/beta/screenshots/` und detaillierte Fehler-Ursachenanalyse für Tim Zarges vor Start von Phase 26) aus `docs/phases/phase_25.md`.
+- **Entscheidung & Umgesetzte Maßnahmen:**
+  1. **Autonomer Hardware-Test auf Google Pixel 10 Pro:**
+     - Device-ID `58251FDCR00EQ2` (Android 16, Codename `frankel`, Vulkan Impeller, 120 Hz).
+     - Start-Crash (`ClassNotFoundException: MainActivity`) per ProGuard-Keep-Rules & Java-Klasse dauerhaft behoben. Release-APK (`app.orbit.training`) installiert und ausgeführt.
+  2. **Vollständige E2E-Screen-Inspektion & 18 Screenshots erfasst:**
+     - `01_login_screen.png`: Start / Navy `#001F47` Branding.
+     - `02_today_screen.png` & `14_today_scrolled.png`: 3 Ringe mit Volt `#CDFB17` Leitring, Tagesempfehlung, Form-Ampel.
+     - `03_profile_screen.png` & `18_avatar_menu.png`: Avatar-Dropdown (Profil, Vorlagen, Builder, Health, Diagnostik, Einstellungen).
+     - `04_settings_screen.png`: Einstellungsnavigation & Routing.
+     - `05_analysis_tab.png`: Analyse-Cockpit (Form-Ampel, Wochenlast, Konsistenz).
+     - `06_health_cockpit.png` & `07_health_charts.png`: 30-Tage-Normbänder ($\mu \pm 1\sigma$), 15s-Morgen-Journal-Chips.
+     - `08_pmc_chart.png`: Belastungsverlauf & Konsistenz.
+     - `09_plan_screen.png`: Kalender mit Woche/Monat/Liste Segmented Control.
+     - `10_coach_tab.png` & `12_coach_code_modal.png`: Coach-Tab Empty-State & Trainer-Code Eingabedialog.
+     - `11_beta_bug_reporter.png`: In-App Bug-Reporter Sheet (Farbkontrast-Defekt aufgedeckt).
+     - `13_plan_training_sheet.png`: Training planen Modal-Sheet mit Sportart-Chips.
+     - `15_fab_file_upload.png`: Android SAF System-Dokumenten-Picker (`DocumentsUI`).
+     - `16_workout_detail_modal.png`: Geplante Einheit mit Verschiebe-Aktionen.
+     - `17_chat_list.png`: Chat-Routing.
+  3. **Exakte Ursachenanalyse der Live-Probleme (Evidence-Only):**
+     - **Garmin Connect Triple-Blocker:**
+       1. *App Check Token Rejection:* Live-Log `garminauthstart: Failed to validate AppCheck token. FirebaseAppCheckError: Decoding App Check token failed.` wegen sideloadeter APK ohne Play Store Signatur.
+       2. *Fehlende Android `<queries>`:* In `AndroidManifest.xml` fehlt `<intent><action android:name="android.intent.action.VIEW"/><data android:scheme="https"/></intent>`. Dadurch gibt `canLaunchUrl(Uri.parse(authUrl))` auf Android 11–16 immer `false` zurück.
+       3. *Fehlender Deep-Link Callback:* Kein Intent-Filter für `app.orbit.training://` oder `orbit-app-mvp.web.app/callback/garmin` vorhanden.
+     - **Cloud Functions Regionen-Diskrepanz:**
+       - `functions/src/import/deleteActivity.ts` ist als v1-Funktion versehentlich in `us-central1` statt `europe-west3` deklariert (Verstoß gegen Regel 3 `AGENTS.md`).
+     - **Avatar-Menü Navigation:**
+       - `showMenu` schließt sich mit `Navigator.pop()`, wodurch asynchrones `context.go()` im `PopupMenuItem` verschluckt wird.
+     - **Bug-Reporter Sheet Kontrast:**
+       - Dunkelblaue Schrift auf `#0B132B` Grund sowie weiße Diagnosebox mit weißem Text.
+- **Nachweise (Evidence-Only gemäß Regel 2):**
+
+```text
+1. ADB Geräte-Erkennung & Live-App Status:
+$ adb devices -l
+58251FDCR00EQ2         device usb:346030080X product:frankel model:Pixel_10_Pro device:frankel transport_id:1
+
+$ adb shell dumpsys window | grep -E "mCurrentFocus|mFocusedApp"
+  mCurrentFocus=Window{c7db530 u0 app.orbit.training/com.example.orbit.MainActivity}
+  mFocusedApp=ActivityRecord{142990622 u0 app.orbit.training/com.example.orbit.MainActivity t10579}
+
+2. Firebase App Check Rejection Beweis:
+$ firebase functions:log --only garminAuthStart
+W garminauthstart: Failed to validate AppCheck token. FirebaseAppCheckError: Decoding App Check token failed.
+W garminauthstart: {"message":"Callable request verification failed: AppCheck token was rejected.","verifications":{"auth":"VALID","app":"INVALID"}}
+
+3. Screenshot-Inventar auf Pixel 10 Pro (18 Screenshots):
+$ ls -lh docs/beta/screenshots/
+-rw-r--r--@ 1 timzarges  staff   249K Oct 17 02:26 01_login_screen.png
+-rw-r--r--@ 1 timzarges  staff   249K Oct 17 02:27 02_today_screen.png
+-rw-r--r--@ 1 timzarges  staff   243K Oct 17 02:28 03_profile_screen.png
+-rw-r--r--@ 1 timzarges  staff   261K Oct 17 02:28 04_settings_screen.png
+-rw-r--r--@ 1 timzarges  staff   219K Oct 17 02:29 05_analysis_tab.png
+-rw-r--r--@ 1 timzarges  staff   238K Oct 17 02:29 06_health_cockpit.png
+-rw-r--r--@ 1 timzarges  staff   237K Oct 17 02:30 07_health_charts.png
+-rw-r--r--@ 1 timzarges  staff   198K Oct 17 02:30 08_pmc_chart.png
+-rw-r--r--@ 1 timzarges  staff   178K Oct 17 02:32 09_plan_screen.png
+-rw-r--r--@ 1 timzarges  staff   107K Oct 17 02:32 10_coach_tab.png
+-rw-r--r--@ 1 timzarges  staff   155K Oct 17 02:32 11_beta_bug_reporter.png
+-rw-r--r--@ 1 timzarges  staff   166K Oct 17 02:41 12_coach_code_modal.png
+-rw-r--r--@ 1 timzarges  staff   169K Oct 17 02:42 13_plan_training_sheet.png
+-rw-r--r--@ 1 timzarges  staff   249K Oct 17 02:42 14_today_scrolled.png
+-rw-r--r--@ 1 timzarges  staff    87K Oct 17 02:43 15_fab_file_upload.png
+-rw-r--r--@ 1 timzarges  staff   205K Oct 17 02:45 16_workout_detail_modal.png
+-rw-r--r--@ 1 timzarges  staff   108K Oct 17 02:45 17_chat_list.png
+-rw-r--r--@ 1 timzarges  staff   133K Oct 17 02:38 18_avatar_menu.png
+```
+
+- **Bitte prüfen:** Ergebnisse des Live-Hardware-Audits in `docs/beta/PIXEL10_LIVE_AUDIT.md` und Screenshot-Galerie sichten. Nach Tims Freigabe kann direkt Phase 26 gestartet werden (Behebung von Backend-Region `europe-west3`, App Check Konfiguration, Avatar-Menü Navigation und Onboarding).
+- **Rückholen:** `git switch main && git branch -D feature/phase-25-pixel10-autonomous-audit`
+
+---
+
 ### [Phase 24] Stresstest (100–200 FIT-Files), Rollen-Testpläne, Release-Build & Play Store Beta-Gate · STOPP 1 (RISIKO-HOCH)
 - **STOPP-Punkt/Anlass:** STOPP 1 (Vorbereitung Release-Gate & Live-Abnahme) aus `docs/phases/phase_24.md`. Vollständige Implementierung aller drei Arbeitspakete:
   1. Batch-/Stresstest-Harness für 100–200 FIT-/TCX-/GPX-Dateien (`verifyFitCorpus.ts` + Test `corpusStress.test.ts`) & Flutter LTTB- & Chart-Performance-Benchmark (`phase24_stress_performance_test.dart`) (24.1).
