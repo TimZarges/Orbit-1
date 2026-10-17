@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:orbit/core/config/contact_config.dart';
 import 'package:orbit/features/beta_feedback/models/beta_feedback_report.dart';
@@ -79,17 +80,20 @@ void main() {
       expect(json['diagnostics']['deviceInfo'], contains('Pixel 10 Pro'));
     });
 
-    testWidgets('AdminFeedbackScreen rendert Header und Filter-Chips',
+    testWidgets('AdminFeedbackScreen rendert Header und Filter-Chips für Admin',
         (tester) async {
       await tester.pumpWidget(
-        const MaterialApp(
-          home: AdminFeedbackScreen(
-            streamOverride: Stream.empty(),
+        ProviderScope(
+          child: MaterialApp(
+            home: AdminFeedbackScreen(
+              streamOverride: Stream.empty(),
+              isAdminOverride: true,
+            ),
           ),
         ),
       );
 
-      // AppBar Titel
+      // AppBar Titel für Admin
       expect(find.text('Beta Feedback-Inbox'), findsOneWidget);
 
       // Status-Filter Chips
@@ -103,6 +107,24 @@ void main() {
       expect(find.text('🐛 Bugs'), findsOneWidget);
       expect(find.text('💡 Ideen'), findsOneWidget);
       expect(find.text('❓ Support'), findsOneWidget);
+    });
+
+    testWidgets(
+        'AdminFeedbackScreen rendert Titel Meine Feedback-Tickets für normale Tester',
+        (tester) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            home: AdminFeedbackScreen(
+              streamOverride: Stream.empty(),
+              isAdminOverride: false,
+            ),
+          ),
+        ),
+      );
+
+      // AppBar Titel für normale Nutzer
+      expect(find.text('Meine Feedback-Tickets'), findsOneWidget);
     });
   });
 }

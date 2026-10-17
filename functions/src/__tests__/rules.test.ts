@@ -130,6 +130,25 @@ describe("Firestore Security Rules Tests (RULES_TESTPLAN.md)", () => {
           "metrics.orbitScore": 100,
         })
       );
+
+      // Verbotenes Update: isAdmin auf true setzen
+      await assertFails(
+        aliceDb.collection("users").doc("alice").update({
+          isAdmin: true,
+        })
+      );
+    });
+
+    it("blockiert Privilege Escalation durch Setzen von isAdmin: true bei Profilerstellung", async () => {
+      const malloryDb = testEnv.authenticatedContext("mallory").firestore();
+      await assertFails(
+        malloryDb.collection("users").doc("mallory").set({
+          uid: "mallory",
+          email: "mallory@example.com",
+          role: "ATHLETE",
+          isAdmin: true,
+        })
+      );
     });
 
     it("gewährleistet Datentrennung: Bob darf Alices Profil nicht lesen", async () => {
@@ -533,6 +552,60 @@ describe("Firestore Security Rules Tests (RULES_TESTPLAN.md)", () => {
         aliceDb.collection("betaFeedback").doc("rep_alice_1").delete()
       );
     });
+
+    it("gewährt Admins Lesezugriff auf alle Reports und Update des Status, verwehrt aber Deletes und Manipulation anderer Felder", async () => {
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        await context.firestore().collection("betaFeedback").doc("rep_alice_1").set({
+          userId: "alice",
+          category: "BUG_CRASH",
+          description: "Bug report from alice",
+          status: "OPEN",
+        });
+        await context.firestore().collection("users").doc("timAdmin").set({
+          uid: "timAdmin",
+          email: "tim@orbit.training",
+          role: "ATHLETE",
+          isAdmin: true,
+        });
+      });
+
+      const adminTokenDb = testEnv.authenticatedContext("adminWithClaim", { admin: true }).firestore();
+      const adminDocDb = testEnv.authenticatedContext("timAdmin").firestore();
+      const normalBobDb = testEnv.authenticatedContext("bob").firestore();
+
+      // Admin via Auth Token Claim darf fremden Report lesen
+      await assertSucceeds(adminTokenDb.collection("betaFeedback").doc("rep_alice_1").get());
+
+      // Admin via users/uid.isAdmin == true darf fremden Report lesen
+      await assertSucceeds(adminDocDb.collection("betaFeedback").doc("rep_alice_1").get());
+
+      // Normaler Nutzer (Bob) darf fremden Report NICHT lesen
+      await assertFails(normalBobDb.collection("betaFeedback").doc("rep_alice_1").get());
+
+      // Admin darf Status auf IN_PROGRESS oder RESOLVED setzen
+      await assertSucceeds(
+        adminDocDb.collection("betaFeedback").doc("rep_alice_1").update({
+          status: "IN_PROGRESS",
+        })
+      );
+      await assertSucceeds(
+        adminTokenDb.collection("betaFeedback").doc("rep_alice_1").update({
+          status: "RESOLVED",
+        })
+      );
+
+      // Admin darf KEINE anderen Felder manipulieren (z. B. description, userId)
+      await assertFails(
+        adminDocDb.collection("betaFeedback").doc("rep_alice_1").update({
+          description: "Manipuliert durch Admin",
+        })
+      );
+
+      // Admin darf NICHT löschen
+      await assertFails(
+        adminDocDb.collection("betaFeedback").doc("rep_alice_1").delete()
+      );
+    });
   });
 
   // ===============================================================
@@ -838,6 +911,39 @@ describe("Firestore Security Rules Tests (RULES_TESTPLAN.md)", () => {
           message: "Hallo Welt",
         })
       );
+    });
+
+    it("erlaubt Admins das Lesen und Status-Update von contactRequests", async () => {
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        await context.firestore().collection("contactRequests").doc("req_for_admin").set({
+          name: "Interessent",
+          email: "interessent@orbit-training.app",
+          message: "Anfrage zu ORBIT für Vereine.",
+          status: "OPEN",
+        });
+        await context.firestore().collection("users").doc("timAdmin").set({
+          uid: "timAdmin",
+          email: "tim@orbit-training.app",
+          isAdmin: true,
+        });
+      });
+
+      const adminDb = testEnv.authenticatedContext("timAdmin").firestore();
+      const aliceDb = testEnv.authenticatedContext("alice").firestore();
+
+      // Admin darf lesen
+      await assertSucceeds(adminDb.collection("contactRequests").doc("req_for_admin").get());
+
+      // Normaler Nutzer darf nicht lesen
+      await assertFails(aliceDb.collection("contactRequests").doc("req_for_admin").get());
+
+      // Admin darf Status aktualisieren
+      await assertSucceeds(
+        adminDb.collection("contactRequests").doc("req_for_admin").update({ status: "IN_PROGRESS" })
+      );
+
+      // Löschen bleibt für alle verboten
+      await assertFails(adminDb.collection("contactRequests").doc("req_for_admin").delete());
     });
   });
 });

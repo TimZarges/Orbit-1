@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/dashboard/screens/dashboard_screen.dart';
@@ -29,6 +30,15 @@ final goRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: '/',
     redirect: (context, state) {
+      // 1. Eigene Scheme-Deep-Links (z. B. orbit://oauth/garmin?oauth_token=...&oauth_verifier=...) normalisieren
+      if (state.uri.scheme == 'orbit') {
+        final host = state.uri.host;
+        final path = state.uri.path;
+        final cleanPath = host.isNotEmpty ? '/$host$path' : path;
+        final query = state.uri.hasQuery ? '?${state.uri.query}' : '';
+        return '$cleanPath$query';
+      }
+
       // Wenn der AuthState noch lädt, bleiben wir erst mal stehen
       if (authState.isLoading) return null;
 
@@ -61,6 +71,25 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       }
 
       return null;
+    },
+    errorBuilder: (context, state) {
+      // Fallback für ungematchte Garmin-OAuth-Callbacks
+      final uri = state.uri;
+      final uriStr = uri.toString();
+      if (uri.scheme == 'orbit' ||
+          uri.path.contains('garmin') ||
+          uriStr.contains('oauth_verifier')) {
+        return GarminConnectionScreen(
+          initialVerifier: uri.queryParameters['oauth_verifier'],
+          initialToken: uri.queryParameters['oauth_token'],
+        );
+      }
+      return Scaffold(
+        appBar: AppBar(title: const Text('Seite nicht gefunden')),
+        body: Center(
+          child: Text(state.error?.toString() ?? 'Fehler beim Laden'),
+        ),
+      );
     },
     routes: [
       GoRoute(

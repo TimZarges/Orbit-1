@@ -1,36 +1,87 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/design/app_colors.dart';
 import '../../../core/design/app_typography.dart';
+import '../../auth/providers/user_provider.dart';
 import '../models/beta_feedback_report.dart';
 
-/// Admin-Inbox für gemeldete Beta-Feedback- & Bug-Tickets (Phase 28.2).
+/// Admin- & Tester-Inbox für gemeldete Beta-Feedback- & Bug-Tickets (Phase 28.2).
 ///
-/// Ermöglicht dem Admin das Filtern, Einsehen der Diagnose-Metadaten
-/// und das Setzen des Bearbeitungsstatus (OPEN, IN_PROGRESS, RESOLVED).
-class AdminFeedbackScreen extends StatefulWidget {
+/// Zweistufiges DSGVO- & Sicherheitsmodell:
+/// - Admins (`isAdmin == true`): Sehen alle Tickets und können den Bearbeitungsstatus
+///   (`OPEN`, `IN_PROGRESS`, `RESOLVED`) verwalten.
+/// - Normale Beta-Tester: Sehen ausschließlich ihre eigenen eingereichten Tickets
+///   (Filter `.where('userId', isEqualTo: uid)`), kein `PERMISSION_DENIED`.
+class AdminFeedbackScreen extends ConsumerStatefulWidget {
   final Stream<QuerySnapshot>? streamOverride;
+  final bool? isAdminOverride;
 
-  const AdminFeedbackScreen({super.key, this.streamOverride});
+  const AdminFeedbackScreen({
+    super.key,
+    this.streamOverride,
+    this.isAdminOverride,
+  });
 
   @override
-  State<AdminFeedbackScreen> createState() => _AdminFeedbackScreenState();
+  ConsumerState<AdminFeedbackScreen> createState() =>
+      _AdminFeedbackScreenState();
 }
 
-class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
+class _AdminFeedbackScreenState extends ConsumerState<AdminFeedbackScreen> {
   String _selectedStatusFilter = 'ALL';
   String _selectedCategoryFilter = 'ALL';
 
   @override
   Widget build(BuildContext context) {
+    final userDoc = ref.watch(userDocumentProvider).valueOrNull;
+    String? authEmail;
+    String currentUid = '';
+    try {
+      if (Firebase.apps.isNotEmpty) {
+        final authUser = FirebaseAuth.instance.currentUser;
+        authEmail = authUser?.email;
+        currentUid = authUser?.uid ?? '';
+      }
+    } catch (_) {}
+
+    final bool isAdmin = widget.isAdminOverride ??
+        (userDoc?['isAdmin'] == true ||
+            authEmail == 'tim@orbit.training');
+
+    // Zweistufige Query gemäß KORREKTUR 1 (DSGVO):
+    Stream<QuerySnapshot>? defaultStream;
+    if (widget.streamOverride == null) {
+      try {
+        if (Firebase.apps.isNotEmpty) {
+          defaultStream = isAdmin
+              ? FirebaseFirestore.instance
+                  .collection('betaFeedback')
+                  .orderBy('createdAt', descending: true)
+                  .snapshots()
+              : FirebaseFirestore.instance
+                  .collection('betaFeedback')
+                  .where('userId', isEqualTo: currentUid)
+                  .orderBy('createdAt', descending: true)
+                  .snapshots();
+        }
+      } catch (_) {}
+    }
+
+    final Stream<QuerySnapshot> stream = widget.streamOverride ??
+        defaultStream ??
+        const Stream.empty();
+
     return Scaffold(
-      backgroundColor: const Color(0xFF0F172A),
+      backgroundColor: AppColors.navy,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF001F47),
+        backgroundColor: AppColors.navy,
         elevation: 0,
-        title: const Text(
-          'Beta Feedback-Inbox',
-          style: TextStyle(
+        title: Text(
+          isAdmin ? 'Beta Feedback-Inbox' : 'Meine Feedback-Tickets',
+          style: const TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
             fontSize: 18,
@@ -46,18 +97,14 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
       ),
       body: Column(
         children: [
-          // Filterleiste
+          // Filterleiste (Navy-Brand Surface)
           _buildFilterBar(),
-          const Divider(color: Color(0xFF1E293B), height: 1),
+          const Divider(color: Color(0xFF00357A), height: 1),
 
           // Liste der Tickets
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
-              stream: widget.streamOverride ??
-                  FirebaseFirestore.instance
-                      .collection('betaFeedback')
-                      .orderBy('createdAt', descending: true)
-                      .snapshots(),
+              stream: stream,
               builder: (context, snapshot) {
                 if (snapshot.hasError) {
                   return Center(
@@ -108,7 +155,9 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
                         ),
                         const SizedBox(height: 12),
                         Text(
-                          'Keine Feedback-Tickets vorhanden',
+                          isAdmin
+                              ? 'Keine Feedback-Tickets vorhanden'
+                              : 'Du hast bisher keine Tickets eingereicht',
                           style: AppTypography.title.copyWith(
                             color: const Color(0xFF94A3B8),
                           ),
@@ -123,7 +172,7 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
                   itemCount: filtered.length,
                   separatorBuilder: (_, __) => const SizedBox(height: 12),
                   itemBuilder: (context, index) {
-                    return _buildTicketCard(filtered[index]);
+                    return _buildTicketCard(filtered[index], isAdmin);
                   },
                 );
               },
@@ -136,7 +185,7 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
 
   Widget _buildFilterBar() {
     return Container(
-      color: const Color(0xFF001F47),
+      color: const Color(0xFF002A5C),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       child: Column(
         children: [
@@ -181,14 +230,19 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
     return ChoiceChip(
       label: Text(label),
       selected: selected,
-      backgroundColor: const Color(0xFF1E293B),
+      backgroundColor: const Color(0xFF00357A),
       selectedColor: AppColors.volt,
+      side: BorderSide(
+        color: selected ? AppColors.volt : const Color(0xFF004D99),
+      ),
       labelStyle: TextStyle(
-        color: selected ? AppColors.navy : Colors.white70,
+        color: selected ? AppColors.navy : Colors.white,
         fontWeight: selected ? FontWeight.bold : FontWeight.normal,
         fontSize: 12,
       ),
-      onSelected: (_) => setState(() => _selectedStatusFilter = value),
+      onSelected: (_) {
+        setState(() => _selectedStatusFilter = value);
+      },
     );
   }
 
@@ -197,100 +251,94 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
     return ChoiceChip(
       label: Text(label),
       selected: selected,
-      backgroundColor: const Color(0xFF1E293B),
+      backgroundColor: const Color(0xFF00357A),
       selectedColor: AppColors.volt,
+      side: BorderSide(
+        color: selected ? AppColors.volt : const Color(0xFF004D99),
+      ),
       labelStyle: TextStyle(
-        color: selected ? AppColors.navy : Colors.white70,
+        color: selected ? AppColors.navy : Colors.white,
         fontWeight: selected ? FontWeight.bold : FontWeight.normal,
         fontSize: 12,
       ),
-      onSelected: (_) => setState(() => _selectedCategoryFilter = value),
+      onSelected: (_) {
+        setState(() => _selectedCategoryFilter = value);
+      },
     );
   }
 
-  Widget _buildTicketCard(BetaFeedbackReport report) {
-    final ticketId = report.ticketId ?? '#ORB-${report.id.substring(0, 4)}';
-
+  Widget _buildTicketCard(BetaFeedbackReport report, bool isAdmin) {
     Color statusColor;
-    String statusText;
+    String statusLabel;
     switch (report.status) {
-      case 'RESOLVED':
-        statusColor = AppColors.green;
-        statusText = 'Behoben';
-        break;
       case 'IN_PROGRESS':
-        statusColor = AppColors.amber;
-        statusText = 'In Arbeit';
+        statusColor = const Color(0xFFF59E0B);
+        statusLabel = 'In Arbeit';
         break;
+      case 'RESOLVED':
+        statusColor = const Color(0xFF10B981);
+        statusLabel = 'Behoben';
+        break;
+      case 'OPEN':
       default:
-        statusColor = Colors.redAccent;
-        statusText = 'Offen';
+        statusColor = const Color(0xFFEF4444);
+        statusLabel = 'Offen';
+        break;
     }
 
     return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFF1E293B),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF334155)),
-      ),
       padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFF002A5C),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFF003E80)),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Header: Ticket-ID, Kategorie, Status
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: AppColors.volt.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(6),
-                      border: Border.all(color: AppColors.volt, width: 1),
-                    ),
-                    child: Text(
-                      ticketId,
-                      style: const TextStyle(
-                        color: AppColors.volt,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF334155),
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Text(
-                      report.category.label(),
-                      style: const TextStyle(
-                        color: Colors.white70,
-                        fontSize: 11,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: statusColor.withValues(alpha: 0.15),
+                  color: AppColors.volt,
                   borderRadius: BorderRadius.circular(6),
-                  border: Border.all(color: statusColor, width: 1),
                 ),
                 child: Text(
-                  statusText,
+                  report.ticketId ?? '#ORB-???',
+                  style: const TextStyle(
+                    color: AppColors.navy,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  report.category.label(),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 13,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: statusColor.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(color: statusColor, width: 0.8),
+                ),
+                child: Text(
+                  statusLabel,
                   style: TextStyle(
                     color: statusColor,
-                    fontWeight: FontWeight.bold,
                     fontSize: 11,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
@@ -301,43 +349,41 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
           // Beschreibung
           Text(
             report.description,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 14,
-              height: 1.35,
-            ),
+            style: const TextStyle(color: Colors.white, fontSize: 13),
+            maxLines: 3,
+            overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 10),
 
-          // Metadaten-Zeile
+          // Metadaten & Aktionen
           Row(
             children: [
-              Icon(Icons.access_time, size: 13, color: Colors.white54),
-              const SizedBox(width: 4),
               Text(
-                '${report.createdAt.day.toString().padLeft(2, '0')}.${report.createdAt.month.toString().padLeft(2, '0')}. ${report.createdAt.hour.toString().padLeft(2, '0')}:${report.createdAt.minute.toString().padLeft(2, '0')} Uhr',
-                style: const TextStyle(color: Colors.white54, fontSize: 11),
+                '${report.createdAt.day}.${report.createdAt.month}.${report.createdAt.year}',
+                style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 11),
               ),
-              if (report.diagnostics != null) ...[
-                const SizedBox(width: 12),
-                Icon(Icons.phone_android, size: 13, color: Colors.white54),
-                const SizedBox(width: 4),
-                Expanded(
-                  child: Text(
-                    report.diagnostics!.deviceInfo,
-                    style: const TextStyle(color: Colors.white54, fontSize: 11),
-                    overflow: TextOverflow.ellipsis,
-                  ),
+              if (report.screenshotPath != null) ...[
+                const SizedBox(width: 8),
+                const Icon(Icons.image_outlined,
+                    size: 14, color: AppColors.volt),
+                const SizedBox(width: 2),
+                const Text(
+                  'Screenshot',
+                  style: TextStyle(color: AppColors.volt, fontSize: 11),
                 ),
               ],
-            ],
-          ),
-
-          // Details anzeigen & Status ändern
-          const SizedBox(height: 10),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
+              if (report.diagnostics != null) ...[
+                const SizedBox(width: 8),
+                const Icon(Icons.info_outline,
+                    size: 14, color: Color(0xFF94A3B8)),
+                const SizedBox(width: 2),
+                Text(
+                  report.diagnostics!.deviceInfo,
+                  style:
+                      const TextStyle(color: Color(0xFF94A3B8), fontSize: 10),
+                ),
+              ],
+              const Spacer(),
               TextButton(
                 onPressed: () => _showTicketDetails(context, report),
                 child: const Text(
@@ -345,35 +391,36 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
                   style: TextStyle(color: AppColors.volt, fontSize: 12),
                 ),
               ),
-              PopupMenuButton<String>(
-                tooltip: 'Status ändern',
-                icon: const Icon(Icons.more_vert,
-                    color: Colors.white70, size: 18),
-                color: const Color(0xFF0F172A),
-                onSelected: (newStatus) async {
-                  await FirebaseFirestore.instance
-                      .collection('betaFeedback')
-                      .doc(report.id)
-                      .update({'status': newStatus});
-                },
-                itemBuilder: (context) => [
-                  const PopupMenuItem(
-                    value: 'OPEN',
-                    child: Text('🔴 Auf Offen setzen',
-                        style: TextStyle(color: Colors.white)),
-                  ),
-                  const PopupMenuItem(
-                    value: 'IN_PROGRESS',
-                    child: Text('🟡 Auf In Arbeit setzen',
-                        style: TextStyle(color: Colors.white)),
-                  ),
-                  const PopupMenuItem(
-                    value: 'RESOLVED',
-                    child: Text('🟢 Als Behoben markieren',
-                        style: TextStyle(color: Colors.white)),
-                  ),
-                ],
-              ),
+              if (isAdmin)
+                PopupMenuButton<String>(
+                  tooltip: 'Status ändern',
+                  icon: const Icon(Icons.more_vert,
+                      color: Colors.white70, size: 18),
+                  color: const Color(0xFF002A5C),
+                  onSelected: (newStatus) async {
+                    await FirebaseFirestore.instance
+                        .collection('betaFeedback')
+                        .doc(report.id)
+                        .update({'status': newStatus});
+                  },
+                  itemBuilder: (context) => [
+                    const PopupMenuItem(
+                      value: 'OPEN',
+                      child: Text('🔴 Auf Offen setzen',
+                          style: TextStyle(color: Colors.white)),
+                    ),
+                    const PopupMenuItem(
+                      value: 'IN_PROGRESS',
+                      child: Text('🟡 Auf In Arbeit setzen',
+                          style: TextStyle(color: Colors.white)),
+                    ),
+                    const PopupMenuItem(
+                      value: 'RESOLVED',
+                      child: Text('🟢 Als Behoben markieren',
+                          style: TextStyle(color: Colors.white)),
+                    ),
+                  ],
+                ),
             ],
           ),
         ],
@@ -386,11 +433,17 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
       context: context,
       builder: (dialogCtx) {
         return AlertDialog(
-          backgroundColor: const Color(0xFF0F172A),
+          backgroundColor: AppColors.navy,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: const BorderSide(color: Color(0xFF003E80)),
+          ),
           title: Text(
             report.ticketId ?? 'Ticket-Details',
             style: const TextStyle(
-                color: AppColors.volt, fontWeight: FontWeight.bold),
+              color: AppColors.volt,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           content: SingleChildScrollView(
             child: Column(
@@ -422,8 +475,9 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF1E293B),
+                      color: const Color(0xFF002A5C),
                       borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: const Color(0xFF003E80)),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,

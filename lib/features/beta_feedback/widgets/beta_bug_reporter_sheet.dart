@@ -91,10 +91,10 @@ Future<void> showBetaBugReporterSheet(
     context: context,
     isScrollControlled: true,
     useSafeArea: true,
-    backgroundColor: const Color(0xFF0F172A),
+    backgroundColor: AppColors.navy,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      side: BorderSide(color: Color(0xFF334155), width: 1),
+      side: BorderSide(color: Color(0xFF003E80), width: 1),
     ),
     builder: (sheetCtx) => BetaBugReporterSheet(
       initialCategory: initialCategory,
@@ -281,9 +281,9 @@ class _BetaBugReporterSheetState extends State<BetaBugReporterSheet> {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF1E293B),
+                    color: const Color(0xFF002A5C),
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: const Color(0xFF334155)),
+                    border: Border.all(color: const Color(0xFF003E80)),
                   ),
                   child: const Icon(
                     Icons.bug_report,
@@ -336,10 +336,10 @@ class _BetaBugReporterSheetState extends State<BetaBugReporterSheet> {
                   key: Key('beta_category_${cat.wireValue}'),
                   label: Text(cat.label()),
                   selected: selected,
-                  backgroundColor: const Color(0xFF1E293B),
+                  backgroundColor: const Color(0xFF002A5C),
                   selectedColor: AppColors.volt,
                   side: BorderSide(
-                    color: selected ? AppColors.volt : const Color(0xFF334155),
+                    color: selected ? AppColors.volt : const Color(0xFF003E80),
                     width: 1,
                   ),
                   labelStyle: TextStyle(
@@ -360,7 +360,7 @@ class _BetaBugReporterSheetState extends State<BetaBugReporterSheet> {
               style: const TextStyle(color: Colors.white),
               decoration: InputDecoration(
                 filled: true,
-                fillColor: const Color(0xFF1E293B),
+                fillColor: const Color(0xFF002A5C),
                 labelText: 'Was ist passiert oder was schlägst du vor?',
                 labelStyle: const TextStyle(color: Color(0xFF94A3B8)),
                 hintText: 'Beschreibe kurz das Problem oder deine Idee...',
@@ -368,11 +368,11 @@ class _BetaBugReporterSheetState extends State<BetaBugReporterSheet> {
                 errorText: _validationError,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFF334155)),
+                  borderSide: const BorderSide(color: Color(0xFF003E80)),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFF334155)),
+                  borderSide: const BorderSide(color: Color(0xFF003E80)),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -383,9 +383,9 @@ class _BetaBugReporterSheetState extends State<BetaBugReporterSheet> {
             const SizedBox(height: 12),
             Container(
               decoration: BoxDecoration(
-                color: const Color(0xFF1E293B),
+                color: const Color(0xFF002A5C),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFF334155)),
+                border: Border.all(color: const Color(0xFF003E80)),
               ),
               child: Column(
                 children: [

@@ -78,6 +78,13 @@ service cloud.firestore {
     function isOwner(userId) {
       return isAuthenticated() && request.auth.uid == userId;
     }
+    function isAdmin() {
+      return isAuthenticated() && (
+        request.auth.token.admin == true ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('isAdmin', false) == true)
+      );
+    }
     function areImmutableFieldsUnchanged(fields) {
       return !request.resource.data.diff(resource.data).affectedKeys().hasAny(fields);
     }
@@ -105,14 +112,15 @@ service cloud.firestore {
       let verifiedOk = !('trainerVerified' in data) || data.trainerVerified == false;
       let coachOk = !('coachId' in data) || data.coachId == null;
       let uidOk = !('uid' in data) || data.uid == request.auth.uid;
+      let adminOk = !('isAdmin' in data) || data.isAdmin == false;
       
-      return isValidUserDoc(data) && roleOk && verifiedOk && coachOk && uidOk;
+      return isValidUserDoc(data) && roleOk && verifiedOk && coachOk && uidOk && adminOk;
     }
 
     function isValidUserUpdate() {
       // Must not change critical server-side fields
       let protectedFieldsUnchanged = areImmutableFieldsUnchanged([
-        'role', 'trainerVerified', 'coachId', 'uid', 'email', 'createdAt', 'metrics', 'metricsVersion', 'notificationState'
+        'role', 'trainerVerified', 'coachId', 'uid', 'email', 'createdAt', 'metrics', 'metricsVersion', 'notificationState', 'isAdmin'
       ]);
       return isValidUserDoc(request.resource.data) && protectedFieldsUnchanged;
     }
@@ -448,15 +456,21 @@ service cloud.firestore {
     }
 
     match /betaFeedback/{reportId} {
-      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
       allow create: if isAuthenticated() && isValidBetaFeedbackCreate(request.resource.data);
-      allow update, delete: if false;
+      allow update: if isAdmin() &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']) &&
+        request.resource.data.status in ['OPEN', 'IN_PROGRESS', 'RESOLVED'];
+      allow delete: if false;
     }
 
     match /beta_feedback/{reportId} {
-      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
       allow create: if isAuthenticated() && isValidBetaFeedbackCreate(request.resource.data);
-      allow update, delete: if false;
+      allow update: if isAdmin() &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']) &&
+        request.resource.data.status in ['OPEN', 'IN_PROGRESS', 'RESOLVED'];
+      allow delete: if false;
     }
 
     match /betaWaitlist/{entryId} {
@@ -466,7 +480,8 @@ service cloud.firestore {
 
     match /contactRequests/{requestId} {
       allow create: if isValidContactRequest(request.resource.data);
-      allow read, update, delete: if false;
+      allow read, update: if isAdmin();
+      allow delete: if false;
     }
 
     match /app_config/{configId} {
