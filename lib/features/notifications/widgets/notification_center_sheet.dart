@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/design/app_colors.dart';
 import '../../../core/design/app_typography.dart';
+import '../../../core/routing/app_router.dart';
+import '../../../core/utils/orbit_date_formatter.dart';
 import '../models/app_notification.dart';
 import '../providers/notifications_provider.dart';
 
@@ -64,7 +66,7 @@ class NotificationCenterSheet extends ConsumerWidget {
     } else if (diff.inHours < 24) {
       return 'vor ${diff.inHours} Std.';
     } else {
-      return 'vor ${diff.inDays} Tg.';
+      return OrbitDateFormatter.formatDate(dt);
     }
   }
 
@@ -175,11 +177,16 @@ class NotificationCenterSheet extends ConsumerWidget {
         final iconColor = _getColorForType(item.type);
 
         return InkWell(
+          key: Key('notification_item_${item.id}'),
           onTap: () {
             ref.read(notificationsControllerProvider).markAsRead(item.id);
-            if (item.route != null && item.route!.isNotEmpty) {
-              Navigator.of(context).pop();
-              context.push(item.route!);
+            final targetRoute = item.route;
+            Navigator.of(context).pop();
+            if (targetRoute != null && targetRoute.isNotEmpty) {
+              final rootCtx = rootNavigatorKey.currentContext;
+              if (rootCtx != null) {
+                rootCtx.push(targetRoute);
+              }
             }
           },
           borderRadius: BorderRadius.circular(16),
@@ -189,10 +196,8 @@ class NotificationCenterSheet extends ConsumerWidget {
               color: AppColors.card,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: item.read
-                    ? const Color(0xFF003875)
-                    : AppColors.volt.withValues(alpha: 0.6),
-                width: item.read ? 1 : 1.5,
+                color: item.read ? Colors.white24 : AppColors.volt,
+                width: item.read ? 1.0 : 1.5,
               ),
             ),
             child: Row(

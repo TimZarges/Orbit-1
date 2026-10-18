@@ -21,8 +21,8 @@
 - [x] Konsistentes deutsches Anzeigeformat: `DD.MM.YYYY` (z. B. `18.10.2026`) und 24h-Zeit (`19:06 Uhr`).
 
 ### 38.3 Mitteilungszentrale: Einheitliche Umrandung & Deep-Link-Routing
-- [ ] Kartendesign: Jede Mitteilung erhält eine saubere Umrandung (`Border.all`: ungelesen `#CDFB17` Volt 1.5px, gelesen `Colors.white24` 1.0px).
-- [ ] Robustes Routing: Klick markiert als gelesen, schließt modal `Navigator.of(context).pop()` und navigiert via Root-Context zielgenau zur verknüpften Route (Aktivität, Kalender, Diagnostik, Coach).
+- [x] Kartendesign: Jede Mitteilung erhält eine saubere Umrandung (`Border.all`: ungelesen `#CDFB17` Volt 1.5px, gelesen `Colors.white24` 1.0px).
+- [x] Robustes Routing: Klick markiert als gelesen, schließt modal `Navigator.of(context).pop()` und navigiert via Root-Context zielgenau zur verknüpften Route (Aktivität, Kalender, Diagnostik, Coach).
 
 ### 38.4 Nutzer-Beta-Feedback-Inbox („Meine Meldungen“ + Live-Status)
 - [ ] Dedizierte Ansicht für Tester: „Meine gemeldeten Tickets“.
