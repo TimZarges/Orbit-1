@@ -30,7 +30,7 @@
 | **38.2** | Universal-Datumsformat (`DD.MM.YYYY`) & 24h-Zeit via `OrbitDateFormatter` | [x] | `d7787e7` | 1.1s |
 | **38.3** | Mitteilungszentrale: Umrandete Karten & Deep-Link-Routing | [x] | `c062717` | 1.0s |
 | **38.4** | Beta-Feedback-Inbox für Nutzer mit Live-Statusanzeige | [x] | `ff0d3e3` | 1.1s |
-| **38.5** | Widget-Galerie-Cleanup, DSGVO-Kontolöschung mit Logout & App-Icon | [ ] | | |
+| **38.5** | Widget-Galerie-Cleanup, DSGVO-Kontolöschung mit Logout & App-Icon | [x] | `8cd086d` | 1.1s |
 | **38-F** | **Abschluss Phase 38 (`v0.38.0`): Quality-Gate, APK, Pixel 10 Pro & Tag** | [ ] | | |
 | **39.1** | Rückwirkende deutsche Dokumentation: `functions/src/` & Security Rules | [ ] | | |
 | **39.2** | Rückwirkende deutsche Dokumentation: `lib/core/` & `lib/shared/` | [ ] | | |
@@ -40,6 +40,11 @@
 ---
 
 ## 2. Chronologisches Protokoll der Etappen
+
+### [00:32] ✅ Etappe 38.5 abgeschlossen — Commit: `8cd086d`
+- **Was wurde erledigt:** Veraltete Widget-Galerie restlos aus Codebase, Routing und Menüs entfernt; DSGVO-Kontolöschung (`PrivacySettingsSheet`) mit echter Backend-Routine, zwingendem `authService.signOut()`, Dialog-Schließung und Redirect auf `/login` ausgestattet; mathematisch exakte Zentrierung des Satelliten-Punkts im Adaptive App-Icon (`ic_launcher_foreground.xml`) ohne Berührung der Bogenenden.
+- **Wie technisch gelöst & Performance-Schutz:** `deleteAccount` Cloud Function (europe-west3) löscht alle Subcollections rekursiv (Art. 17 DSGVO); `signOut()` entzieht Token; Navigation via `rootNavigatorKey.currentContext.go('/login')`; Bogen-Öffnung und Satelliten-Position mit symmetrischer 2.28dp Clearance berechnet.
+- **Test-Nachweis & Dauer:** `test/features/phase38_cleanup_and_account_deletion_test.dart` (1/1 bestanden in 1.1s) + `scripts/check_phase_ready.sh` (0 Errors, 0 Warnings).
 
 ### [00:27] ✅ Etappe 38.4 abgeschlossen — Commit: `ff0d3e3`
 - **Was wurde erledigt:** Dedizierte Tester-Ansicht „Meine gemeldeten Tickets“ mit Live-Statusanzeige (`🟢 Offen`, `🟡 In Arbeit`, `✅ Gelöst`) und `OrbitDateFormatter` (`DD.MM.YYYY • HH:mm Uhr`); Auslagerung der modularen `BetaFeedbackTicketCard` sowie Verknüpfung im Einstellungs-Menü und Routing via `/my-feedback` und `/feedback`.
