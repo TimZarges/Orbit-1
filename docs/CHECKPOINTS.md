@@ -26,6 +26,37 @@
 
 ## Einträge
 
+### [Phase 33] Gründlicher Deutscher & EU Sicherheits-, Datenschutz- & Urheberrechts-Audit · RISIKO-HOCH
+- **STOPP-Punkt/Anlass:** Abschluss von Phase 33 gemäß `docs/phases/phase_33.md`.
+- **Entscheidung & Umgesetzte Maßnahmen:**
+  1. **Bürgernahe Datenschutz-Texte:**
+     - Vollständige Eliminierung von internem Technik-Jargon (`europe-west3`, `Google Secret Manager`), kryptischen Dateiformaten (`JSON`) und Paragrafen-Aufzählungen (`Art. 9, 17, 20 DSGVO`) aus dem sichtbaren UI.
+     - Implementierung von vertrauensbildendem, klarem deutschem Wording: *„Sicherer Serverstandort Deutschland – Geschützt nach strengen deutschen und europäischen Datenschutzgesetzen.“* und transparente Erläuterungen zu Datenexport und Kontolöschung auf Knopfdruck.
+  2. **Rechtlicher & Marken-/IP-Audit:**
+     - Impressum (`public/imprint.html`, `public/impressum/index.html`) auf § 5 DDG und § 18 Abs. 2 MStV aktualisiert mit sicheren Platzhaltern.
+     - Vollständige Markenbereinigung: Ersetzung fremder geschützter Begriffe (z. B. TrainingPeaks-Marken wie `TSS`, `IF`, `NP`) durch eigenständige ORBIT-Begrifflichkeiten:
+       - `TSS` $\rightarrow$ **ORBIT Load** / **Belastung**
+       - `NP` $\rightarrow$ **Iso-Power** / **Normalisierte Leistung**
+       - `IF` $\rightarrow$ **Intensitäts-Faktor**
+  3. **Zero-Open-Data Security Audit:**
+     - Negativ-Tests gegen den Firebase Emulator (`functions/src/__tests__/rules.test.ts` Sektion 12): Unauthentifizierte und fremde Nutzer erhalten strikten `PERMISSION_DENIED` bei Zugriffsversuchen auf fremde Profile, Aktivitäten, RAW-Dateien, Gesundheitsdaten und Pläne.
+     - 36 von 36 Emulator-Rules-Tests erfolgreich (`npm --prefix functions test`).
+- **Nachweise (Evidence-Only):**
+  - Live-Screenshot auf dem Google Pixel 10 Pro: `docs/beta/screenshots/phase33_plain_privacy_screen.png`.
+  - Flutter Tests: 177 von 177 Tests erfolgreich (`flutter test`).
+  - Analyzer: 0 Errors, 0 Warnings (`bash scripts/check_phase_ready.sh`).
+  - Cloud Functions Build: TypeScript-Kompilierung fehlerfrei (`npm --prefix functions run build`).
+
+### [Phase 32] Zwei globale Coach-Modi & Header-Benachrichtigungsglocke · RISIKO-HOCH
+- **STOPP-Punkt/Anlass:** Abschluss von Phase 32 gemäß `docs/phases/phase_32.md`.
+- **Entscheidung & Umgesetzte Maßnahmen:**
+  1. **Header-Benachrichtigungsglocke:** Header-Glocke mit unread Badge für Systemmeldungen (Schwellenwert-Events, Rekorde, Sync-Status) mit Routing zu `/notifications`. Trennung von Systemmeldungen und Trainer-Chat.
+  2. **Globale Coach-Modi:** Modus 1 (Einfach & Originaldatei-Download für WKO5/GoldenCheetah) und Modus 2 (Vollanalyse mit Form-Ampel, Belastung und Zielen) in `coach_athletes_table.dart`.
+  3. **Originaldatei-Archivierung:** Speicherung von Originaldateien in Storage und Firestore (`users/{uid}/rawActivities/`).
+- **Nachweise (Evidence-Only):**
+  - Screenshots auf Google Pixel 10 Pro: `docs/beta/screenshots/phase32_live_screen.png`, `phase32_notification_center.png`, `phase32_coach_tab.png`.
+  - Security Rules Tests: 33/33 Tests bestanden, deployed nach Firebase live.
+
 ### [Phase 31] Garmin-Daten-Empfang reparieren, Karten (Hell/Dunkel + Volt-Linie), Neue Tests & PR-Datenbank · RISIKO-HOCH
 - **STOPP-Punkt/Anlass:** Abschluss von Phase 31 gemäß `docs/phases/phase_31.md` und Freigabe durch Tim Zarges.
 - **Entscheidung:**

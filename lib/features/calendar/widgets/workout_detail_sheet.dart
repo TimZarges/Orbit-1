@@ -170,7 +170,7 @@ class WorkoutDetailSheet extends ConsumerWidget {
                 if (workout.plannedLoad != null) ...[
                   const SizedBox(width: 24),
                   _buildInfoColumn('Belastung',
-                      '${workout.plannedLoad!.toStringAsFixed(0)} TSS', theme),
+                      '${workout.plannedLoad!.toStringAsFixed(0)} Load', theme),
                 ],
               ],
             ),

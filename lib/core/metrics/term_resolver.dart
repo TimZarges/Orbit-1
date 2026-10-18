@@ -27,17 +27,16 @@ class TermResolver {
         return 'TSB';
       case MetricTerm.tss:
         if (level == ExperienceLevel.beginner) return 'Belastung';
-        if (level == ExperienceLevel.advanced) return 'Belastung (TSS)';
-        return 'TSS';
+        if (level == ExperienceLevel.advanced) return 'ORBIT Belastung';
+        return 'ORBIT Load';
       case MetricTerm.np:
-        if (level == ExperienceLevel.beginner) return 'Gewichtete Leistung';
-        if (level == ExperienceLevel.advanced)
-          return 'Gewichtete Leistung (NP)';
-        return 'NP';
+        if (level == ExperienceLevel.beginner) return 'Normalisierte Leistung';
+        if (level == ExperienceLevel.advanced) return 'Normalisierte Leistung';
+        return 'Iso-Power';
       case MetricTerm.ifactor:
         if (level == ExperienceLevel.beginner) return 'Intensität';
-        if (level == ExperienceLevel.advanced) return 'Intensität (IF)';
-        return 'IF';
+        if (level == ExperienceLevel.advanced) return 'Intensitäts-Faktor';
+        return 'Intensitäts-Faktor';
     }
   }
 
@@ -58,16 +57,16 @@ class TermResolver {
         return 'TSB';
       case MetricTerm.tss:
         if (level == ExperienceLevel.beginner) return 'Load';
-        if (level == ExperienceLevel.advanced) return 'Load (TSS)';
-        return 'TSS';
+        if (level == ExperienceLevel.advanced) return 'ORBIT Load';
+        return 'ORBIT Load';
       case MetricTerm.np:
-        if (level == ExperienceLevel.beginner) return 'Weighted Power';
-        if (level == ExperienceLevel.advanced) return 'Weighted Power (NP)';
-        return 'NP';
+        if (level == ExperienceLevel.beginner) return 'Normalized Power';
+        if (level == ExperienceLevel.advanced) return 'Normalized Power';
+        return 'Iso-Power';
       case MetricTerm.ifactor:
         if (level == ExperienceLevel.beginner) return 'Intensity';
-        if (level == ExperienceLevel.advanced) return 'Intensity (IF)';
-        return 'IF';
+        if (level == ExperienceLevel.advanced) return 'Intensity Factor';
+        return 'Intensity Factor';
     }
   }
 }

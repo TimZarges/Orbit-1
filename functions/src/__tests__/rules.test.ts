@@ -946,6 +946,108 @@ describe("Firestore Security Rules Tests (RULES_TESTPLAN.md)", () => {
       await assertFails(adminDb.collection("contactRequests").doc("req_for_admin").delete());
     });
   });
+
+  // ===============================================================
+  // 12. Zero-Open-Data Security Audit (Phase 33.3)
+  // ===============================================================
+  describe("12. Zero-Open-Data Security Audit (Phase 33.3)", () => {
+    beforeEach(async () => {
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        const db = context.firestore();
+        // Nutzerprofil
+        await db.collection("users").doc("victimAlice").set({
+          uid: "victimAlice",
+          email: "alice@orbit-training.app",
+          role: "ATHLETE",
+          displayName: "Alice Athletin",
+          restingHrBpm: 48,
+          maxHrBpm: 188,
+          ftpW: 245,
+        });
+        // Aktivität
+        await db.collection("activities").doc("act_alice_1").set({
+          userId: "victimAlice",
+          title: "Geheime Schwellenintervalle",
+          sport: "BIKE",
+          startTime: "2026-10-18T10:00:00Z",
+          durationSec: 3600,
+          avgPowerW: 240,
+        });
+        // Tägliche Gesundheitsmetriken (HRV, Schlaf)
+        await db.collection("users").doc("victimAlice").collection("dailyMetrics").doc("2026-10-18").set({
+          date: "2026-10-18",
+          recoveryScore: 84,
+          hrvRms: 68,
+          sleepHours: 8.2,
+        });
+        // Geplantes Training
+        await db.collection("users").doc("victimAlice").collection("plannedWorkouts").doc("pw_1").set({
+          date: "2026-10-19",
+          title: "VO2max Einheit",
+          sport: "BIKE",
+        });
+        // System-Mitteilung
+        await db.collection("users").doc("victimAlice").collection("notifications").doc("notif_1").set({
+          title: "Neuer Rekord",
+          body: "325 Watt",
+          type: "PR_ACHIEVED",
+          read: false,
+        });
+        // Wettkampfziel
+        await db.collection("users").doc("victimAlice").collection("races").doc("race_1").set({
+          title: "Ironman Frankfurt",
+          date: "2027-07-04",
+          priority: "A",
+        });
+        // Beta Feedback
+        await db.collection("betaFeedback").doc("feed_alice_1").set({
+          userId: "victimAlice",
+          category: "BUG_CRASH",
+          description: "Vertraulicher Fehlerbericht mit Diagnosedaten",
+        });
+      });
+    });
+
+    it("verweigert unauthentifizierten Besuchern strikt jeden Lesezugriff auf Profil- und Gesundheitsdaten", async () => {
+      const anonDb = testEnv.unauthenticatedContext().firestore();
+
+      // Profil
+      await assertFails(anonDb.collection("users").doc("victimAlice").get());
+      // Aktivitäten
+      await assertFails(anonDb.collection("activities").doc("act_alice_1").get());
+      // Gesundheitsdaten
+      await assertFails(anonDb.collection("users").doc("victimAlice").collection("dailyMetrics").doc("2026-10-18").get());
+      // Pläne
+      await assertFails(anonDb.collection("users").doc("victimAlice").collection("plannedWorkouts").doc("pw_1").get());
+      // Mitteilungen
+      await assertFails(anonDb.collection("users").doc("victimAlice").collection("notifications").doc("notif_1").get());
+      // Rennen
+      await assertFails(anonDb.collection("users").doc("victimAlice").collection("races").doc("race_1").get());
+      // Feedback
+      await assertFails(anonDb.collection("betaFeedback").doc("feed_alice_1").get());
+    });
+
+    it("verweigert unberechtigten authentifizierten Dritten (Attacker) den Zugriff auf fremde Gesundheitsdaten und Mitteilungen", async () => {
+      const attackerDb = testEnv.authenticatedContext("eveAttacker").firestore();
+
+      // Fremde Gesundheitsdaten gesperrt
+      await assertFails(attackerDb.collection("users").doc("victimAlice").collection("dailyMetrics").doc("2026-10-18").get());
+      // Fremde Benachrichtigungen gesperrt
+      await assertFails(attackerDb.collection("users").doc("victimAlice").collection("notifications").doc("notif_1").get());
+      // Fremde Feedback-Tickets gesperrt
+      await assertFails(attackerDb.collection("betaFeedback").doc("feed_alice_1").get());
+      // Fremde Wettkampfziele gesperrt
+      await assertFails(attackerDb.collection("users").doc("victimAlice").collection("races").doc("race_1").get());
+    });
+
+    it("sperrt unauthentifizierte Schreib-, Update- und Löschversuche auf allen Nutzer-Endpunkten", async () => {
+      const anonDb = testEnv.unauthenticatedContext().firestore();
+
+      await assertFails(anonDb.collection("users").doc("victimAlice").update({ displayName: "Hacked" }));
+      await assertFails(anonDb.collection("activities").doc("act_alice_1").delete());
+      await assertFails(anonDb.collection("users").doc("victimAlice").collection("dailyMetrics").doc("2026-10-18").delete());
+    });
+  });
 });
 
 

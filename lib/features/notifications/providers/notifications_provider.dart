@@ -177,6 +177,7 @@ class NotificationsController {
 }
 
 /// Provider für den NotificationsController.
-final notificationsControllerProvider = Provider<NotificationsController>((ref) {
+final notificationsControllerProvider =
+    Provider<NotificationsController>((ref) {
   return NotificationsController();
 });

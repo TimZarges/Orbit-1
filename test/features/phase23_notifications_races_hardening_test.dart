@@ -351,8 +351,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('ORBIT v1.0.0 (Build 1) • Closed Beta'), findsOneWidget);
-      expect(
-          find.text('Server-Region: europe-west3 (Frankfurt)'), findsOneWidget);
+      expect(find.text('Server-Region: ${AppInfo.region}'), findsOneWidget);
     });
   });
 }

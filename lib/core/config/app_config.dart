@@ -10,7 +10,7 @@ class AppInfo {
   static const String version = '1.0.0';
   static const int buildNumber = 1;
   static const String environment = 'Closed Beta';
-  static const String region = 'europe-west3 (Frankfurt)';
+  static const String region = 'Deutschland (Frankfurt am Main)';
 
   static String get fullVersionString =>
       'v$version (Build $buildNumber) • $environment';

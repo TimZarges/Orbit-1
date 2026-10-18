@@ -24,7 +24,7 @@ void main() {
       expect(TermResolver.resolveEn(MetricTerm.tsb, ExperienceLevel.beginner),
           'Form');
       expect(TermResolver.resolveEn(MetricTerm.tss, ExperienceLevel.advanced),
-          'Load (TSS)');
+          'ORBIT Load');
     });
   });
 }

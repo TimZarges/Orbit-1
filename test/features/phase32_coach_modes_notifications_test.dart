@@ -43,7 +43,8 @@ void main() {
       expect(recreated.route, '/diagnostics');
     });
 
-    testWidgets('NotificationBellIconButton zeigt Volt-Badge bei ungelesenen Mitteilungen',
+    testWidgets(
+        'NotificationBellIconButton zeigt Volt-Badge bei ungelesenen Mitteilungen',
         (tester) async {
       final mockNotifications = [
         AppNotification(
@@ -131,13 +132,15 @@ void main() {
     });
   });
 
-  group('Phase 32.3: Globale Coach-Modi (Einfach & Download vs. Vollanalyse)', () {
+  group('Phase 32.3: Globale Coach-Modi (Einfach & Download vs. Vollanalyse)',
+      () {
     test('CoachGlobalMode Enum besitzt korrekte Display-Strings', () {
       expect(CoachGlobalMode.simpleDownload.displayName, 'Einfach & Download');
       expect(CoachGlobalMode.fullAnalysis.displayName, 'Vollanalyse');
     });
 
-    testWidgets('CoachAthletesTable in Modus 1 (Einfach & Download) rendert .FIT Download Button',
+    testWidgets(
+        'CoachAthletesTable in Modus 1 (Einfach & Download) rendert .FIT Download Button',
         (tester) async {
       const demoAthlete = CoachDashboardAthlete(
         athleteId: 'ath_1',
@@ -188,7 +191,8 @@ void main() {
       expect(find.text('Grundlagenfahrt Z2'), findsOneWidget);
     });
 
-    testWidgets('CoachAthletesTable in Modus 2 (Vollanalyse) rendert volles Cockpit mit Form & Erholung',
+    testWidgets(
+        'CoachAthletesTable in Modus 2 (Vollanalyse) rendert volles Cockpit mit Form & Erholung',
         (tester) async {
       const demoAthlete = CoachDashboardAthlete(
         athleteId: 'ath_1',
@@ -226,7 +230,7 @@ void main() {
 
       // Prüfe Modus 2 Spalten
       expect(find.text('Form'), findsOneWidget);
-      expect(find.text('Erholung (Art. 9)'), findsOneWidget);
+      expect(find.text('Erholung'), findsOneWidget);
       expect(find.text('Soll/Ist (7T)'), findsOneWidget);
       expect(find.text('Last 7T'), findsOneWidget);
       expect(find.text('Saisonziel'), findsOneWidget);

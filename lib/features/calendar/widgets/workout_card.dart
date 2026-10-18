@@ -147,7 +147,7 @@ class WorkoutCard extends StatelessWidget {
                 if (workout.plannedLoad != null) ...[
                   const Text(' · '),
                   Text(
-                    '${workout.plannedLoad!.toStringAsFixed(0)} TSS',
+                    '${workout.plannedLoad!.toStringAsFixed(0)} Load',
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: isDark
                           ? const Color(0xFF94A3B8)

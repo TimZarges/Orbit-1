@@ -134,7 +134,8 @@ class NotificationCenterSheet extends ConsumerWidget {
               loading: () => const Center(
                 child: CircularProgressIndicator(color: AppColors.volt),
               ),
-              error: (err, _) => _buildList(context, ref, defaultSeedNotifications),
+              error: (err, _) =>
+                  _buildList(context, ref, defaultSeedNotifications),
               data: (list) {
                 if (list.isEmpty) {
                   return Center(
@@ -146,7 +147,8 @@ class NotificationCenterSheet extends ConsumerWidget {
                         const SizedBox(height: 12),
                         Text(
                           'Keine neuen Mitteilungen',
-                          style: AppTypography.body.copyWith(color: Colors.white70),
+                          style: AppTypography.body
+                              .copyWith(color: Colors.white70),
                         ),
                       ],
                     ),
@@ -162,7 +164,8 @@ class NotificationCenterSheet extends ConsumerWidget {
     );
   }
 
-  Widget _buildList(BuildContext context, WidgetRef ref, List<AppNotification> list) {
+  Widget _buildList(
+      BuildContext context, WidgetRef ref, List<AppNotification> list) {
     return ListView.separated(
       padding: const EdgeInsets.all(16),
       itemCount: list.length,
@@ -173,9 +176,7 @@ class NotificationCenterSheet extends ConsumerWidget {
 
         return InkWell(
           onTap: () {
-            ref
-                .read(notificationsControllerProvider)
-                .markAsRead(item.id);
+            ref.read(notificationsControllerProvider).markAsRead(item.id);
             if (item.route != null && item.route!.isNotEmpty) {
               Navigator.of(context).pop();
               context.push(item.route!);
@@ -218,8 +219,7 @@ class NotificationCenterSheet extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
-                        mainAxisAlignment:
-                            MainAxisAlignment.spaceBetween,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Expanded(
                             child: Text(

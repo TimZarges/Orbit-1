@@ -98,7 +98,7 @@ class TodayWorkoutPreviewCard extends StatelessWidget {
                           const SizedBox(height: 2),
                           Text(
                             '${workout.formattedDuration}'
-                            '${workout.plannedLoad != null ? " · ${workout.plannedLoad!.round()} TSS" : ""}',
+                            '${workout.plannedLoad != null ? " · ${workout.plannedLoad!.round()} Load" : ""}',
                             style: const TextStyle(
                               color: Colors.white70,
                               fontSize: 12,

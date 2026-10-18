@@ -130,9 +130,9 @@ class CoachAthletesTable extends ConsumerWidget {
                     label: Text('Form',
                         style: TextStyle(fontWeight: FontWeight.bold)),
                   ),
-                  // Erholung (Art. 9 DSGVO)
+                  // Erholung
                   const DataColumn(
-                    label: Text('Erholung (Art. 9)',
+                    label: Text('Erholung',
                         style: TextStyle(fontWeight: FontWeight.bold)),
                   ),
                   // Compliance 7d
@@ -215,12 +215,11 @@ class CoachAthletesTable extends ConsumerWidget {
                           if (athlete.latestActivity == null) {
                             return const Text('–');
                           }
-                          final dur = athlete.latestActivity!['durationSec']
-                                  as num? ??
-                              3600;
-                          final dist = athlete.latestActivity!['distanceM']
-                                  as num? ??
-                              0;
+                          final dur =
+                              athlete.latestActivity!['durationSec'] as num? ??
+                                  3600;
+                          final dist =
+                              athlete.latestActivity!['distanceM'] as num? ?? 0;
                           final durStr =
                               '${(dur ~/ 3600)}h ${(dur % 3600 ~/ 60).toString().padLeft(2, '0')}m';
                           final distStr = dist > 0
@@ -239,8 +238,7 @@ class CoachAthletesTable extends ConsumerWidget {
                           final hr = athlete.latestActivity!['avgHr'] as num?;
                           final w =
                               athlete.latestActivity!['avgPowerW'] as num?;
-                          final hrStr =
-                              hr != null ? '${hr.round()} bpm' : '–';
+                          final hrStr = hr != null ? '${hr.round()} bpm' : '–';
                           final wStr = w != null ? ' · ${w.round()} W' : '';
                           return Text('$hrStr$wStr',
                               style: const TextStyle(fontSize: 12));
@@ -301,110 +299,114 @@ class CoachAthletesTable extends ConsumerWidget {
                   : [
                       // Name
                       _buildNameCell(athlete),
-                // Sport
-                DataCell(
-                  Text(athlete.sport,
-                      style: AppTypography.label.copyWith(fontSize: 12)),
-                ),
-                // Form
-                DataCell(
-                  _buildFormBadge(athlete.formStatus, athlete.tsb),
-                ),
-                // Erholung (Art. 9 DSGVO Gate)
-                DataCell(
-                  _buildHealthRecoveryCell(athlete),
-                ),
-                // Compliance
-                DataCell(
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      SizedBox(
-                        width: 50,
-                        child: LinearProgressIndicator(
-                          value: (athlete.compliance7d / 100).clamp(0.0, 1.0),
-                          backgroundColor: Colors.grey.shade200,
-                          color: athlete.compliance7d < 70
-                              ? Colors.orange
-                              : const Color(0xFF10B981),
-                          minHeight: 6,
-                          borderRadius: BorderRadius.circular(3),
-                        ),
+                      // Sport
+                      DataCell(
+                        Text(athlete.sport,
+                            style: AppTypography.label.copyWith(fontSize: 12)),
                       ),
-                      const SizedBox(width: 8),
-                      Text(
-                        '${athlete.compliance7d}%',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: athlete.compliance7d < 70
-                              ? Colors.orange.shade800
-                              : AppColors.navy,
-                        ),
+                      // Form
+                      DataCell(
+                        _buildFormBadge(athlete.formStatus, athlete.tsb),
                       ),
-                    ],
-                  ),
-                ),
-                // Belastung 7d
-                DataCell(
-                  Text(
-                    '${athlete.actualLoad7d} / ${athlete.plannedLoad7d} TSS',
-                    style: const TextStyle(fontSize: 12),
-                  ),
-                ),
-                // Saisonziel
-                DataCell(
-                  athlete.raceGoal != null
-                      ? Text(
-                          '${athlete.raceGoal!['title']} (${athlete.raceGoal!['daysRemaining']}T)',
-                          style: const TextStyle(fontSize: 12),
-                        )
-                      : const Text('–', style: TextStyle(color: Colors.grey)),
-                ),
-                // Alerts
-                DataCell(
-                  athlete.alert != null
-                      ? Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: Colors.amber.shade100,
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: Colors.amber.shade400),
-                          ),
-                          child: Text(
-                            athlete.alertLabelDe ?? athlete.alert!,
-                            style: TextStyle(
-                                fontSize: 11,
+                      // Erholung (Art. 9 DSGVO Gate)
+                      DataCell(
+                        _buildHealthRecoveryCell(athlete),
+                      ),
+                      // Compliance
+                      DataCell(
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            SizedBox(
+                              width: 50,
+                              child: LinearProgressIndicator(
+                                value: (athlete.compliance7d / 100)
+                                    .clamp(0.0, 1.0),
+                                backgroundColor: Colors.grey.shade200,
+                                color: athlete.compliance7d < 70
+                                    ? Colors.orange
+                                    : const Color(0xFF10B981),
+                                minHeight: 6,
+                                borderRadius: BorderRadius.circular(3),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              '${athlete.compliance7d}%',
+                              style: TextStyle(
+                                fontSize: 12,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.amber.shade900),
-                          ),
-                        )
-                      : const Text('Normal',
-                          style: TextStyle(fontSize: 12, color: Colors.green)),
-                ),
-                // Aktionen
-                DataCell(
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.auto_awesome,
-                            size: 18, color: AppColors.navy),
-                        tooltip: 'Schwellenwert vorschlagen',
-                        onPressed: () => onCreateProposal(athlete),
+                                color: athlete.compliance7d < 70
+                                    ? Colors.orange.shade800
+                                    : AppColors.navy,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                      IconButton(
-                        icon: const Icon(Icons.calendar_month,
-                            size: 18, color: AppColors.navy),
-                        tooltip: 'Kalender öffnen',
-                        onPressed: () =>
-                            onAthleteOpen(athlete.athleteId, athlete.name),
+                      // Belastung 7d
+                      DataCell(
+                        Text(
+                          '${athlete.actualLoad7d} / ${athlete.plannedLoad7d} Load',
+                          style: const TextStyle(fontSize: 12),
+                        ),
+                      ),
+                      // Saisonziel
+                      DataCell(
+                        athlete.raceGoal != null
+                            ? Text(
+                                '${athlete.raceGoal!['title']} (${athlete.raceGoal!['daysRemaining']}T)',
+                                style: const TextStyle(fontSize: 12),
+                              )
+                            : const Text('–',
+                                style: TextStyle(color: Colors.grey)),
+                      ),
+                      // Alerts
+                      DataCell(
+                        athlete.alert != null
+                            ? Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: Colors.amber.shade100,
+                                  borderRadius: BorderRadius.circular(8),
+                                  border:
+                                      Border.all(color: Colors.amber.shade400),
+                                ),
+                                child: Text(
+                                  athlete.alertLabelDe ?? athlete.alert!,
+                                  style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.amber.shade900),
+                                ),
+                              )
+                            : const Text('Normal',
+                                style: TextStyle(
+                                    fontSize: 12, color: Colors.green)),
+                      ),
+                      // Aktionen
+                      DataCell(
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.auto_awesome,
+                                  size: 18, color: AppColors.navy),
+                              tooltip: 'Schwellenwert vorschlagen',
+                              onPressed: () => onCreateProposal(athlete),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.calendar_month,
+                                  size: 18, color: AppColors.navy),
+                              tooltip: 'Kalender öffnen',
+                              onPressed: () => onAthleteOpen(
+                                  athlete.athleteId, athlete.name),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
-                  ),
-                ),
-              ],
             );
           }).toList(),
         ),
@@ -512,14 +514,14 @@ class CoachAthletesTable extends ConsumerWidget {
   Widget _buildHealthRecoveryCell(CoachDashboardAthlete athlete) {
     if (!athlete.hasHealthPermission || athlete.coachLinkStatus != 'ACTIVE') {
       return Tooltip(
-        message: 'Gesundheitsdaten nicht freigegeben (Art. 9 DSGVO)',
+        message: 'Gesundheitsdaten nicht freigegeben',
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(Icons.lock_outline, size: 14, color: Colors.grey.shade500),
             const SizedBox(width: 4),
             Text(
-              'Gesperrt (Art. 9)',
+              'Gesperrt',
               style: TextStyle(
                 fontSize: 11,
                 color: Colors.grey.shade500,

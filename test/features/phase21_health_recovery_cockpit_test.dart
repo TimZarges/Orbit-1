@@ -367,9 +367,9 @@ void main() {
         ),
       );
 
-      expect(find.text('Erholung (Art. 9)'), findsOneWidget);
+      expect(find.text('Erholung'), findsOneWidget);
       // Gesperrtes Schloss-Badge
-      expect(find.text('Gesperrt (Art. 9)'), findsOneWidget);
+      expect(find.text('Gesperrt'), findsOneWidget);
       expect(find.byIcon(Icons.lock_outline), findsOneWidget);
       // Sensibler Gesundheitswert darf NICHT im Widgetbaum sichtbar sein
       expect(find.text('85 %'), findsNothing);

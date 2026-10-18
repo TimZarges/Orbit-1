@@ -28,7 +28,7 @@ class WeeklyLoadTrendChart extends StatelessWidget {
     return Semantics(
       container: true,
       label:
-          '8-Wochen-Belastungstrend: $trendDescription. Durchschnittliche Wochenbelastung: ${avgLoad.round()} TSS.',
+          '8-Wochen-Belastungstrend: $trendDescription. Durchschnittliche Wochenbelastung: ${avgLoad.round()} Load.',
       child: Container(
         decoration: BoxDecoration(
           color: AppColors.white,
@@ -62,7 +62,7 @@ class WeeklyLoadTrendChart extends StatelessWidget {
                   ],
                 ),
                 Text(
-                  'Ø ${avgLoad.round()} TSS',
+                  'Ø ${avgLoad.round()} Load',
                   style: AppTypography.label.copyWith(
                     color: Colors.grey.shade600,
                     fontWeight: FontWeight.bold,

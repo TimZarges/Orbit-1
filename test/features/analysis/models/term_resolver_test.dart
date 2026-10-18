@@ -13,12 +13,13 @@ void main() {
       expect(TermResolver.resolve(MetricTerm.tss, ExperienceLevel.beginner),
           equals('Belastung'));
       expect(TermResolver.resolve(MetricTerm.np, ExperienceLevel.beginner),
-          equals('Gewichtete Leistung'));
+          equals('Normalisierte Leistung'));
       expect(TermResolver.resolve(MetricTerm.ifactor, ExperienceLevel.beginner),
           equals('Intensität'));
     });
 
-    test('Ebene Advanced verbindet Begriff mit Fachkürzel', () {
+    test('Ebene Advanced verbindet Begriff mit Fachkürzel bzw. ORBIT Begriff',
+        () {
       expect(TermResolver.resolve(MetricTerm.ctl, ExperienceLevel.advanced),
           equals('Fitness (CTL)'));
       expect(TermResolver.resolve(MetricTerm.atl, ExperienceLevel.advanced),
@@ -26,14 +27,14 @@ void main() {
       expect(TermResolver.resolve(MetricTerm.tsb, ExperienceLevel.advanced),
           equals('Frische (TSB)'));
       expect(TermResolver.resolve(MetricTerm.tss, ExperienceLevel.advanced),
-          equals('Belastung (TSS)'));
+          equals('ORBIT Belastung'));
       expect(TermResolver.resolve(MetricTerm.np, ExperienceLevel.advanced),
-          equals('Gewichtete Leistung (NP)'));
+          equals('Normalisierte Leistung'));
       expect(TermResolver.resolve(MetricTerm.ifactor, ExperienceLevel.advanced),
-          equals('Intensität (IF)'));
+          equals('Intensitäts-Faktor'));
     });
 
-    test('Ebene Expert nutzt reine Fachkürzel', () {
+    test('Ebene Expert nutzt ORBIT Begrifflichkeiten', () {
       expect(TermResolver.resolve(MetricTerm.ctl, ExperienceLevel.expert),
           equals('CTL'));
       expect(TermResolver.resolve(MetricTerm.atl, ExperienceLevel.expert),
@@ -41,11 +42,11 @@ void main() {
       expect(TermResolver.resolve(MetricTerm.tsb, ExperienceLevel.expert),
           equals('TSB'));
       expect(TermResolver.resolve(MetricTerm.tss, ExperienceLevel.expert),
-          equals('TSS'));
+          equals('ORBIT Load'));
       expect(TermResolver.resolve(MetricTerm.np, ExperienceLevel.expert),
-          equals('NP'));
+          equals('Iso-Power'));
       expect(TermResolver.resolve(MetricTerm.ifactor, ExperienceLevel.expert),
-          equals('IF'));
+          equals('Intensitäts-Faktor'));
     });
 
     test('Englische Übersetzung matcht Design-System', () {

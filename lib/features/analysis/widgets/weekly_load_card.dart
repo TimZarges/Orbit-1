@@ -107,7 +107,7 @@ class WeeklyLoadCard extends StatelessWidget {
                         const SizedBox(width: 4),
                         Text(
                           experienceLevel == ExperienceLevel.expert
-                              ? 'TSS'
+                              ? 'Load'
                               : 'Punkte',
                           style: AppTypography.bodySmall.copyWith(
                             color: Colors.grey.shade600,

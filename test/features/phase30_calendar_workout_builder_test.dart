@@ -111,7 +111,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Schwellen-Intervalle (4x4)'), findsOneWidget);
-      expect(find.text('1h · 65 TSS'), findsOneWidget);
+      expect(find.text('1h · 65 Load'), findsOneWidget);
       // Berechnete konkrete Wattwerte aus FTP (337 W)
       expect(find.textContaining('FTP = 320–354 W'), findsOneWidget);
       expect(find.text('GEPLANT'), findsOneWidget);

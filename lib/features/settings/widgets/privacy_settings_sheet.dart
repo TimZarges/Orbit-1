@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:orbit/core/design/app_colors.dart';
 
-/// Bottom-Sheet für Datenschutz-Einstellungen und DSGVO-Rechte (Art. 9, 17, 20).
+/// Bottom-Sheet für Datenschutz-Einstellungen, Datenexport und Kontolöschung.
 class PrivacySettingsSheet extends StatefulWidget {
   const PrivacySettingsSheet({super.key});
 
@@ -29,7 +29,7 @@ class _PrivacySettingsSheetState extends State<PrivacySettingsSheet> {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text(
-            'Datenexport (JSON) wird vorbereitet und per E-Mail bereitgestellt.'),
+            'Dein vollständiger Datenexport wird vorbereitet und per E-Mail bereitgestellt.'),
         backgroundColor: Color(0xFF10B981),
       ),
     );
@@ -41,8 +41,8 @@ class _PrivacySettingsSheetState extends State<PrivacySettingsSheet> {
       builder: (ctx) => AlertDialog(
         title: const Text('Konto und Daten löschen?'),
         content: const Text(
-          'Gemäß Art. 17 DSGVO werden dein Konto, alle Aktivitäten, Gesundheitsdaten '
-          'und Schwellenwerte unwiderruflich gelöscht. Dieser Vorgang kann nicht rückgängig gemacht werden.',
+          'Alle deine Aktivitäten, Trainingswerte, Gesundheitsdaten und dein Profil werden '
+          'unwiderruflich und vollständig gelöscht. Dieser Vorgang kann nicht rückgängig gemacht werden.',
         ),
         actions: [
           TextButton(
@@ -119,9 +119,9 @@ class _PrivacySettingsSheetState extends State<PrivacySettingsSheet> {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'ORBIT speichert deine Daten ausschließlich in der EU (Region europe-west3, Frankfurt). '
-                      'Gesundheitsdaten (Art. 9 DSGVO) wie Herzfrequenz, Schlaf und HRV werden nur mit '
-                      'deiner ausdrücklichen Einwilligung verarbeitet.',
+                      'Sicherer Serverstandort Deutschland – Geschützt nach strengen deutschen und europäischen Datenschutzgesetzen.\n\n'
+                      'Deine Trainings- und Gesundheitsdaten (Herzfrequenz, HRV, Schlaf, Wattwerte) dienen ausschließlich deiner persönlichen Leistungs- und Erholungsanalyse '
+                      'und werden niemals an Werbepartner weitergegeben.',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             color: const Color(0xFF94A3B8),
                             height: 1.4,
@@ -131,7 +131,7 @@ class _PrivacySettingsSheetState extends State<PrivacySettingsSheet> {
                     const Divider(color: Color(0xFF1E293B)),
                     const SizedBox(height: 12),
 
-                    // Recht auf Datenübertragbarkeit
+                    // Recht auf Datenübertragbarkeit / Export
                     ListTile(
                       contentPadding: EdgeInsets.zero,
                       leading: Container(
@@ -143,12 +143,12 @@ class _PrivacySettingsSheetState extends State<PrivacySettingsSheet> {
                         child: const Icon(Icons.download_outlined,
                             color: AppColors.volt),
                       ),
-                      title: const Text('Daten exportieren (Art. 20 DSGVO)',
+                      title: const Text('Alle Daten exportieren',
                           style: TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.w600)),
                       subtitle: const Text(
-                        'Maschinenlesbarer Export deiner Profildaten, Aktivitäten und Messwerte als JSON.',
+                        'Vollständiger Export all deiner Profildaten, Trainings- und Messwerte auf Knopfdruck.',
                         style:
                             TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
                       ),
@@ -184,8 +184,8 @@ class _PrivacySettingsSheetState extends State<PrivacySettingsSheet> {
                               color: Colors.white,
                               fontWeight: FontWeight.w600)),
                       subtitle: const Text(
-                        'Hosting: Google Cloud Frankfurt (europe-west3). Ende-zu-Ende verschlüsselte '
-                        'Tokens in Google Secret Manager.',
+                        'Sicherer Serverstandort Frankfurt am Main. Deine Zugangs- und Verknüpfungsdaten '
+                        'werden mit modernen kryptografischen Standards geschützt.',
                         style:
                             TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
                       ),
@@ -208,12 +208,12 @@ class _PrivacySettingsSheetState extends State<PrivacySettingsSheet> {
                             color: Color(0xFFEF4444)),
                       ),
                       title: const Text(
-                          'Konto und Daten löschen (Art. 17 DSGVO)',
+                          'Konto und alle Daten unwiderruflich löschen',
                           style: TextStyle(
                               color: Color(0xFFEF4444),
                               fontWeight: FontWeight.w600)),
                       subtitle: const Text(
-                        'Unwiderrufliche Löschung aller Trainings-, Gesundheits- und Profildaten.',
+                        'Vollständige und sofortige Löschung deines Profils und aller Trainingsdaten auf Knopfdruck.',
                         style:
                             TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
                       ),

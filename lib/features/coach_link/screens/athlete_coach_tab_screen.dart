@@ -211,7 +211,7 @@ class _AthleteCoachTabScreenState extends ConsumerState<AthleteCoachTabScreen> {
         title: const Text('Trainer-Verknüpfung beenden?'),
         content: const Text(
           'Der Trainer verliert sofort den Zugriff auf deine Aktivitäten, '
-          'deinen Kalender und eventuelle Gesundheitsdaten (Art. 9 DSGVO). Der bisherige Chatverlauf '
+          'deinen Kalender und freigegebene Gesundheitsdaten. Der bisherige Chatverlauf '
           'bleibt archiviert, es können aber keine neuen Nachrichten mehr gesendet werden.',
         ),
         actions: [
@@ -318,7 +318,7 @@ class _AthleteCoachTabScreenState extends ConsumerState<AthleteCoachTabScreen> {
           ),
           const SizedBox(height: 24),
           Text(
-            'Datenfreigaben (Art. 9 DSGVO)',
+            'Datenfreigaben für deinen Trainer',
             style: Theme.of(context).textTheme.titleLarge,
           ),
           const SizedBox(height: 8),
@@ -406,8 +406,7 @@ class _AthleteCoachTabScreenState extends ConsumerState<AthleteCoachTabScreen> {
                   },
           ),
           SwitchListTile(
-            title:
-                const Text('Gesundheits-, Schlaf- & HRV-Daten (Art. 9 DSGVO)'),
+            title: const Text('Gesundheits-, Schlaf- & Erholungsdaten'),
             subtitle:
                 const Text('Schlaf, HRV, Ruhepuls (strikte Zweckbindung)'),
             value: shareHealth,
@@ -447,7 +446,7 @@ class _AthleteCoachTabScreenState extends ConsumerState<AthleteCoachTabScreen> {
                   },
           ),
           SwitchListTile(
-            title: const Text('Körpergewicht & Notizen (Art. 9 DSGVO)'),
+            title: const Text('Körpergewicht & persönliche Notizen'),
             subtitle: const Text(
               'Gewichtsverlauf, Körperfettanteil und persönliche Notizen',
             ),
