@@ -4,7 +4,7 @@
 - **Branch:** `feature/phase-38-global-ux-cleanup`
 - **Ziel-Release:** `v0.38.0`
 - **Ziel:** Global greifbarer Bug-Käfer als Top-Level-Overlay im `MaterialApp.builder` (selbst über geöffneten Modal-Sheets bedienbar), durchgängiges Datumsformat `DD.MM.YYYY` mit 24h-Uhrzeit via `OrbitDateFormatter`, kartengefasste Mitteilungszentrale mit verlässlichem Deep-Link-Routing, Beta-Feedback-Statusansicht für Tester, Widget-Galerie-Entfernung, DSGVO-Kontolöschung mit Auto-Logout und pixelgenaue Zentrierung des App-Icon-Satelliten.
-- **Status:** **[ ] In Bearbeitung**
+- **Status:** **[x] Abgeschlossen**
 
 ---
 
@@ -34,7 +34,7 @@
 - [x] Präzise Zentrierung des Satelliten-Punkts im App-Icon: Exakter Mittelpunkt in der Öffnung des Volt-Bogens ohne Berührung der Enden.
 
 ### 38.6 Abschluss & Hardware-Verifikation
-- [ ] `flutter analyze --no-pub` & Tests fehlerfrei.
-- [ ] Build & Installation auf Google Pixel 10 Pro via `adb install -r`.
-- [ ] Screenshot-Nachweise: Globaler Bug-Käfer über geöffnetem Sheet, Mitteilungen mit Rahmen, Nutzer-Inbox, zentriertes App-Icon.
-- [ ] Merge in `main`, Tag `v0.38.0` setzen und pushen.
+- [x] `flutter analyze --no-pub` & Tests fehlerfrei.
+- [x] Build & Installation auf Google Pixel 10 Pro via `adb install -r`.
+- [x] Screenshot-Nachweise: Globaler Bug-Käfer über geöffnetem Sheet, Mitteilungen mit Rahmen, Nutzer-Inbox, zentriertes App-Icon.
+- [x] Merge in `main`, Tag `v0.38.0` setzen und pushen.

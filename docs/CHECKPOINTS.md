@@ -2207,5 +2207,32 @@ The operation couldn’t be completed. Unable to locate a Java Runtime.
   - **Release-Build:** `build/app/outputs/flutter-apk/app-release.apk` (65.3 MB), via `adb install -r` erfolgreich auf Pixel 10 Pro installiert.
   - **Release-Tag:** `v0.37.0`
 
+---
 
-
+### [Phase 38] Global greifbarer Bug-Käfer, Metrisches 24h-Datumsformat (`DD.MM.YYYY`), Mitteilungs-Routing, Nutzer-Beta-Inbox, App-Icon-Präzision & Cleanup · STOPP 1 (ABNAHME)
+- **Status:** Vollständig umgesetzt und verifiziert
+- **Datum:** 2026-10-19 00:35
+- **Hardware-Ziel:** Google Pixel 10 Pro (`58251FDCR00EQ2`), Android 16
+- **Entscheidung & Umgesetzte Maßnahmen:**
+  1. **Global greifbarer Bug-Käfer als Top-Level Overlay (`GlobalFloatingBugBeetle`):**
+     - Im `MaterialApp.builder` als frei verschiebbarer Overlay mit Z-Index über allen modalen Sheets integriert.
+     - Ermöglicht das Melden von Fehlern und Screenshots selbst bei geöffnetem Bottom-Sheet (Workout-Details, Mitteilungen, Workout-Builder).
+     - Automatische Klemmschranken verhindern ein Verlieren des Käfers außerhalb des sichtbaren Bildschirms.
+  2. **Zentraler `OrbitDateFormatter` & Metrisches 24h-Datumsformat (`DD.MM.YYYY` & `HH:mm Uhr`):**
+     - ISO-Datumsstrings (`2026-10-18`) in der gesamten UI restlos durch DIN-/sportwissenschaftliches deutsches Format abgelöst.
+     - Reine Integer/String-Arithmetik ohne Locale-Initialisierungsfehler in Tests; saubere Trennung von DB-Schlüsseln (`toIsoDateKey`) und UI-Darstellung.
+  3. **Mitteilungszentrale: Umrandete Karten & Sicheres Deep-Link-Routing:**
+     - Jede Mitteilungskarte besitzt eine visuell klare Umrandung (`Border.all`: ungelesen Volt `#CDFB17` 1.5px, gelesen `Colors.white24` 1.0px).
+     - Klick auf eine Benachrichtigung markiert sie als gelesen, schließt das Modal-Sheet (`pop()`) und leitet sicher über `rootNavigatorKey.currentContext` zur Zielseite weiter.
+  4. **Nutzer-Beta-Feedback-Inbox („Meine gemeldeten Tickets“ + Live-Status):**
+     - Tester sehen in den Einstellungen (`/my-feedback`) alle eigenen Tickets mit ID (`#ORB-xxx`), Kategorie, `OrbitDateFormatter` Zeitstempel und farbigen Status-Pills (`🟢 Offen`, `🟡 In Arbeit`, `✅ Gelöst`).
+  5. **Cleanup & App-Icon-Präzision:**
+     - Veraltete Widget-Galerie (`widget_gallery.dart`) restlos aus Routing, Menüs und Codebase entfernt.
+     - DSGVO-Kontolöschung im `PrivacySettingsSheet` führt echte Löschung aus, ruft zwingend `authService.signOut()` auf und leitet auf `/login` weiter.
+     - Satelliten-Punkt im adaptiven App-Icon (`ic_launcher_foreground.xml`) mathematisch exakt in der Volt-Bogenöffnung zentriert (symmetrische 2.28dp Clearance).
+- **Nachweise (Evidence-Only gemäß Regel 2):**
+  - **Live-Screenshot:** `docs/beta/screenshots/phase38_release_pixel10.png`
+  - **Tests:** Alle Modultests `test/features/phase38_*` und `test/core/utils/orbit_date_formatter_test.dart` bestanden (13/13 grün in 1.1s).
+  - **Pre-Merge Gate:** `bash scripts/check_phase_ready.sh` (0 Errors, 0 Warnings, 100% deutsche Doku).
+  - **Release-Build:** `build/app/outputs/flutter-apk/app-release.apk`, via `adb install -r` erfolgreich auf Pixel 10 Pro installiert.
+  - **Release-Tag:** `v0.38.0`

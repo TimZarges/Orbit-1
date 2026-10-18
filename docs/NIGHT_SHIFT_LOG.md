@@ -31,7 +31,7 @@
 | **38.3** | Mitteilungszentrale: Umrandete Karten & Deep-Link-Routing | [x] | `c062717` | 1.0s |
 | **38.4** | Beta-Feedback-Inbox für Nutzer mit Live-Statusanzeige | [x] | `ff0d3e3` | 1.1s |
 | **38.5** | Widget-Galerie-Cleanup, DSGVO-Kontolöschung mit Logout & App-Icon | [x] | `8cd086d` | 1.1s |
-| **38-F** | **Abschluss Phase 38 (`v0.38.0`): Quality-Gate, APK, Pixel 10 Pro & Tag** | [ ] | | |
+| **38-F** | **Abschluss Phase 38 (`v0.38.0`): Quality-Gate, APK, Pixel 10 Pro & Tag** | [x] | `v0.38.0` | 68s Build + 1.1s Test |
 | **39.1** | Rückwirkende deutsche Dokumentation: `functions/src/` & Security Rules | [ ] | | |
 | **39.2** | Rückwirkende deutsche Dokumentation: `lib/core/` & `lib/shared/` | [ ] | | |
 | **39.3** | Rückwirkende deutsche Dokumentation: `lib/features/` | [ ] | | |
@@ -40,6 +40,11 @@
 ---
 
 ## 2. Chronologisches Protokoll der Etappen
+
+### [00:35] 🏆 Phase 38 abgeschlossen & freigegeben (`v0.38.0`)
+- **Was wurde erledigt:** Vollständiger Abschluss von Phase 38 (Global greifbarer Bug-Käfer als Top-Level-Overlay, Universal-Datumsformat `DD.MM.YYYY` & 24h via `OrbitDateFormatter`, Mitteilungs-Routing mit Umrandung, Tester-Inbox mit Live-Status, Widget-Galerie-Entfernung, DSGVO-Löschung mit Auto-Logout und App-Icon-Präzision).
+- **Wie technisch gelöst & Performance-Schutz:** Pre-Merge Quality Gate `scripts/check_phase_ready.sh` (0 Errors, 0 Warnings, 100% deutsche Doku). Fast-Forward-Merge in `main`, annotiertes Git-Tag `v0.38.0` gesetzt und zu GitHub gepusht. Release-APK gebaut und per `adb install -r` auf Google Pixel 10 Pro installiert.
+- **Test-Nachweis & Dauer:** 13/13 Tests in `test/features/phase38_*` und `test/core/utils/orbit_date_formatter_test.dart` bestanden in 1.1s, Build-Zeit ~68s.
 
 ### [00:32] ✅ Etappe 38.5 abgeschlossen — Commit: `8cd086d`
 - **Was wurde erledigt:** Veraltete Widget-Galerie restlos aus Codebase, Routing und Menüs entfernt; DSGVO-Kontolöschung (`PrivacySettingsSheet`) mit echter Backend-Routine, zwingendem `authService.signOut()`, Dialog-Schließung und Redirect auf `/login` ausgestattet; mathematisch exakte Zentrierung des Satelliten-Punkts im Adaptive App-Icon (`ic_launcher_foreground.xml`) ohne Berührung der Bogenenden.
