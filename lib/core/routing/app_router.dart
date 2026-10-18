@@ -22,6 +22,7 @@ import '../../features/chat/screens/chat_list_screen.dart';
 import '../../features/health/screens/health_cockpit_screen.dart';
 import '../../features/activities/screens/activity_detail_loader.dart';
 import '../../features/coach_link/screens/trainer_athletes_tab_screen.dart';
+import '../../features/auth/screens/email_verification_waiting_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 /// Zentraler Router-Provider der ORBIT-Applikation auf Basis von GoRouter.
@@ -105,6 +106,10 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/onboarding',
         builder: (context, state) => const OnboardingScreen(),
+      ),
+      GoRoute(
+        path: '/verify-email',
+        builder: (context, state) => const EmailVerificationWaitingScreen(),
       ),
       GoRoute(
         path: '/',
