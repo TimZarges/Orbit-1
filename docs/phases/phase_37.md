@@ -11,14 +11,14 @@
 ## Arbeitspakete
 
 ### 37.1 Kalender-Echtzeit-Synchronisation (`snapshots()`) & Einheitliche Karten
-- [ ] Umstellung aller Kalender- und Dashboard-Provider auf zeitfenster-begrenzte Firestore-Streams (`snapshots()`).
-- [ ] Jede Änderung (Planung, Verschiebung, Löschung) spiegelt sich sofort reaktiv in der UI wider (ohne Neustart oder Relogin).
-- [ ] Einheitliches Kartendesign über Wochenansicht, Listenansicht, Monatsansicht und „Heute“-Screen inkl. Blockprofil-Vorschau und Ziel-Leistung/Pace.
+- [x] Umstellung aller Kalender- und Dashboard-Provider auf zeitfenster-begrenzte Firestore-Streams (`snapshots()`).
+- [x] Jede Änderung (Planung, Verschiebung, Löschung) spiegelt sich sofort reaktiv in der UI wider (ohne Neustart oder Relogin).
+- [x] Einheitliches Kartendesign über Wochenansicht, Listenansicht, Monatsansicht und „Heute“-Screen inkl. Blockprofil-Vorschau und Ziel-Leistung/Pace.
 
 ### 37.2 Exakte Block-Berechnung & Funktionierendes Trainings-Detail-Sheet
-- [ ] 1:1 Konsistenz zwischen Titel/Beschreibung und Block-Grafik (z. B. 4x4min Intervalle zeigt exakt 10 Blöcke: Warmup + 4x [Arbeit + Pause] + Cooldown).
-- [ ] Detaillierte Schritt-für-Schritt Blockliste mit individuellen Watt-, Pace- und HF-Zielwerten des Athleten direkt im `workout_detail_sheet.dart`.
-- [ ] Reaktive Aktions-Buttons:
+- [x] 1:1 Konsistenz zwischen Titel/Beschreibung und Block-Grafik (z. B. 4x4min Intervalle zeigt exakt 10 Blöcke: Warmup + 4x [Arbeit + Pause] + Cooldown).
+- [x] Detaillierte Schritt-für-Schritt Blockliste mit individuellen Watt-, Pace- und HF-Zielwerten des Athleten direkt im `workout_detail_sheet.dart`.
+- [x] Reaktive Aktions-Buttons:
   - „Auf morgen verschieben“: `scheduledDate += 1 Tag` in Firestore.
   - „Datum wählen…“: Deutscher DatePicker (`DD.MM.YYYY`) mit sofortiger Verschiebung.
   - „Als übersprungen markieren“: Status auf `SKIPPED` mit visueller Rückmeldung.
