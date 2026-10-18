@@ -17,9 +17,9 @@ export const processFitUpload = onObjectFinalized(
     const filePath = event.data.name;
     if (!filePath) return;
 
-    // Unterstützt users/{uid}/fit/{activityId}.ext oder users/{uid}/uploads/{activityId}.ext
+    // Unterstützt users/{uid}/fit/{activityId}.ext, users/{uid}/rawActivities/{activityId}.ext oder users/{uid}/uploads/{activityId}.ext
     // Erweiterungen: .fit, .tcx, .gpx (auch komprimiert als .gz)
-    const match = filePath.match(/^users\/([^\/]+)\/(?:fit|uploads)\/([^\/]+)\.(fit|tcx|gpx)(?:\.gz)?$/i);
+    const match = filePath.match(/^users\/([^\/]+)\/(?:fit|uploads|rawActivities)\/([^\/]+)\.(fit|tcx|gpx)(?:\.gz)?$/i);
     if (!match) {
       logger.info(`Ignored file (no supported activity extension): ${filePath}`);
       return;

@@ -1,3 +1,6 @@
+/// @file garmin_connection_screen.dart
+/// @description Einstellungs- und Status-Screen für die Garmin Connect Integration (OAuth 1.0a, aktiver REST-Pull-Sync und Backfill-Verwaltung).
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/garmin_status.dart';

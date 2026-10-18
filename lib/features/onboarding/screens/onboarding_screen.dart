@@ -1101,6 +1101,39 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           icon: Icons.upload_file_outlined,
           selected: _selectedDataSource == 'FILE_UPLOAD',
           onTap: () => setState(() => _selectedDataSource = 'FILE_UPLOAD'),
+          footer: _selectedDataSource == 'FILE_UPLOAD'
+              ? Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: ElevatedButton.icon(
+                    key: const Key('onboarding_pick_file_button'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.volt,
+                      foregroundColor: AppColors.navy,
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 10, horizontal: 16),
+                    ),
+                    onPressed: () async {
+                      final ids = await ref
+                          .read(activityUploadProvider.notifier)
+                          .pickAndUpload();
+                      if (ids.isNotEmpty && mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            backgroundColor: const Color(0xFF10B981),
+                            content: Text(
+                                '${ids.length} Datei(en) erfolgreich für dein Profil vorgemerkt!'),
+                          ),
+                        );
+                      }
+                    },
+                    icon: const Icon(Icons.file_upload),
+                    label: const Text(
+                      'Datei jetzt auswählen & testen',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                )
+              : null,
         ),
         const SizedBox(height: 12),
         _DataSourceCard(

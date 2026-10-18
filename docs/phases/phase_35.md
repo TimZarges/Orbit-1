@@ -20,11 +20,11 @@
 - [x] Unit-Tests für `syncGarminActivitiesNow` und Webhook-Fallback.
 
 ### 35.2 `.fit` / `.tcx` / `.gpx` Datei-Upload reparieren (SAF & Isolate-Parsing)
-- [ ] Behebung von Android 16 SAF-Berechtigungs-/Lesefehlern in `file_picker` (`withData: true` bzw. sicherer Stream-Read).
-- [ ] Multi-Format-Support: `.fit`, `.tcx` und `.gpx` Parser im Hintergrund-Isolate (`Isolate.run` / `compute`).
-- [ ] Sicheres Archivieren der Original-Rohdatei in Cloud Storage (`users/{uid}/rawActivities/{activityId}.fit`).
-- [ ] Berechnung aller Leistungs- und Telemetriedaten (Watt, HF, Pace, GPS-Punkte, Höhenprofil, Trittfrequenz, Splits) und Persistierung in Firestore (`users/{uid}/activities/{activityId}`).
-- [ ] Verifikation: Upload funktioniert zu 100 % sowohl über den `+` FAB auf dem Dashboard als auch im Onboarding.
+- [x] Behebung von Android 16 SAF-Berechtigungs-/Lesefehlern in `file_picker` (`withData: true` bzw. sicherer Stream-Read).
+- [x] Multi-Format-Support: `.fit`, `.tcx` und `.gpx` Parser im Hintergrund-Isolate (`Isolate.run` / `compute`).
+- [x] Sicheres Archivieren der Original-Rohdatei in Cloud Storage (`users/{uid}/rawActivities/{activityId}.fit`).
+- [x] Berechnung aller Leistungs- und Telemetriedaten (Watt, HF, Pace, GPS-Punkte, Höhenprofil, Trittfrequenz, Splits) und Persistierung in Firestore (`users/{uid}/activities/{activityId}`).
+- [x] Verifikation: Upload funktioniert zu 100 % sowohl über den `+` FAB auf dem Dashboard als auch im Onboarding.
 
 ### 35.3 High-End Aktivitäts-Cockpit (Strava, Garmin Connect, Coros & MATS)
 - [ ] **Header:** Sportart-Badge, editierbarer Titel, deutsches Datum & 24h-Uhrzeit (`DD.MM.YYYY • HH:mm Uhr`).

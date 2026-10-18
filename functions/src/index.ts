@@ -1,3 +1,9 @@
+/**
+ * @file index.ts
+ * @description Zentraler Einstiegspunkt für alle Cloud Functions 2nd Gen von ORBIT.
+ * Alle Funktionen laufen DSGVO-konform ausschließlich in der Region europe-west3 (Frankfurt).
+ */
+
 import { setGlobalOptions } from "firebase-functions/v2";
 
 // Set default region to europe-west3 (Frankfurt) for GDPR compliance

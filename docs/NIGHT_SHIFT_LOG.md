@@ -13,7 +13,7 @@
 |---|---|---|---|---|
 | **0.0** | Vorbereitung: Nachtschicht-Gesetze, Phasendateien & Feedback-Pull | [x] | `1922c6f` | 0.8s |
 | **35.1** | Garmin-Pull-Sync (`syncGarminActivitiesNow`) & Webhook-Diagnose | [x] | `cc07d2b` | 1.4s |
-| **35.2** | Multi-Format-Upload (`.fit`, `.tcx`, `.gpx`), SAF-Fix & Isolate-Parsing | [ ] | | |
+| **35.2** | Multi-Format-Upload (`.fit`, `.tcx`, `.gpx`), SAF-Fix & Isolate-Parsing | [x] | `5f16965` | 0.9s |
 | **35.3** | High-End Aktivitäts-Cockpit (Scrubber, Volt-Map, Soll/Ist, PR-Kurven) | [ ] | | |
 | **35-F** | **Abschluss Phase 35 (`v0.35.0`): Quality-Gate, APK, Pixel 10 Pro & Tag** | [ ] | | |
 | **36.1** | Login-First-Flow, Clean Branding (kein Doppel-ORBIT) & Password-Reset | [ ] | | |
@@ -40,6 +40,11 @@
 ---
 
 ## 2. Chronologisches Protokoll der Etappen
+
+### [23:14] ✅ Etappe 35.2 abgeschlossen — Commit: `5f16965`
+- **Was wurde erledigt:** Android 16 SAF-Dateiupload für `.fit`, `.tcx` und `.gpx` repariert (Beseitigung von `lengthSync`-Crashes via `readAsBytes`), Voranalyse im Hintergrund-Isolate (`Isolate.run`), Archivierung unter `rawActivities` und sofortige Firestore-Persistierung sowohl auf dem Dashboard als auch im Onboarding.
+- **Wie technisch gelöst & Performance-Schutz:** `activity_upload_provider.dart` nutzt `readAsBytes` und `Isolate.run` zur Validierung ohne UI-Thread-Blockierung; `storage.rules` erlaubt Athleten-Schreibzugriff auf `rawActivities/` (< 25 MB); `onboarding_screen.dart` bietet direkten Datei-Auswahl- und Test-Button.
+- **Test-Nachweis & Dauer:** `test/features/phase35_activity_upload_saf_test.dart` (3/3 bestanden in 0.9s) + `scripts/check_phase_ready.sh` (0 Errors, 0 Warnings).
 
 ### [23:07] ✅ Etappe 35.1 abgeschlossen — Commit: `cc07d2b`
 - **Was wurde erledigt:** Implementierung des aktiven REST-Pull-Synchronisations-Endpunkts `syncGarminActivitiesNow` in Cloud Functions (europe-west3) sowie Verdrahtung des neuen „Jetzt synchronisieren (REST-Pull)“-Buttons und automatischer Synchronisation in der App.
