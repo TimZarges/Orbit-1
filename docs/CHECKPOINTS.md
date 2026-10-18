@@ -2123,3 +2123,59 @@ The operation couldn’t be completed. Unable to locate a Java Runtime.
     - `node -e "console.log(Object.keys(require('./functions/lib/index.js')))"`: 29 saubere Cloud Function Exporte, 0 Fehler.
   - **Pre-Merge-Gate:** `bash scripts/check_phase_ready.sh` erfolgreich durchlaufen (0 Errors, 0 Warnings, 100% deutsche Kommentare).
 
+---
+
+### [Phase 35] Garmin-Datenempfang, Echter `.fit`-Upload & Aktivitäts-Cockpit nach Strava/Garmin/Coros/MATS-Vorbild · STOPP 1 (ABNAHME)
+- **Status:** Vollständig umgesetzt und verifiziert
+- **Datum:** 2026-10-18 23:24
+- **Hardware-Ziel:** Google Pixel 10 Pro (`58251FDCR00EQ2`), Android 16
+- **Entscheidung & Umgesetzte Maßnahmen:**
+  1. **Garmin REST-Pull Sync (`syncGarminActivitiesNow`):**
+     - Aktive Synchronisation via REST-Pull in Cloud Functions (`europe-west3`).
+     - Idempotenter Upsert mit realistischen Telemetrie-Streams (Watt, HF, GPS, Cadence).
+  2. **Multi-Format Upload (.fit, .tcx, .gpx) & Android 16 SAF-Isolate-Parsing:**
+     - Beseitigung von `lengthSync`-Crashes auf Android 16 durch `readAsBytes`.
+     - Voranalyse und Parsing im Hintergrund-Isolate (`Isolate.run`).
+     - Sofortige Archivierung in Cloud Storage unter `rawActivities/`.
+  3. **High-End Aktivitäts-Cockpit:**
+     - 2x3 Kern-Metrik-Grid, `#CDFB17` Volt-Streckenlinie auf OpenStreetMap mit Dark/Light-Toggle.
+     - Entkoppelter `ValueNotifier`-Scrubber für 120 FPS Rendering ohne Screen-Rebuilds.
+     - Soll/Ist-Erfüllungs-Ampel (Grün <= 15%, Gelb 15–35%, Rot > 35%) und MMP-Power-Duration-Kurve vs. All-Time PRs.
+- **Nachweise (Evidence-Only gemäß Regel 2):**
+  - **Live-Screenshot:** `docs/beta/screenshots/phase35_release_pixel10.png`
+  - **Tests:** `test/features/phase35_*` (10/10 Tests grün in 1.1s).
+  - **Pre-Merge Gate:** `bash scripts/check_phase_ready.sh` (0 Errors, 0 Warnings, 100% deutsche Doku).
+  - **Release-Tag:** `v0.35.0`
+
+---
+
+### [Phase 36] Login-First, Rollenspezifisches Onboarding (Athlet vs. Coach), E-Mail-Verifikations-Warteraum & Profil-Persistenz · STOPP 1 (ABNAHME)
+- **Status:** Vollständig umgesetzt und verifiziert
+- **Datum:** 2026-10-18 23:42
+- **Hardware-Ziel:** Google Pixel 10 Pro (`58251FDCR00EQ2`), Android 16
+- **Entscheidung & Umgesetzte Maßnahmen:**
+  1. **Login-First-Flow, Clean Branding & Passwort-Reset:**
+     - Unauthentifizierte App-Starts leiten unmittelbar auf `/login`.
+     - Prominenter Button „Konto erstellen / Registrieren“ leitet ins Onboarding weiter.
+     - Entfernung doppelter „ORBIT“-Schriftzüge auf dem Login-Screen und im Header des Dashboards („Heute“).
+     - „Passwort vergessen?“-Dialog mit E-Mail-Reset-Link und „Passwort ändern“-Dialog in den Einstellungen mit Reauthentifizierung.
+  2. **Doppelte Passwort-Eingabe, 8+ Zeichen Checkliste & E-Mail-Warteraum:**
+     - Zweifache Passworteingabe (`onboarding_password_field` & `onboarding_confirm_password_field`).
+     - `PasswordCriteriaChecklist` visualisiert 5 Kriterien live (Länge, Zahl/Sonderzeichen, Großbuchstabe, Kleinbuchstabe, Übereinstimmung).
+     - `EmailVerificationWaitingScreen`: Pollt alle 3 Sekunden per `user.reload()` und leitet automatisch bei Bestätigung weiter; bietet manuelle Buttons „Jetzt prüfen“, „E-Mail erneut senden“ und „Abmelden“.
+  3. **Rollenspezifisches Onboarding (Athlet vs. Coach):**
+     - **Athlet:** Geburtsjahr, Gewicht (kg), Größe (cm), Sportarten, Schwellenwerte.
+     - **Coach:** Fragebogen mit Verein / Team (`onboarding_coach_club_field`), Gewerbe / Firmenname (`onboarding_coach_company_field`), Coach-Modus (`SIMPLE_DOWNLOAD` vs `FULL_ANALYSIS`) und Verzicht auf persönliche Watt-Schwellen.
+  4. **Triathlon-Kombi-Logo, Bottom-Bar & Profil-Persistenz:**
+     - `TriathlonCombinedIcon` mit `FittedBox(fit: BoxFit.scaleDown)` ohne Avatar-Overflows.
+     - `showCheckmark: false` auf FilterChips.
+     - DSGVO-Klickwarnung mit leuchtender Coral-Umrandung und Warntext.
+     - Garantierte Persistenz aller Onboarding-Felder (inkl. Coach-Attribute) in Firestore `users/{uid}`.
+- **Nachweise (Evidence-Only gemäß Regel 2):**
+  - **Live-Screenshot:** `docs/beta/screenshots/phase36_release_pixel10.png`
+  - **Tests:** `test/features/phase36_login_first_and_password_test.dart` (3/3 grün) & `test/features/phase36_onboarding_coach_and_auth_test.dart` (5/5 grün in 1.1s).
+  - **Pre-Merge Gate:** `bash scripts/check_phase_ready.sh` (0 Errors, 0 Warnings, 100% deutsche Doku).
+  - **Release-Build:** `build/app/outputs/flutter-apk/app-release.apk` (65.3 MB), via `adb install -r` erfolgreich auf Pixel 10 Pro installiert.
+  - **Release-Tag:** `v0.36.0`
+
+

@@ -17,10 +17,10 @@
 | **35.3** | High-End Aktivitäts-Cockpit (Scrubber, Volt-Map, Soll/Ist, PR-Kurven) | [x] | `eaee542` | 1.1s |
 | **35-F** | **Abschluss Phase 35 (`v0.35.0`): Quality-Gate, APK, Pixel 10 Pro & Tag** | [x] | `v0.35.0` | 72s Build + 1.1s Test |
 | **36.1** | Login-First-Flow, Clean Branding (kein Doppel-ORBIT) & Password-Reset | [x] | `b8f7886` | 1.0s |
-| **36.2** | Dual-Passwort mit Live-Checklist & Email-Verifikations-Warteraum | [ ] | | |
-| **36.3** | Rollenspezifisches Onboarding (Athlet vs. Coach Fragebögen) | [ ] | | |
-| **36.4** | Triathlon-Kombi-Logo, Bottom-Bar-Navigation & 100% Profil-Persistenz | [ ] | | |
-| **36-F** | **Abschluss Phase 36 (`v0.36.0`): Quality-Gate, APK, Pixel 10 Pro & Tag** | [ ] | | |
+| **36.2** | Dual-Passwort mit Live-Checklist & Email-Verifikations-Warteraum | [x] | `fef2ae3` | 0.9s |
+| **36.3** | Rollenspezifisches Onboarding (Athlet vs. Coach Fragebögen) | [x] | `a7c1356` | 1.1s |
+| **36.4** | Triathlon-Kombi-Logo, Bottom-Bar-Navigation & 100% Profil-Persistenz | [x] | `a7c1356` | 1.1s |
+| **36-F** | **Abschluss Phase 36 (`v0.36.0`): Quality-Gate, APK, Pixel 10 Pro & Tag** | [x] | `v0.36.0` | 65s Build + 1.1s Test |
 | **37.1** | Kalender-Echtzeit-Synchronisation (`snapshots()`) & Einheitliche Karten | [ ] | | |
 | **37.2** | Exakte Block-Berechnung, Detail-Sheet & Aktions-Buttons (+1d, Skip) | [ ] | | |
 | **37.3** | Mobiler Klick-Workout-Builder (Warmup, Intervalle 2x–30x, Live-Target) | [ ] | | |
@@ -40,6 +40,21 @@
 ---
 
 ## 2. Chronologisches Protokoll der Etappen
+
+### [23:42] 🏆 Phase 36 abgeschlossen & freigegeben (`v0.36.0`)
+- **Was wurde erledigt:** Vollständiger Abschluss von Phase 36 (Login-First, Rollenspezifisches Onboarding für Athlet vs. Coach, E-Mail-Verifikations-Warteraum & 100% Profil-Persistenz). Release-APK gebaut, per `adb install -r` auf Google Pixel 10 Pro installiert und Verifikations-Screenshots gesichert.
+- **Wie technisch gelöst & Performance-Schutz:** Pre-Merge Quality Gate `scripts/check_phase_ready.sh` (0 Errors, 0 Warnings, 100% deutsche Doku). Fast-Forward-Merge in `main`, annotiertes Git-Tag `v0.36.0` gesetzt und zu GitHub gepusht.
+- **Test-Nachweis & Dauer:** 8/8 Tests in `test/features/phase36_*` bestanden, Build-Zeit ~65s.
+
+### [23:40] ✅ Etappe 36.3 & 36.4 abgeschlossen — Commit: `a7c1356`
+- **Was wurde erledigt:** Rollenspezifische Verzweigung in Schritt 1 (Athlet mit Geburtsjahr/Gewicht/Größe vs. Coach mit Verein/Team, Gewerbe/Name & Modus-Auswahl `SIMPLE_DOWNLOAD` vs `FULL_ANALYSIS`), Bereinigung der Checkmark-Bullets in FilterChips (`showCheckmark: false`), Einbindung des `TriathlonCombinedIcon`, DSGVO-Warnung in leuchtendem Coral bei Klick ohne Bestätigung und feststehende Bottom-Bar mit `_isBottomBarButtonEnabled`.
+- **Wie technisch gelöst & Performance-Schutz:** `TriathlonCombinedIcon` nutzt `FittedBox(fit: BoxFit.scaleDown)` zur Vermeidung von RenderFlex-Overflows in Chip-Avataren; vollständige Persistierung der Coach-Attribute in Firestore `users/{uid}`; Navigation leitet unbestätigte E-Mails zu `/verify-email`.
+- **Test-Nachweis & Dauer:** `test/features/phase36_onboarding_coach_and_auth_test.dart` (5/5 bestanden in 1.1s) + `scripts/check_phase_ready.sh` (0 Errors, 0 Warnings).
+
+### [23:38] ✅ Etappe 36.2 abgeschlossen — Commit: `fef2ae3`
+- **Was wurde erledigt:** Doppelte Passworteingabe (`onboarding_password_field` & `onboarding_confirm_password_field`), interaktive Live-Kriterien-Checkliste (`PasswordCriteriaChecklist`) mit 5 Kriterien (8+ Zeichen, Zahl/Sonderzeichen, Großbuchstabe, Kleinbuchstabe, Übereinstimmung) sowie `EmailVerificationWaitingScreen` mit automatischem 3-Sekunden-Polling via `user.reload()`.
+- **Wie technisch gelöst & Performance-Schutz:** Entkoppelte `PasswordCriteriaChecklist` ohne Heavy Rebuilds; Timer-Polling bricht sofort ab bei dispose oder Logout; sichere Weiterleitung via GoRouter (`/verify-email`).
+- **Test-Nachweis & Dauer:** `test/features/phase36_onboarding_coach_and_auth_test.dart` (0.9s) + `scripts/check_phase_ready.sh` (0 Errors, 0 Warnings).
 
 ### [23:29] ✅ Etappe 36.1 abgeschlossen — Commit: `b8f7886`
 - **Was wurde erledigt:** Umstellung auf strikten Login-First-Start (`/login` für unauthentifizierte Nutzer), prominenter Weiterleitungs-Button „Konto erstellen / Registrieren“ ins Onboarding, Beseitigung doppelter ORBIT-Schriftzüge auf dem Login-Screen und im Dashboard-Header („Heute“ statt „Orbit“), „Passwort vergessen?“-Dialog mit E-Mail-Reset-Link sowie „Passwort ändern“-Option in den Einstellungen mit Live-Kriterien.
