@@ -347,6 +347,41 @@ class ActivityDetailScreen extends ConsumerWidget {
                           borderRadius: BorderRadius.circular(10)),
                     ),
                   ),
+                  const SizedBox(height: 10),
+                  OutlinedButton.icon(
+                    onPressed: () {
+                      final rawPath = activity.rawFilePath ??
+                          'users/${activity.athleteId}/rawActivities/${activity.id}.fit';
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Row(
+                            children: [
+                              const Icon(Icons.download_done,
+                                  color: AppColors.volt),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                    'Originaldatei bereitgestellt: $rawPath'),
+                              ),
+                            ],
+                          ),
+                          backgroundColor: AppColors.card,
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.file_download_outlined,
+                        color: AppColors.volt),
+                    label:
+                        const Text('Originaldatei (.FIT / .TCX) herunterladen'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.volt,
+                      side: const BorderSide(color: AppColors.volt),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: 8),
                   Text(
                     experienceLevel == ExperienceLevel.expert

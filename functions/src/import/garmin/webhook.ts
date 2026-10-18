@@ -607,12 +607,12 @@ export async function handleGarminActivity(act: any) {
   }
 
   // Wenn Sekunden-Streams (samples) aus activityDetails vorliegen, als .json.gz in Storage speichern
+  const bucket = admin.storage().bucket();
   if (streams && streams.length > 0) {
     const streamJson = JSON.stringify(streams);
     const streamGz = zlib.gzipSync(Buffer.from(streamJson, "utf-8"));
     const streamsPath = `users/${uid}/streams/${targetActivityId}.json.gz`;
 
-    const bucket = admin.storage().bucket();
     const streamFile = bucket.file(streamsPath);
     await streamFile.save(streamGz, {
       contentType: "application/gzip",
@@ -621,6 +621,21 @@ export async function handleGarminActivity(act: any) {
 
     activityData.streamsPath = streamsPath;
   }
+
+  // Unveränderte Original-Daten archivieren (AGENTS.md Regel 32.2)
+  const rawPayloadJson = JSON.stringify(act);
+  const rawFilePath = `users/${uid}/rawActivities/${targetActivityId}.json`;
+  const rawFile = bucket.file(rawFilePath);
+  await rawFile.save(Buffer.from(rawPayloadJson, "utf-8"), {
+    contentType: "application/json",
+    metadata: {
+      source: "GARMIN_WEBHOOK",
+      uploadedAt: new Date().toISOString(),
+      athleteId: uid,
+      activityId: targetActivityId,
+    },
+  });
+  activityData.rawFilePath = rawFilePath;
 
   // Verlängerung / Merge in Firestore
   await activityDocRef.set(activityData, { merge: true });

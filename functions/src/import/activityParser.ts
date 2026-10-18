@@ -704,6 +704,24 @@ export async function parseActivityAndSave(
     metadata: { contentEncoding: "gzip" },
   });
 
+  // 2b. Unveränderte Originaldatei in Cloud Storage archivieren (AGENTS.md Regel 32.2)
+  const ext = originalFileName.toLowerCase().endsWith(".tcx") || originalFileName.toLowerCase().endsWith(".tcx.gz")
+    ? "tcx"
+    : originalFileName.toLowerCase().endsWith(".gpx") || originalFileName.toLowerCase().endsWith(".gpx.gz")
+    ? "gpx"
+    : "fit";
+  const rawFilePath = `users/${uid}/rawActivities/${targetActivityId}.${ext}`;
+  const rawFile = bucket.file(rawFilePath);
+  await rawFile.save(buffer, {
+    contentType: "application/octet-stream",
+    metadata: {
+      originalFileName,
+      uploadedAt: new Date().toISOString(),
+      athleteId: uid,
+      activityId: targetActivityId,
+    },
+  });
+
   // Aktiven Coach mit Aktivitäten-Berechtigung ermitteln
   const activeCoachId = await getActiveCoachIdForActivities(uid);
 
@@ -724,6 +742,7 @@ export async function parseActivityAndSave(
     summary: parsed.summary,
     laps: parsed.laps,
     streamsPath,
+    rawFilePath,
     createdAt: FieldValue.serverTimestamp(),
     processing: { state: "READY" },
   };

@@ -182,6 +182,11 @@ class ActivityProcessing {
   }
 }
 
+/// Repräsentiert eine importierte oder aufgezeichnete Trainingseinheit.
+///
+/// Enthält alle Basis- und Zusammenfassungswerte, Laps/Intervalle, wissenschaftliche
+/// Berechnungen (NP, IF, TSS, W'bal, Decoupling) sowie den Storage-Pfad zur archivierten
+/// Originaldatei ([rawFilePath]).
 class Activity {
   final String id;
   final String athleteId;
@@ -200,6 +205,9 @@ class Activity {
   final String? plannedWorkoutId;
   final String? matchStatus;
 
+  /// Optionaler Cloud-Storage-Pfad zur unveränderten Originaldatei (z. B. .fit, .tcx).
+  final String? rawFilePath;
+
   Activity({
     required this.id,
     required this.athleteId,
@@ -217,6 +225,7 @@ class Activity {
     this.segments,
     this.plannedWorkoutId,
     this.matchStatus,
+    this.rawFilePath,
   });
 
   factory Activity.fromFirestore(DocumentSnapshot doc) =>
@@ -280,6 +289,7 @@ class Activity {
           .toList(),
       plannedWorkoutId: data['plannedWorkoutId'] as String?,
       matchStatus: data['matchStatus'] as String?,
+      rawFilePath: data['rawFilePath'] as String?,
     );
   }
 }

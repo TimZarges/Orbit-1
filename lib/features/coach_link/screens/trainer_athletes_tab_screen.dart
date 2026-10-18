@@ -16,6 +16,8 @@ import '../widgets/create_threshold_proposal_dialog.dart';
 import '../widgets/keyboard_shortcuts_dialog.dart';
 import 'athlete_context_wrapper.dart';
 import '../../calendar/screens/calendar_screen.dart';
+import '../models/coach_global_mode.dart';
+import '../providers/coach_global_mode_provider.dart';
 
 enum CoachViewMode {
   table,
@@ -237,6 +239,39 @@ class _TrainerAthletesTabScreenState
               onChanged: (val) {
                 ref.read(coachAthleteSearchQueryProvider.notifier).state = val;
               },
+            ),
+          ),
+
+          // Globaler Modus-Umschalter (AGENTS.md Regel 32.3: Einfach & Download vs. Vollanalyse)
+          SegmentedButton<CoachGlobalMode>(
+            segments: const [
+              ButtonSegment(
+                value: CoachGlobalMode.simpleDownload,
+                icon: Icon(Icons.file_download_outlined, size: 16),
+                label: Text('Einfach & Download',
+                    style:
+                        TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+              ),
+              ButtonSegment(
+                value: CoachGlobalMode.fullAnalysis,
+                icon: Icon(Icons.analytics_outlined, size: 16),
+                label: Text('Vollanalyse',
+                    style:
+                        TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+              ),
+            ],
+            selected: {ref.watch(coachGlobalModeProvider)},
+            onSelectionChanged: (set) =>
+                ref.read(coachGlobalModeProvider.notifier).state = set.first,
+            style: SegmentedButton.styleFrom(
+              selectedBackgroundColor: ref.watch(coachGlobalModeProvider) ==
+                      CoachGlobalMode.simpleDownload
+                  ? AppColors.volt
+                  : AppColors.navy,
+              selectedForegroundColor: ref.watch(coachGlobalModeProvider) ==
+                      CoachGlobalMode.simpleDownload
+                  ? AppColors.navy
+                  : AppColors.white,
             ),
           ),
 

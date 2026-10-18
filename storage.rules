@@ -25,6 +25,18 @@ service firebase.storage {
       allow write: if false;
     }
 
+    // Unveränderte Originaldateien der Aktivitäten (.fit, .tcx, .gpx)
+    // Zugriff für den Athleten selbst sowie für verbundene Trainer mit aktiver Freigabe
+    match /users/{userId}/rawActivities/{fileName} {
+      allow read: if request.auth != null && (
+        request.auth.uid == userId ||
+        (firestore.exists(/databases/(default)/documents/coachLinks/$(userId + '_' + request.auth.uid)) &&
+         firestore.get(/databases/(default)/documents/coachLinks/$(userId + '_' + request.auth.uid)).data.status == 'ACTIVE' &&
+         firestore.get(/databases/(default)/documents/coachLinks/$(userId + '_' + request.auth.uid)).data.permissions.activities == true)
+      );
+      allow write: if false;
+    }
+
     // Chat-Bilder (max 10 MB, Content-Type image/*)
     match /chats/{chatId}/images/{fileName} {
       allow read: if isChatParticipant(chatId);

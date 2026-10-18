@@ -7,35 +7,24 @@
 ---
 
 ## Arbeitspakete
-
-### 32.1 Header-Benachrichtigungsglocke vs. „Coach“-Tab
-1. **Header-Mitteilungszentrale:**
-   - Umbau des Chat-Icons oben rechts in der App-Bar zu einer **Glocke (`Icons.notifications`) mit Ungelesen-Badge**.
-   - Eingang aller System-Mitteilungen:
-     - Erkennung neuer Schwellenwerte / PRs
-     - Abschluss von Garmin-Synchronisationen
-     - Trainer-Aktivitäten (neues Workout eingeplant, Training kommentiert)
-2. **Coach-Tab:**
-   - Bündelung des direkten 1:1-Austauschs zwischen Athlet und Trainer ausschließlich im unteren Tab **„Coach“**.
-
-### 32.2 Original-Datei-Archivierung
-1. **Sichere Speicherung:**
-   - Bei jedem Upload oder Garmin-Import wird die unveränderte Originaldatei (`.fit`, `.tcx`, `.gpx`) in Cloud Storage archiviert:
-     - Pfad: `users/{uid}/rawActivities/{activityId}.fit` (region: `europe-west3`).
-2. **Zugriffsschutz:**
-   - Abgesichert durch Cloud Storage Rules: Zugriff nur für den Athleten selbst sowie für verbundene Trainer mit aktiver Freigabe.
-
-### 32.3 Zwei globale Ansichtsmodi für den Coach
-1. **Globaler Modus-Umschalter für Trainer (nicht pro Athlet einzeln, sondern zentral):**
-   - **Modus 1 — „Einfach (Übersicht & Originaldatei-Download)“:**
-     - Schlanke Athleten-Übersicht mit Fokus auf Kernfakten (Sportart, Dauer, Distanz, Ø HF, Ø Watt).
-     - Prominenter **Direkt-Download-Button für die Originaldatei** (`.fit`/`.tcx`) pro Einheit zur Weiterverarbeitung in externer Spezialsoftware (WKO5, GoldenCheetah, etc.).
-   - **Modus 2 — „Analyse (Volles Cockpit)“:**
-     - Volles ORBIT-Erlebnis: Bei aktiver Freigabe Einsicht in alle Gesundheitsdaten, 3 Ringe, Leistungskurven, Intervall-Splits und Tiefentelemetrie.
+ 
+- [x] **32.1 Header-Benachrichtigungsglocke vs. „Coach“-Tab:**
+  - [x] Umbau des Chat-Icons oben rechts in der App-Bar zu einer **Glocke (`Icons.notifications`) mit Ungelesen-Badge (`#CDFB17` Volt)**.
+  - [x] Bottom-Sheet Mitteilungszentrale (`NotificationCenterSheet`) mit Deep-Linking für alle System-Ereignisse (PRs, Garmin-Sync, Trainer-Planung, System-Updates).
+  - [x] Bündelung des direkten 1:1-Austauschs zwischen Athlet und Trainer ausschließlich im unteren Tab **„Coach“**.
+- [x] **32.2 Original-Datei-Archivierung & Download:**
+  - [x] Bei FIT-Upload und Garmin-Import wird die Rohdatei in Cloud Storage archiviert: `users/{uid}/rawActivities/{activityId}.{ext}` in `europe-west3`.
+  - [x] Abgesichert durch Cloud Storage Rules (`storage.rules`) und Firestore Rules (`firestore.rules` für `users/{userId}/notifications/{id}`).
+  - [x] Download-Button in `ActivityDetailScreen` und Trainer-Tabelle (`CoachAthletesTable`) integriert.
+- [x] **32.3 Zwei globale Ansichtsmodi für den Coach:**
+  - [x] Zentraler Modus-Umschalter für Trainer (`CoachGlobalModeProvider`):
+    - **Modus 1 — „Einfach & Download (.FIT)“:** Schlanke Athleten-Tabelle mit Fokus auf Kernfakten und direktem .FIT-Download-Button.
+    - **Modus 2 — „Analyse (Volles Cockpit)“:** Vollständiges ORBIT Cockpit mit Form-Ampel, Fitness/Ermüdung/Frische und Tiefentelemetrie.
 
 ---
 
 ## Verifikation & Nachweise
-- Screenshot der Glocken-Mitteilungszentrale mit Badge.
-- Nachweis der Originaldatei-Archivierung in Cloud Storage (`europe-west3`).
-- Screenshot der beiden Coach-Modi auf dem Tablet/Web und Smartphone.
+- [x] Screenshot der Glocken-Mitteilungszentrale mit Badge (`docs/beta/screenshots/phase32_notification_center.png`).
+- [x] Nachweis der Originaldatei-Archivierung in Cloud Storage (`europe-west3`) und Security Rules live deployt.
+- [x] Screenshot des Coach-Tabs auf dem Pixel 10 Pro (`docs/beta/screenshots/phase32_coach_tab.png`).
+- [x] 100% bestandene Test-Suite (`test/features/phase32_coach_modes_notifications_test.dart` & alle 10 Functions Unit Tests).

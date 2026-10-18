@@ -217,14 +217,20 @@ List<CoachDashboardAthlete> _generateDemoAthletes(String coachId) {
       unreadMessagesCount: i % 4 == 0 ? (i % 3) + 1 : 0,
       pendingProposalsCount: i % 5 == 0 ? 1 : 0,
       latestActivity: {
-        'date': '2026-10-12',
+        'date': '2026-10-17',
         'title': sport == 'BIKE'
-            ? 'Grundlagenfahrt'
+            ? 'Grundlagenfahrt Z2'
             : sport == 'RUN'
-                ? 'Tempodauerlauf'
-                : 'Technikblock',
+                ? 'Tempodauerlauf 10km'
+                : 'Technikblock 2500m',
         'sport': sport,
+        'durationSec': 3600 + (i * 300) % 5400,
+        'distanceM': sport == 'SWIM' ? 2500.0 : (20000.0 + (i * 2500) % 40000),
+        'avgHr': 142 + (i * 2) % 25,
+        'avgPowerW': sport == 'BIKE' ? (210 + (i * 7) % 85) : null,
         'load': 45 + (i * 6) % 75,
+        'rawFilePath':
+            'users/ath_demo_${i + 1}/rawActivities/activity_${i + 1}.fit',
       },
       raceGoal: {
         'title': sport == 'TRIATHLON'

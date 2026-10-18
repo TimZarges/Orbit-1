@@ -353,15 +353,20 @@ describe("Garmin Webhook, 3x30d Backfill Chunking, Ping/Push & ActivityDetails S
         elevationGainM: 4,
       });
 
-      // Prüfe auch handleGarminActivity (Storage .json.gz + Firestore Document)
-      let savedBuffer: Buffer | null = null;
+      // Prüfe auch handleGarminActivity (Storage .json.gz + Firestore Document + Raw Archive)
+      let savedStreamsBuffer: Buffer | null = null;
+      let savedRawBuffer: Buffer | null = null;
       let savedActivityDoc: Record<string, any> | null = null;
 
       jest.spyOn(admin, "storage").mockReturnValue({
         bucket: jest.fn(() => ({
-          file: jest.fn(() => ({
+          file: jest.fn((filePath: string) => ({
             save: jest.fn(async (buf: Buffer) => {
-              savedBuffer = buf;
+              if (filePath && filePath.includes("streams")) {
+                savedStreamsBuffer = buf;
+              } else {
+                savedRawBuffer = buf;
+              }
             }),
           })),
         })),
@@ -407,11 +412,12 @@ describe("Garmin Webhook, 3x30d Backfill Chunking, Ping/Push & ActivityDetails S
 
       await handleGarminActivity(activityDetailPayload);
 
-      expect(savedBuffer).not.toBeNull();
-      const unzipped = JSON.parse(zlib.gunzipSync(savedBuffer!).toString("utf-8"));
+      expect(savedStreamsBuffer).not.toBeNull();
+      const unzipped = JSON.parse(zlib.gunzipSync(savedStreamsBuffer!).toString("utf-8"));
       expect(unzipped.power[0]).toBe(250);
       expect(unzipped.power[2]).toBe(310);
 
+      expect(savedRawBuffer).not.toBeNull();
       expect(savedActivityDoc).not.toBeNull();
       expect(savedActivityDoc!.streamsPath).toBe("users/orbit_u1/streams/garmin_998877.json.gz");
       expect(savedActivityDoc!.laps).toHaveLength(1);

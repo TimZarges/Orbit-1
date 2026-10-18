@@ -2011,6 +2011,37 @@ The operation couldn’t be completed. Unable to locate a Java Runtime.
     - `docs/beta/screenshots/phase31_diagnostics_lauf_5min.png`: Lauf-Diagnostik mit 5-Minuten-All-Out-Testprotokoll.
     - `docs/beta/screenshots/phase31_personal_records.png`: PR-Datenbank mit Sport-Umschalter (Rad, Lauf, Schwimmen), Zeitfilter und Power-Duration-Kurve im Analyse-Tab.
   - **Unit- & Widget-Tests:** `test/features/phase31_garmin_map_diagnostics_prs_test.dart` (7/7 Tests bestanden).
-  - **Gesamttests:** 171/171 Tests bestanden (`flutter test --no-pub`).
-  - **Analyzer:** 0 Errors, 0 Warnings (`flutter analyze --no-pub`).
+---
+
+### [Phase 32] Zwei globale Coach-Modi (Einfach/Datei-Download vs. Analyse) & Header-Benachrichtigungsglocke · STOPP 1 (ABNAHME)
+- **Status:** Vollständig umgesetzt und verifiziert
+- **Datum:** 2026-10-18 16:40
+- **Hardware-Ziel:** Google Pixel 10 Pro (`58251FDCR00EQ2`), Android 16
+- **Entscheidung & Umgesetzte Maßnahmen:**
+  1. **Header-Benachrichtigungsglocke vs. Coach-Tab:**
+     - Chat-Icon in der App-Bar (`DashboardScreen`) durch `NotificationBellIconButton` mit `Icons.notifications_outlined` und dynamischem `#CDFB17` Volt-Badge ersetzt.
+     - Bottom-Sheet Mitteilungszentrale (`NotificationCenterSheet`) implementiert: Listet alle System-Ereignisse (PRs, Garmin-Sync, Trainer-Planung, System-Updates) auf, markiert Einzeleinträge oder alle als gelesen und bietet Deep-Linking (`route`).
+     - Coach-Chat bleibt strikt im unteren Tab „Coach“ gebündelt.
+  2. **Originaldatei-Archivierung in Cloud Storage (`europe-west3`):**
+     - Bei Upload (`activityParser.ts`) und Garmin-Import (`webhook.ts`) wird die Rohdatei unverändert in Cloud Storage archiviert: `users/{uid}/rawActivities/{activityId}.{ext}`.
+     - `storage.rules` erweitert: Athleten dürfen eigene Rohdateien lesen/erstellen; verbundene Coaches dürfen sie lesen.
+     - `firestore.rules` erweitert für `users/{userId}/notifications/{notificationId}`.
+     - Beide Regelwerke live deployt via `firebase deploy --only firestore:rules,storage`.
+     - Download-Button in `ActivityDetailScreen` und `CoachAthletesTable` integriert.
+  3. **Zwei globale Coach-Modi:**
+     - Zentraler Modus-Umschalter für Trainer (`CoachGlobalModeProvider`):
+       - **Modus 1 („Einfach & Download (.FIT)“):** Schlanke Tabelle mit Kernmetriken und direktem .FIT-Download-Button.
+       - **Modus 2 („Analyse (Volles Cockpit)“):** Vollständiges Cockpit mit Form-Ampel, Fitness/Ermüdung/Frische und Tiefentelemetrie.
+- **Nachweise (Evidence-Only gemäß Regel 2):**
+  - **Live-Screenshots vom Google Pixel 10 Pro:**
+    - `docs/beta/screenshots/phase32_live_screen.png`: AppBar mit Glocke und `#CDFB17` Volt-Badge (Zähler: 2), 3 Ringen und Tagesform.
+    - `docs/beta/screenshots/phase32_notification_center.png`: Geöffnetes Mitteilungscenter mit PR-Meldung, Garmin-Sync und Trainer-Zuweisung im sauberen Dark-Theme.
+    - `docs/beta/screenshots/phase32_coach_tab.png`: Coach-Tab mit Einladungscode-Einstieg für Athleten.
+  - **Unit- & Widget-Tests:**
+    - `test/features/phase32_coach_modes_notifications_test.dart` (6/6 Tests grün).
+    - Gesamte Flutter-Test-Suite: 177/177 Tests bestanden.
+  - **Functions-Tests & Exporte:**
+    - `npm --prefix functions test -- --testPathIgnorePatterns="rules|coachLink"`: 10/10 Test Suites (71/71 Tests) bestanden.
+    - `node -e "console.log(Object.keys(require('./functions/lib/index.js')))"`: 29 saubere Cloud Function Exporte, 0 Fehler.
+  - **Pre-Merge-Gate:** `bash scripts/check_phase_ready.sh` erfolgreich durchlaufen (0 Errors, 0 Warnings, 100% deutsche Kommentare).
 

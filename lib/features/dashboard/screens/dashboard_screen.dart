@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../auth/providers/user_provider.dart';
 import '../../coach_link/screens/athlete_coach_tab_screen.dart';
@@ -11,6 +10,7 @@ import '../../calendar/screens/calendar_screen.dart';
 import '../../analysis/screens/analysis_tab_screen.dart';
 import '../../beta_feedback/widgets/beta_bug_reporter_sheet.dart';
 import '../../workout_builder/screens/workout_template_library_screen.dart';
+import '../../notifications/widgets/notification_bell_icon_button.dart';
 
 /// Zentrales Haupt-Dashboard der ORBIT-Applikation.
 ///
@@ -60,26 +60,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               title: Text(_currentIndex == 0 ? 'Orbit' : titles[_currentIndex]),
               actions: [
                 const BetaBugReportIconButton(),
-                IconButton(
-                  icon: const Icon(Icons.chat_bubble_outline),
-                  tooltip: 'Nachrichten',
-                  onPressed: () {
-                    if (isTrainer) {
-                      context.push('/chats');
-                    } else {
-                      final coachId = userDoc?['coachId'];
-                      if (coachId != null) {
-                        final uid =
-                            FirebaseAuth.instance.currentUser?.uid ?? '';
-                        context.push(
-                            '/chat/${uid}_$coachId?athleteId=$uid&name=Trainer');
-                      } else {
-                        setState(() =>
-                            _currentIndex = 3); // Zur Coach-Seite wechseln
-                      }
-                    }
-                  },
-                ),
+                const NotificationBellIconButton(),
                 Builder(
                   builder: (btnContext) => IconButton(
                     icon: const CircleAvatar(

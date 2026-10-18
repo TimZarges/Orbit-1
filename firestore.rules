@@ -47,6 +47,9 @@ service cloud.firestore {
     // Subcollection: users/{uid}/notificationState/{docId}
     // Fields: nextReminderAtUtc, nextWeeklySummaryAtUtc
     //
+    // Subcollection: users/{uid}/notifications/{notificationId}
+    // Fields: title, body, type, route, read, readAt, createdAt
+    //
     // Collection: coachDashboard/{coachId}/athletes/{athleteId}
     // Fields: athleteId, coachId, name, avatarUrl, sport, formStatus, ctl, atl, tsb, compliance7d, actualLoad7d, plannedLoad7d, unreadMessagesCount, pendingProposalsCount, latestActivity, raceGoal, alert, updatedAt
     //
@@ -220,6 +223,20 @@ service cloud.firestore {
       return tokenOk && platformOk && appVersionOk && languageOk;
     }
 
+    /**
+     * Validiert ein Benachrichtigungsdokument im In-App Notification Center.
+     * Stellt Typintegrität, Pflichtfelder und Längenbegrenzungen sicher, um DoS-Angriffe zu verhindern.
+     */
+    function isValidNotificationDoc(data) {
+      return ('title' in data && 'body' in data && 'type' in data && 'read' in data) &&
+             checkStringSize(data.title, 1, 200) &&
+             checkStringSize(data.body, 1, 1000) &&
+             data.type in ['THRESHOLD_FOUND', 'PR_ACHIEVED', 'GARMIN_SYNCED', 'WORKOUT_ASSIGNED', 'COACH_COMMENT', 'SYSTEM'] &&
+             data.read is bool &&
+             (!('route' in data) || checkOptionalStringSize(data.route, 1, 300)) &&
+             data.keys().size() <= 10;
+    }
+
     function isValidBetaFeedbackCreate(data) {
       let hasRequired = 'userId' in data && 'category' in data && 'description' in data;
       let userIdOk = data.userId == request.auth.uid;
@@ -341,6 +358,16 @@ service cloud.firestore {
       match /notificationState/{docId} {
         allow read: if isOwner(userId);
         allow write: if false; // Only Cloud Functions
+      }
+
+      // In-App-Benachrichtigungen: Nur der Besitzer darf eigene Notifications lesen, erstellen, quittieren (read/readAt) oder löschen
+      match /notifications/{notificationId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidNotificationDoc(request.resource.data);
+        allow update: if isOwner(userId) &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read', 'readAt']) &&
+          request.resource.data.read is bool;
+        allow delete: if isOwner(userId);
       }
 
       match /preferences/{prefId} {

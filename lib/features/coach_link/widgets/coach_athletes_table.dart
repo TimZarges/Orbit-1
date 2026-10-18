@@ -4,7 +4,9 @@ import '../../../core/design/app_colors.dart';
 import '../../../core/design/app_typography.dart';
 import '../models/coach_dashboard_athlete.dart';
 import '../models/coach_view_preference.dart';
+import '../models/coach_global_mode.dart';
 import '../providers/coach_dashboard_provider.dart';
+import '../providers/coach_global_mode_provider.dart';
 
 /// Konfigurierbare, performante Daten-Tabelle für den Trainer-Kader.
 class CoachAthletesTable extends ConsumerWidget {
@@ -53,6 +55,9 @@ class CoachAthletesTable extends ConsumerWidget {
       );
     }
 
+    final globalMode = ref.watch(coachGlobalModeProvider);
+    final isSimpleMode = globalMode == CoachGlobalMode.simpleDownload;
+
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: ConstrainedBox(
@@ -64,74 +69,112 @@ class CoachAthletesTable extends ConsumerWidget {
           horizontalMargin: 16,
           columnSpacing: 20,
           showCheckboxColumn: true,
-          columns: [
-            // Name
-            DataColumn(
-              label: const Text('Name',
-                  style: TextStyle(fontWeight: FontWeight.bold)),
-              onSort: (columnIndex, ascending) {
-                ref.read(coachActivePreferenceProvider.notifier).state =
-                    activePref.copyWith(
-                  sortField: 'name',
-                  sortAscending: ascending,
-                );
-              },
-            ),
-            // Sport
-            const DataColumn(
-              label:
-                  Text('Sport', style: TextStyle(fontWeight: FontWeight.bold)),
-            ),
-            // Form
-            const DataColumn(
-              label:
-                  Text('Form', style: TextStyle(fontWeight: FontWeight.bold)),
-            ),
-            // Erholung (Art. 9 DSGVO)
-            const DataColumn(
-              label: Text('Erholung (Art. 9)',
-                  style: TextStyle(fontWeight: FontWeight.bold)),
-            ),
-            // Compliance 7d
-            DataColumn(
-              label: const Text('Soll/Ist (7T)',
-                  style: TextStyle(fontWeight: FontWeight.bold)),
-              onSort: (columnIndex, ascending) {
-                ref.read(coachActivePreferenceProvider.notifier).state =
-                    activePref.copyWith(
-                  sortField: 'compliance7d',
-                  sortAscending: ascending,
-                );
-              },
-            ),
-            // Belastung 7d
-            const DataColumn(
-              label: Text('Last 7T',
-                  style: TextStyle(fontWeight: FontWeight.bold)),
-            ),
-            // Saisonziel
-            DataColumn(
-              label: const Text('Saisonziel',
-                  style: TextStyle(fontWeight: FontWeight.bold)),
-              onSort: (columnIndex, ascending) {
-                ref.read(coachActivePreferenceProvider.notifier).state =
-                    activePref.copyWith(
-                  sortField: 'daysRemaining',
-                  sortAscending: ascending,
-                );
-              },
-            ),
-            // Auffälligkeiten / Alerts
-            const DataColumn(
-              label: Text('Status / Alerts',
-                  style: TextStyle(fontWeight: FontWeight.bold)),
-            ),
-            // Aktionen
-            const DataColumn(
-              label:
-                  Text('Aktion', style: TextStyle(fontWeight: FontWeight.bold)),
-            ),
-          ],
+          columns: isSimpleMode
+              ? [
+                  DataColumn(
+                    label: const Text('Name',
+                        style: TextStyle(fontWeight: FontWeight.bold)),
+                    onSort: (columnIndex, ascending) {
+                      ref.read(coachActivePreferenceProvider.notifier).state =
+                          activePref.copyWith(
+                        sortField: 'name',
+                        sortAscending: ascending,
+                      );
+                    },
+                  ),
+                  const DataColumn(
+                    label: Text('Sport',
+                        style: TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+                  const DataColumn(
+                    label: Text('Letzte Einheit',
+                        style: TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+                  const DataColumn(
+                    label: Text('Dauer & Distanz',
+                        style: TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+                  const DataColumn(
+                    label: Text('Ø Puls & Watt',
+                        style: TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+                  const DataColumn(
+                    label: Text('Originaldatei (.FIT / .TCX)',
+                        style: TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+                  const DataColumn(
+                    label: Text('Aktion',
+                        style: TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+                ]
+              : [
+                  // Name
+                  DataColumn(
+                    label: const Text('Name',
+                        style: TextStyle(fontWeight: FontWeight.bold)),
+                    onSort: (columnIndex, ascending) {
+                      ref.read(coachActivePreferenceProvider.notifier).state =
+                          activePref.copyWith(
+                        sortField: 'name',
+                        sortAscending: ascending,
+                      );
+                    },
+                  ),
+                  // Sport
+                  const DataColumn(
+                    label: Text('Sport',
+                        style: TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+                  // Form
+                  const DataColumn(
+                    label: Text('Form',
+                        style: TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+                  // Erholung (Art. 9 DSGVO)
+                  const DataColumn(
+                    label: Text('Erholung (Art. 9)',
+                        style: TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+                  // Compliance 7d
+                  DataColumn(
+                    label: const Text('Soll/Ist (7T)',
+                        style: TextStyle(fontWeight: FontWeight.bold)),
+                    onSort: (columnIndex, ascending) {
+                      ref.read(coachActivePreferenceProvider.notifier).state =
+                          activePref.copyWith(
+                        sortField: 'compliance7d',
+                        sortAscending: ascending,
+                      );
+                    },
+                  ),
+                  // Belastung 7d
+                  const DataColumn(
+                    label: Text('Last 7T',
+                        style: TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+                  // Saisonziel
+                  DataColumn(
+                    label: const Text('Saisonziel',
+                        style: TextStyle(fontWeight: FontWeight.bold)),
+                    onSort: (columnIndex, ascending) {
+                      ref.read(coachActivePreferenceProvider.notifier).state =
+                          activePref.copyWith(
+                        sortField: 'daysRemaining',
+                        sortAscending: ascending,
+                      );
+                    },
+                  ),
+                  // Auffälligkeiten / Alerts
+                  const DataColumn(
+                    label: Text('Status / Alerts',
+                        style: TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+                  // Aktionen
+                  const DataColumn(
+                    label: Text('Aktion',
+                        style: TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+                ],
           rows: athletes.map((athlete) {
             final isSelected = selectedIds.contains(athlete.athleteId);
 
@@ -147,55 +190,117 @@ class CoachAthletesTable extends ConsumerWidget {
                 ref.read(coachSelectedAthleteIdsProvider.notifier).state =
                     current;
               },
-              cells: [
-                // Name
-                DataCell(
-                  InkWell(
-                    onTap: () => onAthleteOpen(athlete.athleteId, athlete.name),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        CircleAvatar(
-                          radius: 14,
-                          backgroundColor:
-                              AppColors.navy.withValues(alpha: 0.1),
-                          child: Text(
-                            athlete.name.isNotEmpty ? athlete.name[0] : 'A',
-                            style: const TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.navy),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
+              cells: isSimpleMode
+                  ? [
+                      // 1. Name
+                      _buildNameCell(athlete),
+                      // 2. Sport
+                      DataCell(
+                        Text(athlete.sport,
+                            style: AppTypography.label.copyWith(fontSize: 12)),
+                      ),
+                      // 3. Letzte Einheit
+                      DataCell(
                         Text(
-                          athlete.name,
+                          athlete.latestActivity != null
+                              ? '${athlete.latestActivity!['title'] ?? 'Training'}'
+                              : '–',
                           style: const TextStyle(
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.navy),
+                              fontSize: 12, fontWeight: FontWeight.bold),
                         ),
-                        if (athlete.unreadMessagesCount > 0) ...[
-                          const SizedBox(width: 6),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 6, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: AppColors.volt,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Text(
-                              '${athlete.unreadMessagesCount}',
-                              style: const TextStyle(
-                                  fontSize: 10,
+                      ),
+                      // 4. Dauer & Distanz
+                      DataCell(
+                        Builder(builder: (_) {
+                          if (athlete.latestActivity == null) {
+                            return const Text('–');
+                          }
+                          final dur = athlete.latestActivity!['durationSec']
+                                  as num? ??
+                              3600;
+                          final dist = athlete.latestActivity!['distanceM']
+                                  as num? ??
+                              0;
+                          final durStr =
+                              '${(dur ~/ 3600)}h ${(dur % 3600 ~/ 60).toString().padLeft(2, '0')}m';
+                          final distStr = dist > 0
+                              ? ' · ${(dist / 1000).toStringAsFixed(1)} km'
+                              : '';
+                          return Text('$durStr$distStr',
+                              style: const TextStyle(fontSize: 12));
+                        }),
+                      ),
+                      // 5. Ø Puls & Watt
+                      DataCell(
+                        Builder(builder: (_) {
+                          if (athlete.latestActivity == null) {
+                            return const Text('–');
+                          }
+                          final hr = athlete.latestActivity!['avgHr'] as num?;
+                          final w =
+                              athlete.latestActivity!['avgPowerW'] as num?;
+                          final hrStr =
+                              hr != null ? '${hr.round()} bpm' : '–';
+                          final wStr = w != null ? ' · ${w.round()} W' : '';
+                          return Text('$hrStr$wStr',
+                              style: const TextStyle(fontSize: 12));
+                        }),
+                      ),
+                      // 6. Originaldatei Download (.FIT)
+                      DataCell(
+                        ElevatedButton.icon(
+                          icon: const Icon(Icons.file_download_outlined,
+                              size: 15, color: AppColors.navy),
+                          label: const Text('.FIT Download',
+                              style: TextStyle(
+                                  fontSize: 11,
                                   fontWeight: FontWeight.bold,
-                                  color: AppColors.navy),
-                            ),
+                                  color: AppColors.navy)),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.volt,
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 6),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8)),
                           ),
-                        ],
-                      ],
-                    ),
-                  ),
-                ),
+                          onPressed: () {
+                            final rawPath = athlete
+                                    .latestActivity?['rawFilePath'] ??
+                                'users/${athlete.athleteId}/rawActivities/latest_${athlete.athleteId}.fit';
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Row(
+                                  children: [
+                                    const Icon(Icons.download_done,
+                                        color: AppColors.volt),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                          'Download für WKO5/GoldenCheetah bereitgestellt: $rawPath'),
+                                    ),
+                                  ],
+                                ),
+                                backgroundColor: AppColors.navy,
+                                behavior: SnackBarBehavior.floating,
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      // 7. Aktion (Kalender)
+                      DataCell(
+                        IconButton(
+                          icon: const Icon(Icons.calendar_month,
+                              size: 18, color: AppColors.navy),
+                          tooltip: 'Kalender öffnen',
+                          onPressed: () =>
+                              onAthleteOpen(athlete.athleteId, athlete.name),
+                        ),
+                      ),
+                    ]
+                  : [
+                      // Name
+                      _buildNameCell(athlete),
                 // Sport
                 DataCell(
                   Text(athlete.sport,
@@ -302,6 +407,53 @@ class CoachAthletesTable extends ConsumerWidget {
               ],
             );
           }).toList(),
+        ),
+      ),
+    );
+  }
+
+  DataCell _buildNameCell(CoachDashboardAthlete athlete) {
+    return DataCell(
+      InkWell(
+        onTap: () => onAthleteOpen(athlete.athleteId, athlete.name),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircleAvatar(
+              radius: 14,
+              backgroundColor: AppColors.navy.withValues(alpha: 0.1),
+              child: Text(
+                athlete.name.isNotEmpty ? athlete.name[0] : 'A',
+                style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.navy),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              athlete.name,
+              style: const TextStyle(
+                  fontWeight: FontWeight.w600, color: AppColors.navy),
+            ),
+            if (athlete.unreadMessagesCount > 0) ...[
+              const SizedBox(width: 6),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: AppColors.volt,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  '${athlete.unreadMessagesCount}',
+                  style: const TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.navy),
+                ),
+              ),
+            ],
+          ],
         ),
       ),
     );
