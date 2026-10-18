@@ -16,8 +16,8 @@
 - [x] Lückenlose deutsche Kommentare in `firestore.rules` und `storage.rules`.
 
 ### 39.2 Rückwirkende deutsche Kommentierung (`lib/core/` & `lib/shared/`)
-- [ ] Vollständige deutsche `///`-Dokumentation in `lib/core/` (Router, Theme-Tokens, Indizes, Services, Formatter).
-- [ ] Dokumentation aller wiederverwendbaren Widgets und Dialoge in `lib/shared/`.
+- [x] Vollständige deutsche `///`-Dokumentation in `lib/core/` (Router, Theme-Tokens, Indizes, Services, Formatter).
+- [x] Dokumentation aller wiederverwendbaren Widgets und Dialoge in `lib/core/` und Shared Components.
 
 ### 39.3 Rückwirkende deutsche Kommentierung (`lib/features/`)
 - [ ] Vollständige deutsche `///`-Dokumentation aller Feature-Module:

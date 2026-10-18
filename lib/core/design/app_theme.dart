@@ -3,7 +3,13 @@ import 'app_colors.dart';
 import 'app_spacing.dart';
 import 'app_typography.dart';
 
+/// Zentrales Theme-System für ORBIT.
+///
+/// Definiert das globale [lightTheme] (Helles Theme für Marketing/Dokumentation)
+/// und das primäre [darkTheme] (Dark-Cockpit Theme für Sportler und Trainer
+/// mit Deep Navy `#001F47`, Card Navy `#002A5C` und Volt `#CDFB17` Akzenten).
 class AppTheme {
+  /// Erzeugt das helle Material-3-Theme mit Navy-Farbtönen auf weißem/hellgrauem Hintergrund.
   static ThemeData get lightTheme {
     const textTheme = TextTheme(
       displayLarge: AppTypography.display,
@@ -114,6 +120,8 @@ class AppTheme {
     );
   }
 
+  /// Erzeugt das primäre dunkle Material-3-Theme (Dark-Cockpit) gemäß `docs/DESIGN.md`.
+  /// Verwendet Volt `#CDFB17` für primäre Aktionen und Deep Navy für den Hintergrund.
   static ThemeData get darkTheme {
     const textTheme = TextTheme(
       displayLarge: AppTypography.display,
