@@ -14,14 +14,14 @@
     <!-- Haupt-Orbit-Bogen in Volt #CDFB17 -->
     <path
         android:strokeColor="#CDFB17"
-        android:strokeWidth="5.5"
+        android:strokeWidth="5.0"
         android:strokeLineCap="round"
-        android:pathData="M 71.5,39.5 A 18.0,18.0 0 1,1 63.5,29.5" />
+        android:pathData="M 70.3,37.4 A 18.0,18.0 0 1,1 58.7,27.6" />
 
-    <!-- Satelliten-Punkt in Weiß #FFFFFF -->
+    <!-- Satelliten-Punkt in Weiß #FFFFFF (mathematisch präzise zentriert in der Bogenöffnung) -->
     <path
         android:fillColor="#FFFFFF"
-        android:pathData="M 72.0,32.0 A 4.0,4.0 0 1,1 71.99,32.0 Z" />
+        android:pathData="M 68.6,31.2 A 3.0,3.0 0 1,1 68.59,31.2 Z" />
 
     <!-- Schriftzug: ORBIT in Weiß #FFFFFF -->
     <!-- Buchstabe O -->

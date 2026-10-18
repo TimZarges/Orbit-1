@@ -8,7 +8,6 @@ import '../../features/profile/screens/thresholds_screen.dart';
 import '../../features/settings/screens/settings_screen.dart';
 import '../../features/integrations/screens/garmin_connection_screen.dart';
 import '../../features/beta_feedback/screens/admin_feedback_screen.dart';
-import '../design/widget_gallery.dart';
 import '../../features/auth/screens/login_screen.dart';
 import '../../features/onboarding/screens/onboarding_screen.dart';
 import '../../features/auth/providers/auth_provider.dart';
@@ -229,10 +228,6 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/my-feedback',
         builder: (context, state) => const AdminFeedbackScreen(),
-      ),
-      GoRoute(
-        path: '/gallery',
-        builder: (context, state) => const WidgetGalleryScreen(),
       ),
       GoRoute(
         path: '/trainer',

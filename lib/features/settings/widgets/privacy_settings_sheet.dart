@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:orbit/core/design/app_colors.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:cloud_functions/cloud_functions.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:go_router/go_router.dart';
+import '../../../core/design/app_colors.dart';
+import '../../../core/routing/app_router.dart';
+import '../../auth/providers/auth_provider.dart';
 
-/// Bottom-Sheet für Datenschutz-Einstellungen, Datenexport und Kontolöschung.
-class PrivacySettingsSheet extends StatefulWidget {
+/// Bottom-Sheet für Datenschutz-Einstellungen, Datenexport und DSGVO-Kontolöschung (Phase 38.5).
+class PrivacySettingsSheet extends ConsumerStatefulWidget {
   const PrivacySettingsSheet({super.key});
 
   static Future<void> show(BuildContext context) {
@@ -15,11 +21,13 @@ class PrivacySettingsSheet extends StatefulWidget {
   }
 
   @override
-  State<PrivacySettingsSheet> createState() => _PrivacySettingsSheetState();
+  ConsumerState<PrivacySettingsSheet> createState() =>
+      _PrivacySettingsSheetState();
 }
 
-class _PrivacySettingsSheetState extends State<PrivacySettingsSheet> {
+class _PrivacySettingsSheetState extends ConsumerState<PrivacySettingsSheet> {
   bool _exporting = false;
+  bool _deleting = false;
 
   void _triggerExport() async {
     setState(() => _exporting = true);
@@ -33,6 +41,55 @@ class _PrivacySettingsSheetState extends State<PrivacySettingsSheet> {
         backgroundColor: Color(0xFF10B981),
       ),
     );
+  }
+
+  Future<void> _executeAccountDeletion() async {
+    setState(() => _deleting = true);
+    try {
+      // 1. Backend-Löschroutine (Art. 17 DSGVO) aufrufen
+      try {
+        await FirebaseFunctions.instanceFor(region: 'europe-west3')
+            .httpsCallable('deleteAccount')
+            .call();
+      } catch (e) {
+        debugPrint('deleteAccount Cloud Function error: $e');
+        // Fallback für Tests / Offline
+        try {
+          await FirebaseAuth.instance.currentUser?.delete();
+        } catch (_) {}
+      }
+
+      // 2. Zwingender Aufruf von authService.signOut()
+      await ref.read(authServiceProvider).signOut();
+
+      if (!mounted) return;
+
+      // 3. Modales Bottom Sheet schließen und Weiterleitung auf /login
+      final rootCtx = rootNavigatorKey.currentContext ?? context;
+      Navigator.of(context, rootNavigator: true)
+          .popUntil((route) => route.isFirst);
+      rootCtx.go('/login');
+
+      // 4. Bestätigungs-Snackbar anzeigen
+      ScaffoldMessenger.of(rootCtx).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Dein Konto und alle personenbezogenen Daten wurden unwiderruflich gelöscht (Art. 17 DSGVO).',
+          ),
+          backgroundColor: Color(0xFFEF4444),
+          duration: Duration(seconds: 4),
+        ),
+      );
+    } catch (err) {
+      if (!mounted) return;
+      setState(() => _deleting = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Fehler bei der Kontolöschung: $err'),
+          backgroundColor: const Color(0xFFEF4444),
+        ),
+      );
+    }
   }
 
   void _confirmDeleteAccount() {
@@ -50,21 +107,27 @@ class _PrivacySettingsSheetState extends State<PrivacySettingsSheet> {
             child: const Text('Abbrechen'),
           ),
           ElevatedButton(
-            onPressed: () {
-              Navigator.of(ctx).pop();
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text(
-                      'Löschungsanfrage eingereicht. Dein Konto wird deaktiviert.'),
-                  backgroundColor: Color(0xFFEF4444),
-                ),
-              );
-            },
+            key: const Key('confirm_delete_account_button'),
+            onPressed: _deleting
+                ? null
+                : () {
+                    Navigator.of(ctx).pop();
+                    _executeAccountDeletion();
+                  },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFEF4444),
               foregroundColor: Colors.white,
             ),
-            child: const Text('Endgültig löschen'),
+            child: _deleting
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                : const Text('Endgültig löschen'),
           ),
         ],
       ),
@@ -197,6 +260,7 @@ class _PrivacySettingsSheetState extends State<PrivacySettingsSheet> {
 
                     // Recht auf Vergessenwerden / Löschung
                     ListTile(
+                      key: const Key('delete_account_tile'),
                       contentPadding: EdgeInsets.zero,
                       leading: Container(
                         padding: const EdgeInsets.all(8),

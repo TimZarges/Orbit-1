@@ -108,12 +108,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                             child: Text('Leistungsdiagnostik'),
                           ),
                           PopupMenuItem(
-                            value: '/admin/feedback',
-                            child: Text('Beta-Feedback Inbox'),
-                          ),
-                          PopupMenuItem(
-                            value: '/gallery',
-                            child: Text('Design-Galerie & Karten'),
+                            value: '/my-feedback',
+                            child: Text('Meine gemeldeten Tickets'),
                           ),
                           PopupMenuItem(
                             value: '/settings',

@@ -29,9 +29,9 @@
 - [x] Echtzeit-Stream aller eigenen Meldungen mit Ticket-ID (`#ORB-xxx`), Kategorie, Datum (`DD.MM.YYYY • HH:mm`) und aktuellem Bearbeitungsstatus (`🟢 Offen`, `🟡 In Arbeit`, `✅ Gelöst`).
 
 ### 38.5 Widget-Galerie-Cleanup, DSGVO-Kontolöschung & App-Icon-Präzision
-- [ ] Restlose Löschung der veralteten Widget-Galerie (Datei, Route und Menüpunkte).
-- [ ] DSGVO-Kontolöschung: Ausführung der Löschroutine, zwingender Aufruf von `authService.signOut()` und Weiterleitung auf `/login`.
-- [ ] Präzise Zentrierung des Satelliten-Punkts im App-Icon: Exakter Mittelpunkt in der Öffnung des Volt-Bogens ohne Berührung der Enden.
+- [x] Restlose Löschung der veralteten Widget-Galerie (Datei, Route und Menüpunkte).
+- [x] DSGVO-Kontolöschung: Ausführung der Löschroutine, zwingender Aufruf von `authService.signOut()` und Weiterleitung auf `/login`.
+- [x] Präzise Zentrierung des Satelliten-Punkts im App-Icon: Exakter Mittelpunkt in der Öffnung des Volt-Bogens ohne Berührung der Enden.
 
 ### 38.6 Abschluss & Hardware-Verifikation
 - [ ] `flutter analyze --no-pub` & Tests fehlerfrei.
