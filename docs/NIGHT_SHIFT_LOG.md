@@ -26,7 +26,7 @@
 | **37.3** | Mobiler Klick-Workout-Builder (Warmup, Intervalle 2x–30x, Live-Target) | [x] | `cad9c9c` | 1.1s |
 | **37.4** | Triathlon- & Brick-Sessions sowie A/B/C Wettkampf-Planung | [x] | `85458b2` | 1.1s |
 | **37-F** | **Abschluss Phase 37 (`v0.37.0`): Quality-Gate, APK, Pixel 10 Pro & Tag** | [x] | `v0.37.0` | 65s Build + 1.1s Test |
-| **38.1** | Global schwebender Bug-Käfer im `MaterialApp.builder` (über Sheets) | [ ] | | |
+| **38.1** | Global schwebender Bug-Käfer im `MaterialApp.builder` (über Sheets) | [x] | `94fd924` | 2.0s |
 | **38.2** | Universal-Datumsformat (`DD.MM.YYYY`) & 24h-Zeit via `OrbitDateFormatter` | [ ] | | |
 | **38.3** | Mitteilungszentrale: Umrandete Karten & Deep-Link-Routing | [ ] | | |
 | **38.4** | Beta-Feedback-Inbox für Nutzer mit Live-Statusanzeige | [ ] | | |
@@ -40,6 +40,11 @@
 ---
 
 ## 2. Chronologisches Protokoll der Etappen
+
+### [00:15] ✅ Etappe 38.1 abgeschlossen — Commit: `94fd924`
+- **Was wurde erledigt:** Integration des Bug-Käfers als verschiebbarer Top-Level Overlay im `MaterialApp.builder` mit höchster Z-Index-Priorität (`GlobalFloatingBugBeetle`), sodass Fehler und Screenshots selbst bei geöffneten modalen Bottom-Sheets (Workout-Detail, Benachrichtigungen, Workout-Builder) barrierefrei gemeldet werden können.
+- **Wie technisch gelöst & Performance-Schutz:** `GlobalFloatingBugBeetle` als Positioned-Widget im Stack über dem Router-Child; Drag-Gesten aktualisieren nur lokale Offsets ohne Screen-Rebuilds; Koordination über `rootNavigatorKey` stellt sicher, dass das Feedback-Sheet überall zuverlässig geöffnet wird; Klemmen an Bildschirmränder verhindert Verlust außerhalb des Viewports.
+- **Test-Nachweis & Dauer:** `test/features/phase38_global_bug_beetle_test.dart` (1/1 bestanden in 2.0s) + `scripts/check_phase_ready.sh` (0 Errors, 0 Warnings).
 
 ### [00:10] 🏆 Phase 37 abgeschlossen & freigegeben — Tag: `v0.37.0`
 - **Was wurde erledigt:** Erfolgreicher Gesamtabschluss von Phase 37: Reaktiver Kalender-Echtzeit-Sync via `snapshots()`, einheitliche Navy-Karten (`#002A5C`), 1:1 konsistente Trainingsblock-Berechnung & Detail-Sheet mit Stufentabelle und Verschiebe-Aktionen, mobiler Klick-Workout-Builder mit Stepper-Wiederholungsschleifen (2x bis 30x) sowie Triathlon- / Brick-Sessions und strukturierte A/B/C Wettkampf-Planung.
