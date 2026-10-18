@@ -4,7 +4,12 @@ import 'package:orbit/core/widgets/info_term.dart';
 import 'package:orbit/core/metrics/training_zones_model.dart';
 import 'package:orbit/core/design/app_colors.dart';
 
+/// Einstellungs- und Übersichtsbildschirm für die physiologischen Schwellenwerte des Athleten.
+///
+/// Zeigt Rad-FTP (Watt), Schwimm-CSS (min/100m), Lauf-Schwellenpace (min/km)
+/// und Maximalpuls (bpm) mit den zugehörigen 7-Zonen-Bändern und Begriffserklärungen.
 class ThresholdsScreen extends StatelessWidget {
+  /// Erstellt eine Instanz des [ThresholdsScreen].
   const ThresholdsScreen({super.key});
 
   @override

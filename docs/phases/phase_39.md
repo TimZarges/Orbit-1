@@ -20,9 +20,9 @@
 - [x] Dokumentation aller wiederverwendbaren Widgets und Dialoge in `lib/core/` und Shared Components.
 
 ### 39.3 Rückwirkende deutsche Kommentierung (`lib/features/`)
-- [ ] Vollständige deutsche `///`-Dokumentation aller Feature-Module:
+- [x] Vollständige deutsche `///`-Dokumentation aller Feature-Module:
   - `auth`, `onboarding`, `dashboard`, `activities`, `calendar`, `workout_builder`, `analytics`, `health`, `diagnostics`, `coach`, `settings`, `feedback`.
-- [ ] Dokumentation sportwissenschaftlicher Formeln (CP, W'bal, PMC, ATL/CTL/TSB, CSS, Vo2max).
+- [x] Dokumentation sportwissenschaftlicher Formeln (CP, W'bal, PMC, ATL/CTL/TSB, CSS, Vo2max).
 
 ### 39.4 Finaler Hardware-Abnahmelauf auf dem Pixel 10 Pro
 - [ ] Ausführung des gesamten Qualitäts-Gates: `scripts/check_phase_ready.sh`, `flutter analyze`, Unit- und Widget-Tests sowie Backend-Tests.
