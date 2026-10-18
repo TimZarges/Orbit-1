@@ -76,4 +76,16 @@ class GarminService {
     final callable = _functions.httpsCallable('requestGarminBackfill');
     await callable.call({'days': days});
   }
+
+  /// Führt eine sofortige aktive REST-Pull-Synchronisation aller historischen Aktivitäten
+  /// und Gesundheitsdaten durch und speichert sie direkt in Firestore & Storage.
+  ///
+  /// Im Gegensatz zum asynchronen Backfill wartet dieser Endpunkt nicht auf externe
+  /// Webhook-Pushes, sondern ruft Aktivitäten direkt ab und garantiert sofortige Sichtbarkeit.
+  Future<Map<String, dynamic>> syncActivitiesNow({int days = 90}) async {
+    final callable = _functions.httpsCallable('syncGarminActivitiesNow');
+    final result = await callable.call({'days': days});
+    return Map<String, dynamic>.from(result.data as Map);
+  }
 }
+

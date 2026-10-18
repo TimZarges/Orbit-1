@@ -34,6 +34,7 @@ export {
   processGarminWebhook,
   garminBackfill,
   requestGarminBackfill,
+  syncGarminActivitiesNow,
 } from "./import/garmin";
 
 // 5. Calendar Planning Trigger

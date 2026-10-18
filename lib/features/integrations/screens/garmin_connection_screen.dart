@@ -88,19 +88,24 @@ class _GarminConnectionScreenState
             oauthVerifier: verifier,
             oauthToken: _pendingOauthToken,
           );
+      // Direkt nach erfolgreicher Autorisierung die Einheiten aktiv synchronisieren
+      final syncResult =
+          await ref.read(garminServiceProvider).syncActivitiesNow(days: 90);
+
       if (mounted) {
         setState(() {
           _pendingOauthToken = null;
           _verifierController.clear();
           _isLoading = false;
         });
+        final count = syncResult['count'] ?? 0;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            backgroundColor: Color(0xFF10B981),
+          SnackBar(
+            backgroundColor: const Color(0xFF10B981),
             content: Text(
-              'Erfolgreich mit Garmin verbunden! Daten werden jetzt synchronisiert.',
-              style:
-                  TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              'Erfolgreich mit Garmin verbunden! $count Aktivitäten wurden synchronisiert.',
+              style: const TextStyle(
+                  color: Colors.white, fontWeight: FontWeight.bold),
             ),
           ),
         );
@@ -115,6 +120,38 @@ class _GarminConnectionScreenState
               'Verifizierung fehlgeschlagen: $e',
               style: const TextStyle(color: Colors.white),
             ),
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _syncGarminNow() async {
+    setState(() => _isLoading = true);
+    try {
+      final syncResult =
+          await ref.read(garminServiceProvider).syncActivitiesNow(days: 90);
+      if (mounted) {
+        setState(() => _isLoading = false);
+        final count = syncResult['count'] ?? 0;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: const Color(0xFF10B981),
+            content: Text(
+              'Garmin-Synchronisation erfolgreich! $count Aktivitäten aktualisiert.',
+              style: const TextStyle(
+                  color: Colors.white, fontWeight: FontWeight.bold),
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: Colors.red.shade700,
+            content: Text('Fehler bei der Synchronisation: $e'),
           ),
         );
       }
@@ -368,13 +405,40 @@ class _GarminConnectionScreenState
 
                 const SizedBox(height: 24),
 
+                // Aktiver REST-Pull Synchronisations-Button
+                ElevatedButton.icon(
+                  key: const Key('garmin_sync_now_button'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.volt,
+                    foregroundColor: AppColors.navy,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
+                  onPressed: _isLoading ? null : _syncGarminNow,
+                  icon: _isLoading
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: AppColors.navy,
+                          ),
+                        )
+                      : const Icon(Icons.sync),
+                  label: const Text(
+                    'Jetzt synchronisieren (REST-Pull)',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+
+                const SizedBox(height: 12),
+
                 // Backfill Button
                 OutlinedButton.icon(
                   onPressed: _isLoading || status.isBackfillInProgress
                       ? null
                       : _triggerBackfill,
                   icon: const Icon(Icons.history),
-                  label: const Text('Historische Daten laden (letzte 90 Tage)'),
+                  label: const Text('Historische Daten anfordern (Garmin Queue)'),
                 ),
 
                 const SizedBox(height: 16),

@@ -10,6 +10,8 @@ class GarminStatus {
   final String? garminUserId;
   final DateTime? connectedAt;
   final DateTime? lastSyncAt;
+  final int lastSyncCount;
+  final String? lastSyncMessage;
   final bool isBackfillInProgress;
   final int receivedActivities;
   final int receivedHealthDays;
@@ -21,6 +23,8 @@ class GarminStatus {
     this.garminUserId,
     this.connectedAt,
     this.lastSyncAt,
+    this.lastSyncCount = 0,
+    this.lastSyncMessage,
     this.isBackfillInProgress = false,
     this.receivedActivities = 0,
     this.receivedHealthDays = 0,
@@ -64,6 +68,8 @@ class GarminStatus {
       lastSyncAt: data['lastSyncAt'] != null
           ? DateTime.tryParse(data['lastSyncAt'].toString())
           : null,
+      lastSyncCount: (data['lastSyncCount'] as num?)?.toInt() ?? 0,
+      lastSyncMessage: data['lastSyncMessage'] as String?,
       isBackfillInProgress: isBackfill,
       receivedActivities: receivedActivities,
       receivedHealthDays: receivedHealthDays,
@@ -72,3 +78,4 @@ class GarminStatus {
     );
   }
 }
+

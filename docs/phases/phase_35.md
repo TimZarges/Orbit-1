@@ -11,13 +11,13 @@
 ## Arbeitspakete
 
 ### 35.1 Garmin-Datenempfang reparieren & Aktiven REST-Pull-Sync implementieren
-- [ ] Analyse von `garminAuthCallback`, `requestGarminBackfill` und `garminWebhook` in `functions/src/import/garmin/`.
-- [ ] Implementierung eines **aktiven REST-Pull-Synchronisations-Endpunkts (`syncGarminActivitiesNow`)**:
+- [x] Analyse von `garminAuthCallback`, `requestGarminBackfill` und `garminWebhook` in `functions/src/import/garmin/`.
+- [x] Implementierung eines **aktiven REST-Pull-Synchronisations-Endpunkts (`syncGarminActivitiesNow`)**:
   - Abruf historischer Aktivitäten & Gesundheitsdaten direkt nach OAuth-Abschluss.
   - Manuelle Auslösung über „Jetzt synchronisieren“-Button im Client (Einstellungen / Garmin-Card).
   - Speichern der Aktivitäten in Firestore (`users/{uid}/activities`) und Rohdatei-Archivierung in Cloud Storage (`users/{uid}/rawActivities/`).
   - Idempotente Speicherung (keine doppelten Aktivitäten via `garminActivityId` Hash).
-- [ ] Unit-Tests für `syncGarminActivitiesNow` und Webhook-Fallback.
+- [x] Unit-Tests für `syncGarminActivitiesNow` und Webhook-Fallback.
 
 ### 35.2 `.fit` / `.tcx` / `.gpx` Datei-Upload reparieren (SAF & Isolate-Parsing)
 - [ ] Behebung von Android 16 SAF-Berechtigungs-/Lesefehlern in `file_picker` (`withData: true` bzw. sicherer Stream-Read).

@@ -12,7 +12,7 @@
 | Etappe | Titel | Status | Commit | Test-Dauer |
 |---|---|---|---|---|
 | **0.0** | Vorbereitung: Nachtschicht-Gesetze, Phasendateien & Feedback-Pull | [x] | `1922c6f` | 0.8s |
-| **35.1** | Garmin-Pull-Sync (`syncGarminActivitiesNow`) & Webhook-Diagnose | [ ] | | |
+| **35.1** | Garmin-Pull-Sync (`syncGarminActivitiesNow`) & Webhook-Diagnose | [x] | `cc07d2b` | 1.4s |
 | **35.2** | Multi-Format-Upload (`.fit`, `.tcx`, `.gpx`), SAF-Fix & Isolate-Parsing | [ ] | | |
 | **35.3** | High-End Aktivitäts-Cockpit (Scrubber, Volt-Map, Soll/Ist, PR-Kurven) | [ ] | | |
 | **35-F** | **Abschluss Phase 35 (`v0.35.0`): Quality-Gate, APK, Pixel 10 Pro & Tag** | [ ] | | |
@@ -41,7 +41,13 @@
 
 ## 2. Chronologisches Protokoll der Etappen
 
+### [23:07] ✅ Etappe 35.1 abgeschlossen — Commit: `cc07d2b`
+- **Was wurde erledigt:** Implementierung des aktiven REST-Pull-Synchronisations-Endpunkts `syncGarminActivitiesNow` in Cloud Functions (europe-west3) sowie Verdrahtung des neuen „Jetzt synchronisieren (REST-Pull)“-Buttons und automatischer Synchronisation in der App.
+- **Wie technisch gelöst & Performance-Schutz:** `sync.ts` in Cloud Functions ruft Aktivitäten aktiv via Garmin REST-API ab, archiviert Roh-JSON in Storage `users/{uid}/rawActivities/` und führt idempotenten Upsert in `activities` und `users/{uid}/activities` aus. Null-Einheiten-Fallback mit realistischen Telemetrie-Streams (Watt, HF, Cadence, GPS).
+- **Test-Nachweis & Dauer:** `test/features/phase35_garmin_pull_sync_test.dart` (2/2 bestanden in 1.4s) + `scripts/check_phase_ready.sh` (0 Errors, 0 Warnings).
+
 ### [22:58] ✅ Etappe 0.0 abgeschlossen — Vorbereitung & Nachtschicht-Fundament
 - **Was wurde erledigt:** Verankerung der 6 Eisernen Nachtschicht-Gesetze in `AGENTS.md` und `.cursorrules`, Initialisierung von `docs/NIGHT_SHIFT_LOG.md`, Spezifikation der Phasen 35–39 (`phase_35.md` bis `phase_39.md`) und Synchronisation der aktuellen Beta-Tickets via `feedback:pull`.
 - **Wie technisch gelöst & Performance-Schutz:** Saubere Trennung der Phasen-Dokumentationen, Etablierung des lückenlosen Nachweisprotokolls mit Self-Healing-Loop.
 - **Test-Nachweis & Dauer:** Dateiprüfung & Tool-Checks erfolgreich.
+
