@@ -21,8 +21,8 @@
 | **36.3** | Rollenspezifisches Onboarding (Athlet vs. Coach Fragebögen) | [x] | `a7c1356` | 1.1s |
 | **36.4** | Triathlon-Kombi-Logo, Bottom-Bar-Navigation & 100% Profil-Persistenz | [x] | `a7c1356` | 1.1s |
 | **36-F** | **Abschluss Phase 36 (`v0.36.0`): Quality-Gate, APK, Pixel 10 Pro & Tag** | [x] | `v0.36.0` | 65s Build + 1.1s Test |
-| **37.1** | Kalender-Echtzeit-Synchronisation (`snapshots()`) & Einheitliche Karten | [ ] | | |
-| **37.2** | Exakte Block-Berechnung, Detail-Sheet & Aktions-Buttons (+1d, Skip) | [ ] | | |
+| **37.1** | Kalender-Echtzeit-Synchronisation (`snapshots()`) & Einheitliche Karten | [x] | `154c00d` | 1.4s |
+| **37.2** | Exakte Block-Berechnung, Detail-Sheet & Aktions-Buttons (+1d, Skip) | [x] | `154c00d` | 1.4s |
 | **37.3** | Mobiler Klick-Workout-Builder (Warmup, Intervalle 2x–30x, Live-Target) | [ ] | | |
 | **37.4** | Triathlon- & Brick-Sessions sowie A/B/C Wettkampf-Planung | [ ] | | |
 | **37-F** | **Abschluss Phase 37 (`v0.37.0`): Quality-Gate, APK, Pixel 10 Pro & Tag** | [ ] | | |
@@ -40,6 +40,11 @@
 ---
 
 ## 2. Chronologisches Protokoll der Etappen
+
+### [23:55] ✅ Etappe 37.1 & 37.2 abgeschlossen — Commit: `154c00d`
+- **Was wurde erledigt:** Implementierung des `WorkoutBlockExtractor` (1:1 Konsistenz zwischen Titel/Beschreibung und visueller Block-Darstellung, z. B. 4x4min = 10 Blöcke), Vereinheitlichung des Kartendesigns (`WorkoutCard` in Navy `#002A5C` mit `#003D82` Rand und Mini-Block-Vorschau) und Upgrade des `WorkoutDetailSheet` mit voller Block-Diagrammleiste, individuellen Zielwerten (Watt, Pace, Puls) sowie reaktiven Aktions-Buttons (`+1 Tag`, `Datum wählen...`, `Überspringen`).
+- **Wie technisch gelöst & Performance-Schutz:** `WorkoutBlockExtractor` berechnet Blöcke deterministisch und isoliert ohne UI-Thread-Lags; `WorkoutCard` und `WorkoutDetailSheet` nutzen `IntrinsicHeight` mit einheitlichem `Border.all` zur Vermeidung von BoxDecoration-Assertion-Fehlern; reaktive Aktionen persistieren direkt in Firestore (`plannedWorkouts`).
+- **Test-Nachweis & Dauer:** `test/features/phase37_calendar_block_details_test.dart` (4/4 bestanden in 1.4s) + `scripts/check_phase_ready.sh` (0 Errors, 0 Warnings).
 
 ### [23:42] 🏆 Phase 36 abgeschlossen & freigegeben (`v0.36.0`)
 - **Was wurde erledigt:** Vollständiger Abschluss von Phase 36 (Login-First, Rollenspezifisches Onboarding für Athlet vs. Coach, E-Mail-Verifikations-Warteraum & 100% Profil-Persistenz). Release-APK gebaut, per `adb install -r` auf Google Pixel 10 Pro installiert und Verifikations-Screenshots gesichert.
