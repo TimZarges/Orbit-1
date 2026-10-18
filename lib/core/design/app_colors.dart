@@ -78,6 +78,9 @@ class AppColors {
   static const Color coral = Color(0xFFEF4444);
   static const Color cyan = Color(0xFF22D3EE);
   static const Color accentBlue = Color(0xFF0EA5E9);
+  static const Color success = emerald;
+  static const Color warning = amber;
+  static const Color error = coral;
   static const Color zone1 = z1;
   static const Color zone2 = z2;
   static const Color zone3 = z3;

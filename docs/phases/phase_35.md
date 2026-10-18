@@ -27,12 +27,12 @@
 - [x] Verifikation: Upload funktioniert zu 100 % sowohl über den `+` FAB auf dem Dashboard als auch im Onboarding.
 
 ### 35.3 High-End Aktivitäts-Cockpit (Strava, Garmin Connect, Coros & MATS)
-- [ ] **Header:** Sportart-Badge, editierbarer Titel, deutsches Datum & 24h-Uhrzeit (`DD.MM.YYYY • HH:mm Uhr`).
-- [ ] **GPS-Karte:** Leuchtende `#CDFB17` Volt-Streckenlinie mit `#001F47` Navy-Kontur, Hell/Dunkel-Karten-Umschalter und automatische Zentrierung.
-- [ ] **Soll/Ist-Abgleich-Banner:** Erfüllungs-Ampel (🟢 $\le 15\%$, 🟡 $15\text{–}35\%$, 🔴 $> 35\%$) bei Vorliegen eines geplanten Workouts.
-- [ ] **2x3 Kern-Metrik-Grid:** Distanz, Dauer, Ø Watt / Ø Pace, Höhenmeter, Ø/Max Puls, ORBIT Load & Intensitäts-Faktor.
-- [ ] **Synchronisierte Telemetrie-Graphen:** Gestapelte Charts für Leistung (Watt + $W'\text{bal}$), HF, Pace, Höhe und Trittfrequenz mit gemeinsamem Finger-Scrubber.
-- [ ] **Runden/Splits, Zonen-Verteilung & Leistungskurve:** Splits-Tabelle, Z1–Z5 Zeitbalken und Aktivitäts-Power-Curve im direkten Vergleich zur All-Time PR-Kurve.
+- [x] **Header:** Sportart-Badge, editierbarer Titel, deutsches Datum & 24h-Uhrzeit (`DD.MM.YYYY • HH:mm Uhr`).
+- [x] **GPS-Karte:** Leuchtende `#CDFB17` Volt-Streckenlinie mit `#001F47` Navy-Kontur, Hell/Dunkel-Karten-Umschalter und automatische Zentrierung.
+- [x] **Soll/Ist-Abgleich-Banner:** Erfüllungs-Ampel (🟢 $\le 15\%$, 🟡 $15\text{–}35\%$, 🔴 $> 35\%$) bei Vorliegen eines geplanten Workouts.
+- [x] **2x3 Kern-Metrik-Grid:** Distanz, Dauer, Ø Watt / Ø Pace, Höhenmeter, Ø/Max Puls, ORBIT Load & Intensitäts-Faktor.
+- [x] **Synchronisierte Telemetrie-Graphen:** Gestapelte Charts für Leistung (Watt + $W'\text{bal}$), HF, Pace, Höhe und Trittfrequenz mit gemeinsamem Finger-Scrubber.
+- [x] **Runden/Splits, Zonen-Verteilung & Leistungskurve:** Splits-Tabelle, Z1–Z5 Zeitbalken und Aktivitäts-Power-Curve im direkten Vergleich zur All-Time PR-Kurve.
 
 ### 35.4 Abschluss & Hardware-Verifikation
 - [ ] `flutter analyze --no-pub` & gezielte Unit-/Widget-Tests fehlerfrei.
