@@ -29,7 +29,7 @@
 | **38.1** | Global schwebender Bug-Käfer im `MaterialApp.builder` (über Sheets) | [x] | `94fd924` | 2.0s |
 | **38.2** | Universal-Datumsformat (`DD.MM.YYYY`) & 24h-Zeit via `OrbitDateFormatter` | [x] | `d7787e7` | 1.1s |
 | **38.3** | Mitteilungszentrale: Umrandete Karten & Deep-Link-Routing | [x] | `c062717` | 1.0s |
-| **38.4** | Beta-Feedback-Inbox für Nutzer mit Live-Statusanzeige | [ ] | | |
+| **38.4** | Beta-Feedback-Inbox für Nutzer mit Live-Statusanzeige | [x] | `ff0d3e3` | 1.1s |
 | **38.5** | Widget-Galerie-Cleanup, DSGVO-Kontolöschung mit Logout & App-Icon | [ ] | | |
 | **38-F** | **Abschluss Phase 38 (`v0.38.0`): Quality-Gate, APK, Pixel 10 Pro & Tag** | [ ] | | |
 | **39.1** | Rückwirkende deutsche Dokumentation: `functions/src/` & Security Rules | [ ] | | |
@@ -40,6 +40,11 @@
 ---
 
 ## 2. Chronologisches Protokoll der Etappen
+
+### [00:27] ✅ Etappe 38.4 abgeschlossen — Commit: `ff0d3e3`
+- **Was wurde erledigt:** Dedizierte Tester-Ansicht „Meine gemeldeten Tickets“ mit Live-Statusanzeige (`🟢 Offen`, `🟡 In Arbeit`, `✅ Gelöst`) und `OrbitDateFormatter` (`DD.MM.YYYY • HH:mm Uhr`); Auslagerung der modularen `BetaFeedbackTicketCard` sowie Verknüpfung im Einstellungs-Menü und Routing via `/my-feedback` und `/feedback`.
+- **Wie technisch gelöst & Performance-Schutz:** Reusable `BetaFeedbackTicketCard` mit zweistufigem Status- und Berechtigungsmodell; Tester sehen nur eigene Tickets ohne `PERMISSION_DENIED`; Status-Badges mit sanften Farb-Transparenzen und Volt-Ticket-Pill; Navigation über GoRouter-Routen `/feedback` und `/my-feedback`.
+- **Test-Nachweis & Dauer:** `test/features/phase38_user_feedback_inbox_test.dart` (2/2 bestanden in 1.1s) + `scripts/check_phase_ready.sh` (0 Errors, 0 Warnings).
 
 ### [00:23] ✅ Etappe 38.3 abgeschlossen — Commit: `c062717`
 - **Was wurde erledigt:** Mitteilungszentrale (`NotificationCenterSheet`) optisch und funktional veredelt: Klare Umrandung (`Border.all`: ungelesen `#CDFB17` Volt 1.5px, gelesen `Colors.white24` 1.0px) und robustes Deep-Link-Routing über `rootNavigatorKey` ohne unmounted-Context-Crashes.
