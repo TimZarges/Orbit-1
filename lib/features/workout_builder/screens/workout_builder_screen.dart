@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/design/app_colors.dart';
 import '../../calendar/models/planned_workout.dart';
+import '../../calendar/providers/calendar_provider.dart';
 import '../../calendar/repositories/planned_workout_repository.dart';
 import '../controllers/workout_builder_controller.dart';
 import '../models/workout_builder_models.dart';
@@ -540,8 +541,9 @@ class _WorkoutBuilderScreenState extends ConsumerState<WorkoutBuilderScreen> {
           child: Row(
             children: [
               _buildQuickAddButton(
-                label: '+ Warmup',
-                color: AppColors.z2,
+                key: const Key('quick_add_warmup'),
+                label: '+ Aufwärmen',
+                color: const Color(0xFF0284C7), // Türkis/Blau
                 onTap: () => notifier.addBlock(
                   const StepBlock(
                     role: WorkoutRole.warmup,
@@ -552,8 +554,10 @@ class _WorkoutBuilderScreenState extends ConsumerState<WorkoutBuilderScreen> {
               ),
               const SizedBox(width: 8),
               _buildQuickAddButton(
+                key: const Key('quick_add_work'),
                 label: '+ Intervall (Z4)',
-                color: AppColors.z4,
+                color: AppColors.volt,
+                textColor: AppColors.navy,
                 onTap: () => notifier.addBlock(
                   const StepBlock(
                     role: WorkoutRole.work,
@@ -564,8 +568,9 @@ class _WorkoutBuilderScreenState extends ConsumerState<WorkoutBuilderScreen> {
               ),
               const SizedBox(width: 8),
               _buildQuickAddButton(
+                key: const Key('quick_add_rest'),
                 label: '+ Pause (Z1)',
-                color: AppColors.z1,
+                color: const Color(0xFF64748B), // Dezentes Slate
                 onTap: () => notifier.addBlock(
                   const StepBlock(
                     role: WorkoutRole.rest,
@@ -576,9 +581,9 @@ class _WorkoutBuilderScreenState extends ConsumerState<WorkoutBuilderScreen> {
               ),
               const SizedBox(width: 8),
               _buildQuickAddButton(
-                label: '+ 4x Schleife',
-                color: AppColors.volt,
-                textColor: AppColors.navy,
+                key: const Key('quick_add_repeat'),
+                label: '+ Wiederholungs-Serie (4x)',
+                color: const Color(0xFF003D82),
                 onTap: () => notifier.addBlock(
                   const RepeatBlock(
                     count: 4,
@@ -599,8 +604,9 @@ class _WorkoutBuilderScreenState extends ConsumerState<WorkoutBuilderScreen> {
               ),
               const SizedBox(width: 8),
               _buildQuickAddButton(
-                label: '+ Cooldown',
-                color: AppColors.z1,
+                key: const Key('quick_add_cooldown'),
+                label: '+ Ausrollen',
+                color: const Color(0xFF10B981), // Grün
                 onTap: () => notifier.addBlock(
                   const StepBlock(
                     role: WorkoutRole.cooldown,
@@ -647,12 +653,14 @@ class _WorkoutBuilderScreenState extends ConsumerState<WorkoutBuilderScreen> {
   }
 
   Widget _buildQuickAddButton({
+    Key? key,
     required String label,
     required Color color,
     Color textColor = Colors.white,
     required VoidCallback onTap,
   }) {
     return InkWell(
+      key: key,
       onTap: onTap,
       borderRadius: BorderRadius.circular(8),
       child: Container(
@@ -690,21 +698,27 @@ class _WorkoutBuilderScreenState extends ConsumerState<WorkoutBuilderScreen> {
           ((block.target.durationSec ?? 300) / 60).toStringAsFixed(0);
 
       String roleName;
+      Color roleColor;
       switch (block.role) {
         case WorkoutRole.warmup:
-          roleName = 'Warmup';
+          roleName = 'Aufwärmen';
+          roleColor = const Color(0xFF0284C7); // Türkis/Blau
           break;
         case WorkoutRole.work:
-          roleName = 'Belastung';
+          roleName = 'Intervall / Belastung';
+          roleColor = color;
           break;
         case WorkoutRole.rest:
-          roleName = 'Pause';
+          roleName = 'Erholung / Pause';
+          roleColor = const Color(0xFF64748B); // Slate
           break;
         case WorkoutRole.cooldown:
-          roleName = 'Cooldown';
+          roleName = 'Ausrollen';
+          roleColor = const Color(0xFF10B981); // Grün
           break;
         default:
           roleName = 'Intervall';
+          roleColor = color;
       }
 
       return Container(
@@ -719,13 +733,14 @@ class _WorkoutBuilderScreenState extends ConsumerState<WorkoutBuilderScreen> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.15),
+                color: roleColor.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(6),
+                border: Border.all(color: roleColor.withValues(alpha: 0.4)),
               ),
               child: Text(
                 roleName,
                 style: TextStyle(
-                  color: color,
+                  color: roleColor,
                   fontWeight: FontWeight.bold,
                   fontSize: 12,
                 ),
@@ -791,21 +806,60 @@ class _WorkoutBuilderScreenState extends ConsumerState<WorkoutBuilderScreen> {
           children: [
             Row(
               children: [
+                // Stepper für Wiederholungen 2x bis 30x (Phase 37.3)
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: AppColors.volt.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(6),
+                    color: AppColors.volt.withValues(alpha: 0.18),
+                    borderRadius: BorderRadius.circular(8),
                     border: Border.all(color: AppColors.volt),
                   ),
-                  child: Text(
-                    '${block.count}x Wiederholung',
-                    style: const TextStyle(
-                      color: AppColors.navy,
-                      fontWeight: FontWeight.w900,
-                      fontSize: 12,
-                    ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        key: Key('repeat_decrement_$index'),
+                        icon: const Icon(Icons.remove,
+                            size: 16, color: AppColors.navy),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 4, vertical: 2),
+                        constraints: const BoxConstraints(),
+                        tooltip: 'Wiederholungen verringern',
+                        onPressed: block.count > 2
+                            ? () => notifier.replaceBlock(
+                                  index,
+                                  block.copyWith(count: block.count - 1),
+                                )
+                            : null,
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 4),
+                        child: Text(
+                          '${block.count}x Serie',
+                          key: Key('repeat_count_text_$index'),
+                          style: const TextStyle(
+                            color: AppColors.navy,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        key: Key('repeat_increment_$index'),
+                        icon: const Icon(Icons.add,
+                            size: 16, color: AppColors.navy),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 4, vertical: 2),
+                        constraints: const BoxConstraints(),
+                        tooltip: 'Wiederholungen erhöhen',
+                        onPressed: block.count < 30
+                            ? () => notifier.replaceBlock(
+                                  index,
+                                  block.copyWith(count: block.count + 1),
+                                )
+                            : null,
+                      ),
+                    ],
                   ),
                 ),
                 const Spacer(),
@@ -876,22 +930,114 @@ class _WorkoutBuilderScreenState extends ConsumerState<WorkoutBuilderScreen> {
   Future<void> _scheduleInCalendar(
       BuildContext context, WorkoutBuilderState state) async {
     final now = DateTime.now();
-    final pickedDate = await showDatePicker(
+    DateTime chosenDate = widget.targetLocalDate != null
+        ? (DateTime.tryParse(widget.targetLocalDate!) ?? now)
+        : now;
+
+    final titleController = TextEditingController(
+      text: state.text.isNotEmpty
+          ? state.text.split(',').first.trim()
+          : '${state.sport} Einheit',
+    );
+    final descController = TextEditingController();
+    final notesController = TextEditingController();
+
+    final confirmed = await showDialog<bool>(
       context: context,
-      initialDate: widget.targetLocalDate != null
-          ? DateTime.parse(widget.targetLocalDate!)
-          : now,
-      firstDate: now.subtract(const Duration(days: 30)),
-      lastDate: now.add(const Duration(days: 365)),
+      builder: (ctx) => StatefulBuilder(
+        builder: (dialogCtx, setDialogState) {
+          final dateStr =
+              "${chosenDate.year}-${chosenDate.month.toString().padLeft(2, '0')}-${chosenDate.day.toString().padLeft(2, '0')}";
+          return AlertDialog(
+            title: const Text('Einheit im Kalender einplanen'),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  TextField(
+                    key: const Key('plan_workout_title_field'),
+                    controller: titleController,
+                    decoration: const InputDecoration(
+                      labelText: 'Titel der Einheit',
+                      hintText: 'z. B. 4x4min VO2max Intervalle',
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      const Icon(Icons.calendar_today, size: 16),
+                      const SizedBox(width: 8),
+                      Text('Datum: $dateStr',
+                          style: const TextStyle(fontWeight: FontWeight.bold)),
+                      const Spacer(),
+                      TextButton(
+                        key: const Key('plan_workout_date_picker'),
+                        onPressed: () async {
+                          final picked = await showDatePicker(
+                            context: dialogCtx,
+                            initialDate: chosenDate,
+                            firstDate: now.subtract(const Duration(days: 30)),
+                            lastDate: now.add(const Duration(days: 365)),
+                          );
+                          if (picked != null) {
+                            setDialogState(() => chosenDate = picked);
+                          }
+                        },
+                        child: const Text('Ändern'),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    key: const Key('plan_workout_description_field'),
+                    controller: descController,
+                    decoration: const InputDecoration(
+                      labelText: 'Allgemeine Trainerhinweise',
+                      hintText: 'Ziele, Vorgaben & Durchführung',
+                    ),
+                    maxLines: 2,
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    key: const Key('plan_workout_notes_field'),
+                    controller: notesController,
+                    decoration: const InputDecoration(
+                      labelText: 'Einheitsspezifische Notiz',
+                      hintText: 'Optionale persönliche Notiz',
+                    ),
+                    maxLines: 2,
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(false),
+                child: const Text('Abbrechen'),
+              ),
+              ElevatedButton(
+                key: const Key('plan_workout_submit_button'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.volt,
+                  foregroundColor: AppColors.navy,
+                ),
+                onPressed: () => Navigator.of(ctx).pop(true),
+                child: const Text('Einplanen'),
+              ),
+            ],
+          );
+        },
+      ),
     );
 
-    if (pickedDate == null || !mounted) return;
+    if (confirmed != true || !context.mounted) return;
 
     final localDateStr =
-        "${pickedDate.year}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.day.toString().padLeft(2, '0')}";
+        "${chosenDate.year}-${chosenDate.month.toString().padLeft(2, '0')}-${chosenDate.day.toString().padLeft(2, '0')}";
 
     final athleteId = widget.athleteId ?? 'me';
-    final repo = PlannedWorkoutRepository();
+    final repo = ref.read(plannedWorkoutRepositoryProvider);
 
     final planned = PlannedWorkout(
       id: '',
@@ -899,7 +1045,12 @@ class _WorkoutBuilderScreenState extends ConsumerState<WorkoutBuilderScreen> {
       createdBy: athleteId,
       localDate: localDateStr,
       sport: state.sport,
-      title: 'Geplantes ${state.sport}-Training',
+      title: titleController.text.trim().isNotEmpty
+          ? titleController.text.trim()
+          : 'Geplantes ${state.sport}-Training',
+      description: descController.text.trim().isNotEmpty
+          ? descController.text.trim()
+          : null,
       plannedDurationSec: state.calculation.totalDurationSec,
       plannedDistanceM: state.calculation.totalDistanceM > 0
           ? state.calculation.totalDistanceM.toDouble()
@@ -913,7 +1064,7 @@ class _WorkoutBuilderScreenState extends ConsumerState<WorkoutBuilderScreen> {
 
     await repo.create(planned);
 
-    if (mounted) {
+    if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
             content: Text('Einheit für $localDateStr im Kalender eingeplant!')),

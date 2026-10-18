@@ -24,14 +24,14 @@
   - „Als übersprungen markieren“: Status auf `SKIPPED` mit visueller Rückmeldung.
 
 ### 37.3 Mobiler Klick-Workout-Builder (Garmin/MATS/Coros/Pushing Limits)
-- [ ] Deutsche Blocktypen mit semantischer Farbkodierung:
+- [x] Deutsche Blocktypen mit semantischer Farbkodierung:
   - `Aufwärmen` (Türkis/Blau)
   - `Intervall / Belastung` (Volt/Gelb/Orange/Rot je nach % Intensität)
   - `Erholung / Pause` (Dezentes Slate/Grau)
   - `Ausrollen` (Grün)
   - `Wiederholungs-Serie (Intervall-Schleife)`: Container mit einstellbarer Häufigkeit `2x` bis `30x`.
-- [ ] Einstellbare Block-Parameter: Dauer (min/sec) oder Distanz (m/km), Intensität in % des Schwellenwerts mit Live-Umrechnung in Watt/Pace.
-- [ ] Strukturierte Vorlagen-Felder: Fester Titel, allgemeine Beschreibung (Trainerhinweise) und einheitsspezifisches Notizfeld.
+- [x] Einstellbare Block-Parameter: Dauer (min/sec) oder Distanz (m/km), Intensität in % des Schwellenwerts mit Live-Umrechnung in Watt/Pace.
+- [x] Strukturierte Vorlagen-Felder: Fester Titel, allgemeine Beschreibung (Trainerhinweise) und einheitsspezifisches Notizfeld.
 
 ### 37.4 Triathlon- & Brick-Sessions sowie Wettkampf-Planung (A / B / C)
 - [ ] Planung von Mehrfacheinheiten am selben Tag.
