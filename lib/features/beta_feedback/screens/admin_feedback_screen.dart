@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/design/app_colors.dart';
 import '../../../core/design/app_typography.dart';
+import '../../../core/utils/orbit_date_formatter.dart';
 import '../../auth/providers/user_provider.dart';
 import '../models/beta_feedback_report.dart';
 
@@ -365,7 +366,7 @@ class _AdminFeedbackScreenState extends ConsumerState<AdminFeedbackScreen> {
                   runSpacing: 4,
                   children: [
                     Text(
-                      '${report.createdAt.day}.${report.createdAt.month}.${report.createdAt.year}',
+                      OrbitDateFormatter.formatDateTime(report.createdAt),
                       style: const TextStyle(
                           color: Color(0xFF94A3B8), fontSize: 11),
                     ),

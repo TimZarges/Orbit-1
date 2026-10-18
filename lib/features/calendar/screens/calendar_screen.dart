@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../core/design/app_colors.dart';
+import '../../../core/utils/orbit_date_formatter.dart';
 import '../../coach_link/providers/athlete_context_provider.dart';
 import '../models/planned_workout.dart';
 import '../providers/calendar_provider.dart';
@@ -31,7 +32,7 @@ class CalendarScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          DateFormat('MMMM yyyy', 'de').format(selectedDate),
+          OrbitDateFormatter.formatMonthYear(selectedDate),
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         actions: [
@@ -238,8 +239,7 @@ class CalendarScreen extends ConsumerWidget {
     String athleteId,
   ) {
     final theme = Theme.of(context);
-    final weekdayName = DateFormat('EEEE', 'de').format(date);
-    final dateNum = DateFormat('dd.MM.').format(date);
+    final formattedHeaderDate = OrbitDateFormatter.formatWeekdayDate(date);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -249,7 +249,7 @@ class CalendarScreen extends ConsumerWidget {
           Row(
             children: [
               Text(
-                '$weekdayName, $dateNum',
+                formattedHeaderDate,
                 style: theme.textTheme.titleSmall?.copyWith(
                   fontWeight: FontWeight.bold,
                   color: isToday ? AppColors.navyLight : null,

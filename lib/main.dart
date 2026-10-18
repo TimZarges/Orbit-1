@@ -20,6 +20,10 @@ import 'features/beta_feedback/widgets/beta_bug_reporter_sheet.dart';
 import 'features/beta_feedback/widgets/global_floating_bug_beetle.dart';
 import 'features/settings/providers/settings_provider.dart';
 
+/// Einstiegspunkt der ORBIT-Applikation.
+///
+/// Initialisiert Firebase (Standard oder Emulatoren für Tests), App Check mit
+/// Play Integrity, den CrashReporter (DSGVO-Opt-in) und startet die [OrbitApp].
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   usePathUrlStrategy();
@@ -56,6 +60,10 @@ void main() async {
   );
 }
 
+/// Haupt-Widget der ORBIT-Applikation.
+///
+/// Konfiguriert das Dark/Light-Theme, Lokalisierung (DE/EN) und bindet den
+/// [GlobalFloatingBugBeetle] über `MaterialApp.builder` auf oberster Z-Index-Ebene ein.
 class OrbitApp extends ConsumerWidget {
   const OrbitApp({super.key});
 

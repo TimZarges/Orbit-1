@@ -1,4 +1,4 @@
-import 'package:intl/intl.dart';
+import '../../../core/utils/orbit_date_formatter.dart';
 
 /// Filter-Zeitraum für persönliche Bestleistungen.
 enum PRTimeframe {
@@ -38,7 +38,7 @@ class BikePR {
     required this.activityTitle,
   });
 
-  String get formattedDate => DateFormat('dd.MM.yyyy').format(date);
+  String get formattedDate => OrbitDateFormatter.formatDate(date);
 }
 
 /// Lauf-Bestleistung über eine Standard-Distanz.
@@ -75,7 +75,7 @@ class RunPR {
     return '$m:${s.toString().padLeft(2, '0')} /km';
   }
 
-  String get formattedDate => DateFormat('dd.MM.yyyy').format(date);
+  String get formattedDate => OrbitDateFormatter.formatDate(date);
 }
 
 /// Schwimm-Bestleistung über eine Standard-Distanz.
@@ -108,7 +108,7 @@ class SwimPR {
     return '$m:${s.toString().padLeft(2, '0')} /100m';
   }
 
-  String get formattedDate => DateFormat('dd.MM.yyyy').format(date);
+  String get formattedDate => OrbitDateFormatter.formatDate(date);
 }
 
 /// Gesamtzusammenfassung der persönlichen Bestleistungen nach Sportart und Zeitraum.

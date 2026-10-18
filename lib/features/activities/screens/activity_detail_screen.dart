@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 import '../../../core/design/app_colors.dart';
+import '../../../core/utils/orbit_date_formatter.dart';
 import '../../../core/design/app_typography.dart';
 import '../../../core/metrics/term_resolver.dart';
 import '../../settings/providers/settings_provider.dart';
@@ -105,7 +105,7 @@ class ActivityDetailScreen extends ConsumerWidget {
         ? DateTime.tryParse(activity.localDate) ?? DateTime.now()
         : DateTime.now();
 
-    final dateStr = DateFormat('dd.MM.yyyy, HH:mm').format(localTime);
+    final dateStr = OrbitDateFormatter.formatDateTime(localTime);
     final sportColor = _getSportColor(activity.sport);
 
     // Erfahrungsstufe aus Einstellungen / Provider reaktiv ermitteln

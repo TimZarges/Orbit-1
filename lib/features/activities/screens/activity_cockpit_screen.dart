@@ -1,8 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 import '../../../core/design/app_colors.dart';
+import '../../../core/utils/orbit_date_formatter.dart';
 import '../../../core/design/app_typography.dart';
 import '../models/activity.dart';
 import '../models/activity_stream.dart';
@@ -302,8 +302,7 @@ class _ActivityCockpitScreenState extends ConsumerState<ActivityCockpitScreen> {
         ? DateTime.tryParse(widget.activity.localDate) ??
             widget.activity.startTimeUtc
         : widget.activity.startTimeUtc;
-    final dateStr =
-        DateFormat("dd.MM.yyyy '•' HH:mm 'Uhr'").format(localTime.toLocal());
+    final dateStr = OrbitDateFormatter.formatDateTime(localTime);
 
     // Aufbereiten der Aktivität mit Metriken
     final effectiveActivity = _getEffectiveActivity();

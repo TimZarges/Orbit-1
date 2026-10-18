@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../core/design/app_colors.dart';
+import '../../../core/utils/orbit_date_formatter.dart';
 import '../../activities/models/activity.dart';
 import '../../activities/providers/activities_provider.dart';
 import '../../auth/providers/user_provider.dart';
@@ -661,9 +662,7 @@ class WorkoutDetailSheet extends ConsumerWidget {
   }
 
   String _formatLocalDate(String dateStr) {
-    final parsed = DateTime.tryParse(dateStr);
-    if (parsed == null) return dateStr;
-    return DateFormat('dd.MM.yyyy').format(parsed);
+    return OrbitDateFormatter.formatDateString(dateStr);
   }
 
   String _buildComparisonText(PlannedWorkout plan, Activity act) {

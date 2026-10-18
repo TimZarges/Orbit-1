@@ -16,9 +16,9 @@
 - [x] Bug-Käfer bleibt in AppBar des Kalenders und allen Kern-Screens konsistent erreichbar.
 
 ### 38.2 Universal-Datumsformat (`DD.MM.YYYY`) & 24h-Uhrzeit via `OrbitDateFormatter`
-- [ ] Vollständige Ablösung von ISO-Datumsstrings (`2026-10-18`) in der UI.
-- [ ] Zentrale Formatierung über `OrbitDateFormatter` gekoppelt an lokale Geräte-Zeitzone.
-- [ ] Konsistentes deutsches Anzeigeformat: `DD.MM.YYYY` (z. B. `18.10.2026`) und 24h-Zeit (`19:06 Uhr`).
+- [x] Vollständige Ablösung von ISO-Datumsstrings (`2026-10-18`) in der UI.
+- [x] Zentrale Formatierung über `OrbitDateFormatter` gekoppelt an lokale Geräte-Zeitzone.
+- [x] Konsistentes deutsches Anzeigeformat: `DD.MM.YYYY` (z. B. `18.10.2026`) und 24h-Zeit (`19:06 Uhr`).
 
 ### 38.3 Mitteilungszentrale: Einheitliche Umrandung & Deep-Link-Routing
 - [ ] Kartendesign: Jede Mitteilung erhält eine saubere Umrandung (`Border.all`: ungelesen `#CDFB17` Volt 1.5px, gelesen `Colors.white24` 1.0px).
