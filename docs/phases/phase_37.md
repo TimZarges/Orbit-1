@@ -34,10 +34,10 @@
 - [x] Strukturierte Vorlagen-Felder: Fester Titel, allgemeine Beschreibung (Trainerhinweise) und einheitsspezifisches Notizfeld.
 
 ### 37.4 Triathlon- & Brick-Sessions sowie Wettkampf-Planung (A / B / C)
-- [ ] Planung von Mehrfacheinheiten am selben Tag.
-- [ ] Spezifische Sportart „Triathlon / Koppeleinheit“ mit Disziplinwechseln (*Schwimmen ⇄ Rad ⇄ Lauf*).
-- [ ] Modus-Umschaltung im Planer: „Training planen“ vs. „Wettkampf / Rennen planen“.
-- [ ] Wettkampf-Felder: Name, Datum, Sportart/Distanz, Zielzeit und Priorität (`A-Hauptwettkampf`, `B-Vorbereitungsrennen`, `C-Trainingswettkampf`).
+- [x] Planung von Mehrfacheinheiten am selben Tag.
+- [x] Spezifische Sportart „Triathlon / Koppeleinheit“ mit Disziplinwechseln (*Schwimmen ⇄ Rad ⇄ Lauf*).
+- [x] Modus-Umschaltung im Planer: „Training planen“ vs. „Wettkampf / Rennen planen“.
+- [x] Wettkampf-Felder: Name, Datum, Sportart/Distanz, Zielzeit und Priorität (`A-Hauptwettkampf`, `B-Vorbereitungsrennen`, `C-Trainingswettkampf`).
 
 ### 37.5 Abschluss & Hardware-Verifikation
 - [ ] `flutter analyze --no-pub` & Tests fehlerfrei.
