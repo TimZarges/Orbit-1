@@ -11,9 +11,9 @@
 ## Arbeitspakete
 
 ### 38.1 Global greifbarer Bug-Käfer (Top-Level Overlay über Modal-Sheets)
-- [ ] Integration des Bug-Käfers als verschiebbarer/fester Top-Level Overlay im `MaterialApp.builder` mit höchster Z-Index-Priorität.
-- [ ] Ermöglicht das Melden von Bugs und automatische Screenshot-Erstellung auch bei geöffnetem Modal-Bottom-Sheet (Workout-Detail, Benachrichtigungen, Builder).
-- [ ] Bug-Käfer bleibt in AppBar des Kalenders und allen Kern-Screens konsistent erreichbar.
+- [x] Integration des Bug-Käfers als verschiebbarer/fester Top-Level Overlay im `MaterialApp.builder` mit höchster Z-Index-Priorität.
+- [x] Ermöglicht das Melden von Bugs und automatische Screenshot-Erstellung auch bei geöffnetem Modal-Bottom-Sheet (Workout-Detail, Benachrichtigungen, Builder).
+- [x] Bug-Käfer bleibt in AppBar des Kalenders und allen Kern-Screens konsistent erreichbar.
 
 ### 38.2 Universal-Datumsformat (`DD.MM.YYYY`) & 24h-Uhrzeit via `OrbitDateFormatter`
 - [ ] Vollständige Ablösung von ISO-Datumsstrings (`2026-10-18`) in der UI.

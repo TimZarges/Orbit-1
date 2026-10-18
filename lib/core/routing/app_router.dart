@@ -25,6 +25,9 @@ import '../../features/coach_link/screens/trainer_athletes_tab_screen.dart';
 import '../../features/auth/screens/email_verification_waiting_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+/// Globaler Root-Navigator-Key für Dialoge, Overlays und den globalen Bug-Käfer.
+final rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'orbitRootNavigator');
+
 /// Zentraler Router-Provider der ORBIT-Applikation auf Basis von GoRouter.
 ///
 /// Verwaltet die Navigation, Deep-Link-Normalisierung (z. B. `orbit://oauth/garmin`),
@@ -34,6 +37,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
   final userDocState = ref.watch(userDocumentProvider);
 
   return GoRouter(
+    navigatorKey: rootNavigatorKey,
     initialLocation: '/login',
     redirect: (context, state) {
       // 1. Eigene Scheme-Deep-Links (z. B. orbit://oauth/garmin?oauth_token=...&oauth_verifier=...) normalisieren

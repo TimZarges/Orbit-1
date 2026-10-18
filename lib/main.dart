@@ -17,6 +17,7 @@ import 'package:orbit/l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 import 'features/beta_feedback/widgets/beta_bug_reporter_sheet.dart';
+import 'features/beta_feedback/widgets/global_floating_bug_beetle.dart';
 import 'features/settings/providers/settings_provider.dart';
 
 void main() async {
@@ -83,6 +84,14 @@ class OrbitApp extends ConsumerWidget {
             Locale('en', ''),
           ],
           routerConfig: goRouter,
+          builder: (context, child) {
+            return Stack(
+              children: [
+                if (child != null) child,
+                const GlobalFloatingBugBeetle(),
+              ],
+            );
+          },
         ),
       ),
     );
