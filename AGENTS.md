@@ -31,6 +31,31 @@
   node -e "console.log(Object.keys(require('./functions/lib/index.js')))"
   ```
 
+### Regel 5: Strikte Phasen-, To-Do- & Git-Merge-Disziplin (Kein Branch-Aufstau!)
+- Es darf niemals über mehrere Phasen hinweg auf einem einzigen Sammel-Branch ohne Merge gearbeitet werden.
+- Am Ende **jeder einzelnen Phase** (und jedes abgeschlossenen Reparatur-Pakets) gilt zwingend und ohne dass Tim es extra im Prompt erwähnen muss:
+  1. Alle erledigten Punkte in `docs/phases/phase_XX.md`, `PROGRESS.md` und `docs/PROGRESS.md` auf `[x]` setzen.
+  2. Nachweise in `docs/CHECKPOINTS.md` eintragen.
+  3. Sauberen Commit erstellen, **Fast-Forward-Merge in `main`** durchführen, annotiertes **Git-Tag (`v0.XX.0`)** setzen und `main` inkl. Tags **sofort zu GitHub pushen (`git push origin main --tags`)**.
+
+### Regel 6: Durchgängige deutsche Code-Kommentarpflicht (`///` & `/** ... */`)
+- Jede neu erstellte oder geänderte Datei, Klasse, Provider-Logik, Cloud Function und Security Rule (`firestore.rules`, `storage.rules`) MUSS mit verständlichen **deutschen Dokumentations-Kommentaren** versehen werden.
+- Kommentiere immer das **„Was & Warum“**: Welchen fachlichen Zweck erfüllt die Datei? Welche sportwissenschaftliche Formel oder Schwellenwert-Grenze wird berechnet? Warum erlaubt oder blockiert eine Sicherheitsregel den Zugriff?
+
+### Regel 7: Zentrale Sprach- & Farb-Indizes (Zero Hardcoding)
+- Keine hartcodierten UI-Texte oder willkürlichen Hex-Farben in Widgets! Alle Farben laufen über zentrale Design-Tokens (`#001F47` Navy, `#CDFB17` Volt etc. aus `AppColors`) und alle Texte über den zentralen Sprach-Index (`AppStrings` / `.arb` DE/EN).
+
+### Regel 8: Verständlicher Datenschutz, Marken-Reinheit & Zero-Open-Data
+- In Nutzertexten niemals Technik-Jargon (`europe-west3`, `JSON`, `Secret Manager`, `Art. 9 DSGVO`) verwenden, sondern klares Deutsch (*„Sicherer Serverstandort Deutschland – Geschützt nach deutschen & europäischen Datenschutzgesetzen“*).
+- Keine fremden geschützten Markenbegriffe (`TSS®`, `IF®`, `NP®`) nutzen, sondern eigenes ORBIT-Wording (z. B. ORBIT Belastung / Load, Intensität, Normalisierte Leistung).
+- Niemals dürfen Nutzer-, Gesundheits- oder Trainingsdaten ungeschützt im Internet liegen.
+
+### Regel 9: Automatischer Qualitäts-Gate vor Merge (`scripts/check_phase_ready.sh`)
+- Vor jedem Phasen-Merge muss `bash scripts/check_phase_ready.sh` erfolgreich durchlaufen:
+  1. `flutter analyze` 0 Errors, 0 Warnings.
+  2. Alle geänderten `.dart`- und `.ts`-Dateien besitzen deutsche Dokumentations-Kommentare (`///` bzw. `/**`).
+  3. `PROGRESS.md` und Phasendatei sind auf aktuellem Stand abgehakt.
+
 ---
 
 ## 3. Technischer Rahmen

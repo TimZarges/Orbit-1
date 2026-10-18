@@ -26,6 +26,42 @@
 
 ## Einträge
 
+### [Phase 31] Garmin-Daten-Empfang reparieren, Karten (Hell/Dunkel + Volt-Linie), Neue Tests & PR-Datenbank · RISIKO-HOCH
+- **STOPP-Punkt/Anlass:** Abschluss von Phase 31 gemäß `docs/phases/phase_31.md` und Freigabe durch Tim Zarges.
+- **Entscheidung:**
+  1. Garmin Sync & Testdaten: Sync-Pipeline auditiert und Testdaten (Rad/Lauf) bereitgestellt.
+  2. GPS-Karte: Standard-OSM mit Volt `#CDFB17` Outlined Polyline (`#001F47` Rand) implementiert; Hell/Dunkel-Toggle (`ColorFilter.matrix` Inversion) für optimale Ablesbarkeit.
+  3. Diagnostik: Ramp-Test (Stufentest Rad, +25 W alle 30s) und 5-Minuten-All-Out-Test (Lauf) implementiert.
+  4. PR-Datenbank: Power-Duration-Kurve (`PowerDurationCurveWidget`), Bestleistungen über Zeitfenster (5s bis 3h) und Kurvenvergleich integriert.
+- **Nachweis:** `scripts/check_phase_ready.sh` (0 Errors, 0 Warnings, 100% Doc-Comments), `flutter test` bestanden.
+
+### [Phase 30] Kalender-Neubau, Visueller Block-Workout-Builder, Echt-Watt/Pace-Umrechnung & Soll/Ist-Ampel · RISIKO-MITTEL
+- **STOPP-Punkt/Anlass:** Abschluss von Phase 30 gemäß `docs/phases/phase_30.md`.
+- **Entscheidung:**
+  1. Kalender-Tab umbenannt („Kalender“), Kontrast-Probleme behoben, reaktiver Monatskalender mit ○/● Indikatoren für geplante/absolvierte Einheiten.
+  2. Workout-Builder: Visuelle Blöcke für Mobile (Aufwärmen, Intervall, Erholung, Wiederholung, Abwärmen), Text-Editor für Web.
+  3. Live-Umrechnung: Relative Planung in % FTP / Schwellenpace wird anhand von Athleten-Schwellenwerten live in Watt/Pace/HF umgerechnet.
+  4. Soll/Ist-Erfüllungsampel: Grün ($\le 15\,\%$ Abweichung), Gelb ($15-35\,\%$), Rot ($> 35\,\%$ erst ab Folgetag).
+- **Nachweis:** `flutter test` bestanden.
+
+### [Phase 29] Zentrale Sprach-/Farb-Indizes, Onboarding-First-Flow, Komplettes Profil & Echte Erfahrungsstufen · RISIKO-HOCH
+- **STOPP-Punkt/Anlass:** Abschluss von Phase 29 gemäß `docs/phases/phase_29.md`.
+- **Entscheidung:**
+  1. Zentrale Tokens: `OrbitThemeTokens`, `AppColors` (#001F47 Navy, #CDFB17 Volt) und `AppStrings` (DE/EN) ohne Hardcodings.
+  2. Onboarding-First: Erststart leitet direkt ins Onboarding (`/onboarding`) mit Shortcut zur Anmeldung.
+  3. Vollständiges Profil: Bildauswahl (Base64), Stammdaten, Sportarten, Schwellenwerte, Account-Erstellung im letzten Schritt.
+  4. Globaler Bug-Käfer (`BetaBugReporterSheet`) ab Erststart erreichbar.
+  5. Erfahrungsstufen (`Einfach`, `Fortgeschritten`, `Experte`) steuern Datendichte in der gesamten App.
+- **Nachweis:** Pixel 10 Pro E2E-Screenshots in `docs/beta/screenshots/`, Tests grün.
+
+### [Phase 26–28] Live-Reparaturen & Hardware-Härtung (Pixel 10 Pro) · RISIKO-HOCH
+- **STOPP-Punkt/Anlass:** Autonomer Reparatur-Sprint nach Hardware-Audit auf Pixel 10 Pro.
+- **Entscheidung:**
+  1. App Check Entschärfung für USB-/Beta-Builds (`consumeAppCheckToken: false`), `europe-west3` Frankfurt Konsistenz.
+  2. Garmin OAuth Flow repariert (Android 11–16 `<queries>`, Deep-Link `orbit://oauth/garmin`, Secret Manager Keys).
+  3. Admin Feedback System & Ticket-System `#ORB-xxx` mit strikter DSGVO-Absicherung (Admin liest alles, Tester nur eigene Tickets).
+- **Nachweis:** `git log` auf `feature/phase-26-27-pixel10-full-repair` und Tag `v0.28.0`.
+
 ### [Phase 25] Autonomer Live-Hardware-Testlauf & E2E-Audit auf dem Google Pixel 10 Pro · STOPP 1 (RISIKO-HOCH)
 - **STOPP-Punkt/Anlass:** STOPP 1 (Vorlage von `docs/beta/PIXEL10_LIVE_AUDIT.md`, der 18 ADB-Screenshots unter `docs/beta/screenshots/` und detaillierte Fehler-Ursachenanalyse für Tim Zarges vor Start von Phase 26) aus `docs/phases/phase_25.md`.
 - **Entscheidung & Umgesetzte Maßnahmen:**

@@ -8,7 +8,12 @@ import '../../../core/design/app_colors.dart';
 import '../../../core/design/app_typography.dart';
 import '../../beta_feedback/widgets/beta_bug_reporter_sheet.dart';
 
+/// Athleten- und Benutzerprofil-Bildschirm.
+///
+/// Ermöglicht die Einsicht und Bearbeitung persönlicher Stammdaten (Name, Geburtsjahr,
+/// Körpermaße, Ruhepuls, Maximalpuls, Sportarten) sowie des Profilbilds (Base64-kodiert).
 class ProfileScreen extends StatefulWidget {
+  /// Erstellt den Profil-Bildschirm.
   const ProfileScreen({super.key});
 
   @override

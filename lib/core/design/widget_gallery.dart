@@ -37,7 +37,13 @@ import '../../features/home/widgets/race_countdown_card.dart';
 import '../../features/calendar/models/planned_workout.dart';
 import '../../features/coach_link/widgets/keyboard_shortcuts_dialog.dart';
 
+/// Interaktive Design- und Widget-Galerie für Entwickler und UI-Reviews.
+///
+/// Dient als visuelle Referenz und Testumgebung für alle zentralen ORBIT-Design-Tokens,
+/// Typografiestile, Farben (Navy & Volt) sowie Fach-Widgets (Karten, Diagramme,
+/// Diagnostik- und Telemetrie-Komponenten).
 class WidgetGalleryScreen extends StatelessWidget {
+  /// Erstellt die Widget-Galerie-Übersicht.
   const WidgetGalleryScreen({super.key});
 
   @override

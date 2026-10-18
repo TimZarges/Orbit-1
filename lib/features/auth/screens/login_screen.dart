@@ -6,7 +6,12 @@ import '../../../core/design/app_typography.dart';
 import '../../beta_feedback/widgets/beta_bug_reporter_sheet.dart';
 import '../providers/auth_provider.dart';
 
+/// Anmelde-Bildschirm der ORBIT-Applikation.
+///
+/// Ermöglicht bestehenden Athleten und Trainern den Login via E-Mail und Passwort.
+/// Bietet zudem eine Abkürzung zurück ins Onboarding sowie Zugriff auf den In-App-Bug-Reporter.
 class LoginScreen extends ConsumerStatefulWidget {
+  /// Erstellt den Anmelde-Bildschirm.
   const LoginScreen({super.key});
 
   @override

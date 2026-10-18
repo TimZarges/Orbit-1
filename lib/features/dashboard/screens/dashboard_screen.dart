@@ -12,7 +12,14 @@ import '../../analysis/screens/analysis_tab_screen.dart';
 import '../../beta_feedback/widgets/beta_bug_reporter_sheet.dart';
 import '../../workout_builder/screens/workout_template_library_screen.dart';
 
+/// Zentrales Haupt-Dashboard der ORBIT-Applikation.
+///
+/// Stellt die rollenbasierte Bottom-Navigation bereit:
+/// - Für Athleten: Heute, Kalender, Analyse, Coach
+/// - Für Trainer: Athleten, Kalender, Analyse, Bibliothek
+/// Verwaltet zudem die globale AppBar mit Bug-Reporter, Benachrichtigungen/Chat und Profilzugang.
 class DashboardScreen extends ConsumerStatefulWidget {
+  /// Erstellt das Haupt-Dashboard.
   const DashboardScreen({super.key});
 
   @override

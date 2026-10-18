@@ -10,9 +10,16 @@ import '../models/activity.dart';
 import '../providers/activity_actions_provider.dart';
 import 'activity_cockpit_screen.dart';
 
+/// Detailansicht einer absolvierten Trainingseinheit.
+///
+/// Zeigt alle sportwissenschaftlichen Kennzahlen (Dauer, Distanz, Leistung, Herzfrequenz,
+/// Zonenverteilung, Belastungswerte), bietet Aktionen zum Löschen und Melden von Fehlern
+/// sowie den Absprung in das interaktive Telemetrie-Cockpit (`ActivityCockpitScreen`).
 class ActivityDetailScreen extends ConsumerWidget {
+  /// Die darzustellende Aktivität inklusive aller berechneten Metriken.
   final Activity activity;
 
+  /// Erstellt die Detailansicht für die übergebene [activity].
   const ActivityDetailScreen({super.key, required this.activity});
 
   Future<void> _confirmDelete(BuildContext context, WidgetRef ref) async {

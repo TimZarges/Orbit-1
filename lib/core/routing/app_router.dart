@@ -23,6 +23,10 @@ import '../../features/health/screens/health_cockpit_screen.dart';
 import '../../features/activities/screens/activity_detail_loader.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+/// Zentraler Router-Provider der ORBIT-Applikation auf Basis von GoRouter.
+///
+/// Verwaltet die Navigation, Deep-Link-Normalisierung (z. B. `orbit://oauth/garmin`),
+/// Authentifizierungs-Guards und den automatischen Onboarding-First-Flow für Neunutzer.
 final goRouterProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authStateChangesProvider);
   final userDocState = ref.watch(userDocumentProvider);

@@ -1,0 +1,28 @@
+# .cursorrules — Eiserne ORBIT-Regeln für KI-Agenten & Entwickler
+
+## 1. Zero-Trust & Evidence-Only
+- Keine ungeprüften Aussagen ("Tests sind grün", "Keine Fehler"). Immer Terminal-Outputs und Screenshots nachweisen.
+- Kein Mock-/Platzhalter-Code im Produktionscode. Jeder Button muss mit echter Riverpod-/Backend-Logik verdrahtet sein.
+
+## 2. Phasen-, To-Do- & Git-Merge-Disziplin (Regel 5)
+- Niemals über mehrere Phasen auf einem Sammel-Branch ohne Merge arbeiten.
+- Am Ende jeder Phase:
+  1. `docs/phases/phase_XX.md` und `PROGRESS.md` auf `[x]` setzen.
+  2. Nachweise in `docs/CHECKPOINTS.md` dokumentieren.
+  3. Commit erstellen, Fast-Forward-Merge in `main`, Tag `v0.XX.0` setzen und `git push origin main --tags`.
+
+## 3. Durchgängige deutsche Code-Kommentarpflicht (Regel 6)
+- Jede Datei, Klasse, Methode, Cloud Function und Security Rule MUSS deutsche Dokumentationskommentare (`///` bzw. `/** ... */`) besitzen.
+- Erkläre immer "Was & Warum", sportwissenschaftliche Formeln und Sicherheits-Begründungen.
+
+## 4. Zentrale Design-Tokens & Strings (Regel 7)
+- Keine hartcodierten Hex-Farben (`AppColors.navy` #001F47, `AppColors.volt` #CDFB17, `AppColors.card` #002A5C).
+- Keine hartcodierten Strings in Widgets -> `AppStrings` / Arb / zentrale Indizes.
+
+## 5. Verständlicher Datenschutz & Marken-Reinheit (Regel 8)
+- Kein Technik-Jargon in Nutzertexten (`europe-west3`, `JSON`, `Art. 9 DSGVO` -> "Sicherer Serverstandort Deutschland").
+- Keine fremden Schutzmarken (`TSS®`, `IF®`, `NP®` -> ORBIT Belastung, Intensität, Normalisierte Leistung).
+- Zero-Open-Data: Keine ungesicherten Firestore- oder Storage-Pfade.
+
+## 6. Pre-Merge-Gate (Regel 9)
+- Vor jedem Phasen-Merge: `bash scripts/check_phase_ready.sh` muss 0 Fehler melden.

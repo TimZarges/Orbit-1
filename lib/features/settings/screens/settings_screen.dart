@@ -12,7 +12,13 @@ import 'package:orbit/core/metrics/term_resolver.dart';
 import 'package:orbit/core/design/app_colors.dart';
 import 'package:orbit/core/localization/app_strings.dart';
 
+/// Einstellungs- und Präferenz-Bildschirm der ORBIT-Applikation.
+///
+/// Bietet Konfigurationsmöglichkeiten für Sprache (DE/EN), Maßeinheiten (Metrisch/Imperial),
+/// Erfahrungsstufe (Einsteiger/Fortgeschritten/Pro), Datenschutz- und DSGVO-Exporte,
+/// Account-Aktionen (Logout, Profil löschen) sowie Entwickler-Werkzeuge.
 class SettingsScreen extends ConsumerWidget {
+  /// Erstellt den Einstellungs-Bildschirm.
   const SettingsScreen({super.key});
 
   @override
