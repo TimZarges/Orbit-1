@@ -46,12 +46,13 @@ class ThresholdHistoryChart extends StatelessWidget {
         height: 160,
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: AppColors.lightBackground,
+          color: AppColors.card,
           borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFF003875)),
         ),
         child: Text(
           'Noch keine historischen Daten für diesen Schwellenwert erfasst.',
-          style: AppTypography.label.copyWith(color: Colors.grey.shade600),
+          style: AppTypography.label.copyWith(color: Colors.white60),
         ),
       );
     }
@@ -73,9 +74,9 @@ class ThresholdHistoryChart extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: AppColors.card,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.cardBorder),
+        border: Border.all(color: const Color(0xFF003875)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -85,13 +86,14 @@ class ThresholdHistoryChart extends StatelessWidget {
             children: [
               Text(
                 'Entwicklung',
-                style: AppTypography.title
-                    .copyWith(fontSize: 15, color: AppColors.navy),
+                style: AppTypography.title.copyWith(
+                    fontSize: 15,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold),
               ),
               Text(
                 '${validPoints.length} Einträge',
-                style:
-                    AppTypography.label.copyWith(color: Colors.grey.shade500),
+                style: AppTypography.label.copyWith(color: Colors.white60),
               ),
             ],
           ),
@@ -116,12 +118,12 @@ class ThresholdHistoryChart extends StatelessWidget {
               Text(
                 validPoints.first.date,
                 style: AppTypography.label
-                    .copyWith(fontSize: 11, color: Colors.grey.shade500),
+                    .copyWith(fontSize: 11, color: Colors.white60),
               ),
               Text(
                 validPoints.last.date,
                 style: AppTypography.label
-                    .copyWith(fontSize: 11, color: Colors.grey.shade500),
+                    .copyWith(fontSize: 11, color: Colors.white60),
               ),
             ],
           ),
@@ -156,13 +158,13 @@ class _HistoryChartPainter extends CustomPainter {
     if (points.isEmpty) return;
 
     final linePaint = Paint()
-      ..color = AppColors.navy
+      ..color = AppColors.volt
       ..strokeWidth = 2.5
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
 
     final gridPaint = Paint()
-      ..color = Colors.grey.shade200
+      ..color = const Color(0xFF003875)
       ..strokeWidth = 1.0;
 
     final pointPaint = Paint()

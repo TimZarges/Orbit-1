@@ -124,6 +124,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                             child: Text('Beta-Feedback Inbox'),
                           ),
                           PopupMenuItem(
+                            value: '/gallery',
+                            child: Text('Design-Galerie & Karten'),
+                          ),
+                          PopupMenuItem(
                             value: '/settings',
                             child: Text('Einstellungen'),
                           ),

@@ -14,6 +14,7 @@ import '../widgets/zone_distribution_card.dart';
 import '../widgets/weekly_load_trend_chart.dart';
 import '../widgets/fitness_fatigue_trend_chart.dart';
 import '../widgets/performance_profile_card.dart';
+import '../widgets/personal_records_card.dart';
 import '../widgets/threshold_progress_card.dart';
 import '../../health/screens/health_cockpit_screen.dart';
 import '../../home/models/race_goal.dart';
@@ -271,6 +272,10 @@ class AnalysisTabScreen extends ConsumerWidget {
             points: data.weeklyTrend,
             trendDescription: data.weeklyTrendDescription,
           ),
+          const SizedBox(height: 16),
+
+          // 6b. Persönliche Bestleistungen (PR-Datenbank für Rad, Lauf & Schwimmen)
+          const PersonalRecordsCard(),
           const SizedBox(height: 16),
         ],
 

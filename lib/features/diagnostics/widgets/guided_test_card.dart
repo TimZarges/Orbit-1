@@ -27,16 +27,9 @@ class _GuidedTestCardState extends State<GuidedTestCard> {
 
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: AppColors.card,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.cardBorder),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        border: Border.all(color: const Color(0xFF003875)),
       ),
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -48,11 +41,12 @@ class _GuidedTestCardState extends State<GuidedTestCard> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: AppColors.techGrey,
+                  color: const Color(0xFF001F47),
                   borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: const Color(0xFF003875)),
                 ),
                 child: Icon(_getSportIcon(info.sport),
-                    color: AppColors.navy, size: 20),
+                    color: AppColors.volt, size: 20),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -61,13 +55,15 @@ class _GuidedTestCardState extends State<GuidedTestCard> {
                   children: [
                     Text(
                       info.titleDe,
-                      style: AppTypography.title
-                          .copyWith(fontSize: 15, color: AppColors.navy),
+                      style: AppTypography.title.copyWith(
+                          fontSize: 15,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold),
                     ),
                     Text(
                       'Dauer: ca. ${info.durationMinutes} Min.',
-                      style: AppTypography.label
-                          .copyWith(color: Colors.grey.shade600),
+                      style:
+                          AppTypography.label.copyWith(color: Colors.white60),
                     ),
                   ],
                 ),
@@ -75,7 +71,7 @@ class _GuidedTestCardState extends State<GuidedTestCard> {
               IconButton(
                 icon: Icon(
                   _isExpanded ? Icons.expand_less : Icons.expand_more,
-                  color: AppColors.navy,
+                  color: AppColors.volt,
                 ),
                 onPressed: () {
                   setState(() {
@@ -90,26 +86,28 @@ class _GuidedTestCardState extends State<GuidedTestCard> {
           Text(
             info.subtitleDe,
             style: AppTypography.body
-                .copyWith(fontSize: 13, color: Colors.grey.shade700),
+                .copyWith(fontSize: 13, color: Colors.white70),
           ),
 
           if (_isExpanded) ...[
             const SizedBox(height: 14),
-            const Divider(),
+            const Divider(color: Color(0xFF003875)),
             const SizedBox(height: 10),
 
             // Protokoll
             Text(
               'Ablauf & Protokoll',
-              style: AppTypography.title
-                  .copyWith(fontSize: 14, color: AppColors.navy),
+              style: AppTypography.title.copyWith(
+                  fontSize: 14,
+                  color: AppColors.volt,
+                  fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 6),
             Text(
               info.protocolDe,
               style: AppTypography.body.copyWith(
                 fontSize: 13,
-                color: AppColors.navy,
+                color: Colors.white70,
                 height: 1.4,
               ),
             ),
@@ -119,21 +117,21 @@ class _GuidedTestCardState extends State<GuidedTestCard> {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: const Color(0xFFFEF3C7), // Amber 100
+                color: const Color(0xFF78350F).withValues(alpha: 0.3),
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: const Color(0xFFFDE68A)),
+                border: Border.all(color: const Color(0xFFB45309)),
               ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Icon(Icons.warning_amber_rounded,
-                      color: Color(0xFFD97706), size: 18),
+                      color: Color(0xFFFBBF24), size: 18),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       info.safetyNoteDe,
                       style: AppTypography.label.copyWith(
-                        color: const Color(0xFF92400E),
+                        color: const Color(0xFFFDE68A),
                         height: 1.3,
                       ),
                     ),
@@ -153,8 +151,8 @@ class _GuidedTestCardState extends State<GuidedTestCard> {
               icon: const Icon(Icons.calendar_month_outlined, size: 16),
               label: const Text('Test in Kalender einplanen'),
               style: OutlinedButton.styleFrom(
-                foregroundColor: AppColors.navy,
-                side: BorderSide(color: AppColors.navy.withValues(alpha: 0.2)),
+                foregroundColor: AppColors.volt,
+                side: const BorderSide(color: AppColors.volt),
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10)),
                 padding: const EdgeInsets.symmetric(vertical: 12),

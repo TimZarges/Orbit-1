@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'app_colors.dart';
 import '../../features/workout_builder/domain/workout_parser.dart';
 import '../../features/workout_builder/widgets/workout_profile_chart.dart';
 import '../../features/analysis/models/form_traffic_light.dart';
@@ -186,14 +187,15 @@ class WidgetGalleryScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: const Color(0xFF0F172A),
+              color: AppColors.card,
               borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFF003875)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Dark Cockpit Data Density (#0F172A)',
+                  'Dark Cockpit Telemetrie',
                   style: Theme.of(context)
                       .textTheme
                       .titleLarge
@@ -227,7 +229,10 @@ class WidgetGalleryScreen extends StatelessWidget {
                           },
                         ),
                         const SizedBox(height: 16),
-                        TelemetryMapWidget(points: points),
+                        TelemetryMapWidget(
+                          points: points,
+                          initialTilesEnabled: true,
+                        ),
                         const SizedBox(height: 16),
                         const PowerDurationCurveWidget(
                           curve: PowerDurationCurve(

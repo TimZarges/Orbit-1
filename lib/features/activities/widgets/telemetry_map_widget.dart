@@ -6,25 +6,38 @@ import '../../../core/design/app_colors.dart';
 import '../../../core/design/app_typography.dart';
 import '../models/activity_stream.dart';
 
+/// Karten-Kachel-Stil (Dunkel vs. Hell)
+enum TelemetryMapStyle {
+  dark('Dunkel', 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'),
+  light('Hell', 'https://tile.openstreetmap.org/{z}/{x}/{y}.png');
+
+  final String label;
+  final String urlTemplate;
+  const TelemetryMapStyle(this.label, this.urlTemplate);
+}
+
 /// Farbcodierungs-Modus für den GPS-Track auf der Karte.
 enum TelemetryMapColorMode {
-  heartRateZone('HF-Zone'),
+  voltStandard('Volt-Spur'),
   powerZone('Watt-Zone'),
+  heartRateZone('HF-Zone'),
   paceSpeed('Pace/Speed');
 
   final String label;
   const TelemetryMapColorMode(this.label);
 }
 
-/// Interaktive GPS-Streckenkarte mit `flutter_map` im ORBIT Dark-Cockpit (Phase 19.3).
+/// Interaktive GPS-Streckenkarte mit `flutter_map` im ORBIT Dark-Cockpit (Phase 19.3 & 31.2).
 ///
 /// Unterstützt:
+/// - **Strecken-Visualisierung:** Leuchtende `#CDFB17` Volt-Linie mit dunkler `#001F47` Kontur
+///   (Outlined Polyline) für maximalen Kontrast auf allen Untergründen.
+/// - **Karten-Stil:** Direkter Umschalter zwischen **Heller Karte** (Voyager/OSM) und
+///   **Dunkler Cockpit-Karte** (Carto Dark Matter).
 /// - **Ohne Karten-Opt-in (DSGVO-Default):** Rendert die GPS-Polylinie in `FlutterMap`
 ///   komplett ohne externen `TileLayer` vor einem edlen `#001F47` Navy-Hintergrund
-///   (keine IP-Übertragung an Kartenserver) + Overlay-Button
-///   „Kartenkacheln aktivieren (OpenStreetMap/Carto)“.
-/// - **Mit aktivierten Kacheln:** Rendert dunkle CartoDB Dark Matter / OpenStreetMap Kacheln.
-/// - **Farbcodierter GPS-Track:** Umschaltbar nach **HF-Zone**, **Watt-Zone** oder **Pace/Speed**.
+///   (keine IP-Übertragung an Kartenserver) + Overlay-Button „Kartenkacheln aktivieren“.
+/// - **Farbcodierter GPS-Track:** Umschaltbar nach **Volt-Spur**, **Watt-Zone**, **HF-Zone** oder **Pace/Speed**.
 /// - **Marker:** Start (Grün), Ziel (Rot), Runden-/Kilometer-Splits und live synchronisierter
 ///   Volt-Marker beim Scrubbing über die Telemetrie-Graphen.
 class TelemetryMapWidget extends StatefulWidget {
@@ -34,6 +47,7 @@ class TelemetryMapWidget extends StatefulWidget {
   final double ftpWatts;
   final double maxHrBpm;
   final bool initialTilesEnabled;
+  final TelemetryMapStyle initialMapStyle;
   final TileProvider? tileProviderOverride;
 
   const TelemetryMapWidget({
@@ -44,6 +58,7 @@ class TelemetryMapWidget extends StatefulWidget {
     this.ftpWatts = 250,
     this.maxHrBpm = 190,
     this.initialTilesEnabled = false,
+    this.initialMapStyle = TelemetryMapStyle.dark,
     this.tileProviderOverride,
   });
 
@@ -53,19 +68,14 @@ class TelemetryMapWidget extends StatefulWidget {
 
 class _TelemetryMapWidgetState extends State<TelemetryMapWidget> {
   late bool _tilesEnabled;
-  TelemetryMapColorMode _colorMode = TelemetryMapColorMode.powerZone;
+  late TelemetryMapStyle _mapStyle;
+  TelemetryMapColorMode _colorMode = TelemetryMapColorMode.voltStandard;
 
   @override
   void initState() {
     super.initState();
     _tilesEnabled = widget.initialTilesEnabled;
-    final hasPower = widget.points.any((p) => (p.power ?? 0) > 0);
-    final hasHr = widget.points.any((p) => (p.hr ?? 0) > 0);
-    if (!hasPower && hasHr) {
-      _colorMode = TelemetryMapColorMode.heartRateZone;
-    } else if (!hasPower && !hasHr) {
-      _colorMode = TelemetryMapColorMode.paceSpeed;
-    }
+    _mapStyle = widget.initialMapStyle;
   }
 
   void _requestTileConsent() {
@@ -77,13 +87,13 @@ class _TelemetryMapWidgetState extends State<TelemetryMapWidget> {
     showDialog<void>(
       context: context,
       builder: (dialogCtx) => AlertDialog(
-        backgroundColor: const Color(0xFF1E293B),
+        backgroundColor: AppColors.card,
         title: const Text(
           'Externe Kartenkacheln aktivieren?',
           style: TextStyle(color: Colors.white),
         ),
         content: const Text(
-          'Beim Laden von Kartenkacheln (OpenStreetMap / Carto Dark Matter) wird deine IP-Adresse an den Kartenanbieter übertragen (DSGVO-Opt-in). '
+          'Beim Laden von Kartenkacheln (Carto / OpenStreetMap) wird deine IP-Adresse an den Kartenanbieter übertragen (DSGVO-Opt-in). '
           'Ohne Kacheln bleibt die GPS-Strecke auf dem dunklen Navy-Hintergrund (#001F47) vollständig interaktiv.',
           style: TextStyle(color: Colors.white70),
         ),
@@ -115,6 +125,9 @@ class _TelemetryMapWidgetState extends State<TelemetryMapWidget> {
   /// Ermittelt die Zone (1..7) und zugehörige ORBIT-Zonenfarbe für einen Punkt gemäß gewähltem Modus.
   Color _colorForPoint(ActivityStreamPoint pt, double maxSpeedMps) {
     switch (_colorMode) {
+      case TelemetryMapColorMode.voltStandard:
+        return AppColors.volt;
+
       case TelemetryMapColorMode.heartRateZone:
         final hr = pt.hr;
         if (hr == null || hr <= 0 || widget.maxHrBpm <= 0) {
@@ -155,7 +168,7 @@ class _TelemetryMapWidgetState extends State<TelemetryMapWidget> {
     }
   }
 
-  /// Erzeugt farbcodierte Polylinien-Segmente aus den GPS-Punkten.
+  /// Erzeugt kontrastreiche Polylinien mit dunkler Kontur (#001F47) und innerer Farblinie.
   List<Polyline> _buildColoredPolylines(List<ActivityStreamPoint> gpsPoints) {
     if (gpsPoints.length < 2) return const [];
 
@@ -166,7 +179,7 @@ class _TelemetryMapWidgetState extends State<TelemetryMapWidget> {
       }
     }
 
-    final polylines = <Polyline>[];
+    final segments = <(List<LatLng>, Color)>[];
     var currentSegment = <LatLng>[
       LatLng(gpsPoints.first.lat!, gpsPoints.first.lng!),
     ];
@@ -179,16 +192,26 @@ class _TelemetryMapWidgetState extends State<TelemetryMapWidget> {
 
       currentSegment.add(latLng);
       if (ptColor != currentColor || i == gpsPoints.length - 1) {
-        polylines.add(
-          Polyline(
-            points: List<LatLng>.unmodifiable(currentSegment),
-            color: currentColor,
-            strokeWidth: 4.0,
-          ),
-        );
+        segments.add((List<LatLng>.unmodifiable(currentSegment), currentColor));
         currentSegment = <LatLng>[latLng];
         currentColor = ptColor;
       }
+    }
+
+    final polylines = <Polyline>[];
+    // Outlined GPS-Spur: Leuchtende Volt-/Zonenlinie mit dunkler Navy-Kontur (#001F47)
+    for (final seg in segments) {
+      polylines.add(
+        Polyline(
+          points: seg.$1,
+          color: seg.$2,
+          strokeWidth: 4.5,
+          borderColor: AppColors.navy,
+          borderStrokeWidth: 2.5,
+          strokeCap: StrokeCap.round,
+          strokeJoin: StrokeJoin.round,
+        ),
+      );
     }
 
     return polylines;
@@ -299,12 +322,14 @@ class _TelemetryMapWidgetState extends State<TelemetryMapWidget> {
             ? LatLng(widget.scrubPoint!.lat!, widget.scrubPoint!.lng!)
             : null;
 
+    final isLightStyle = _tilesEnabled && _mapStyle == TelemetryMapStyle.light;
+
     return Container(
       key: const Key('telemetry_map_container'),
       height: widget.height,
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
-        color: AppColors.navy, // #001F47 DSGVO Vektor-Hintergrund
+        color: isLightStyle ? const Color(0xFFF1F5F9) : AppColors.navy,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFF334155)),
       ),
@@ -313,9 +338,15 @@ class _TelemetryMapWidgetState extends State<TelemetryMapWidget> {
           // Echte interaktive FlutterMap
           FlutterMap(
             options: MapOptions(
+              initialCameraFit: CameraFit.coordinates(
+                coordinates:
+                    gpsPoints.map((p) => LatLng(p.lat!, p.lng!)).toList(),
+                padding: const EdgeInsets.all(28),
+              ),
               initialCenter: center,
               initialZoom: zoom,
-              backgroundColor: AppColors.navy,
+              backgroundColor:
+                  isLightStyle ? const Color(0xFFF1F5F9) : AppColors.navy,
               interactionOptions: const InteractionOptions(
                 flags: InteractiveFlag.all & ~InteractiveFlag.rotate,
               ),
@@ -324,14 +355,13 @@ class _TelemetryMapWidgetState extends State<TelemetryMapWidget> {
               // Nur nach explizitem DSGVO-Opt-in werden externe Kartenkacheln geladen
               if (_tilesEnabled)
                 TileLayer(
-                  urlTemplate:
-                      'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
-                  subdomains: const ['a', 'b', 'c', 'd'],
+                  urlTemplate: _mapStyle.urlTemplate,
                   userAgentPackageName: 'app.orbit.training',
+                  tileBuilder: isLightStyle ? null : darkModeTileBuilder,
                   tileProvider: widget.tileProviderOverride,
                 ),
 
-              // Farbcodierte GPS-Polylinie (HF-Zone, Watt-Zone oder Pace/Speed)
+              // Outlined GPS-Polylinie (Navy-Kontur + leuchtende Volt/Zonen-Spur)
               PolylineLayer(
                 polylines: coloredPolylines,
               ),
@@ -430,7 +460,7 @@ class _TelemetryMapWidgetState extends State<TelemetryMapWidget> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               decoration: BoxDecoration(
-                color: const Color(0xFF0F172A).withValues(alpha: 0.88),
+                color: AppColors.navy.withValues(alpha: 0.92),
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(color: const Color(0xFF334155)),
               ),
@@ -455,14 +485,14 @@ class _TelemetryMapWidgetState extends State<TelemetryMapWidget> {
             ),
           ),
 
-          // Rechts oben: Umschalter für Farbcodierung (HF-Zone / Watt-Zone / Pace)
+          // Rechts oben: Umschalter für Farbcodierung (Volt / HF-Zone / Watt-Zone / Pace)
           Positioned(
             top: 10,
             right: 10,
             child: Container(
               padding: const EdgeInsets.all(3),
               decoration: BoxDecoration(
-                color: const Color(0xFF0F172A).withValues(alpha: 0.9),
+                color: AppColors.navy.withValues(alpha: 0.92),
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(color: const Color(0xFF334155)),
               ),
@@ -499,45 +529,103 @@ class _TelemetryMapWidgetState extends State<TelemetryMapWidget> {
             ),
           ),
 
-          // Rechts unten: DSGVO Kartenkacheln-Opt-in Button
+          // Unten rechts: Hell/Dunkel Umschalter & DSGVO Opt-in Button
           Positioned(
             bottom: 10,
             right: 10,
-            child: InkWell(
-              key: const Key('telemetry_map_optin_button'),
-              onTap: _requestTileConsent,
-              borderRadius: BorderRadius.circular(8),
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF0F172A).withValues(alpha: 0.9),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: const Color(0xFF334155)),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      _tilesEnabled ? Icons.layers : Icons.layers_outlined,
-                      size: 14,
-                      color: _tilesEnabled ? AppColors.volt : Colors.white70,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      _tilesEnabled
-                          ? 'Kartenkacheln aktiv (Carto/OSM)'
-                          : 'Kartenkacheln aktivieren (OpenStreetMap/Carto)',
-                      style: AppTypography.label.copyWith(
-                        color: _tilesEnabled ? AppColors.volt : Colors.white70,
-                        fontSize: 11,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Hell / Dunkel Toggle
+                if (_tilesEnabled) ...[
+                  InkWell(
+                    key: const Key('telemetry_map_style_toggle'),
+                    onTap: () {
+                      setState(() {
+                        _mapStyle = _mapStyle == TelemetryMapStyle.dark
+                            ? TelemetryMapStyle.light
+                            : TelemetryMapStyle.dark;
+                      });
+                    },
+                    borderRadius: BorderRadius.circular(8),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 9,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.navy.withValues(alpha: 0.92),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: const Color(0xFF334155)),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            _mapStyle == TelemetryMapStyle.dark
+                                ? Icons.wb_sunny_outlined
+                                : Icons.dark_mode_outlined,
+                            size: 13,
+                            color: AppColors.volt,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            _mapStyle == TelemetryMapStyle.dark
+                                ? 'Hell'
+                                : 'Dunkel',
+                            style: AppTypography.label.copyWith(
+                              color: AppColors.volt,
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  ],
+                  ),
+                  const SizedBox(width: 6),
+                ],
+
+                // DSGVO Kartenkacheln-Opt-in Button
+                InkWell(
+                  key: const Key('telemetry_map_optin_button'),
+                  onTap: _requestTileConsent,
+                  borderRadius: BorderRadius.circular(8),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.navy.withValues(alpha: 0.92),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: const Color(0xFF334155)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          _tilesEnabled ? Icons.layers : Icons.layers_outlined,
+                          size: 14,
+                          color:
+                              _tilesEnabled ? AppColors.volt : Colors.white70,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          _tilesEnabled
+                              ? 'Kartenkacheln aktiv (Carto/OSM)'
+                              : 'Kartenkacheln aktivieren (OpenStreetMap/Carto)',
+                          style: AppTypography.label.copyWith(
+                            color:
+                                _tilesEnabled ? AppColors.volt : Colors.white70,
+                            fontSize: 11,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ),
           ),
         ],

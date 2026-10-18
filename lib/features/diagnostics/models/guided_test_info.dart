@@ -24,6 +24,25 @@ class GuidedTestInfo {
 
   static List<GuidedTestInfo> get standardTests => [
         const GuidedTestInfo(
+          id: 'bike_ramp_test',
+          sport: 'BIKE',
+          titleDe: 'Stufentest (Ramp Test)',
+          titleEn: 'Ramp Test (MAP & FTP)',
+          subtitleDe:
+              'Stufenförmige Ausbelastung zur präzisen Bestimmung von MAP und FTP.',
+          durationMinutes: 25,
+          protocolDe: '1. 5 min lockeres Einfahren bei 100 Watt\n'
+              '2. Start bei 100 Watt, Steigerung um +25 Watt alle 30 Sekunden bis zur Erschöpfung\n'
+              '3. 10 min lockeres Ausfahren\n\n'
+              'Berechnung: MAP = höchste vollendete Stufe. FTP ≈ 0,75 × beste 1-Minuten-Leistung.',
+          protocolEn: '1. 5 min easy warmup at 100 W\n'
+              '2. Start at 100 W, increase by +25 W every 30 seconds until failure\n'
+              '3. 10 min cooldown\n\n'
+              'Calculation: MAP = highest completed step. FTP ≈ 0.75 × best 1-minute power.',
+          safetyNoteDe:
+              'Nur auf dem Smart-Trainer / Ergometer im ERG-Modus durchführen. Bei Schwindel oder Brustschmerzen sofort abbrechen.',
+        ),
+        const GuidedTestInfo(
           id: 'bike_ftp_20m',
           sport: 'BIKE',
           titleDe: '20-Minuten-FTP-Test',
@@ -45,6 +64,25 @@ class GuidedTestInfo {
               'Calculation: 95% of your 20-minute average power.',
           safetyNoteDe:
               'Wichtiger Sicherheitshinweis: Führe diesen Test nur bei voller Gesundheit und auf einer sicheren, kreuzungsfreien Strecke oder auf der Rolle durch. Dies ist kein ärztlicher Belastungstest.',
+        ),
+        const GuidedTestInfo(
+          id: 'run_5min_all_out',
+          sport: 'RUN',
+          titleDe: '5-Minuten-All-Out-Test',
+          titleEn: '5-Minute All-Out Test (vVO2max)',
+          subtitleDe:
+              'Maximaltest zur Ermittlung von vVO2max und Schwellenpace.',
+          durationMinutes: 30,
+          protocolDe: '1. 15 min lockeres Einlaufen mit 3 Steigerungsläufen\n'
+              '2. 5 min maximale Distanz auf flacher Strecke oder 400m-Bahn (All-Out)\n'
+              '3. 10 min lockeres Auslaufen\n\n'
+              'Berechnung: Durchschnittsgeschwindigkeit = vVO2max. Schwellenpace ≈ Renntempo über 5 min / 0,85.',
+          protocolEn: '1. 15 min warmup with strides\n'
+              '2. 5 min maximal distance (all-out)\n'
+              '3. 10 min cooldown\n\n'
+              'Calculation: Average speed = vVO2max. Threshold pace derived from 5-min pace.',
+          safetyNoteDe:
+              'Vollständiges Aufwärmen ist zwingend erforderlich, um Muskelzerrungen zu vermeiden.',
         ),
         const GuidedTestInfo(
           id: 'run_lthr_30m',

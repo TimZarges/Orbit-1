@@ -105,13 +105,15 @@ class ActivityDetailScreen extends ConsumerWidget {
     final experienceLevel = ref.watch(settingsProvider).experienceLevel;
 
     return Scaffold(
-      backgroundColor: AppColors.lightBackground,
+      backgroundColor: AppColors.navy,
       appBar: AppBar(
-        title: const Text('Aktivität'),
+        backgroundColor: AppColors.navy,
+        foregroundColor: Colors.white,
+        title: const Text('Aktivität', style: TextStyle(color: Colors.white)),
         actions: [
           const BetaBugReportIconButton(),
           IconButton(
-            icon: const Icon(Icons.delete_outline),
+            icon: const Icon(Icons.delete_outline, color: Colors.white70),
             onPressed: () => _confirmDelete(context, ref),
           ),
         ],
@@ -154,12 +156,13 @@ class ActivityDetailScreen extends ConsumerWidget {
                         activity.title.isNotEmpty
                             ? activity.title
                             : activity.sport,
-                        style: AppTypography.headline.copyWith(fontSize: 20),
+                        style: AppTypography.headline
+                            .copyWith(fontSize: 20, color: Colors.white),
                       ),
                       const SizedBox(height: 2),
                       Text(dateStr,
                           style: AppTypography.bodySmall
-                              .copyWith(color: Colors.grey.shade600)),
+                              .copyWith(color: Colors.white70)),
                     ],
                   ),
                 ),
@@ -276,26 +279,29 @@ class ActivityDetailScreen extends ConsumerWidget {
             // Segments (Multisport)
             if (activity.segments != null && activity.segments!.isNotEmpty) ...[
               Text('Segmente',
-                  style: AppTypography.title.copyWith(color: AppColors.navy)),
+                  style: AppTypography.title.copyWith(color: Colors.white)),
               const SizedBox(height: 12),
               ...activity.segments!.map((s) => Container(
                     margin: const EdgeInsets.only(bottom: 8),
                     decoration: BoxDecoration(
-                      color: AppColors.white,
+                      color: AppColors.card,
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: AppColors.cardBorder),
+                      border: Border.all(color: const Color(0xFF003875)),
                     ),
                     child: ListTile(
                       leading: Icon(Icons.check_circle_outline,
                           color: _getSportColor(s.sport)),
                       title: Text(s.sport,
-                          style: AppTypography.bodySmall
-                              .copyWith(fontWeight: FontWeight.bold)),
-                      subtitle: Text(_formatDuration(s.durationSec.toInt())),
+                          style: AppTypography.bodySmall.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white)),
+                      subtitle: Text(_formatDuration(s.durationSec.toInt()),
+                          style: const TextStyle(color: Colors.white70)),
                       trailing: s.distanceM > 0
                           ? Text(
                               '${(s.distanceM / 1000).toStringAsFixed(2)} km',
-                              style: AppTypography.label)
+                              style: AppTypography.label
+                                  .copyWith(color: AppColors.volt))
                           : null,
                     ),
                   )),
@@ -307,7 +313,7 @@ class ActivityDetailScreen extends ConsumerWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: const Color(0xFF002A5C),
+                color: AppColors.card,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: const Color(0xFF003D82)),
               ),
@@ -355,9 +361,9 @@ class ActivityDetailScreen extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: AppColors.card,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.cardBorder),
+        border: Border.all(color: const Color(0xFF003875)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -367,10 +373,9 @@ class ActivityDetailScreen extends ConsumerWidget {
             children: [
               Text('Zonenverteilung',
                   style: AppTypography.title
-                      .copyWith(fontSize: 16, color: AppColors.navy)),
+                      .copyWith(fontSize: 16, color: Colors.white)),
               Text('Geschätzt',
-                  style: AppTypography.label
-                      .copyWith(color: Colors.grey.shade600)),
+                  style: AppTypography.label.copyWith(color: Colors.white70)),
             ],
           ),
           const SizedBox(height: 12),
@@ -396,19 +401,19 @@ class ActivityDetailScreen extends ConsumerWidget {
             children: [
               Text('Z1 (15 %)',
                   style: AppTypography.label
-                      .copyWith(color: Colors.grey.shade700, fontSize: 10)),
+                      .copyWith(color: Colors.white70, fontSize: 10)),
               Text('Z2 (50 %)',
                   style: AppTypography.label
-                      .copyWith(color: Colors.grey.shade700, fontSize: 10)),
+                      .copyWith(color: Colors.white70, fontSize: 10)),
               Text('Z3 (20 %)',
                   style: AppTypography.label
-                      .copyWith(color: Colors.grey.shade700, fontSize: 10)),
+                      .copyWith(color: Colors.white70, fontSize: 10)),
               Text('Z4 (10 %)',
                   style: AppTypography.label
-                      .copyWith(color: Colors.grey.shade700, fontSize: 10)),
+                      .copyWith(color: Colors.white70, fontSize: 10)),
               Text('Z5 (5 %)',
                   style: AppTypography.label
-                      .copyWith(color: Colors.grey.shade700, fontSize: 10)),
+                      .copyWith(color: Colors.white70, fontSize: 10)),
             ],
           ),
         ],
@@ -428,21 +433,21 @@ class _MetricCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: AppColors.card,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.cardBorder),
+        border: Border.all(color: const Color(0xFF003875)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(title,
-              style: AppTypography.label.copyWith(color: Colors.grey.shade600)),
+              style: AppTypography.label.copyWith(color: Colors.white70)),
           const SizedBox(height: 2),
           Text(
             value,
             style: AppTypography.title.copyWith(
-              color: AppColors.navy,
+              color: Colors.white,
               fontWeight: FontWeight.bold,
               fontSize: 16,
             ),

@@ -25,7 +25,7 @@ class ThresholdExplanationSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(
-        color: AppColors.white,
+        color: AppColors.card,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
@@ -41,7 +41,7 @@ class ThresholdExplanationSheet extends StatelessWidget {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
+                  color: Colors.white24,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -53,12 +53,12 @@ class ThresholdExplanationSheet extends StatelessWidget {
               children: [
                 Container(
                   padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: AppColors.techGrey,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF001F47),
                     shape: BoxShape.circle,
                   ),
-                  child:
-                      Icon(Icons.help_outline, color: AppColors.navy, size: 24),
+                  child: const Icon(Icons.help_outline,
+                      color: AppColors.volt, size: 24),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -67,13 +67,13 @@ class ThresholdExplanationSheet extends StatelessWidget {
                     children: [
                       Text(
                         'Wie entsteht dieser Vorschlag?',
-                        style:
-                            AppTypography.title.copyWith(color: AppColors.navy),
+                        style: AppTypography.title.copyWith(
+                            color: Colors.white, fontWeight: FontWeight.bold),
                       ),
                       Text(
                         '${proposal.typeLabelDe} – Transparente Datenbasis',
-                        style: AppTypography.label
-                            .copyWith(color: Colors.grey.shade600),
+                        style:
+                            AppTypography.label.copyWith(color: Colors.white60),
                       ),
                     ],
                   ),
@@ -86,10 +86,10 @@ class ThresholdExplanationSheet extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: proposal.confidenceColor.withValues(alpha: 0.12),
+                color: proposal.confidenceColor.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                    color: proposal.confidenceColor.withValues(alpha: 0.3)),
+                    color: proposal.confidenceColor.withValues(alpha: 0.4)),
               ),
               child: Row(
                 children: [
@@ -104,13 +104,13 @@ class ThresholdExplanationSheet extends StatelessWidget {
                           proposal.confidenceLabelDe,
                           style: AppTypography.body.copyWith(
                             fontWeight: FontWeight.bold,
-                            color: AppColors.navy,
+                            color: proposal.confidenceColor,
                           ),
                         ),
                         Text(
                           _getConfidenceDescription(proposal.confidence),
                           style: AppTypography.label
-                              .copyWith(color: Colors.grey.shade700),
+                              .copyWith(color: Colors.white70),
                         ),
                       ],
                     ),
@@ -123,8 +123,10 @@ class ThresholdExplanationSheet extends StatelessWidget {
             // Datenbasis
             Text(
               'Verwendete Datenpunkte',
-              style: AppTypography.title
-                  .copyWith(fontSize: 15, color: AppColors.navy),
+              style: AppTypography.title.copyWith(
+                  fontSize: 15,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             ...proposal.basis.map((item) => Padding(
@@ -132,16 +134,16 @@ class ThresholdExplanationSheet extends StatelessWidget {
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Padding(
-                        padding: const EdgeInsets.only(top: 4, right: 8),
+                      const Padding(
+                        padding: EdgeInsets.only(top: 4, right: 8),
                         child:
-                            Icon(Icons.circle, size: 6, color: AppColors.navy),
+                            Icon(Icons.circle, size: 6, color: AppColors.volt),
                       ),
                       Expanded(
                         child: Text(
                           item,
                           style: AppTypography.body
-                              .copyWith(fontSize: 14, color: AppColors.navy),
+                              .copyWith(fontSize: 14, color: Colors.white70),
                         ),
                       ),
                     ],
@@ -153,20 +155,21 @@ class ThresholdExplanationSheet extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppColors.lightBackground,
+                color: const Color(0xFF001F47),
                 borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFF003875)),
               ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.info_outline,
-                      size: 18, color: Colors.grey.shade600),
+                  const Icon(Icons.info_outline,
+                      size: 18, color: Colors.white60),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
                       'ORBIT gibt keine physiologischen Garantien. Schwellenwerte können durch Tagesform, Temperatur, Hydration oder Ermüdung schwanken. Du kennst dein Körpergefühl am besten.',
-                      style: AppTypography.label
-                          .copyWith(color: Colors.grey.shade600),
+                      style:
+                          AppTypography.label.copyWith(color: Colors.white70),
                     ),
                   ),
                 ],
@@ -180,7 +183,7 @@ class ThresholdExplanationSheet extends StatelessWidget {
               child: ElevatedButton(
                 onPressed: () => Navigator.of(context).pop(),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.techGrey,
+                  backgroundColor: AppColors.volt,
                   foregroundColor: AppColors.navy,
                   elevation: 0,
                   shape: RoundedRectangleBorder(

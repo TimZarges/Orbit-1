@@ -53,21 +53,21 @@ class _DiagnosticsScreenState extends ConsumerState<DiagnosticsScreen>
     final historyAsync = ref.watch(thresholdHistoryProvider(widget.athleteId));
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.navy,
       appBar: AppBar(
         title: Text(
           'Leistungsdiagnostik',
           style: AppTypography.headline
-              .copyWith(fontSize: 18, color: AppColors.navy),
+              .copyWith(fontSize: 18, color: Colors.white),
         ),
-        backgroundColor: AppColors.white,
+        backgroundColor: AppColors.navy,
         elevation: 0,
-        iconTheme: const IconThemeData(color: AppColors.navy),
+        iconTheme: const IconThemeData(color: Colors.white),
         bottom: TabBar(
           controller: _tabController,
-          labelColor: AppColors.navy,
-          unselectedLabelColor: Colors.grey.shade500,
-          indicatorColor: AppColors.navy,
+          labelColor: AppColors.volt,
+          unselectedLabelColor: Colors.white60,
+          indicatorColor: AppColors.volt,
           indicatorWeight: 3,
           labelStyle: AppTypography.body.copyWith(fontWeight: FontWeight.bold),
           tabs: const [
@@ -147,8 +147,10 @@ class _DiagnosticsScreenState extends ConsumerState<DiagnosticsScreen>
           children: [
             Text(
               'Erkannte Vorschläge',
-              style: AppTypography.title
-                  .copyWith(fontSize: 16, color: AppColors.navy),
+              style: AppTypography.title.copyWith(
+                  fontSize: 16,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold),
             ),
             if (proposals.isNotEmpty)
               Container(
@@ -174,20 +176,19 @@ class _DiagnosticsScreenState extends ConsumerState<DiagnosticsScreen>
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: AppColors.white,
+              color: AppColors.card,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.cardBorder),
+              border: Border.all(color: const Color(0xFF003875)),
             ),
             child: Row(
               children: [
-                Icon(Icons.check_circle_outline,
-                    color: Colors.grey.shade400, size: 20),
+                const Icon(Icons.check_circle_outline,
+                    color: AppColors.volt, size: 20),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
                     'Aktuell keine neuen Schwellenwert-Vorschläge. Deine hinterlegten Werte stimmen gut mit deinen Leistungen überein.',
-                    style: AppTypography.label
-                        .copyWith(color: Colors.grey.shade600),
+                    style: AppTypography.label.copyWith(color: Colors.white70),
                   ),
                 ),
               ],
@@ -215,13 +216,13 @@ class _DiagnosticsScreenState extends ConsumerState<DiagnosticsScreen>
         // 4. Geführte Tests
         Text(
           'Geführte Feldtests',
-          style:
-              AppTypography.title.copyWith(fontSize: 16, color: AppColors.navy),
+          style: AppTypography.title.copyWith(
+              fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 4),
         Text(
           'Standardisierte Protokolle für verlässliche Testergebnisse ohne Labor.',
-          style: AppTypography.label.copyWith(color: Colors.grey.shade600),
+          style: AppTypography.label.copyWith(color: Colors.white70),
         ),
         const SizedBox(height: 10),
         ...tests.map((test) => Padding(
@@ -252,8 +253,9 @@ class _DiagnosticsScreenState extends ConsumerState<DiagnosticsScreen>
           if (latest.ftpW != null) valueStr = '${latest.ftpW!.round()} W';
           break;
         case ThresholdType.lthr:
-          if (latest.thresholdHrBpm != null)
+          if (latest.thresholdHrBpm != null) {
             valueStr = '${latest.thresholdHrBpm!.round()} bpm';
+          }
           break;
         case ThresholdType.thresholdPace:
           if (latest.runThresholdPaceSecPerKm != null) {
@@ -275,16 +277,9 @@ class _DiagnosticsScreenState extends ConsumerState<DiagnosticsScreen>
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: AppColors.card,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.cardBorder),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        border: Border.all(color: const Color(0xFF003875)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -294,19 +289,19 @@ class _DiagnosticsScreenState extends ConsumerState<DiagnosticsScreen>
             children: [
               Text(
                 'Aktueller Schwellenwert',
-                style:
-                    AppTypography.label.copyWith(color: Colors.grey.shade600),
+                style: AppTypography.label.copyWith(color: Colors.white70),
               ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
-                  color: AppColors.techGrey,
+                  color: const Color(0xFF001F47),
                   borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: const Color(0xFF003875)),
                 ),
                 child: Text(
                   sourceStr,
                   style: AppTypography.label
-                      .copyWith(fontSize: 10, color: Colors.grey.shade700),
+                      .copyWith(fontSize: 10, color: AppColors.volt),
                 ),
               ),
             ],
@@ -316,14 +311,14 @@ class _DiagnosticsScreenState extends ConsumerState<DiagnosticsScreen>
             valueStr,
             style: AppTypography.headline.copyWith(
               fontWeight: FontWeight.bold,
-              color: AppColors.navy,
+              color: Colors.white,
               fontSize: 28,
             ),
           ),
           const SizedBox(height: 6),
           Text(
             'Gültig seit: $effectiveStr',
-            style: AppTypography.label.copyWith(color: Colors.grey.shade500),
+            style: AppTypography.label.copyWith(color: Colors.white54),
           ),
         ],
       ),

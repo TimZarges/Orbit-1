@@ -11,6 +11,7 @@ class AppColors {
   static const Color greyLight = Color(0xFFF8FAFC);
   static const Color cockpit = Color(0xFF001F47);
   static const Color cardDark = Color(0xFF002A5C);
+  static const Color card = cardDark;
   static const Color cardBorder = Color(0xFFE2E8F0);
 
   // Zones Z1-Z7

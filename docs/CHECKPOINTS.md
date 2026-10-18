@@ -1939,3 +1939,42 @@ The operation couldn’t be completed. Unable to locate a Java Runtime.
   - **Gesamttests:** 164/164 Tests bestanden (`flutter test --no-pub`).
   - **Analyzer:** 0 Errors, 0 Warnings (`flutter analyze --no-pub`).
 
+---
+
+### [Phase 31] Garmin-Daten-Empfang, Karten (Hell/Dunkel + Outlined Volt), Neue Leistungstests & PR-Datenbank · STOPP 1 (ABNAHME)
+- **Status:** Vollständig umgesetzt und verifiziert
+- **Datum:** 2026-10-18 11:12
+- **Hardware-Ziel:** Google Pixel 10 Pro (`58251FDCR00EQ2`), Android 16
+- **Entscheidung & Umgesetzte Maßnahmen:**
+  1. **Garmin-Aktivitäts-Provisioning & Sync:**
+     - Reale Test-Aktivitäten (`ORBIT_Test_Radfahrt.fit`, `ORBIT_Test_Lauf.fit`) mit GPS, Watt, HF und Trittfrequenz auf das Testgerät provisioniert (`/sdcard/Download/`).
+     - Cloud Functions für Garmin-Webhooks und Backfill-Chunks auditiert und verifiziert.
+  2. **GPS-Aktivitätskarte mit leuchtender Volt-Spur & Hell/Dunkel-Toggle:**
+     - Standardmäßige Darstellung des Tracks als leuchtende `#CDFB17` Volt-Linie mit dunkler `#001F47` Kontur (Outlined Polyline: `borderStrokeWidth: 2.5`, `strokeWidth: 4.5`, `borderColor: AppColors.navy`, `color: AppColors.volt`) für perfekten Kontrast auf allen Untergründen.
+     - Zuverlässiges Kachel-Setup mit OpenStreetMap ohne API-Key-Blockaden oder Wasserzeichen.
+     - Interaktiver Hell/Dunkel-Kartenkachel-Toggle (`TelemetryMapStyle.dark` mit `darkModeTileBuilder` Matrix-Inverter vs. `TelemetryMapStyle.light`).
+     - DSGVO-Default: Pure ORBIT Navy-Darstellung (`#001F47`) ohne externe IP-Übertragung mit 1-Klick-Opt-in.
+     - `CameraFit.coordinates` mit adaptivem Padding (28px) für perfekte Streckenzentrierung.
+  3. **Leistungsdiagnostik: Kontrast-Korrektur & Neue Standard-Tests:**
+     - Dark-Cockpit-Theme (`AppColors.card` `#002A5C`) für alle Diagnostik-Tabs und Schwellenwert-Historie ohne weiße Container oder Kontrastverluste.
+     - **Stufentest (Ramp Test)** für Radfahren: Start bei 100 Watt, Steigerung alle 30s um +25 Watt; automatische Auswertung von MAP und FTP ($0{,}75 \times \text{beste 1-Min-Leistung}$).
+     - **5-Minuten-All-Out-Test** für Laufen: 5 Minuten maximale Distanz zur Bestimmung von $\text{vVO}_2\text{max}$ und Schwellenpace.
+  4. **PR-Datenbank & Power/Pace Duration Curves:**
+     - Rad: Bestwerte für 11 Intervalle (`5s, 15s, 30s, 1m, 3m, 5m, 10m, 20m, 60m, 90m, 180m`) in Watt & W/kg.
+     - Lauf: 7 Standarddistanzen (`400m, 1km, 3km, 5km, 10km, Halbmarathon, Marathon`).
+     - Schwimmen: 5 Distanzen (`100m, 200m, 400m, 800m, 1500m`).
+     - Filter nach `Allzeit (Gesamt)`, `2026 (Aktuelles Jahr)` und `Letzte 90 Tage`.
+     - Logarithmische Power-Duration-Kurve im Analyse-Tab eingebettet; Einheiten-Overlay in `ActivityCockpitScreen`.
+- **Nachweise (Evidence-Only gemäß Regel 2):**
+  - **Live-Screenshots vom Google Pixel 10 Pro:**
+    - `docs/beta/screenshots/phase31_map_volt_dark.png`: Dunkle OpenStreetMap-Kachel mit leuchtender Volt-Spur und Navy-Außenkontur, Start-/Ziel-Markern und Runden-Splits.
+    - `docs/beta/screenshots/phase31_map_volt_light.png`: Helle OSM-Karte mit Sonnenlicht-Kontrast und identischer Volt-Spur nach Betätigen des Toggles.
+    - `docs/beta/screenshots/phase31_map_pure_navy.png`: Pure ORBIT Navy DSGVO-Darstellung (`#001F47`).
+    - `docs/beta/screenshots/phase31_diagnostics_dark_ramp.png`: Leistungsdiagnostik im Dark-Cockpit mit Stufentest (Ramp Test) für Rad.
+    - `docs/beta/screenshots/phase31_diagnostics_ramp_expanded.png`: Ausgeklapptes Testprotokoll mit Berechnungsformel und Button „Test in Kalender einplanen“.
+    - `docs/beta/screenshots/phase31_diagnostics_lauf_5min.png`: Lauf-Diagnostik mit 5-Minuten-All-Out-Testprotokoll.
+    - `docs/beta/screenshots/phase31_personal_records.png`: PR-Datenbank mit Sport-Umschalter (Rad, Lauf, Schwimmen), Zeitfilter und Power-Duration-Kurve im Analyse-Tab.
+  - **Unit- & Widget-Tests:** `test/features/phase31_garmin_map_diagnostics_prs_test.dart` (7/7 Tests bestanden).
+  - **Gesamttests:** 171/171 Tests bestanden (`flutter test --no-pub`).
+  - **Analyzer:** 0 Errors, 0 Warnings (`flutter analyze --no-pub`).
+
