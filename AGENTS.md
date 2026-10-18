@@ -58,6 +58,42 @@
 
 ---
 
+## 2.1 Eiserne Nachtschicht-Gesetze (Autonomer Modus Phasen 35–39)
+
+### Gesetz 1: Absolutes Frage-Verbot (Kein Anhalten!)
+- Keine Freigabe- oder Rückfragen während der gesamten Abarbeitung von Phase 35 bis Phase 39.
+- Technische Entscheidungen eigenständig im Sinne von maximaler Performance, Sicherheit und DSGVO treffen.
+- Fehler werden sofort im Self-Healing-Loop behoben.
+
+### Gesetz 2: Atomare Commits & Lückenlose Nachverfolgbarkeit (`docs/NIGHT_SHIFT_LOG.md` + Chat)
+- Nach jedem einzelnen Unterpaket (z. B. 35.1, 35.2 etc.):
+  1. Phasendatei `[ ]` -> `[x]` setzen.
+  2. Schneller Modul-Check (`flutter analyze --no-pub` + gezielter Unit-/Widget-Test).
+  3. Atomarer Git-Commit (`feat(phase-XX.Y): ...`).
+  4. Protokolleintrag in `docs/NIGHT_SHIFT_LOG.md` und exakter Nachweis-Block im Chat.
+
+### Gesetz 3: Strikter Phasen-Abschluss
+- Am Ende jeder Phase (35, 36, 37, 38, 39):
+  1. Dokumentation in Phasendatei, `PROGRESS.md`, `docs/PROGRESS.md` und `docs/CHECKPOINTS.md`.
+  2. `scripts/check_phase_ready.sh` + Gesamttestlauf.
+  3. Fast-Forward-Merge des Feature-Branches nach `main`.
+  4. Annotiertes Git-Tag `v0.XX.0` setzen und sofort pushen (`git push origin main --tags`).
+  5. Release-APK bauen, per `adb install -r` auf dem Pixel 10 Pro installieren und Screenshots aufnehmen.
+
+### Gesetz 4: Durchgängige & Rückwirkende deutsche Code-Kommentierung (`///` & `/** ... */`)
+- Jede Datei, Klasse, Methode, Berechnungsformel und Security Rule muss lückenlos auf Deutsch dokumentiert sein.
+- Angefasste Dateien sofort kommentieren, in Phase 39 den gesamten Altbestand rückwirkend abschließen.
+
+### Gesetz 5: Höchste App- & Test-Effizienz (120 Hz & Millisekunden-Reaktion)
+- Hintergrund-Isolates (`Isolate.run` / `compute`) für `.fit`/`.tcx`/`.gpx` und große JSON-Payloads.
+- Render-Disziplin: `const`, `RepaintBoundary` um Graphen/Karten/Ringe, LTTB-Downsampling (250–300 Bildpunkte), `.select(...)`.
+- Firestore-Disziplin: Zeitfenster-begrenzte `.snapshots()`-Streams.
+
+### Gesetz 6: Beta-Feedback-Synchronisation zu Beginn
+- Vorab `npm --prefix functions run feedback:pull` ausführen, `docs/beta/BUGS.md` einlesen und Tickets einarbeiten.
+
+---
+
 ## 3. Technischer Rahmen
 - **Stack:** Flutter/Dart (Android > iOS > Web/Desktop), Firebase (Auth, Firestore, Storage, Cloud Functions 2nd Gen in TypeScript, FCM, App Check, Crashlytics).
 - **Region:** Alle Cloud Functions, Firestore- und Storage-Ressourcen laufen ausschließlich in **`europe-west3` (Frankfurt)**. Abweichende Regionen sind verboten (DSGVO).

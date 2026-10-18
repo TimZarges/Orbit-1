@@ -86,9 +86,14 @@ Hier werden alle von Vereinsathleten, Trainern oder automatisierten Tests gemeld
 
 ## 4. Live gemeldete Beta-Feedback- & Bug-Tickets (Automatisch synchronisiert)
 
-> Zuletzt aktualisiert per `npm --prefix functions run feedback:pull`: 2026-10-17T16:04:53.576Z
+> Zuletzt aktualisiert per `npm --prefix functions run feedback:pull`: 2026-10-18T21:02:16.748Z
 
 | Ticket-ID | Kategorie | Status | Melder (User-ID) | Datum | Gerät / Version | Beschreibung |
 | :--- | :--- | :---: | :--- | :--- | :--- | :--- |
+| **#ORB-006** | `DESIGN_SUGGESTION` | 🔴 Offen | `JMpW6PPX...` | 18.10.2026, 21:35:13 | android (v1.0.0 (Build 1) • Closed Beta) | Lesbarkeit |
+| **#ORB-005** | `BUG_CRASH` | 🔴 Offen | `Asj8kRlT...` | 18.10.2026, 20:58:26 | android (v1.0.0 (Build 1) • Closed Beta) | Block Profil passt nicht zum Titel der Einheit, es muss drauf geachtet werden das die echten Blöcke der Einheit gezeigt  |
+| **#ORB-004** | `DESIGN_SUGGESTION` | 🔴 Offen | `Asj8kRlT...` | 18.10.2026, 20:53:36 | android (v1.0.0 (Build 1) • Closed Beta) | wenn Sport ausgewählt Punkt hinter dem Piktogramm |
+| **#ORB-003** | `DESIGN_SUGGESTION` | 🔴 Offen | `Asj8kRlT...` | 18.10.2026, 20:52:58 | android (v1.0.0 (Build 1) • Closed Beta) | Pictogramm von Triathlon nicht passend |
+| **#ORB-002** | `BUG_CRASH` | 🔴 Offen | `Asj8kRlT...` | 18.10.2026, 20:52:09 | android (v1.0.0 (Build 1) • Closed Beta) | komme nicht auf heute nach Onboarding |
 | **#ORB-001** | `BUG_CRASH` | 🟡 In Arbeit | `EcGwkRwx...` | 17.10.2026, 17:54:11 | android (1.0.0+1 (v0.19.0-beta)) | Pixel 10 Pro Live Hardware Test |
 

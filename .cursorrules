@@ -26,3 +26,11 @@
 
 ## 6. Pre-Merge-Gate (Regel 9)
 - Vor jedem Phasen-Merge: `bash scripts/check_phase_ready.sh` muss 0 Fehler melden.
+
+## 7. Eiserne Nachtschicht-Gesetze (Phasen 35–39)
+- Absolutes Frage-Verbot (vollautonomer Durchlauf, Self-Healing).
+- Atomare Commits + Pflichtprotokoll in `docs/NIGHT_SHIFT_LOG.md` & Chat nach jedem Unterpaket.
+- Strikter Phasenabschluss: Fast-Forward-Merge, Tag `v0.XX.0`, Push, APK-Build & Hardware-Screenshots auf Pixel 10 Pro.
+- 100 % deutsche Code-Dokumentation (`///` & `/** ... */`).
+- 120 Hz Performance-Disziplin (Isolates, LTTB-Downsampling, Scoped Streams).
+- Beta-Feedback vorab einlesen (`feedback:pull`).
