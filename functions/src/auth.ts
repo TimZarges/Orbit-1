@@ -1,3 +1,10 @@
+/**
+ * @file auth.ts
+ * @description Authentifizierungs- und DSGVO-Cloud Functions für ORBIT (europe-west3).
+ * Verwaltet initiale Rollenzuweisungen (Athlet/Coach), vollständige Kontolöschungen
+ * gemäß Art. 17 DSGVO ("Recht auf Vergessenwerden") sowie Datenexporte nach Art. 20 DSGVO.
+ */
+
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import * as admin from "firebase-admin";
 
@@ -5,6 +12,15 @@ if (!admin.apps.length) {
   admin.initializeApp();
 }
 
+/**
+ * Weist einem frisch registrierten Nutzer seine initiale Rolle (ATHLETE oder TRAINER) zu
+ * und legt das initiale Nutzerdokument inklusive Profil, Einheiten, Benachrichtigungseinstellungen
+ * und Schwellenwerthistorie in Firestore an.
+ *
+ * @throws {HttpsError} unauthenticated - Wenn der Nutzer nicht angemeldet ist.
+ * @throws {HttpsError} invalid-argument - Bei ungültiger Rolle.
+ * @throws {HttpsError} already-exists - Wenn bereits eine Rolle hinterlegt wurde.
+ */
 export const setInitialRole = onCall(async (request) => {
   const uid = request.auth?.uid;
   if (!uid) {
@@ -87,6 +103,13 @@ export const setInitialRole = onCall(async (request) => {
   return { success: true };
 });
 
+/**
+ * Führt die vollständige und DSGVO-konforme Löschung des Nutzerkontos durch (Art. 17 DSGVO).
+ * Löscht das Dokument in Firestore inklusive aller Subcollections rekursiv
+ * und entfernt das Konto anschließend aus Firebase Authentication.
+ *
+ * @throws {HttpsError} unauthenticated - Wenn die Anfrage nicht authentifiziert ist.
+ */
 export const deleteAccount = onCall(async (request) => {
   const uid = request.auth?.uid;
   if (!uid) {
@@ -105,6 +128,13 @@ export const deleteAccount = onCall(async (request) => {
   return { success: true };
 });
 
+/**
+ * Erstellt einen vollständigen maschinenlesbaren Datenexport des Nutzers
+ * gemäß Art. 20 DSGVO ("Recht auf Datenübertragbarkeit").
+ * Exportiert Profil, tägliche Metriken und Schwellenwerthistorie als JSON.
+ *
+ * @throws {HttpsError} unauthenticated - Wenn die Anfrage nicht authentifiziert ist.
+ */
 export const exportAccount = onCall(async (request) => {
   const uid = request.auth?.uid;
   if (!uid) {

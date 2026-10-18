@@ -1,6 +1,23 @@
+/**
+ * @file fitParser.ts
+ * @description Dekodierung und Persistierung binärer Garmin FIT-Dateien (.fit).
+ * Liest Session-, Record- und FileId-Nachrichten via Garmin FIT SDK, extrahiert
+ * 1Hz-Telemetrie-Zeitreihen (Watt, HF, Cadence, GPS, Pace, Höhe), komprimiert
+ * sie per GZIP in Cloud Storage und speichert das Aktivitätsdokument in Firestore.
+ */
+
 import * as admin from 'firebase-admin';
 import * as logger from 'firebase-functions/logger';
 
+/**
+ * Dekodiert einen binären FIT-Puffer, erzeugt die 1Hz-Telemetrie-Streams
+ * und speichert die Aktivität in Firestore sowie komprimiert in Cloud Storage.
+ *
+ * @param uid - Die eindeutige Nutzer-ID des Athleten.
+ * @param activityId - Eindeutige ID der Aktivität (z. B. UUID oder Garmin-Aktivitäts-ID).
+ * @param buffer - Binärer Buffer der hochgeladenen .fit-Datei.
+ * @param source - Herkunftsquelle ('GARMIN', 'FIT_UPLOAD' oder 'DEMO').
+ */
 export async function parseFitAndSave(
   uid: string,
   activityId: string,

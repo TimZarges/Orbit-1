@@ -1,3 +1,10 @@
+/**
+ * @file index.ts
+ * @description Zentraler Export-Index für alle sportwissenschaftlichen Metrik-Module.
+ * Bündelt Leistungsmetriken (Rad/Lauf/Schwimmen), aerobe Entkopplung, Bestleistungen,
+ * Intervallerkennung, PMC (CTL/ATL/TSB) und automatische Firestore-Trigger.
+ */
+
 export * from "./power";
 export * from "./running";
 export * from "./swimming";

@@ -1,9 +1,21 @@
+/**
+ * @file activityTrigger.ts
+ * @description Firestore-Trigger für Aktivitäten (`activities/{activityId}`).
+ * Berechnet serverseitig sportartspezifische Trainingsbelastungen (TSS / ORBIT Load),
+ * Normalized Power (NP), Intensitätsfaktor (IF) sowie Bestleistungen (MMP)
+ * und aktualisiert das tägliche Belastungsaggregat (CTL/ATL/TSB) des Athleten.
+ */
+
 import { onDocumentWritten } from "firebase-functions/v2/firestore";
 import * as admin from "firebase-admin";
 import { updateSportBests } from "./bests";
 import { calculateSwimMetrics } from "./swimming";
 import { calculateDailyLoadEMA } from "./load";
 
+/**
+ * Firestore-Trigger bei Erstellung, Aktualisierung oder Löschung von Aktivitäten.
+ * Führt automatische Metrikberechnungen aus und aktualisiert den Banister-PMC-Verlauf.
+ */
 export const onActivityWritten = onDocumentWritten("activities/{activityId}", async (event) => {
   if (!event.data) return;
   const after = event.data.after;
@@ -141,6 +153,14 @@ export const onActivityWritten = onDocumentWritten("activities/{activityId}", as
   }
 });
 
+/**
+ * Aktualisiert die tägliche Belastungs-Aggregation (CTL, ATL, TSB) für einen bestimmten Tag.
+ * Berechnet den exponentiell geglätteten Durchschnitt (EMA) über 42 Tage (Fitness / CTL)
+ * und 7 Tage (Ermüdung / ATL) und speichert den Wert in `users/{uid}/aggregates/{localDate}`.
+ *
+ * @param uid - Athleten-ID
+ * @param localDate - Lokales Datum im Format YYYY-MM-DD
+ */
 async function updateAggregates(uid: string, localDate: string | undefined) {
   if (!localDate) return;
   const db = admin.firestore();

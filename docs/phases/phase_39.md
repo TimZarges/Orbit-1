@@ -11,9 +11,9 @@
 ## Arbeitspakete
 
 ### 39.1 Rückwirkende deutsche Kommentierung (`functions/src/` & Rules)
-- [ ] Vollständige deutsche `/** ... */`-Dokumentation aller TypeScript-Dateien in `functions/src/` (Auth, Garmin, Metrics, Feedback, Notifications).
-- [ ] Erläuterung aller Formeln, Schwellenwerte, Webhook-Payloads und Cloud Function Trigger.
-- [ ] Lückenlose deutsche Kommentare in `firestore.rules` und `storage.rules`.
+- [x] Vollständige deutsche `/** ... */`-Dokumentation aller TypeScript-Dateien in `functions/src/` (Auth, Garmin, Metrics, Feedback, Notifications).
+- [x] Erläuterung aller Formeln, Schwellenwerte, Webhook-Payloads und Cloud Function Trigger.
+- [x] Lückenlose deutsche Kommentare in `firestore.rules` und `storage.rules`.
 
 ### 39.2 Rückwirkende deutsche Kommentierung (`lib/core/` & `lib/shared/`)
 - [ ] Vollständige deutsche `///`-Dokumentation in `lib/core/` (Router, Theme-Tokens, Indizes, Services, Formatter).

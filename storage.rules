@@ -1,5 +1,14 @@
 rules_version = '2';
 
+/**
+ * Cloud Storage Security Rules für ORBIT.
+ * Standardmäßig greift "deny all" (Default-Sperre aller Zugriffe).
+ * Erlaubt dezidierte, größen- und typgeprüfte Uploads für:
+ * - Roh-Trainingsdateien (.fit, .tcx, .gpx) bis maximal 25 MB
+ * - Chat-Medien (Bilder bis 10 MB, Dokumente bis 25 MB)
+ * - Beta-Feedback Screenshots (bis 5 MB)
+ * Gzip-komprimierte Telemetrie-Streams in users/{uid}/streams/ sind für Clients schreibgeschützt.
+ */
 service firebase.storage {
   match /b/{bucket}/o {
     
