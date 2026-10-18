@@ -33,13 +33,18 @@
 | **38.5** | Widget-Galerie-Cleanup, DSGVO-Kontolöschung mit Logout & App-Icon | [x] | `8cd086d` | 1.1s |
 | **38-F** | **Abschluss Phase 38 (`v0.38.0`): Quality-Gate, APK, Pixel 10 Pro & Tag** | [x] | `v0.38.0` | 68s Build + 1.1s Test |
 | **39.1** | Rückwirkende deutsche Dokumentation: `functions/src/` & Security Rules | [x] | `e0cbb38` | 2.0s Build + 0.8s Check |
-| **39.2** | Rückwirkende deutsche Dokumentation: `lib/core/` & `lib/shared/` | [ ] | | |
+| **39.2** | Rückwirkende deutsche Dokumentation: `lib/core/` & `lib/shared/` | [x] | `f2a3262` | 1.1s Test + 0.8s Check |
 | **39.3** | Rückwirkende deutsche Dokumentation: `lib/features/` | [ ] | | |
 | **39.4** | **Finaler Hardware-Audit auf Pixel 10 Pro & Nachtschicht-Abschluss (`v0.39.0`)** | [ ] | | |
 
 ---
 
 ## 2. Chronologisches Protokoll der Etappen
+
+### [00:43] ✅ Etappe 39.2 abgeschlossen — Commit: `f2a3262`
+- **Was wurde erledigt:** Vollständige rückwirkende deutsche `///`-Dokumentation in `lib/core/` für Design-System (`app_spacing.dart`, `app_typography.dart`, `app_theme.dart`) und Metrik-Berechnung (`load_preview.dart`).
+- **Wie technisch gelöst & Performance-Schutz:** Dokumentation des 4er-/8er-Rasters, aller Typografie-Stile inkl. Tabellenziffern (`tabularFigures`), Material-3 Light- und Dark-Cockpit-Themes sowie der sportwissenschaftlichen TSS-Formel; 0 Linter- und Analyse-Warnungen.
+- **Test-Nachweis & Dauer:** `test/core/utils/orbit_date_formatter_test.dart` (8/8 grün in 1.1s), `check_phase_ready.sh` (0 Errors, 0 Warnings).
 
 ### [00:39] ✅ Etappe 39.1 abgeschlossen — Commit: `e0cbb38`
 - **Was wurde erledigt:** Vollständige rückwirkende deutsche `/** ... */`-Dokumentation aller Cloud Functions und TypeScript-Module in `functions/src/` (`auth.ts`, `fitParser.ts`, `activityTrigger.ts`, `recompute.ts`, `metrics/index.ts`) sowie deutsche Dokumentations-Header in `storage.rules`.
