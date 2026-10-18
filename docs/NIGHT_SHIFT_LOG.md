@@ -34,12 +34,17 @@
 | **38-F** | **Abschluss Phase 38 (`v0.38.0`): Quality-Gate, APK, Pixel 10 Pro & Tag** | [x] | `v0.38.0` | 68s Build + 1.1s Test |
 | **39.1** | Rückwirkende deutsche Dokumentation: `functions/src/` & Security Rules | [x] | `e0cbb38` | 2.0s Build + 0.8s Check |
 | **39.2** | Rückwirkende deutsche Dokumentation: `lib/core/` & `lib/shared/` | [x] | `f2a3262` | 1.1s Test + 0.8s Check |
-| **39.3** | Rückwirkende deutsche Dokumentation: `lib/features/` | [ ] | | |
+| **39.3** | Rückwirkende deutsche Dokumentation: `lib/features/` | [x] | `4bd721a` | 1.1s Test + 0.8s Check |
 | **39.4** | **Finaler Hardware-Audit auf Pixel 10 Pro & Nachtschicht-Abschluss (`v0.39.0`)** | [ ] | | |
 
 ---
 
 ## 2. Chronologisches Protokoll der Etappen
+
+### [00:46] ✅ Etappe 39.3 abgeschlossen — Commit: `4bd721a`
+- **Was wurde erledigt:** Vollständige rückwirkende deutsche `///`-Dokumentation über alle verbliebenen 7 Feature-Dateien in `lib/features/` (`activities_provider.dart`, `activity_actions_provider.dart`, `chat_providers.dart`, `athlete_context_wrapper.dart`, `thresholds_screen.dart`, `app_settings.dart`, `workout_builder_models.dart`). Damit sind nun 100% aller 178 Dart-Dateien in `lib/features/` lückenlos mit deutschen Dokumentations-Kommentaren versehen!
+- **Wie technisch gelöst & Performance-Schutz:** Dokumentation aller Provider, Streams, Schwellenwerte, Kontexte und Modellstrukturen; Verifikation durch automatisierten Scanner; Pre-Merge Quality Gate grün.
+- **Test-Nachweis & Dauer:** `test/core/utils/orbit_date_formatter_test.dart` (8/8 grün in 1.1s), `check_phase_ready.sh` (0 Errors, 0 Warnings).
 
 ### [00:43] ✅ Etappe 39.2 abgeschlossen — Commit: `f2a3262`
 - **Was wurde erledigt:** Vollständige rückwirkende deutsche `///`-Dokumentation in `lib/core/` für Design-System (`app_spacing.dart`, `app_typography.dart`, `app_theme.dart`) und Metrik-Berechnung (`load_preview.dart`).
