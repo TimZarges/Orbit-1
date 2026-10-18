@@ -3,4 +3,5 @@
     <color name="orbit_navy">#001F47</color>
     <color name="orbit_volt">#CDFB17</color>
     <color name="orbit_white">#FFFFFF</color>
+    <color name="ic_launcher_background">#001F47</color>
 </resources>

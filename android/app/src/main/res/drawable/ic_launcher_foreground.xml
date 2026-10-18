@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ORBIT Offizielles Android Adaptive Icon Foreground
+  108dp x 108dp Viewport mit 72dp Safe-Zone.
+  Enthält das Marken-Signet: Volt-Orbit-Bogen (#CDFB17), weißer Satelliten-Punkt (#FFFFFF)
+  und den markanten ORBIT-Schriftzug in klarem Weiß.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Haupt-Orbit-Bogen in Volt #CDFB17 -->
+    <path
+        android:strokeColor="#CDFB17"
+        android:strokeWidth="5.5"
+        android:strokeLineCap="round"
+        android:pathData="M 71.5,39.5 A 18.0,18.0 0 1,1 63.5,29.5" />
+
+    <!-- Satelliten-Punkt in Weiß #FFFFFF -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M 72.0,32.0 A 4.0,4.0 0 1,1 71.99,32.0 Z" />
+
+    <!-- Schriftzug: ORBIT in Weiß #FFFFFF -->
+    <!-- Buchstabe O -->
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="2.2"
+        android:strokeLineCap="round"
+        android:pathData="M 33.0,72.5 A 4.5,4.5 0 1,1 32.99,72.5 Z" />
+
+    <!-- Buchstabe R -->
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="2.2"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M 40.5,81.5 L 40.5,72.5 M 40.5,72.5 L 44.0,72.5 C 46.5,72.5 46.5,77.0 44.0,77.0 L 40.5,77.0 M 43.5,77.0 L 46.5,81.5" />
+
+    <!-- Buchstabe B -->
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="2.2"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M 50.5,81.5 L 50.5,72.5 M 50.5,72.5 L 53.5,72.5 C 55.5,72.5 55.5,76.5 53.5,76.5 L 50.5,76.5 M 50.5,76.5 L 54.0,76.5 C 56.5,76.5 56.5,81.5 53.5,81.5 L 50.5,81.5" />
+
+    <!-- Buchstabe I -->
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="2.2"
+        android:strokeLineCap="round"
+        android:pathData="M 61.5,72.5 L 61.5,81.5" />
+
+    <!-- Buchstabe T -->
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="2.2"
+        android:strokeLineCap="round"
+        android:pathData="M 66.5,72.5 L 75.5,72.5 M 71.0,72.5 L 71.0,81.5" />
+</vector>

@@ -36,6 +36,8 @@ import '../../features/home/widgets/home_action_banner.dart';
 import '../../features/home/widgets/race_countdown_card.dart';
 import '../../features/calendar/models/planned_workout.dart';
 import '../../features/coach_link/widgets/keyboard_shortcuts_dialog.dart';
+import '../../features/coach_link/models/coach_global_mode.dart';
+import 'package:go_router/go_router.dart';
 
 /// Interaktive Design- und Widget-Galerie für Entwickler und UI-Reviews.
 ///
@@ -433,7 +435,166 @@ class WidgetGalleryScreen extends StatelessWidget {
             label: const Text('Tastaturkürzel-Dialog öffnen (?)'),
           ),
           const SizedBox(height: 32),
+          Text('Coach 2-Modus Steuerung (Phase 32 / AGENTS.md)',
+              style: Theme.of(context).textTheme.headlineLarge),
+          const SizedBox(height: 16),
+          const _CoachModeGalleryCard(),
+          const SizedBox(height: 16),
+          OutlinedButton.icon(
+            onPressed: () => context.push('/trainer'),
+            icon: const Icon(Icons.people_alt_outlined),
+            label: const Text('Vollständiges Trainer-Dashboard öffnen'),
+          ),
+          const SizedBox(height: 32),
         ],
+      ),
+    );
+  }
+}
+
+/// Interaktive Präsentationskarte für die beiden Coach-Modi (Einfach & Download vs. Vollanalyse).
+///
+/// Demonstriert die Umschaltung nach AGENTS.md Regel 32.3:
+/// - Einfach & Download: Reduziert auf Rohdaten-Export (FIT / GPX / CSV) ohne Berechnungs-Overhead
+/// - Vollanalyse: Tiefgehende sportwissenschaftliche Auswertungen (PMC, MMP, Zonen)
+class _CoachModeGalleryCard extends StatefulWidget {
+  const _CoachModeGalleryCard();
+
+  @override
+  State<_CoachModeGalleryCard> createState() => _CoachModeGalleryCardState();
+}
+
+class _CoachModeGalleryCardState extends State<_CoachModeGalleryCard> {
+  CoachGlobalMode _selectedMode = CoachGlobalMode.simpleDownload;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      elevation: 0,
+      color: AppColors.surfaceDark,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(color: AppColors.borderDark),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            SegmentedButton<CoachGlobalMode>(
+              segments: const [
+                ButtonSegment(
+                  value: CoachGlobalMode.simpleDownload,
+                  icon: Icon(Icons.file_download_outlined, size: 16),
+                  label: Text('Einfach & Download',
+                      style:
+                          TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                ),
+                ButtonSegment(
+                  value: CoachGlobalMode.fullAnalysis,
+                  icon: Icon(Icons.analytics_outlined, size: 16),
+                  label: Text('Vollanalyse',
+                      style:
+                          TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                ),
+              ],
+              selected: {_selectedMode},
+              onSelectionChanged: (set) =>
+                  setState(() => _selectedMode = set.first),
+              style: SegmentedButton.styleFrom(
+                selectedBackgroundColor:
+                    _selectedMode == CoachGlobalMode.simpleDownload
+                        ? AppColors.volt
+                        : AppColors.navy,
+                selectedForegroundColor:
+                    _selectedMode == CoachGlobalMode.simpleDownload
+                        ? AppColors.navy
+                        : AppColors.white,
+              ),
+            ),
+            const SizedBox(height: 16),
+            if (_selectedMode == CoachGlobalMode.simpleDownload)
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.navyLight,
+                  borderRadius: BorderRadius.circular(12),
+                  border:
+                      Border.all(color: AppColors.volt.withValues(alpha: 0.3)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Row(
+                      children: [
+                        Icon(Icons.check_circle_outline,
+                            color: AppColors.volt, size: 18),
+                        SizedBox(width: 8),
+                        Text(
+                          'Modus: Direkter Rohdaten-Download',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.volt,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Schneller Download der Original-FIT- und GPX-Dateien ohne Overhead für externe Desktop-Software (WKO5, GoldenCheetah, TrainingPeaks).',
+                      style: TextStyle(
+                          fontSize: 12, color: AppColors.textSecondaryDark),
+                    ),
+                    const SizedBox(height: 12),
+                    ElevatedButton.icon(
+                      onPressed: () {},
+                      icon: const Icon(Icons.download, size: 16),
+                      label: const Text(
+                          'Alle Dateien der Woche herunterladen (.ZIP)'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.volt,
+                        foregroundColor: AppColors.navy,
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            else
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.navyLight,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.borderDark),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Row(
+                      children: [
+                        Icon(Icons.analytics_outlined,
+                            color: AppColors.cyan, size: 18),
+                        SizedBox(width: 8),
+                        Text(
+                          'Modus: ORBIT In-App Vollanalyse',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.cyan,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Tiefgehende sportwissenschaftliche Auswertungen (PMC, MMP-Kurven, W\'bal, aerobe Entkopplung und Schwellenwert-Historie) direkt in der App.',
+                      style: TextStyle(
+                          fontSize: 12, color: AppColors.textSecondaryDark),
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }

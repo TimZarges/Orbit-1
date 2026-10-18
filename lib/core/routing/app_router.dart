@@ -21,6 +21,7 @@ import '../../features/chat/screens/chat_screen.dart';
 import '../../features/chat/screens/chat_list_screen.dart';
 import '../../features/health/screens/health_cockpit_screen.dart';
 import '../../features/activities/screens/activity_detail_loader.dart';
+import '../../features/coach_link/screens/trainer_athletes_tab_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 /// Zentraler Router-Provider der ORBIT-Applikation auf Basis von GoRouter.
@@ -215,6 +216,13 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/gallery',
         builder: (context, state) => const WidgetGalleryScreen(),
+      ),
+      GoRoute(
+        path: '/trainer',
+        builder: (context, state) => Scaffold(
+          appBar: AppBar(title: const Text('Trainer Dashboard')),
+          body: const TrainerAthletesTabScreen(),
+        ),
       ),
     ],
   );

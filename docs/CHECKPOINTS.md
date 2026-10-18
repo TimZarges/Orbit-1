@@ -26,6 +26,27 @@
 
 ## Einträge
 
+### [Phase 34] Autonomer E2E-Hardware-Abnahmelauf auf dem Pixel 10 Pro & Vor-Beta-Bereitstellung · RISIKO-HOCH
+- **STOPP-Punkt/Anlass:** Abschluss von Phase 34 gemäß `docs/phases/phase_34.md` und Vorbereitung zur persönlichen Hands-on-Abnahme durch Tim.
+- **Entscheidung & Umgesetzte Maßnahmen:**
+  1. **Offizielles ORBIT App-Icon auf Android:**
+     - Hochauflösendes Vector-Drawable `ic_launcher_foreground.xml` mit `#CDFB17` Volt-Bogen, weißem Satelliten-Punkt und ORBIT-Schriftzug.
+     - `ic_launcher_background: #001F47` in `colors.xml` und vollständige Mipmap-Ebenen (`mdpi` bis `xxxhdpi`) für Android 16 Adaptive Icons.
+     - Verifiziert auf dem Pixel 10 Pro Homescreen und im App-Drawer.
+  2. **Punkt-für-Punkt Hardware-Verifikation gegen `Orbit Test Bug.pdf` auf dem Pixel 10 Pro:**
+     - **Check 1 (Onboarding & Login):** Start im Onboarding-First Flow ohne Login-Wand, Erfassung aller Daten inkl. Profilbild, Tastatur auf Login-Screen ohne Overflow (`0 px Overflow`), Bug-Käfer von Sekunde 1 auf jedem Screen erreichbar.
+     - **Check 2 (Einstellungen & Erfahrungsstufen):** Keine englischen Rohstrings (`system`, `advanced`), Umschalten auf *Experte* schaltet hohe Datendichte im Dashboard frei (W'bal, Decoupling, Form-Ampel mit CTL/ATL/TSB und Ramp-Rate).
+     - **Check 3 (Leistungsdiagnostik):** Rad-Stufentest (Start 100 W, +25 W alle 30s), 5-Minuten-All-Out-Lauftest und CSS-Schwimmtest (400m/200m) mit Button *„Test in Kalender einplanen“*.
+     - **Check 4 (Kalender & Workout Builder):** Unterer Tab heißt „Kalender“, Monatsansicht mit leeren Kreisen (`○`) für geplante und gefüllten Punkten (`●`) für absolvierte Einheiten, mobiler Klick-Block Workout Builder, Stepped Block Profil & Zielwert-Umrechnung auf Heute-Screen, Soll/Ist-Ampel.
+     - **Check 5 (Aktivitäten & Karten):** Echte Aktivitäten, Volt-GPS-Spur mit Tag/Nacht (Hell/Dunkel) Basemap-Umschaltung, Power-Duration-Kurve mit All-Time Best PR-Vergleich, PR-Datenbank mit Zeitfiltern (Allzeit, Jahr, 90 Tage).
+     - **Check 6 (Notifications & Coach):** Glocken-Icon mit Unread-Badge in AppBar, In-App Notification Center, Coach 2-Modus Steuerung („Einfach & Download“ für WKO5/GoldenCheetah vs. „Vollanalyse“), verständliche DSGVO-Texte ohne Fachjargon.
+  3. **Dokumentation:** Ausführlicher Bericht in `docs/beta/PRE_BETA_VERIFICATION_REPORT.md` und 24 Screenshots in `docs/beta/screenshots/phase34_*.png`.
+- **Nachweise (Evidence-Only):**
+  - Screenshots auf Google Pixel 10 Pro: `phase34_homescreen_orbit_icon.png`, `phase34_check1_*.png`, `phase34_check2_*.png`, `phase34_check3_*.png`, `phase34_check4_*.png`, `phase34_check5_*.png`, `phase34_check6_*.png`.
+  - Flutter Analyze: 0 Errors, 0 Warnings (`bash scripts/check_phase_ready.sh`).
+  - Pre-Merge-Gate: 100 % deutsche Code-Dokumentation in allen geänderten Dateien.
+  - Bereitstellung: Debug/Release-APK auf dem Pixel 10 Pro installiert und mit Test-Account `test@orbit.com` verifiziert.
+
 ### [Phase 33] Gründlicher Deutscher & EU Sicherheits-, Datenschutz- & Urheberrechts-Audit · RISIKO-HOCH
 - **STOPP-Punkt/Anlass:** Abschluss von Phase 33 gemäß `docs/phases/phase_33.md`.
 - **Entscheidung & Umgesetzte Maßnahmen:**
