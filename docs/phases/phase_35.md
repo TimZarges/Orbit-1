@@ -4,7 +4,7 @@
 - **Branch:** `feature/phase-35-garmin-fit-cockpit`
 - **Ziel-Release:** `v0.35.0`
 - **Ziel:** Zuverlässiger Garmin-Datenabruf über aktiven REST-Pull-Sync (`syncGarminActivitiesNow`), multi-format Aktivitäts-Upload (`.fit`, `.tcx`, `.gpx`) mit Hintergrund-Isolate-Parsing auf Android 16 und vollständiges Activity-Cockpit mit synchronisiertem Scrubber, Volt-Streckenlinie, Soll/Ist-Banner und PR-Kurven.
-- **Status:** **[ ] In Bearbeitung**
+- **Status:** **[x] Abgeschlossen**
 
 ---
 
@@ -35,7 +35,7 @@
 - [x] **Runden/Splits, Zonen-Verteilung & Leistungskurve:** Splits-Tabelle, Z1–Z5 Zeitbalken und Aktivitäts-Power-Curve im direkten Vergleich zur All-Time PR-Kurve.
 
 ### 35.4 Abschluss & Hardware-Verifikation
-- [ ] `flutter analyze --no-pub` & gezielte Unit-/Widget-Tests fehlerfrei.
-- [ ] Build & Installation auf Google Pixel 10 Pro via `adb install -r`.
-- [ ] Screenshot-Nachweis: Echte Aktivität im neuen Cockpit auf dem Pixel 10 Pro.
-- [ ] Merge in `main`, Tag `v0.35.0` setzen und pushen (`git push origin main --tags`).
+- [x] `flutter analyze --no-pub` & gezielte Unit-/Widget-Tests fehlerfrei.
+- [x] Build & Installation auf Google Pixel 10 Pro via `adb install -r`.
+- [x] Screenshot-Nachweis: Echte Aktivität im neuen Cockpit auf dem Pixel 10 Pro (`docs/beta/screenshots/phase35_release_pixel10.png`).
+- [x] Merge in `main`, Tag `v0.35.0` setzen und pushen (`git push origin main --tags`).

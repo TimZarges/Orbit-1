@@ -15,7 +15,7 @@
 | **35.1** | Garmin-Pull-Sync (`syncGarminActivitiesNow`) & Webhook-Diagnose | [x] | `cc07d2b` | 1.4s |
 | **35.2** | Multi-Format-Upload (`.fit`, `.tcx`, `.gpx`), SAF-Fix & Isolate-Parsing | [x] | `5f16965` | 0.9s |
 | **35.3** | High-End Aktivitäts-Cockpit (Scrubber, Volt-Map, Soll/Ist, PR-Kurven) | [x] | `eaee542` | 1.1s |
-| **35-F** | **Abschluss Phase 35 (`v0.35.0`): Quality-Gate, APK, Pixel 10 Pro & Tag** | [ ] | | |
+| **35-F** | **Abschluss Phase 35 (`v0.35.0`): Quality-Gate, APK, Pixel 10 Pro & Tag** | [x] | `v0.35.0` | 72s Build + 1.1s Test |
 | **36.1** | Login-First-Flow, Clean Branding (kein Doppel-ORBIT) & Password-Reset | [ ] | | |
 | **36.2** | Dual-Passwort mit Live-Checklist & Email-Verifikations-Warteraum | [ ] | | |
 | **36.3** | Rollenspezifisches Onboarding (Athlet vs. Coach Fragebögen) | [ ] | | |
@@ -40,6 +40,11 @@
 ---
 
 ## 2. Chronologisches Protokoll der Etappen
+
+### [23:24] 🏆 Phase 35 abgeschlossen & freigegeben (`v0.35.0`)
+- **Was wurde erledigt:** Vollständiger Abschluss von Phase 35. Alle 3 Unterpakete (Garmin REST-Pull Sync, Multi-Format Upload `.fit`/`.tcx`/`.gpx` mit Android 16 SAF & Isolate-Parsing, High-End Aktivitäts-Cockpit mit 2x3 Metrik-Grid, Volt-Streckenlinie, Soll/Ist-Ampel und synchronisiertem Scrubber) erfolgreich abgeschlossen. Release-APK (65.1 MB) gebaut, per `adb install -r` auf Google Pixel 10 Pro installiert und Verifikations-Screenshot aufgenommen (`docs/beta/screenshots/phase35_release_pixel10.png`).
+- **Wie technisch gelöst & Performance-Schutz:** Quality-Gate `check_phase_ready.sh` (0 Errors, 0 Warnings, 100 % deutsche Doku). Fast-Forward-Merge in `main`, annotiertes Git-Tag `v0.35.0` gesetzt und zu GitHub gepusht.
+- **Test-Nachweis & Dauer:** 10/10 Tests in `test/features/phase35_*` bestanden, Build-Zeit 72s.
 
 ### [23:20] ✅ Etappe 35.3 abgeschlossen — Commit: `eaee542`
 - **Was wurde erledigt:** Vollständige Überarbeitung des Activity-Cockpits nach den besten Vorbildern (Strava, Garmin, Coros, MATS): Sportart-Badge, editierbarer Titel mit Firestore-Persistierung, Datum & 24h-Zeit (`DD.MM.YYYY • HH:mm Uhr`), Soll/Ist-Erfüllungs-Ampel (🟢 <= 15%, 🟡 15–35%, 🔴 > 35%), 2x3 Kern-Metrik-Grid (Distanz, Dauer, Ø Watt/Pace, Höhenmeter, HF, ORBIT Load/IF), interaktive GPS-Karte mit leuchtender `#CDFB17` Volt-Streckenlinie, synchronisiertem Scrubber und MMP-Power-Duration-Kurve vs. All-Time PRs.

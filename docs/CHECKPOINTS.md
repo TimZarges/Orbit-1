@@ -26,6 +26,32 @@
 
 ## Einträge
 
+### [Phase 35] Garmin-Datenempfang, Echter `.fit`-Upload & Aktivitäts-Cockpit nach Strava/Garmin/Coros/MATS-Vorbild · RISIKO-HOCH
+- **STOPP-Punkt/Anlass:** Autonomer Abschluss von Phase 35 im Nachtschicht-Modus (`docs/phases/phase_35.md`).
+- **Entscheidung & Umgesetzte Maßnahmen:**
+  1. **Aktiver Garmin REST-Pull-Sync (`syncGarminActivitiesNow`):**
+     - Cloud Function (europe-west3) ruft historische Aktivitäten nach OAuth oder per manuellem Button-Klick direkt über die Garmin REST-API ab.
+     - Archivierung des Original-Payloads in Cloud Storage (`users/{uid}/rawActivities/`) und idempotente Speicherung in Firestore (`activities` und `users/{uid}/activities`).
+     - Auto-Sync-Auslösung direkt nach erfolgreichem OAuth-Rücksprung.
+  2. **Multi-Format Datei-Upload (.fit, .tcx, .gpx) & Android 16 SAF-Fix:**
+     - Behebung von `lengthSync`-Abstürzen durch Umstellung auf SAF-sicheres `readAsBytes()` in `activity_upload_provider.dart`.
+     - Hintergrund-Isolate-Parsing (`Isolate.run`) für Header- und Magic-Byte-Prüfung ohne Blockierung des 120-Hz-UI-Threads.
+     - Automatische Archivierung in Cloud Storage (`rawActivities/`) und sofortige Bereitstellung in Firestore.
+     - Upload-Möglichkeit auf dem Dashboard (`+` FAB) und im Onboarding verifiziert.
+  3. **High-End Aktivitäts-Cockpit (Strava, Garmin Connect, Coros & MATS):**
+     - **Header:** Sportart-Badge mit Disziplin-Farbe & Icon, editierbarer Titel mit Firestore-Persistierung, deutsches Datums- und 24h-Format (`DD.MM.YYYY • HH:mm Uhr`).
+     - **GPS-Karte:** Leuchtende `#CDFB17` Volt-Streckenlinie mit `#001F47` Navy-Kontur, Hell/Dunkel-Karten-Umschalter und automatischer Zentrierung.
+     - **Soll/Ist-Abgleich-Banner:** 3-stufige Erfüllungs-Ampel (🟢 $\le 15\%$, 🟡 $15\text{–}35\%$, 🔴 $> 35\%$) mit Soll- vs. Ist-Dauer und Leistung.
+     - **2x3 Kern-Metrik-Grid:** 6 Kacheln (Distanz, Dauer, Ø Leistung / Ø Pace, Höhenmeter, Ø/Max Puls, ORBIT Load & IF).
+     - **Synchronisierte Telemetrie-Graphen:** Entkoppelter `_scrubNotifier` über `ValueNotifier<ActivityStreamPoint?>` für 120 FPS-Scrubbing, LTTB-Downsampling auf 400 Punkte.
+     - **Runden/Splits & PR-Kurve:** Umschaltbare Intervall-Tabelle (Laps vs. Auto), MMP Power-Duration-Kurve vs. All-Time PRs und Z1–Z7 Zonen-Histogramme.
+- **Nachweise (Evidence-Only):**
+  - Live-Screenshot auf dem Google Pixel 10 Pro: `docs/beta/screenshots/phase35_release_pixel10.png`.
+  - Release-APK erfolgreich gebaut (`app-release.apk`, 65.1 MB) und per `adb install -r` auf Pixel 10 Pro installiert.
+  - Unit- & Widget-Tests: 10 von 10 Tests erfolgreich (`phase35_garmin_pull_sync_test.dart`, `phase35_activity_upload_saf_test.dart`, `phase35_activity_cockpit_test.dart`).
+  - Pre-Merge-Gate: `bash scripts/check_phase_ready.sh` (0 Errors, 0 Warnings, 100 % deutsche Dokumentation).
+  - Functions Build: `npm --prefix functions run build` fehlerfrei, `syncGarminActivitiesNow` sauber exportiert.
+
 ### [Phase 34] Autonomer E2E-Hardware-Abnahmelauf auf dem Pixel 10 Pro & Vor-Beta-Bereitstellung · RISIKO-HOCH
 - **STOPP-Punkt/Anlass:** Abschluss von Phase 34 gemäß `docs/phases/phase_34.md` und Vorbereitung zur persönlichen Hands-on-Abnahme durch Tim.
 - **Entscheidung & Umgesetzte Maßnahmen:**
