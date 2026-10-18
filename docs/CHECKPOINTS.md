@@ -2178,4 +2178,34 @@ The operation couldn’t be completed. Unable to locate a Java Runtime.
   - **Release-Build:** `build/app/outputs/flutter-apk/app-release.apk` (65.3 MB), via `adb install -r` erfolgreich auf Pixel 10 Pro installiert.
   - **Release-Tag:** `v0.36.0`
 
+---
+
+### [Phase 37] Kalender-Echtzeit-Sync, Visueller Workout-Builder (Garmin/MATS-Vorbild), Block-Konsistenz, Detail-Aktionen & Triathlon/Wettkampf-Planung · STOPP 1 (ABNAHME)
+- **Status:** Vollständig umgesetzt und verifiziert
+- **Datum:** 2026-10-19 00:08
+- **Hardware-Ziel:** Google Pixel 10 Pro (`58251FDCR00EQ2`), Android 16
+- **Entscheidung & Umgesetzte Maßnahmen:**
+  1. **Kalender-Echtzeit-Synchronisation & Einheitliche Karten:**
+     - Umstellung aller Kalender- und Dashboard-Provider auf zeitfenster-begrenzte Firestore-Streams (`snapshots()`) für sofortige Reaktivität bei Planungsänderungen.
+     - Einheitliches Kartendesign (`#002A5C` Navy Card mit `#003D82` Rand und Disziplin-Farbleiste) über Wochen-, Listen-, Monatsansicht und „Heute“-Dashboard.
+  2. **1:1 Block-Berechnung, Detail-Sheet & Aktions-Buttons:**
+     - `WorkoutBlockExtractor` berechnet 1:1 konsistente Blöcke (z. B. 4x4min Intervalle = 10 strukturierte Blöcke: Warmup + 4x [Work + Rest] + Cooldown).
+     - Individuelle Umrechnung der Zielintensitäten in konkrete Watt- (FTP), Pace- (Threshold-Pace) und HF-Werte (Max HR) des Athleten.
+     - Detailliertes `WorkoutDetailSheet` mit Stufen-Tabelle und reaktiven Firestore-Aktionen („Auf morgen verschieben“, „Datum wählen…“ mit `DD.MM.YYYY` Picker, „Als übersprungen markieren“).
+  3. **Mobiler Klick-Workout-Builder mit Wiederholungsschleifen (2x–30x):**
+     - Semantische Bausteine (`+ Aufwärmen`, `+ Intervall (Z4)`, `+ Pause (Z1)`, `+ Wiederholungs-Serie (4x)`, `+ Ausrollen`).
+     - Interaktiver Stepper für Intervall-Schleifen im sportwissenschaftlichen Bereich [2x, 30x].
+     - Strukturierter Terminierungs-Dialog mit Trainerhinweisen und einheitsspezifischen Notizen.
+  4. **Triathlon / Koppeleinheiten & A/B/C Wettkampf-Planung:**
+     - Spezifische Disziplin „Triathlon / Koppeleinheit“ mit `TriathlonCombinedIcon`.
+     - Vollständiger Wettkampf-Planer mit Titel, Distanz, Zielzeit und Priorität (`A-Hauptwettkampf`, `B-Vorbereitung`, `C-Trainingsrennen`).
+     - Dual-Persistierung in `RaceRepository` (`users/{uid}/races`) und `PlannedWorkoutRepository` (`plannedWorkouts`).
+- **Nachweise (Evidence-Only gemäß Regel 2):**
+  - **Live-Screenshot:** `docs/beta/screenshots/phase37_release_pixel10.png`
+  - **Tests:** `test/features/phase37_*` (7/7 Tests grün in 1.1s).
+  - **Pre-Merge Gate:** `bash scripts/check_phase_ready.sh` (0 Errors, 0 Warnings, 100% deutsche Doku).
+  - **Release-Build:** `build/app/outputs/flutter-apk/app-release.apk` (65.3 MB), via `adb install -r` erfolgreich auf Pixel 10 Pro installiert.
+  - **Release-Tag:** `v0.37.0`
+
+
 

@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/design/app_colors.dart';
 import '../../calendar/models/planned_workout.dart';
 import '../../calendar/providers/calendar_provider.dart';
-import '../../calendar/repositories/planned_workout_repository.dart';
 import '../controllers/workout_builder_controller.dart';
 import '../models/workout_builder_models.dart';
 import '../models/workout_template.dart';

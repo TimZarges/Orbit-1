@@ -4,7 +4,7 @@
 - **Branch:** `feature/phase-37-calendar-workout-builder`
 - **Ziel-Release:** `v0.37.0`
 - **Ziel:** Reaktive Echtzeit-Kalendersynchronisation (`snapshots()`), einheitliches Kartendesign über alle Kalenderansichten, konsistente 1:1 Block-Berechnung, interaktive Workout-Aktionen (+1 Tag, Datum wählen, Überspringen), mobiler Klick-Block Builder mit Wiederholungsschleifen (2x–30x), Koppeleinheiten und A/B/C Wettkampf-Planung.
-- **Status:** **[ ] In Bearbeitung**
+- **Status:** **[x] Abgeschlossen**
 
 ---
 
@@ -40,7 +40,7 @@
 - [x] Wettkampf-Felder: Name, Datum, Sportart/Distanz, Zielzeit und Priorität (`A-Hauptwettkampf`, `B-Vorbereitungsrennen`, `C-Trainingswettkampf`).
 
 ### 37.5 Abschluss & Hardware-Verifikation
-- [ ] `flutter analyze --no-pub` & Tests fehlerfrei.
-- [ ] Build & Installation auf Google Pixel 10 Pro via `adb install -r`.
-- [ ] Screenshot-Nachweise: Neuer Workout-Builder mit Loop, Detail-Sheet mit Blöcken, Wettkampf-Planung.
-- [ ] Merge in `main`, Tag `v0.37.0` setzen und pushen.
+- [x] `flutter analyze --no-pub` & Tests fehlerfrei.
+- [x] Build & Installation auf Google Pixel 10 Pro via `adb install -r`.
+- [x] Screenshot-Nachweise: Neuer Workout-Builder mit Loop, Detail-Sheet mit Blöcken, Wettkampf-Planung.
+- [x] Merge in `main`, Tag `v0.37.0` setzen und pushen.

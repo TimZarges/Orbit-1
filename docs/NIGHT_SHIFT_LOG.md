@@ -24,8 +24,8 @@
 | **37.1** | Kalender-Echtzeit-Synchronisation (`snapshots()`) & Einheitliche Karten | [x] | `154c00d` | 1.4s |
 | **37.2** | Exakte Block-Berechnung, Detail-Sheet & Aktions-Buttons (+1d, Skip) | [x] | `154c00d` | 1.4s |
 | **37.3** | Mobiler Klick-Workout-Builder (Warmup, Intervalle 2x–30x, Live-Target) | [x] | `cad9c9c` | 1.1s |
-| **37.4** | Triathlon- & Brick-Sessions sowie A/B/C Wettkampf-Planung | [ ] | | |
-| **37-F** | **Abschluss Phase 37 (`v0.37.0`): Quality-Gate, APK, Pixel 10 Pro & Tag** | [ ] | | |
+| **37.4** | Triathlon- & Brick-Sessions sowie A/B/C Wettkampf-Planung | [x] | `85458b2` | 1.1s |
+| **37-F** | **Abschluss Phase 37 (`v0.37.0`): Quality-Gate, APK, Pixel 10 Pro & Tag** | [x] | `v0.37.0` | 65s Build + 1.1s Test |
 | **38.1** | Global schwebender Bug-Käfer im `MaterialApp.builder` (über Sheets) | [ ] | | |
 | **38.2** | Universal-Datumsformat (`DD.MM.YYYY`) & 24h-Zeit via `OrbitDateFormatter` | [ ] | | |
 | **38.3** | Mitteilungszentrale: Umrandete Karten & Deep-Link-Routing | [ ] | | |
@@ -40,6 +40,16 @@
 ---
 
 ## 2. Chronologisches Protokoll der Etappen
+
+### [00:10] 🏆 Phase 37 abgeschlossen & freigegeben — Tag: `v0.37.0`
+- **Was wurde erledigt:** Erfolgreicher Gesamtabschluss von Phase 37: Reaktiver Kalender-Echtzeit-Sync via `snapshots()`, einheitliche Navy-Karten (`#002A5C`), 1:1 konsistente Trainingsblock-Berechnung & Detail-Sheet mit Stufentabelle und Verschiebe-Aktionen, mobiler Klick-Workout-Builder mit Stepper-Wiederholungsschleifen (2x bis 30x) sowie Triathlon- / Brick-Sessions und strukturierte A/B/C Wettkampf-Planung.
+- **Wie technisch gelöst & Performance-Schutz:** Reaktivität über zeitfenster-begrenzte Firestore-Streams; isolierte Blockberechnung in `WorkoutBlockExtractor` mit automatischer Umrechnung in Sportler-Watt/Pace/HF; Stepper-Logik mit sportwissenschaftlichen Schranken [2, 30]; Dual-Persistenz für Wettkämpfe in `RaceRepository` und `PlannedWorkoutRepository`.
+- **Test-Nachweis & Dauer:** Alle 7 Tests in `test/features/phase37_*` bestanden (1.1s) + `bash scripts/check_phase_ready.sh` (0 Errors, 0 Warnings, 100% deutsche Doku) + Release-APK erfolgreich auf Google Pixel 10 Pro installiert.
+
+### [00:03] ✅ Etappe 37.4 abgeschlossen — Commit: `85458b2`
+- **Was wurde erledigt:** Integration der Disziplin „Triathlon / Koppeleinheit“ mit `TriathlonCombinedIcon` in den Kalender-Schnellplaner sowie vollständige Wettkampf-Planung (Umschaltung „Training planen“ vs. „Wettkampf / Rennen planen“) mit Name, Distanzformat, Zielzeit und A/B/C-Priorität (`A-Hauptwettkampf`, `B-Vorbereitung`, `C-Trainingsrennen`).
+- **Wie technisch gelöst & Performance-Schutz:** Gleichzeitige Persistierung in `RaceRepository` (`users/{uid}/races`) und `PlannedWorkoutRepository` (`plannedWorkouts`) zur sofortigen reaktiven Anzeige im Kalender sowie auf den Dashboard-Race-Countdowns; `SegmentedButton` und `ChoiceChips` mit sauberer Icon-Skalierung ohne Overflow-Risiken.
+- **Test-Nachweis & Dauer:** `test/features/phase37_triathlon_and_race_planning_test.dart` (1/1 bestanden in 1.1s) + `scripts/check_phase_ready.sh` (0 Errors, 0 Warnings).
 
 ### [23:59] ✅ Etappe 37.3 abgeschlossen — Commit: `cad9c9c`
 - **Was wurde erledigt:** Mobiler Klick-Workout-Builder nach Vorbild führender Plattformen: deutsche semantische Bausteine (`+ Aufwärmen`, `+ Intervall`, `+ Erholung`, `+ Wiederholungs-Serie`, `+ Ausrollen`), interaktiver Stepper für Wiederholungen `2x` bis `30x` mit direkter Reaktionsfähigkeit sowie strukturierter Kalender-Einplanungs-Dialog mit festem Titel, Trainerhinweisen und einheitsspezifischen Notizen.
