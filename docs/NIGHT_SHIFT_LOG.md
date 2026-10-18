@@ -23,7 +23,7 @@
 | **36-F** | **Abschluss Phase 36 (`v0.36.0`): Quality-Gate, APK, Pixel 10 Pro & Tag** | [x] | `v0.36.0` | 65s Build + 1.1s Test |
 | **37.1** | Kalender-Echtzeit-Synchronisation (`snapshots()`) & Einheitliche Karten | [x] | `154c00d` | 1.4s |
 | **37.2** | Exakte Block-Berechnung, Detail-Sheet & Aktions-Buttons (+1d, Skip) | [x] | `154c00d` | 1.4s |
-| **37.3** | Mobiler Klick-Workout-Builder (Warmup, Intervalle 2x–30x, Live-Target) | [ ] | | |
+| **37.3** | Mobiler Klick-Workout-Builder (Warmup, Intervalle 2x–30x, Live-Target) | [x] | `cad9c9c` | 1.1s |
 | **37.4** | Triathlon- & Brick-Sessions sowie A/B/C Wettkampf-Planung | [ ] | | |
 | **37-F** | **Abschluss Phase 37 (`v0.37.0`): Quality-Gate, APK, Pixel 10 Pro & Tag** | [ ] | | |
 | **38.1** | Global schwebender Bug-Käfer im `MaterialApp.builder` (über Sheets) | [ ] | | |
@@ -40,6 +40,11 @@
 ---
 
 ## 2. Chronologisches Protokoll der Etappen
+
+### [23:59] ✅ Etappe 37.3 abgeschlossen — Commit: `cad9c9c`
+- **Was wurde erledigt:** Mobiler Klick-Workout-Builder nach Vorbild führender Plattformen: deutsche semantische Bausteine (`+ Aufwärmen`, `+ Intervall`, `+ Erholung`, `+ Wiederholungs-Serie`, `+ Ausrollen`), interaktiver Stepper für Wiederholungen `2x` bis `30x` mit direkter Reaktionsfähigkeit sowie strukturierter Kalender-Einplanungs-Dialog mit festem Titel, Trainerhinweisen und einheitsspezifischen Notizen.
+- **Wie technisch gelöst & Performance-Schutz:** `WorkoutBuilderNotifier` aktualisiert `RepeatBlock`s reaktiv im Single-Source-of-Truth-Modell ohne Neu-Parsing des gesamten Codes; Stepper-Buttons klemmen Wiederholungen strikt auf den sportwissenschaftlich sinnvollen Bereich [2, 30]; Formatter & Calculator berechnen Kennzahlen isoliert im Speicher.
+- **Test-Nachweis & Dauer:** `test/features/phase37_workout_builder_stepper_test.dart` (2/2 bestanden in 1.1s) + `scripts/check_phase_ready.sh` (0 Errors, 0 Warnings).
 
 ### [23:55] ✅ Etappe 37.1 & 37.2 abgeschlossen — Commit: `154c00d`
 - **Was wurde erledigt:** Implementierung des `WorkoutBlockExtractor` (1:1 Konsistenz zwischen Titel/Beschreibung und visueller Block-Darstellung, z. B. 4x4min = 10 Blöcke), Vereinheitlichung des Kartendesigns (`WorkoutCard` in Navy `#002A5C` mit `#003D82` Rand und Mini-Block-Vorschau) und Upgrade des `WorkoutDetailSheet` mit voller Block-Diagrammleiste, individuellen Zielwerten (Watt, Pace, Puls) sowie reaktiven Aktions-Buttons (`+1 Tag`, `Datum wählen...`, `Überspringen`).
