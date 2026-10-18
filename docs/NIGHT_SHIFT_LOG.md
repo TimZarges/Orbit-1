@@ -14,7 +14,7 @@
 | **0.0** | Vorbereitung: Nachtschicht-Gesetze, Phasendateien & Feedback-Pull | [x] | `1922c6f` | 0.8s |
 | **35.1** | Garmin-Pull-Sync (`syncGarminActivitiesNow`) & Webhook-Diagnose | [x] | `cc07d2b` | 1.4s |
 | **35.2** | Multi-Format-Upload (`.fit`, `.tcx`, `.gpx`), SAF-Fix & Isolate-Parsing | [x] | `5f16965` | 0.9s |
-| **35.3** | High-End Aktivitäts-Cockpit (Scrubber, Volt-Map, Soll/Ist, PR-Kurven) | [ ] | | |
+| **35.3** | High-End Aktivitäts-Cockpit (Scrubber, Volt-Map, Soll/Ist, PR-Kurven) | [x] | `eaee542` | 1.1s |
 | **35-F** | **Abschluss Phase 35 (`v0.35.0`): Quality-Gate, APK, Pixel 10 Pro & Tag** | [ ] | | |
 | **36.1** | Login-First-Flow, Clean Branding (kein Doppel-ORBIT) & Password-Reset | [ ] | | |
 | **36.2** | Dual-Passwort mit Live-Checklist & Email-Verifikations-Warteraum | [ ] | | |
@@ -40,6 +40,11 @@
 ---
 
 ## 2. Chronologisches Protokoll der Etappen
+
+### [23:20] ✅ Etappe 35.3 abgeschlossen — Commit: `eaee542`
+- **Was wurde erledigt:** Vollständige Überarbeitung des Activity-Cockpits nach den besten Vorbildern (Strava, Garmin, Coros, MATS): Sportart-Badge, editierbarer Titel mit Firestore-Persistierung, Datum & 24h-Zeit (`DD.MM.YYYY • HH:mm Uhr`), Soll/Ist-Erfüllungs-Ampel (🟢 <= 15%, 🟡 15–35%, 🔴 > 35%), 2x3 Kern-Metrik-Grid (Distanz, Dauer, Ø Watt/Pace, Höhenmeter, HF, ORBIT Load/IF), interaktive GPS-Karte mit leuchtender `#CDFB17` Volt-Streckenlinie, synchronisiertem Scrubber und MMP-Power-Duration-Kurve vs. All-Time PRs.
+- **Wie technisch gelöst & Performance-Schutz:** Entkoppelter `_scrubNotifier` über `ValueNotifier<ActivityStreamPoint?>` für 120 FPS-Scrubbing ohne Screen-Rebuilds; LTTB-Downsampling auf 400 Punkte; isolierte RepaintBoundaries für die statischen Graphen.
+- **Test-Nachweis & Dauer:** `test/features/phase35_activity_cockpit_test.dart` (5/5 bestanden in 1.1s) + `scripts/check_phase_ready.sh` (0 Errors, 0 Warnings).
 
 ### [23:14] ✅ Etappe 35.2 abgeschlossen — Commit: `5f16965`
 - **Was wurde erledigt:** Android 16 SAF-Dateiupload für `.fit`, `.tcx` und `.gpx` repariert (Beseitigung von `lengthSync`-Crashes via `readAsBytes`), Voranalyse im Hintergrund-Isolate (`Isolate.run`), Archivierung unter `rawActivities` und sofortige Firestore-Persistierung sowohl auf dem Dashboard als auch im Onboarding.
