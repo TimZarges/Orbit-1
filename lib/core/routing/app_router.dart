@@ -33,7 +33,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
   final userDocState = ref.watch(userDocumentProvider);
 
   return GoRouter(
-    initialLocation: '/',
+    initialLocation: '/login',
     redirect: (context, state) {
       // 1. Eigene Scheme-Deep-Links (z. B. orbit://oauth/garmin?oauth_token=...&oauth_verifier=...) normalisieren
       if (state.uri.scheme == 'orbit') {
@@ -52,7 +52,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
 
       if (!isAuth) {
         final isOnboarding = state.matchedLocation == '/onboarding';
-        return (isLoggingIn || isOnboarding) ? null : '/onboarding';
+        return (isLoggingIn || isOnboarding) ? null : '/login';
       }
 
       // Wenn eingeloggt, prüfe das Onboarding

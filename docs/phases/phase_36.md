@@ -11,11 +11,11 @@
 ## Arbeitspakete
 
 ### 36.1 Login-First beim App-Start, Kein Doppel-„ORBIT“ & Passwort-Reset
-- [ ] Unauthentifizierter Start führt direkt auf die Login-Seite (`/login`).
-- [ ] Prominenter Button „Konto erstellen / Registrieren“ leitet ins Onboarding weiter.
-- [ ] Entfernung doppelter „ORBIT“-Schriftzüge auf dem Login-Screen und im Header des Dashboards.
-- [ ] „Passwort vergessen?“ Dialog auf `/login` via `sendPasswordResetEmail` mit verständlicher deutscher Rückmeldung.
-- [ ] „Passwort ändern“ Dialog in den Einstellungen (Altes Passwort + Neues Passwort 2x validieren).
+- [x] Unauthentifizierter Start führt direkt auf die Login-Seite (`/login`).
+- [x] Prominenter Button „Konto erstellen / Registrieren“ leitet ins Onboarding weiter.
+- [x] Entfernung doppelter „ORBIT“-Schriftzüge auf dem Login-Screen und im Header des Dashboards.
+- [x] „Passwort vergessen?“ Dialog auf `/login` via `sendPasswordResetEmail` mit verständlicher deutscher Rückmeldung.
+- [x] „Passwort ändern“ Dialog in den Einstellungen (Altes Passwort + Neues Passwort 2x validieren).
 
 ### 36.2 Doppelte Passwort-Eingabe, 8+ Zeichen Checkliste & E-Mail-Warteraum
 - [ ] Zweifaches Passwortfeld bei Registrierung (`Passwort` & `Passwort bestätigen`).

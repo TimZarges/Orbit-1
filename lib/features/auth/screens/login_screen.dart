@@ -6,10 +6,11 @@ import '../../../core/design/app_typography.dart';
 import '../../beta_feedback/widgets/beta_bug_reporter_sheet.dart';
 import '../providers/auth_provider.dart';
 
-/// Anmelde-Bildschirm der ORBIT-Applikation.
+/// Anmelde-Bildschirm der ORBIT-Applikation (Phase 36 Login-First).
 ///
-/// Ermöglicht bestehenden Athleten und Trainern den Login via E-Mail und Passwort.
-/// Bietet zudem eine Abkürzung zurück ins Onboarding sowie Zugriff auf den In-App-Bug-Reporter.
+/// Ermöglicht bestehenden Athleten und Trainern den Login via E-Mail und Passwort,
+/// bietet einen Passwort-Zurücksetzen-Flow per E-Mail sowie den direkten Einstieg
+/// in die Registrierung / das Onboarding für Neukunden.
 class LoginScreen extends ConsumerStatefulWidget {
   /// Erstellt den Anmelde-Bildschirm.
   const LoginScreen({super.key});
@@ -55,6 +56,119 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  /// Öffnet den „Passwort vergessen?“-Dialog und sendet bei Bestätigung eine Reset-E-Mail.
+  Future<void> _showForgotPasswordDialog() async {
+    final resetEmailController =
+        TextEditingController(text: _emailController.text.trim());
+    final formKey = GlobalKey<FormState>();
+
+    final targetEmail = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF0F172A),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: Color(0xFF1E293B)),
+        ),
+        title: const Text(
+          'Passwort zurücksetzen',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        content: Form(
+          key: formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Gib deine E-Mail-Adresse ein. Wir senden dir umgehend einen sicheren Link zum Zurücksetzen deines Passworts.',
+                style: TextStyle(color: Colors.white70, fontSize: 13),
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                key: const Key('forgot_password_email_field'),
+                controller: resetEmailController,
+                style: const TextStyle(color: Colors.white),
+                keyboardType: TextInputType.emailAddress,
+                decoration: InputDecoration(
+                  labelText: 'E-Mail-Adresse',
+                  labelStyle: const TextStyle(color: Colors.white70),
+                  prefixIcon: const Icon(Icons.email_outlined,
+                      color: AppColors.volt),
+                  filled: true,
+                  fillColor: const Color(0xFF001F47),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(color: Color(0xFF1E293B)),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide:
+                        const BorderSide(color: AppColors.volt, width: 2),
+                  ),
+                ),
+                validator: (val) {
+                  if (val == null || val.trim().isEmpty || !val.contains('@')) {
+                    return 'Bitte gib eine gültige E-Mail-Adresse ein';
+                  }
+                  return null;
+                },
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Abbrechen',
+                style: TextStyle(color: Colors.white54)),
+          ),
+          ElevatedButton(
+            key: const Key('forgot_password_submit_button'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.volt,
+              foregroundColor: AppColors.navy,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
+            ),
+            onPressed: () {
+              if (formKey.currentState?.validate() ?? false) {
+                Navigator.of(ctx).pop(resetEmailController.text.trim());
+              }
+            },
+            child: const Text('Link senden',
+                style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+
+    if (targetEmail != null && targetEmail.isNotEmpty) {
+      try {
+        await ref.read(authServiceProvider).resetPassword(targetEmail);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Wir haben dir einen Link zum Zurücksetzen an $targetEmail gesendet.',
+              ),
+              backgroundColor: AppColors.emerald,
+            ),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('E-Mail konnte nicht gesendet werden: $e'),
+              backgroundColor: AppColors.coral,
+            ),
+          );
+        }
+      }
     }
   }
 
@@ -109,13 +223,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 18),
                   Text(
                     'ORBIT',
+                    key: const Key('login_brand_title'),
                     textAlign: TextAlign.center,
                     style: AppTypography.headline.copyWith(
                       color: AppColors.white,
-                      fontSize: 28,
+                      fontSize: 26,
                       fontWeight: FontWeight.w900,
                       letterSpacing: 3.0,
                     ),
@@ -177,7 +292,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                     obscureText: true,
                   ),
-                  const SizedBox(height: 24),
+                  // Passwort vergessen Button
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      key: const Key('login_forgot_password_button'),
+                      onPressed: _showForgotPasswordDialog,
+                      style:
+                          TextButton.styleFrom(foregroundColor: AppColors.volt),
+                      child: const Text('Passwort vergessen?'),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
                   if (_isLoading)
                     const Center(
                       child: CircularProgressIndicator(color: AppColors.volt),
@@ -219,7 +345,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         ),
                       ),
                       child: const Text(
-                        'Neues Profil anlegen (Onboarding)',
+                        'Konto erstellen / Registrieren',
                         style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.bold,

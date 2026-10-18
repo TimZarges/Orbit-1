@@ -198,6 +198,21 @@ class SettingsScreen extends ConsumerWidget {
 
           const Divider(),
 
+          // Passwort ändern (Phase 36.1)
+          ListTile(
+            key: const Key('settings_change_password_tile'),
+            leading: const Icon(Icons.lock_reset, color: AppColors.volt),
+            title: const Text('Passwort ändern'),
+            subtitle:
+                const Text('Sichere Aktualisierung deines Login-Passworts'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () {
+              _showChangePasswordDialog(context, ref);
+            },
+          ),
+
+          const Divider(),
+
           // Abmelden
           ListTile(
             leading: const Icon(Icons.logout, color: Colors.redAccent),
@@ -239,6 +254,197 @@ class SettingsScreen extends ConsumerWidget {
                 await ref.read(authServiceProvider).signOut();
               }
             },
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Öffnet den Dialog zur Änderung des Passworts mit Live-Validierungs-Checkliste.
+  Future<void> _showChangePasswordDialog(
+      BuildContext context, WidgetRef ref) async {
+    final oldPwController = TextEditingController();
+    final newPwController = TextEditingController();
+    final confirmPwController = TextEditingController();
+    final formKey = GlobalKey<FormState>();
+
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          final newPw = newPwController.text;
+          final confirmPw = confirmPwController.text;
+          final hasMinLength = newPw.length >= 8;
+          final hasUpper = newPw.contains(RegExp(r'[A-Z]'));
+          final hasLower = newPw.contains(RegExp(r'[a-z]'));
+          final hasDigitOrSpecial =
+              newPw.contains(RegExp(r'[0-9!@#\$%^&*(),.?":{}|<>]'));
+          final matchesConfirm =
+              confirmPw.isNotEmpty && confirmPw == newPw;
+          final allValid = hasMinLength &&
+              hasUpper &&
+              hasLower &&
+              hasDigitOrSpecial &&
+              matchesConfirm;
+
+          return AlertDialog(
+            backgroundColor: const Color(0xFF0F172A),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+              side: const BorderSide(color: Color(0xFF1E293B)),
+            ),
+            title: const Text(
+              'Passwort ändern',
+              style:
+                  TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+            ),
+            content: SingleChildScrollView(
+              child: Form(
+                key: formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TextFormField(
+                      key: const Key('change_password_old_field'),
+                      controller: oldPwController,
+                      obscureText: true,
+                      style: const TextStyle(color: Colors.white),
+                      decoration: InputDecoration(
+                        labelText: 'Aktuelles Passwort',
+                        labelStyle: const TextStyle(color: Colors.white70),
+                        filled: true,
+                        fillColor: const Color(0xFF001F47),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      validator: (val) => (val == null || val.isEmpty)
+                          ? 'Bitte aktuelles Passwort eingeben'
+                          : null,
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      key: const Key('change_password_new_field'),
+                      controller: newPwController,
+                      obscureText: true,
+                      style: const TextStyle(color: Colors.white),
+                      onChanged: (_) => setDialogState(() {}),
+                      decoration: InputDecoration(
+                        labelText: 'Neues Passwort',
+                        labelStyle: const TextStyle(color: Colors.white70),
+                        filled: true,
+                        fillColor: const Color(0xFF001F47),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      key: const Key('change_password_confirm_field'),
+                      controller: confirmPwController,
+                      obscureText: true,
+                      style: const TextStyle(color: Colors.white),
+                      onChanged: (_) => setDialogState(() {}),
+                      decoration: InputDecoration(
+                        labelText: 'Neues Passwort bestätigen',
+                        labelStyle: const TextStyle(color: Colors.white70),
+                        filled: true,
+                        fillColor: const Color(0xFF001F47),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    _buildCriterion(hasMinLength, 'Mindestens 8 Zeichen'),
+                    _buildCriterion(
+                        hasUpper, 'Mindestens 1 Großbuchstabe (A-Z)'),
+                    _buildCriterion(
+                        hasLower, 'Mindestens 1 Kleinbuchstabe (a-z)'),
+                    _buildCriterion(
+                        hasDigitOrSpecial, 'Mindestens 1 Zahl oder Sonderzeichen'),
+                    _buildCriterion(
+                        matchesConfirm, 'Passwörter stimmen überein'),
+                  ],
+                ),
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(),
+                child: const Text('Abbrechen',
+                    style: TextStyle(color: Colors.white54)),
+              ),
+              ElevatedButton(
+                key: const Key('change_password_save_button'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor:
+                      allValid ? AppColors.volt : Colors.grey.shade700,
+                  foregroundColor: AppColors.navy,
+                ),
+                onPressed: allValid
+                    ? () async {
+                        if (formKey.currentState?.validate() ?? false) {
+                          try {
+                            await ref.read(authServiceProvider).changePassword(
+                                  oldPwController.text,
+                                  newPwController.text,
+                                );
+                            if (context.mounted) {
+                              Navigator.of(ctx).pop();
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content:
+                                      Text('Passwort erfolgreich aktualisiert.'),
+                                  backgroundColor: AppColors.emerald,
+                                ),
+                              );
+                            }
+                          } catch (e) {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                      'Fehler beim Ändern des Passworts: $e'),
+                                  backgroundColor: AppColors.coral,
+                                ),
+                              );
+                            }
+                          }
+                        }
+                      }
+                    : null,
+                child: const Text('Speichern',
+                    style: TextStyle(fontWeight: FontWeight.bold)),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildCriterion(bool satisfied, String text) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2.0),
+      child: Row(
+        children: [
+          Icon(
+            satisfied
+                ? Icons.check_circle_rounded
+                : Icons.radio_button_unchecked_rounded,
+            size: 14,
+            color: satisfied ? AppColors.emerald : Colors.white38,
+          ),
+          const SizedBox(width: 8),
+          Text(
+            text,
+            style: TextStyle(
+              color: satisfied ? Colors.white : Colors.white60,
+              fontSize: 11,
+            ),
           ),
         ],
       ),

@@ -57,7 +57,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       appBar: _currentIndex == 1
           ? null
           : AppBar(
-              title: Text(_currentIndex == 0 ? 'Orbit' : titles[_currentIndex]),
+              title: Text(titles[_currentIndex]),
               actions: [
                 const BetaBugReportIconButton(),
                 const NotificationBellIconButton(),

@@ -31,10 +31,43 @@ class AuthService {
     }
   }
 
+  /// Sendet eine E-Mail zum Zurücksetzen des Passworts.
   Future<void> resetPassword(String email) async {
     await _auth.sendPasswordResetEmail(email: email);
   }
 
+  /// Ändert das Passwort des aktuell angemeldeten Nutzers nach Re-Authentifizierung.
+  Future<void> changePassword(String oldPassword, String newPassword) async {
+    final user = _auth.currentUser;
+    if (user == null || user.email == null) {
+      throw FirebaseAuthException(
+          code: 'no-user', message: 'Kein aktiver Benutzer angemeldet.');
+    }
+    final cred = EmailAuthProvider.credential(
+        email: user.email!, password: oldPassword);
+    await user.reauthenticateWithCredential(cred);
+    await user.updatePassword(newPassword);
+  }
+
+  /// Sendet eine neue E-Mail-Bestätigung an den aktuellen Nutzer.
+  Future<void> sendEmailVerification() async {
+    final user = _auth.currentUser;
+    if (user != null && !user.emailVerified) {
+      await user.sendEmailVerification();
+    }
+  }
+
+  /// Lädt das Nutzerprofil neu und prüft, ob die E-Mail inzwischen bestätigt wurde.
+  Future<bool> reloadAndCheckEmailVerified() async {
+    final user = _auth.currentUser;
+    if (user != null) {
+      await user.reload();
+      return _auth.currentUser?.emailVerified ?? false;
+    }
+    return false;
+  }
+
+  /// Meldet den aktuellen Nutzer ab.
   Future<void> signOut() async {
     await _auth.signOut();
   }
