@@ -27,7 +27,7 @@
 | **37.4** | Triathlon- & Brick-Sessions sowie A/B/C Wettkampf-Planung | [x] | `85458b2` | 1.1s |
 | **37-F** | **Abschluss Phase 37 (`v0.37.0`): Quality-Gate, APK, Pixel 10 Pro & Tag** | [x] | `v0.37.0` | 65s Build + 1.1s Test |
 | **38.1** | Global schwebender Bug-Käfer im `MaterialApp.builder` (über Sheets) | [x] | `94fd924` | 2.0s |
-| **38.2** | Universal-Datumsformat (`DD.MM.YYYY`) & 24h-Zeit via `OrbitDateFormatter` | [ ] | | |
+| **38.2** | Universal-Datumsformat (`DD.MM.YYYY`) & 24h-Zeit via `OrbitDateFormatter` | [x] | `d7787e7` | 1.1s |
 | **38.3** | Mitteilungszentrale: Umrandete Karten & Deep-Link-Routing | [ ] | | |
 | **38.4** | Beta-Feedback-Inbox für Nutzer mit Live-Statusanzeige | [ ] | | |
 | **38.5** | Widget-Galerie-Cleanup, DSGVO-Kontolöschung mit Logout & App-Icon | [ ] | | |
@@ -40,6 +40,11 @@
 ---
 
 ## 2. Chronologisches Protokoll der Etappen
+
+### [00:19] ✅ Etappe 38.2 abgeschlossen — Commit: `d7787e7`
+- **Was wurde erledigt:** Schaffung des zentralen `OrbitDateFormatter` und vollständige Vereinheitlichung auf DIN-/sportwissenschaftliches deutsches Format (`DD.MM.YYYY` mit führenden Nullen sowie 24h-Uhrzeit `HH:mm Uhr`) in Feedback-Tickets, Aktivitäts-Cockpit, Kalender-Monats- und Listenansicht sowie PR-Kurven.
+- **Wie technisch gelöst & Performance-Schutz:** `OrbitDateFormatter` arbeitet mit reiner Integer-/String-Arithmetik und `.toLocal()`, wodurch unvorhersehbare Locale-Exceptions in Testumgebungen komplett entfallen; saubere Trennung zwischen internen ISO-Schlüsseln (`toIsoDateKey`) für Datenbankabfragen und 100% konsistenten deutschen UI-Strings.
+- **Test-Nachweis & Dauer:** `test/core/utils/orbit_date_formatter_test.dart` (8/8 bestanden in 1.1s) + `scripts/check_phase_ready.sh` (0 Errors, 0 Warnings).
 
 ### [00:15] ✅ Etappe 38.1 abgeschlossen — Commit: `94fd924`
 - **Was wurde erledigt:** Integration des Bug-Käfers als verschiebbarer Top-Level Overlay im `MaterialApp.builder` mit höchster Z-Index-Priorität (`GlobalFloatingBugBeetle`), sodass Fehler und Screenshots selbst bei geöffneten modalen Bottom-Sheets (Workout-Detail, Benachrichtigungen, Workout-Builder) barrierefrei gemeldet werden können.
