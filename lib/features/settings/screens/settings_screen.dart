@@ -198,6 +198,20 @@ class SettingsScreen extends ConsumerWidget {
 
           const Divider(),
 
+          // Meine gemeldeten Tickets (Phase 38.4)
+          ListTile(
+            key: const Key('settings_my_feedback_tile'),
+            leading: const Icon(Icons.inbox_outlined, color: AppColors.volt),
+            title: const Text('Meine gemeldeten Tickets'),
+            subtitle: const Text('Status deiner Bug-Reports und Feedback-Vorschläge'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () {
+              context.push('/my-feedback');
+            },
+          ),
+
+          const Divider(),
+
           // Passwort ändern (Phase 36.1)
           ListTile(
             key: const Key('settings_change_password_tile'),

@@ -223,6 +223,14 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const AdminFeedbackScreen(),
       ),
       GoRoute(
+        path: '/feedback',
+        builder: (context, state) => const AdminFeedbackScreen(),
+      ),
+      GoRoute(
+        path: '/my-feedback',
+        builder: (context, state) => const AdminFeedbackScreen(),
+      ),
+      GoRoute(
         path: '/gallery',
         builder: (context, state) => const WidgetGalleryScreen(),
       ),

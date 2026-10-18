@@ -25,8 +25,8 @@
 - [x] Robustes Routing: Klick markiert als gelesen, schließt modal `Navigator.of(context).pop()` und navigiert via Root-Context zielgenau zur verknüpften Route (Aktivität, Kalender, Diagnostik, Coach).
 
 ### 38.4 Nutzer-Beta-Feedback-Inbox („Meine Meldungen“ + Live-Status)
-- [ ] Dedizierte Ansicht für Tester: „Meine gemeldeten Tickets“.
-- [ ] Echtzeit-Stream aller eigenen Meldungen mit Ticket-ID (`#ORB-xxx`), Kategorie, Datum (`DD.MM.YYYY • HH:mm`) und aktuellem Bearbeitungsstatus (`🟢 Offen`, `🟡 In Arbeit`, `✅ Gelöst`).
+- [x] Dedizierte Ansicht für Tester: „Meine gemeldeten Tickets“.
+- [x] Echtzeit-Stream aller eigenen Meldungen mit Ticket-ID (`#ORB-xxx`), Kategorie, Datum (`DD.MM.YYYY • HH:mm`) und aktuellem Bearbeitungsstatus (`🟢 Offen`, `🟡 In Arbeit`, `✅ Gelöst`).
 
 ### 38.5 Widget-Galerie-Cleanup, DSGVO-Kontolöschung & App-Icon-Präzision
 - [ ] Restlose Löschung der veralteten Widget-Galerie (Datei, Route und Menüpunkte).

@@ -124,7 +124,7 @@ void main() {
       );
 
       // AppBar Titel für normale Nutzer
-      expect(find.text('Meine Feedback-Tickets'), findsOneWidget);
+      expect(find.text('Meine gemeldeten Tickets'), findsOneWidget);
     });
   });
 }
