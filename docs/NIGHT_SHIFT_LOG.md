@@ -16,7 +16,7 @@
 | **35.2** | Multi-Format-Upload (`.fit`, `.tcx`, `.gpx`), SAF-Fix & Isolate-Parsing | [x] | `5f16965` | 0.9s |
 | **35.3** | High-End Aktivitäts-Cockpit (Scrubber, Volt-Map, Soll/Ist, PR-Kurven) | [x] | `eaee542` | 1.1s |
 | **35-F** | **Abschluss Phase 35 (`v0.35.0`): Quality-Gate, APK, Pixel 10 Pro & Tag** | [x] | `v0.35.0` | 72s Build + 1.1s Test |
-| **36.1** | Login-First-Flow, Clean Branding (kein Doppel-ORBIT) & Password-Reset | [ ] | | |
+| **36.1** | Login-First-Flow, Clean Branding (kein Doppel-ORBIT) & Password-Reset | [x] | `b8f7886` | 1.0s |
 | **36.2** | Dual-Passwort mit Live-Checklist & Email-Verifikations-Warteraum | [ ] | | |
 | **36.3** | Rollenspezifisches Onboarding (Athlet vs. Coach Fragebögen) | [ ] | | |
 | **36.4** | Triathlon-Kombi-Logo, Bottom-Bar-Navigation & 100% Profil-Persistenz | [ ] | | |
@@ -40,6 +40,11 @@
 ---
 
 ## 2. Chronologisches Protokoll der Etappen
+
+### [23:29] ✅ Etappe 36.1 abgeschlossen — Commit: `b8f7886`
+- **Was wurde erledigt:** Umstellung auf strikten Login-First-Start (`/login` für unauthentifizierte Nutzer), prominenter Weiterleitungs-Button „Konto erstellen / Registrieren“ ins Onboarding, Beseitigung doppelter ORBIT-Schriftzüge auf dem Login-Screen und im Dashboard-Header („Heute“ statt „Orbit“), „Passwort vergessen?“-Dialog mit E-Mail-Reset-Link sowie „Passwort ändern“-Option in den Einstellungen mit Live-Kriterien.
+- **Wie technisch gelöst & Performance-Schutz:** `app_router.dart` steuert direkte Weiterleitung auf `/login`; `login_screen.dart` bietet Dialog via `authServiceProvider.resetPassword`; `settings_screen.dart` prüft Kriterien und re-authentifiziert den Nutzer vor `updatePassword`.
+- **Test-Nachweis & Dauer:** `test/features/phase36_login_first_and_password_test.dart` (3/3 bestanden in 1.0s) + `scripts/check_phase_ready.sh` (0 Errors, 0 Warnings).
 
 ### [23:24] 🏆 Phase 35 abgeschlossen & freigegeben (`v0.35.0`)
 - **Was wurde erledigt:** Vollständiger Abschluss von Phase 35. Alle 3 Unterpakete (Garmin REST-Pull Sync, Multi-Format Upload `.fit`/`.tcx`/`.gpx` mit Android 16 SAF & Isolate-Parsing, High-End Aktivitäts-Cockpit mit 2x3 Metrik-Grid, Volt-Streckenlinie, Soll/Ist-Ampel und synchronisiertem Scrubber) erfolgreich abgeschlossen. Release-APK (65.1 MB) gebaut, per `adb install -r` auf Google Pixel 10 Pro installiert und Verifikations-Screenshot aufgenommen (`docs/beta/screenshots/phase35_release_pixel10.png`).
