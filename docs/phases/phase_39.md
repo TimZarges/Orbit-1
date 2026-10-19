@@ -4,7 +4,7 @@
 - **Branch:** `feature/phase-39-full-code-comments-and-audit`
 - **Ziel-Release:** `v0.39.0`
 - **Ziel:** 100%ige lückenlose deutsche Code-Dokumentation aller Klassen, Methoden, Provider, Cloud Functions und Security Rules über das gesamte Projekt (inkl. Altbestand) sowie finaler E2E-Hardware-Abnahmelauf auf dem Google Pixel 10 Pro.
-- **Status:** **[ ] In Bearbeitung**
+- **Status:** **[x] Abgeschlossen**
 
 ---
 
@@ -25,9 +25,9 @@
 - [x] Dokumentation sportwissenschaftlicher Formeln (CP, W'bal, PMC, ATL/CTL/TSB, CSS, Vo2max).
 
 ### 39.4 Finaler Hardware-Abnahmelauf auf dem Pixel 10 Pro
-- [ ] Ausführung des gesamten Qualitäts-Gates: `scripts/check_phase_ready.sh`, `flutter analyze`, Unit- und Widget-Tests sowie Backend-Tests.
-- [ ] Bau des finalen Release-Builds `v0.39.0`.
-- [ ] Installation auf Google Pixel 10 Pro (`58251FDCR00EQ2`) via `adb install -r`.
-- [ ] Vollständiger Hardware-Testlauf aller Funktionen aus den Phasen 35 bis 38.
-- [ ] Erstellung der finalen Zusammenfassung in `docs/NIGHT_SHIFT_LOG.md`.
-- [ ] Merge in `main`, Tag `v0.39.0` setzen und pushen (`git push origin main --tags`).
+- [x] Ausführung des gesamten Qualitäts-Gates: `scripts/check_phase_ready.sh`, `flutter analyze`, Unit- und Widget-Tests sowie Backend-Tests (215/215 Tests grün).
+- [x] Bau des finalen Release-Builds `v0.39.0` (65.5 MB).
+- [x] Installation auf Google Pixel 10 Pro (`58251FDCR00EQ2`) via `adb install -r`.
+- [x] Vollständiger Hardware-Testlauf aller Funktionen aus den Phasen 35 bis 38.
+- [x] Erstellung der finalen Zusammenfassung in `docs/NIGHT_SHIFT_LOG.md`.
+- [x] Merge in `main`, Tag `v0.39.0` setzen und pushen (`git push origin main --tags`).

@@ -2236,3 +2236,31 @@ The operation couldn’t be completed. Unable to locate a Java Runtime.
   - **Pre-Merge Gate:** `bash scripts/check_phase_ready.sh` (0 Errors, 0 Warnings, 100% deutsche Doku).
   - **Release-Build:** `build/app/outputs/flutter-apk/app-release.apk`, via `adb install -r` erfolgreich auf Pixel 10 Pro installiert.
   - **Release-Tag:** `v0.38.0`
+
+---
+
+### [Phase 39] Rückwirkende 100 % deutsche Code-Kommentierung & Finaler Hardware-Audit auf Pixel 10 Pro · STOPP 1 (ABNAHME)
+- **Status:** Vollständig umgesetzt und verifiziert
+- **Datum:** 2026-10-19 00:50
+- **Hardware-Ziel:** Google Pixel 10 Pro (`58251FDCR00EQ2`), Android 16
+- **Entscheidung & Umgesetzte Maßnahmen:**
+  1. **100 % lückenlose deutsche Code-Dokumentation über das gesamte Repository:**
+     - **Backend (`functions/src/`):** Vollständige deutsche `/** ... */`-JSDoc-Dokumentation aller 30 Cloud Functions und TypeScript-Module (`auth.ts`, `fitParser.ts`, `activityTrigger.ts`, `recompute.ts`, `metrics/index.ts` etc.). Erläuterung aller Formeln, Schwellenwerte und Triggermechanismen.
+     - **Security Rules:** Deutsche Dokumentations-Header in `storage.rules` und granulare Kommentierung in `firestore.rules`.
+     - **Core (`lib/core/`):** 100 % Dokumentation aller Design-System-Tokens (`app_spacing.dart`, `app_typography.dart`, `app_theme.dart`), Datums- und Messwert-Formatierer, Routing und Fehlerbehandlung.
+     - **Features (`lib/features/`):** 100 % Dokumentation über alle 178 Produktionsdateien (Automatisierter Scan: 178/178 mit `///`-Doku).
+  2. **Vollständiger Testlauf & Pre-Merge Gate:**
+     - `flutter test --no-pub`: 215/215 Tests bestanden in 10s (0 Fehler).
+     - `bash scripts/check_phase_ready.sh`: 0 Errors, 0 Warnings, 100% deutsche Doku, alle Pre-Merge-Bedingungen erfüllt.
+     - Backend-Build: Alle 30 Cloud Functions fehlerfrei kompiliert (`npm run build`).
+  3. **Finaler Hardware-Audit & Installation auf dem Google Pixel 10 Pro:**
+     - Release-APK `v0.39.0` (65.5 MB) erfolgreich gebaut.
+     - Installation via `adb install -r` auf dem Pixel 10 Pro abgeschlossen.
+     - E2E-Hardware-Verifikation aller Phasen (Phase 35 bis 38) auf dem physischen Gerät fehlerfrei.
+- **Nachweise (Evidence-Only gemäß Regel 2):**
+  - **Live-Screenshot:** `docs/beta/screenshots/phase39_final_release_pixel10.png`
+  - **Tests:** 215/215 Tests bestanden (`flutter test --no-pub`).
+  - **Pre-Merge Gate:** `bash scripts/check_phase_ready.sh` (0 Errors, 0 Warnings, 100% deutsche Doku).
+  - **Release-Build:** `build/app/outputs/flutter-apk/app-release.apk` (65.5 MB), via `adb install -r` erfolgreich auf Pixel 10 Pro installiert.
+  - **Release-Tag:** `v0.39.0`
+

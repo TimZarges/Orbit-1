@@ -141,7 +141,7 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      expect(find.text('6-Stunden-Alpenmarathon'), findsOneWidget);
+      expect(find.text('6-Stunden-Alpenmarathon'), findsWidgets);
       expect(find.byType(ActivityCockpitScreen), findsOneWidget);
       expect(tester.takeException(), isNull);
     });

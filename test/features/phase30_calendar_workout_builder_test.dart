@@ -223,11 +223,11 @@ void main() {
 
       expect(find.text('Visuelle Blöcke'), findsOneWidget);
       expect(find.text('Text-Code'), findsOneWidget);
-      expect(find.text('+ Warmup'), findsOneWidget);
+      expect(find.text('+ Aufwärmen'), findsOneWidget);
       expect(find.text('+ Intervall (Z4)'), findsOneWidget);
       expect(find.text('+ Pause (Z1)'), findsOneWidget);
-      expect(find.text('+ 4x Schleife'), findsOneWidget);
-      expect(find.text('+ Cooldown'), findsOneWidget);
+      expect(find.text('+ Wiederholungs-Serie (4x)'), findsOneWidget);
+      expect(find.text('+ Ausrollen'), findsOneWidget);
       expect(find.text('Im Kalender einplanen'), findsOneWidget);
     });
   });

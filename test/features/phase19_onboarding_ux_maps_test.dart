@@ -103,17 +103,18 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // Finish Button vor DSGVO-Zustimmung ist deaktiviert
+      // Finish Button vor DSGVO-Zustimmung tippen -> Warnung wird angezeigt
       final finishBtn = find.byKey(const Key('onboarding_finish_button'));
-      expect(tester.widget<ElevatedButton>(finishBtn).enabled, isFalse);
+      await tester.tap(finishBtn);
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Bitte willige'), findsOneWidget);
 
       // DSGVO Checkbox anhaken
       await tester
           .tap(find.byKey(const Key('onboarding_gdpr_consent_checkbox')));
       await tester.pumpAndSettle();
 
-      // Jetzt ist Finish Button aktiv
-      expect(tester.widget<ElevatedButton>(finishBtn).enabled, isTrue);
+      // Jetzt wird das Onboarding erfolgreich abgeschlossen
       await tester.tap(finishBtn);
       await tester.pumpAndSettle();
 

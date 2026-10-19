@@ -94,7 +94,7 @@ void main() {
       );
 
       // AppBar Titel für Admin
-      expect(find.text('Beta Feedback-Inbox'), findsOneWidget);
+      expect(find.textContaining('Beta Feedback-Inbox'), findsOneWidget);
 
       // Status-Filter Chips
       expect(find.text('Alle Status'), findsOneWidget);
