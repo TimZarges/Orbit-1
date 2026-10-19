@@ -10,7 +10,10 @@ import {
   buildBackfillChunks,
   executeGarminBackfill,
   MAX_BACKFILL_CHUNK_DAYS,
+  garminConsumerKey,
+  garminConsumerSecret,
 } from "../import/garmin/backfill";
+import { syncGarminActivitiesNow } from "../import/garmin/sync";
 import * as admin from "firebase-admin";
 import axios from "axios";
 import * as crypto from "crypto";
@@ -421,6 +424,132 @@ describe("Garmin Webhook, 3x30d Backfill Chunking, Ping/Push & ActivityDetails S
       expect(savedActivityDoc).not.toBeNull();
       expect(savedActivityDoc!.streamsPath).toBe("users/orbit_u1/streams/garmin_998877.json.gz");
       expect(savedActivityDoc!.laps).toHaveLength(1);
+    });
+  });
+
+  describe("4. syncGarminActivitiesNow REST-Pull & Rate-Limit Resilienz", () => {
+    it("fragt Garmin REST-API in validen Zeitfenstern <= 86.400s (24h) ab", async () => {
+      jest.spyOn(garminConsumerKey, "value").mockReturnValue("test_key");
+      jest.spyOn(garminConsumerSecret, "value").mockReturnValue("test_secret");
+
+      const savedStatusDocs: Record<string, any>[] = [];
+      const mockCollection = jest.fn((colName: string) => {
+        if (colName === "users") {
+          return {
+            doc: jest.fn(() => ({
+              collection: jest.fn((subCol: string) => ({
+                doc: jest.fn(() => ({
+                  get: jest.fn().mockResolvedValue({
+                    exists: true,
+                    data: () => ({
+                      garmin: {
+                        oauthToken: "tok_123",
+                        oauthTokenSecret: "sec_456",
+                        garminUserId: "garmin_u1",
+                      },
+                    }),
+                  }),
+                  set: jest.fn(async (docData: Record<string, any>) => {
+                    savedStatusDocs.push(docData);
+                  }),
+                })),
+              })),
+            })),
+          };
+        }
+        if (colName === "activities") {
+          return {
+            where: jest.fn().mockReturnThis(),
+            limit: jest.fn().mockReturnThis(),
+            get: jest.fn().mockResolvedValue({ empty: false, docs: [{ id: "existing_garmin_act" }] }),
+          };
+        }
+        return {
+          doc: jest.fn(() => ({
+            get: jest.fn().mockResolvedValue({ exists: false, data: () => ({}) }),
+          })),
+        };
+      });
+
+      jest.spyOn(admin, "firestore").mockReturnValue({ collection: mockCollection } as any);
+
+      // Garmin liefert leere Aktivitäten-Liste
+      mockedAxios.get.mockResolvedValue({ status: 200, data: { activities: [] } } as any);
+
+      const res = await (syncGarminActivitiesNow as any).run({
+        auth: { uid: "orbit_u1" },
+        data: { days: 7 },
+      });
+
+      expect(res.success).toBe(true);
+      expect(res.count).toBe(0);
+
+      // Prüfe, dass jede REST-Abfrage die 86.400s Garmin-Grenze einhält
+      for (const call of mockedAxios.get.mock.calls) {
+        const urlStr = call[0];
+        if (typeof urlStr === "string" && urlStr.includes("uploadStartTimeInSeconds")) {
+          const url = new URL(urlStr);
+          const start = Number(url.searchParams.get("uploadStartTimeInSeconds"));
+          const end = Number(url.searchParams.get("uploadEndTimeInSeconds"));
+          expect(end - start).toBeLessThanOrEqual(86400);
+        }
+      }
+    });
+
+    it("fängt 429 Rate-Limits sauber ab und meldet Fehler transparent statt zu verschlucken", async () => {
+      jest.spyOn(garminConsumerKey, "value").mockReturnValue("test_key");
+      jest.spyOn(garminConsumerSecret, "value").mockReturnValue("test_secret");
+
+      const savedStatusDocs: Record<string, any>[] = [];
+      const mockCollection = jest.fn((colName: string) => {
+        if (colName === "users") {
+          return {
+            doc: jest.fn(() => ({
+              collection: jest.fn(() => ({
+                doc: jest.fn(() => ({
+                  get: jest.fn().mockResolvedValue({
+                    exists: true,
+                    data: () => ({
+                      garmin: {
+                        oauthToken: "tok_123",
+                        oauthTokenSecret: "sec_456",
+                        garminUserId: "garmin_u1",
+                      },
+                    }),
+                  }),
+                  set: jest.fn(async (docData: Record<string, any>) => {
+                    savedStatusDocs.push(docData);
+                  }),
+                })),
+              })),
+            })),
+          };
+        }
+        if (colName === "activities") {
+          return {
+            where: jest.fn().mockReturnThis(),
+            limit: jest.fn().mockReturnThis(),
+            get: jest.fn().mockResolvedValue({ empty: false, docs: [{ id: "act_1" }] }),
+          };
+        }
+        return { doc: jest.fn(() => ({})) };
+      });
+
+      jest.spyOn(admin, "firestore").mockReturnValue({ collection: mockCollection } as any);
+
+      // Garmin antwortet mit 429 Too Many Requests
+      const rateLimitErr = new Error("Rate limit quota violation") as any;
+      rateLimitErr.response = { status: 429, data: { errorMessage: "Too many request: Limit 100 per 1 minute" } };
+      mockedAxios.get.mockRejectedValue(rateLimitErr);
+
+      const res = await (syncGarminActivitiesNow as any).run({
+        auth: { uid: "orbit_u1" },
+        data: { days: 7 },
+      });
+
+      expect(res.success).toBe(false);
+      expect(res.count).toBe(0);
+      expect(res.error).toContain("Garmin API-Ratenlimit erreicht");
     });
   });
 });

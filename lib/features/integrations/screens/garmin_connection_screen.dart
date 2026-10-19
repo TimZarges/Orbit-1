@@ -108,7 +108,9 @@ class _GarminConnectionScreenState
             content: Text(
               'Erfolgreich mit Garmin verbunden! $count Aktivitäten wurden synchronisiert.',
               style: const TextStyle(
-                  color: Colors.white, fontWeight: FontWeight.bold),
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
         );
@@ -136,17 +138,48 @@ class _GarminConnectionScreenState
           await ref.read(garminServiceProvider).syncActivitiesNow(days: 90);
       if (mounted) {
         setState(() => _isLoading = false);
-        final count = syncResult['count'] ?? 0;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            backgroundColor: const Color(0xFF10B981),
-            content: Text(
-              'Garmin-Synchronisation erfolgreich! $count Aktivitäten aktualisiert.',
-              style: const TextStyle(
-                  color: Colors.white, fontWeight: FontWeight.bold),
+        final success = syncResult['success'] == true;
+        final count = (syncResult['count'] as num?)?.toInt() ?? 0;
+        final message = (syncResult['message'] as String?) ?? '';
+
+        if (!success) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              backgroundColor: Colors.red.shade700,
+              content: Text(
+                message.isNotEmpty
+                    ? message
+                    : 'Fehler bei der Garmin-Synchronisation.',
+                style: const TextStyle(color: Colors.white),
+              ),
             ),
-          ),
-        );
+          );
+        } else if (count > 0) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              backgroundColor: const Color(0xFF10B981),
+              content: Text(
+                'Garmin-Synchronisation erfolgreich! $count Aktivitäten aktualisiert.',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              backgroundColor: const Color(0xFF0EA5E9),
+              content: Text(
+                message.isNotEmpty
+                    ? message
+                    : 'Garmin ist synchron. Keine neuen Aktivitäten gefunden.',
+                style: const TextStyle(color: Colors.white),
+              ),
+            ),
+          );
+        }
       }
     } catch (e) {
       if (mounted) {

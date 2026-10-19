@@ -73,7 +73,9 @@ class TodayTabScreen extends ConsumerWidget {
         foregroundColor: AppColors.volt,
         onPressed: uploadState.isUploading
             ? null
-            : () => ref.read(activityUploadProvider.notifier).pickAndUpload(),
+            : () => ref
+                .read(activityUploadProvider.notifier)
+                .pickAndUpload(targetAthleteId: athleteId),
         child: uploadState.isUploading
             ? const SizedBox(
                 width: 24,
@@ -210,7 +212,7 @@ class TodayTabScreen extends ConsumerWidget {
                         contextHint: 'ActivityUpload',
                         onRetry: () => ref
                             .read(activityUploadProvider.notifier)
-                            .pickAndUpload(),
+                            .pickAndUpload(targetAthleteId: athleteId),
                         onReportIssue: () => showBetaBugReporterSheet(
                           context,
                           initialCategory: BetaFeedbackCategory.garminUpload,
@@ -488,7 +490,7 @@ class TodayTabScreen extends ConsumerWidget {
                     ? null
                     : () => ref
                         .read(activityUploadProvider.notifier)
-                        .pickAndUpload(),
+                        .pickAndUpload(targetAthleteId: athleteId),
                 icon: uploadState.isUploading
                     ? const SizedBox(
                         width: 18,

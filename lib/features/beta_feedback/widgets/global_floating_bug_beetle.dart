@@ -36,10 +36,11 @@ class _GlobalFloatingBugBeetleState extends State<GlobalFloatingBugBeetle> {
     final size = MediaQuery.sizeOf(context);
     final padding = MediaQuery.paddingOf(context);
 
-    // Standard-Positionierung: Unten rechts über der Bottom Navigation Bar (ca. 130px von unten)
+    // Standard-Positionierung: Rechter Bildschirmrand auf Daumenhöhe (45 % Viewport-Höhe)
+    // Kollidiert niemals mit dem FAB unten rechts oder der AppBar oben.
     final defaultOffset = Offset(
-      size.width - 64.0 - padding.right,
-      size.height - 130.0 - padding.bottom,
+      size.width - 60.0 - padding.right,
+      size.height * 0.45,
     );
     final currentOffset = _offset ?? defaultOffset;
 

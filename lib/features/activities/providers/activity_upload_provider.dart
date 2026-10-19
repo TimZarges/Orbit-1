@@ -108,19 +108,32 @@ FileValidationResult _validateAndInspectBytes(
   if (ext == 'fit') {
     // FIT-Header-Check: Mindestens 12 Bytes, ab Byte 8 steht ".FIT"
     bool hasFitHeader = false;
-    if (bytes.length >= 14) {
+    if (bytes.length >= 12) {
       final magic = String.fromCharCodes(bytes.sublist(8, 12));
       hasFitHeader = magic == '.FIT';
+    }
+    // Manche FIT-Dateien haben einen alternativen Offset oder Header
+    if (!hasFitHeader && bytes.length >= 16) {
+      for (int i = 0; i <= bytes.length - 4 && i <= 32; i++) {
+        if (bytes[i] == 46 && // '.'
+            bytes[i + 1] == 70 && // 'F'
+            bytes[i + 2] == 73 && // 'I'
+            bytes[i + 3] == 84) {
+          // 'T'
+          hasFitHeader = true;
+          break;
+        }
+      }
     }
     // Auch GZIP-komprimierte .fit.gz prüfen (0x1f, 0x8b)
     final isGzip = bytes.length >= 2 && bytes[0] == 0x1f && bytes[1] == 0x8b;
 
-    if (!hasFitHeader && !isGzip && bytes.length < 50) {
+    if (!hasFitHeader && !isGzip) {
       return FileValidationResult(
         isValid: false,
         sport: 'OTHER',
         extension: ext,
-        error: 'Ungültiges FIT-Dateiformat.',
+        error: 'Die Datei enthält keinen gültigen FIT-Header (.FIT).',
       );
     }
 
@@ -166,7 +179,7 @@ class ActivityUploadNotifier extends StateNotifier<ActivityUploadState> {
   final Ref ref;
   ActivityUploadNotifier(this.ref) : super(ActivityUploadState());
 
-  /// Öffnet den Datei-Picker mit `withData: true` (SAF-kompatibel für Android 16)
+  /// Öffnet den Datei-Picker mit `FileType.any` (SAF-kompatibel für Android 16)
   /// und lädt ausgewählte `.fit`, `.tcx` und `.gpx` Dateien hoch.
   Future<List<String>> pickAndUpload({String? targetAthleteId}) async {
     final athleteId = targetAthleteId ??
@@ -178,18 +191,35 @@ class ActivityUploadNotifier extends StateNotifier<ActivityUploadState> {
     }
 
     try {
-      // SAF Android 16 Fix: FilePicker.pickFiles liefert PlatformFile mit readAsBytes(),
-      // das content://-URIs über den ContentResolver sicher und absturzfrei liest.
+      // SAF Android 16 Fix: ZWINGEND FileType.any, damit Android .fit/.tcx nicht ausgraut!
       final files = await FilePicker.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: ['fit', 'tcx', 'gpx', 'gz'],
+        type: FileType.any,
       );
 
       if (files.isEmpty) {
         return [];
       }
 
-      final filesToUpload = files.take(50).toList();
+      // Filtere auf unterstützte Trainingsdatei-Endungen (.fit, .tcx, .gpx, .gz)
+      final validTrainingFiles = files.where((f) {
+        final name = f.name.toLowerCase();
+        return name.endsWith('.fit') ||
+            name.endsWith('.fit.gz') ||
+            name.endsWith('.tcx') ||
+            name.endsWith('.tcx.gz') ||
+            name.endsWith('.gpx') ||
+            name.endsWith('.gpx.gz');
+      }).toList();
+
+      if (validTrainingFiles.isEmpty) {
+        state = ActivityUploadState(
+          error:
+              'Bitte wähle eine gültige Trainingsdatei (.fit, .tcx oder .gpx) aus.',
+        );
+        return [];
+      }
+
+      final filesToUpload = validTrainingFiles.take(50).toList();
       final total = filesToUpload.length;
 
       state = ActivityUploadState(
@@ -323,12 +353,6 @@ class ActivityUploadNotifier extends StateNotifier<ActivityUploadState> {
               activityPayload,
               SetOptions(merge: true),
             );
-        await firestore
-            .collection('users')
-            .doc(athleteId)
-            .collection('activities')
-            .doc(activityId)
-            .set(activityPayload, SetOptions(merge: true));
 
         successCount++;
         uploadedIds.add(activityId);
@@ -373,7 +397,25 @@ class ActivityUploadNotifier extends StateNotifier<ActivityUploadState> {
     if (files.isEmpty) return [];
 
     try {
-      final filesToUpload = files.take(50).toList();
+      final validTrainingFiles = files.where((f) {
+        final name = f.name.toLowerCase();
+        return name.endsWith('.fit') ||
+            name.endsWith('.fit.gz') ||
+            name.endsWith('.tcx') ||
+            name.endsWith('.tcx.gz') ||
+            name.endsWith('.gpx') ||
+            name.endsWith('.gpx.gz');
+      }).toList();
+
+      if (validTrainingFiles.isEmpty) {
+        state = ActivityUploadState(
+          error:
+              'Bitte wähle eine gültige Trainingsdatei (.fit, .tcx oder .gpx) aus.',
+        );
+        return [];
+      }
+
+      final filesToUpload = validTrainingFiles.take(50).toList();
       final total = filesToUpload.length;
 
       state = ActivityUploadState(

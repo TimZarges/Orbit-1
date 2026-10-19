@@ -151,15 +151,24 @@ export async function executeGarminBackfill(
             : responseData || err.message;
         console.warn(`Garmin Backfill Hinweis für ${type} (${chunk.startSec}-${chunk.endSec}):`, errorMsg);
 
+        if (err.response?.status === 429 || String(errorMsg).includes("Rate limit quota violation")) {
+          errors.push("Garmin API-Ratenlimit erreicht (100 Anfragen/Minute)");
+          break; // Weiteres Bombardieren des Rate-Limiters verhindern
+        }
+
         if (String(errorMsg).includes("HISTORICAL_DATA_EXPORT")) {
           errors.push(`Feature HISTORICAL_DATA_EXPORT für ${type} noch nicht aktiv`);
         }
+      }
+
+      if (delayMs > 0) {
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
       }
     }
 
     // Kurzes Delay zwischen den 30-Tage-Chunks zur Einhaltung der Garmin Rate-Limits
     if (delayMs > 0 && cIdx < chunks.length - 1) {
-      await new Promise((resolve) => setTimeout(resolve, delayMs));
+      await new Promise((resolve) => setTimeout(resolve, delayMs * 2));
     }
   }
 

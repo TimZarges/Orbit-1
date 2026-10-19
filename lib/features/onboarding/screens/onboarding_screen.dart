@@ -1759,32 +1759,55 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         ),
                         onPressed: () async {
                           final files = await FilePicker.pickFiles(
-                            type: FileType.custom,
-                            allowedExtensions: ['fit', 'tcx', 'gpx'],
+                            type: FileType.any,
                           );
-                          if (files.isNotEmpty) {
-                            setState(() {
-                              _stagedFiles = files;
-                            });
-                            final currentUid =
-                                FirebaseAuth.instance.currentUser?.uid;
-                            if (currentUid != null) {
-                              await ref
-                                  .read(activityUploadProvider.notifier)
-                                  .uploadFiles(
-                                    targetAthleteId: currentUid,
-                                    files: files,
-                                  );
-                            }
+                          if (files.isEmpty) return;
+
+                          final validFiles = files.where((f) {
+                            final name = f.name.toLowerCase();
+                            return name.endsWith('.fit') ||
+                                name.endsWith('.fit.gz') ||
+                                name.endsWith('.tcx') ||
+                                name.endsWith('.tcx.gz') ||
+                                name.endsWith('.gpx') ||
+                                name.endsWith('.gpx.gz');
+                          }).toList();
+
+                          if (validFiles.isEmpty) {
                             if (mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  backgroundColor: const Color(0xFF10B981),
+                                const SnackBar(
+                                  backgroundColor: Color(0xFFEF4444),
                                   content: Text(
-                                      '${files.length} Datei(en) erfolgreich ausgewählt!'),
+                                    'Bitte wähle eine gültige Trainingsdatei (.fit, .tcx oder .gpx) aus.',
+                                  ),
                                 ),
                               );
                             }
+                            return;
+                          }
+
+                          setState(() {
+                            _stagedFiles = validFiles;
+                          });
+                          final currentUid =
+                              FirebaseAuth.instance.currentUser?.uid;
+                          if (currentUid != null) {
+                            await ref
+                                .read(activityUploadProvider.notifier)
+                                .uploadFiles(
+                                  targetAthleteId: currentUid,
+                                  files: validFiles,
+                                );
+                          }
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                backgroundColor: const Color(0xFF10B981),
+                                content: Text(
+                                    '${validFiles.length} Datei(en) erfolgreich ausgewählt!'),
+                              ),
+                            );
                           }
                         },
                         icon: const Icon(Icons.file_upload),
