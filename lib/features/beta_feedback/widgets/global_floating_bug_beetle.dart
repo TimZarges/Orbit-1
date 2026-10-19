@@ -21,7 +21,8 @@ class GlobalFloatingBugBeetle extends StatefulWidget {
   });
 
   @override
-  State<GlobalFloatingBugBeetle> createState() => _GlobalFloatingBugBeetleState();
+  State<GlobalFloatingBugBeetle> createState() =>
+      _GlobalFloatingBugBeetleState();
 }
 
 class _GlobalFloatingBugBeetleState extends State<GlobalFloatingBugBeetle> {
@@ -94,7 +95,8 @@ class _GlobalFloatingBugBeetleState extends State<GlobalFloatingBugBeetle> {
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.volt.withValues(alpha: _isDragging ? 0.4 : 0.2),
+                      color: AppColors.volt
+                          .withValues(alpha: _isDragging ? 0.4 : 0.2),
                       blurRadius: _isDragging ? 12 : 6,
                       spreadRadius: _isDragging ? 2 : 1,
                     ),

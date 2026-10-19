@@ -8,6 +8,9 @@ import '../models/workout_builder_models.dart';
 import '../models/workout_template.dart';
 import '../repositories/workout_template_repository.dart';
 import '../widgets/workout_profile_chart.dart';
+import '../../auth/providers/user_provider.dart';
+import '../../beta_feedback/widgets/beta_bug_reporter_sheet.dart';
+import '../../home/providers/home_dashboard_provider.dart';
 
 /// Screen für die Erstellung und Bearbeitung strukturierter Trainingseinheiten.
 class WorkoutBuilderScreen extends ConsumerStatefulWidget {
@@ -93,6 +96,7 @@ class _WorkoutBuilderScreenState extends ConsumerState<WorkoutBuilderScreen> {
                 ? () => _showSaveTemplateDialog(context, state)
                 : null,
           ),
+          const BetaBugReportIconButton(),
         ],
       ),
       body: SingleChildScrollView(
@@ -614,6 +618,20 @@ class _WorkoutBuilderScreenState extends ConsumerState<WorkoutBuilderScreen> {
                   ),
                 ),
               ),
+              const SizedBox(width: 8),
+              _buildQuickAddButton(
+                key: const Key('quick_add_custom'),
+                label: '+ Eigener Block...',
+                color: AppColors.navy,
+                textColor: AppColors.volt,
+                onTap: () => _showBlockEditorSheet(
+                  context,
+                  null,
+                  null,
+                  notifier,
+                  state.sport,
+                ),
+              ),
             ],
           ),
         ),
@@ -747,14 +765,38 @@ class _WorkoutBuilderScreenState extends ConsumerState<WorkoutBuilderScreen> {
             ),
             const SizedBox(width: 10),
             Expanded(
-              child: Text(
-                '$durationMin min @ Z$zoneNum',
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 13,
+              child: InkWell(
+                onTap: () => _showBlockEditorSheet(
+                  context,
+                  block,
+                  index,
+                  notifier,
+                  sport,
+                ),
+                child: Text(
+                  '$durationMin min @ Z$zoneNum',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                  ),
                 ),
               ),
             ),
+            IconButton(
+              key: Key('edit_block_$index'),
+              icon: const Icon(Icons.tune, size: 18, color: AppColors.navy),
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+              tooltip: 'Bearbeiten',
+              onPressed: () => _showBlockEditorSheet(
+                context,
+                block,
+                index,
+                notifier,
+                sport,
+              ),
+            ),
+            const SizedBox(width: 6),
             if (index > 0)
               IconButton(
                 icon: const Icon(Icons.arrow_upward, size: 18),
@@ -862,6 +904,21 @@ class _WorkoutBuilderScreenState extends ConsumerState<WorkoutBuilderScreen> {
                   ),
                 ),
                 const Spacer(),
+                IconButton(
+                  key: Key('edit_repeat_$index'),
+                  icon: const Icon(Icons.tune, size: 18, color: AppColors.navy),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  tooltip: 'Serie konfigurieren',
+                  onPressed: () => _showBlockEditorSheet(
+                    context,
+                    block,
+                    index,
+                    notifier,
+                    sport,
+                  ),
+                ),
+                const SizedBox(width: 6),
                 if (index > 0)
                   IconButton(
                     icon: const Icon(Icons.arrow_upward, size: 18),
@@ -1063,6 +1120,11 @@ class _WorkoutBuilderScreenState extends ConsumerState<WorkoutBuilderScreen> {
 
     await repo.create(planned);
 
+    ref.invalidate(homeDashboardProvider(athleteId));
+    ref.invalidate(athleteCurrentWeekWorkoutsProvider(athleteId));
+    ref.invalidate(athleteCurrentMonthWorkoutsProvider(athleteId));
+    ref.invalidate(weekSummaryProvider(athleteId));
+
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -1128,11 +1190,662 @@ class _WorkoutBuilderScreenState extends ConsumerState<WorkoutBuilderScreen> {
 
       await repo.createTemplate(template);
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Vorlage erfolgreich gespeichert!')),
-        );
-      }
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Vorlage erfolgreich gespeichert!')),
+      );
     }
+  }
+
+  void _showBlockEditorSheet(
+    BuildContext context,
+    WorkoutBlock? block,
+    int? index,
+    WorkoutBuilderNotifier notifier,
+    String sport,
+  ) {
+    final userData = ref.read(userDocumentProvider).value;
+    final ftpNum = userData?['metrics']?['ftpWatts'] ?? userData?['ftp'] ?? 250;
+    final ftp = (ftpNum as num).toDouble();
+
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => _BlockEditorBottomSheet(
+        initialBlock: block,
+        sport: sport,
+        thresholdPower: ftp > 50 ? ftp : 250.0,
+        onSave: (newBlock) {
+          if (index != null) {
+            notifier.updateBlock(index, newBlock);
+          } else {
+            notifier.addBlock(newBlock);
+          }
+        },
+      ),
+    );
+  }
+}
+
+/// Modal-BottomSheet zur interaktiven Konfiguration eines Trainingsblocks (#ORB-018).
+class _BlockEditorBottomSheet extends StatefulWidget {
+  final WorkoutBlock? initialBlock;
+  final String sport;
+  final double thresholdPower;
+  final void Function(WorkoutBlock block) onSave;
+
+  const _BlockEditorBottomSheet({
+    this.initialBlock,
+    required this.sport,
+    this.thresholdPower = 250.0,
+    required this.onSave,
+  });
+
+  @override
+  State<_BlockEditorBottomSheet> createState() =>
+      _BlockEditorBottomSheetState();
+}
+
+class _BlockEditorBottomSheetState extends State<_BlockEditorBottomSheet> {
+  late bool _isRepeat;
+  late WorkoutRole _role;
+  late int _durationMin;
+  late int _durationSec;
+  late bool _isPctFtp;
+  late int _zone;
+  late int _pctFtp;
+  late int _repeatCount;
+  late int _restMin;
+  late int _restSec;
+  late int _restZone;
+
+  @override
+  void initState() {
+    super.initState();
+    final block = widget.initialBlock;
+    if (block is RepeatBlock) {
+      _isRepeat = true;
+      _repeatCount = block.count;
+      final first = block.blocks.isNotEmpty ? block.blocks.first : null;
+      final second = block.blocks.length > 1 ? block.blocks[1] : null;
+
+      if (first is StepBlock) {
+        _role = first.role;
+        final d = first.target.durationSec ?? 180;
+        _durationMin = d ~/ 60;
+        _durationSec = d % 60;
+        if (first.intensity is PctFtpIntensity) {
+          _isPctFtp = true;
+          _pctFtp = (first.intensity as PctFtpIntensity).low;
+          _zone = 4;
+        } else if (first.intensity is ZoneIntensity) {
+          _isPctFtp = false;
+          _zone = (first.intensity as ZoneIntensity).low;
+          _pctFtp = 90;
+        } else {
+          _isPctFtp = false;
+          _zone = 4;
+          _pctFtp = 90;
+        }
+      } else {
+        _role = WorkoutRole.work;
+        _durationMin = 3;
+        _durationSec = 0;
+        _isPctFtp = false;
+        _zone = 4;
+        _pctFtp = 90;
+      }
+
+      if (second is StepBlock) {
+        final d = second.target.durationSec ?? 120;
+        _restMin = d ~/ 60;
+        _restSec = d % 60;
+        _restZone = second.intensity is ZoneIntensity
+            ? (second.intensity as ZoneIntensity).low
+            : 1;
+      } else {
+        _restMin = 2;
+        _restSec = 0;
+        _restZone = 1;
+      }
+    } else if (block is StepBlock) {
+      _isRepeat = false;
+      _repeatCount = 4;
+      _role = block.role;
+      final d = block.target.durationSec ?? 300;
+      _durationMin = d ~/ 60;
+      _durationSec = d % 60;
+      if (block.intensity is PctFtpIntensity) {
+        _isPctFtp = true;
+        _pctFtp = (block.intensity as PctFtpIntensity).low;
+        _zone = 4;
+      } else if (block.intensity is ZoneIntensity) {
+        _isPctFtp = false;
+        _zone = (block.intensity as ZoneIntensity).low;
+        _pctFtp = 90;
+      } else {
+        _isPctFtp = false;
+        _zone = 2;
+        _pctFtp = 70;
+      }
+      _restMin = 2;
+      _restSec = 0;
+      _restZone = 1;
+    } else {
+      _isRepeat = false;
+      _repeatCount = 4;
+      _role = WorkoutRole.work;
+      _durationMin = 5;
+      _durationSec = 0;
+      _isPctFtp = false;
+      _zone = 4;
+      _pctFtp = 90;
+      _restMin = 2;
+      _restSec = 0;
+      _restZone = 1;
+    }
+  }
+
+  int get _liveWatts => ((widget.thresholdPower * _pctFtp) / 100.0).round();
+
+  void _save() {
+    final totalSec = (_durationMin * 60) + _durationSec;
+    final targetSec = totalSec > 0 ? totalSec : 60;
+
+    final intensity = _isPctFtp
+        ? PctFtpIntensity(low: _pctFtp, high: _pctFtp)
+        : ZoneIntensity.single(_zone);
+
+    if (_isRepeat) {
+      final restTotalSec = (_restMin * 60) + _restSec;
+      final validRestSec = restTotalSec > 0 ? restTotalSec : 30;
+
+      final repeatBlock = RepeatBlock(
+        count: _repeatCount.clamp(2, 30),
+        blocks: [
+          StepBlock(
+            role: WorkoutRole.work,
+            target: WorkoutTarget.duration(targetSec),
+            intensity: intensity,
+          ),
+          StepBlock(
+            role: WorkoutRole.rest,
+            target: WorkoutTarget.duration(validRestSec),
+            intensity: ZoneIntensity.single(_restZone),
+          ),
+        ],
+      );
+      widget.onSave(repeatBlock);
+    } else {
+      final stepBlock = StepBlock(
+        role: _role,
+        target: WorkoutTarget.duration(targetSec),
+        intensity: intensity,
+      );
+      widget.onSave(stepBlock);
+    }
+    Navigator.of(context).pop();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final maxScrollExtent = MediaQuery.of(context).size.height * 0.85;
+
+    return Container(
+      constraints: BoxConstraints(maxHeight: maxScrollExtent),
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+        left: 16,
+        right: 16,
+        top: 16,
+      ),
+      decoration: const BoxDecoration(
+        color: AppColors.background,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Header
+            Row(
+              children: [
+                const Icon(Icons.tune, color: AppColors.volt),
+                const SizedBox(width: 8),
+                const Expanded(
+                  child: Text(
+                    'Trainingsblock anpassen',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close),
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+              ],
+            ),
+            const Divider(),
+            const SizedBox(height: 8),
+
+            // Typ-Auswahl (Einzelschritt vs Wiederholungs-Serie)
+            Row(
+              children: [
+                Expanded(
+                  child: ChoiceChip(
+                    label: const Text('Einzelschritt'),
+                    selected: !_isRepeat,
+                    onSelected: (sel) {
+                      if (sel) setState(() => _isRepeat = false);
+                    },
+                    selectedColor: AppColors.navy,
+                    labelStyle: TextStyle(
+                      color: !_isRepeat ? Colors.white : Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: ChoiceChip(
+                    label: const Text('Wiederholung (Serie)'),
+                    selected: _isRepeat,
+                    onSelected: (sel) {
+                      if (sel) setState(() => _isRepeat = true);
+                    },
+                    selectedColor: AppColors.navy,
+                    labelStyle: TextStyle(
+                      color: _isRepeat ? Colors.white : Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+
+            // Wenn Wiederholung: Stepper für Count (2x bis 30x)
+            if (_isRepeat) ...[
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.card,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.cardBorder),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.repeat, color: AppColors.volt, size: 20),
+                    const SizedBox(width: 10),
+                    const Text(
+                      'Wiederholungen:',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    const Spacer(),
+                    IconButton(
+                      icon: const Icon(Icons.remove_circle_outline),
+                      onPressed: _repeatCount > 2
+                          ? () => setState(() => _repeatCount--)
+                          : null,
+                    ),
+                    Text(
+                      '$_repeatCount x',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w900,
+                        color: AppColors.volt,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.add_circle_outline),
+                      onPressed: _repeatCount < 30
+                          ? () => setState(() => _repeatCount++)
+                          : null,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+            ] else ...[
+              // Rolle auswählen
+              const Text(
+                'Funktion des Schritts:',
+                style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey),
+              ),
+              const SizedBox(height: 6),
+              Wrap(
+                spacing: 8,
+                children: [
+                  ChoiceChip(
+                    label: const Text('Aufwärmen'),
+                    selected: _role == WorkoutRole.warmup,
+                    onSelected: (sel) =>
+                        setState(() => _role = WorkoutRole.warmup),
+                  ),
+                  ChoiceChip(
+                    label: const Text('Belastung'),
+                    selected: _role == WorkoutRole.work,
+                    onSelected: (sel) =>
+                        setState(() => _role = WorkoutRole.work),
+                  ),
+                  ChoiceChip(
+                    label: const Text('Pause'),
+                    selected: _role == WorkoutRole.rest,
+                    onSelected: (sel) =>
+                        setState(() => _role = WorkoutRole.rest),
+                  ),
+                  ChoiceChip(
+                    label: const Text('Ausrollen'),
+                    selected: _role == WorkoutRole.cooldown,
+                    onSelected: (sel) =>
+                        setState(() => _role = WorkoutRole.cooldown),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+            ],
+
+            // Dauer des Schritts (oder Belastungsintervalls)
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.card,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppColors.cardBorder),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    _isRepeat
+                        ? 'Dauer des Belastungsintervalls:'
+                        : 'Dauer des Schritts:',
+                    style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.grey),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        '${_durationMin.toString().padLeft(2, '0')}:${_durationSec.toString().padLeft(2, '0')} min',
+                        style: const TextStyle(
+                          fontSize: 26,
+                          fontWeight: FontWeight.w900,
+                          color: AppColors.volt,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      OutlinedButton(
+                        onPressed: _durationMin > 0
+                            ? () => setState(() =>
+                                _durationMin = (_durationMin - 1).clamp(0, 300))
+                            : null,
+                        child: const Text('-1 min'),
+                      ),
+                      const SizedBox(width: 8),
+                      OutlinedButton(
+                        onPressed: () => setState(() =>
+                            _durationMin = (_durationMin + 1).clamp(0, 300)),
+                        child: const Text('+1 min'),
+                      ),
+                      const SizedBox(width: 8),
+                      OutlinedButton(
+                        onPressed: () => setState(() => _durationSec =
+                            (_durationSec == 0 ? 45 : _durationSec - 15)),
+                        child: const Text('-15s'),
+                      ),
+                      const SizedBox(width: 8),
+                      OutlinedButton(
+                        onPressed: () => setState(() => _durationSec =
+                            (_durationSec == 45 ? 0 : _durationSec + 15)),
+                        child: const Text('+15s'),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+
+            // Intensitäts-Konfiguration
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.card,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppColors.cardBorder),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Text(
+                        'Intensität:',
+                        style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.grey),
+                      ),
+                      const Spacer(),
+                      // Umschalter Zone vs % FTP
+                      SegmentedButton<bool>(
+                        segments: const [
+                          ButtonSegment(
+                              value: false, label: Text('Zone (Z1-Z7)')),
+                          ButtonSegment(value: true, label: Text('% FTP')),
+                        ],
+                        selected: {_isPctFtp},
+                        onSelectionChanged: (set) {
+                          setState(() => _isPctFtp = set.first);
+                        },
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  if (!_isPctFtp) ...[
+                    // Zonen-Buttons
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 6,
+                      children: List.generate(7, (i) {
+                        final z = i + 1;
+                        final color = AppColors.zoneColor(z);
+                        final isSel = _zone == z;
+                        return FilterChip(
+                          showCheckmark: false,
+                          selected: isSel,
+                          backgroundColor: color.withValues(alpha: 0.15),
+                          selectedColor: color,
+                          label: Text(
+                            'Z$z',
+                            style: TextStyle(
+                              color: isSel ? Colors.black : Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          onSelected: (_) => setState(() => _zone = z),
+                        );
+                      }),
+                    ),
+                  ] else ...[
+                    // % FTP Stepper + Watt-Vorschau (#ORB-018)
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          '$_pctFtp % FTP',
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w900,
+                            color: AppColors.volt,
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: AppColors.navy,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                                color: AppColors.volt.withValues(alpha: 0.4)),
+                          ),
+                          child: Text(
+                            '~ $_liveWatts Watt (bei ${widget.thresholdPower.toInt()}W FTP)',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: AppColors.volt,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    Slider(
+                      value: _pctFtp.toDouble().clamp(40, 160),
+                      min: 40,
+                      max: 160,
+                      divisions: 120,
+                      activeColor: AppColors.volt,
+                      onChanged: (val) => setState(() => _pctFtp = val.round()),
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        OutlinedButton(
+                          onPressed: () => setState(
+                              () => _pctFtp = (_pctFtp - 5).clamp(40, 160)),
+                          child: const Text('-5%'),
+                        ),
+                        const SizedBox(width: 8),
+                        OutlinedButton(
+                          onPressed: () => setState(
+                              () => _pctFtp = (_pctFtp - 1).clamp(40, 160)),
+                          child: const Text('-1%'),
+                        ),
+                        const SizedBox(width: 8),
+                        OutlinedButton(
+                          onPressed: () => setState(
+                              () => _pctFtp = (_pctFtp + 1).clamp(40, 160)),
+                          child: const Text('+1%'),
+                        ),
+                        const SizedBox(width: 8),
+                        OutlinedButton(
+                          onPressed: () => setState(
+                              () => _pctFtp = (_pctFtp + 5).clamp(40, 160)),
+                          child: const Text('+5%'),
+                        ),
+                      ],
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+
+            // Wenn Wiederholung: Konfiguration des Pausen-Schritts
+            if (_isRepeat) ...[
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.card,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.cardBorder),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Pause zwischen den Intervallen:',
+                      style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          '${_restMin.toString().padLeft(2, '0')}:${_restSec.toString().padLeft(2, '0')} min',
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w900,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        OutlinedButton(
+                          onPressed: _restMin > 0
+                              ? () => setState(() => _restMin--)
+                              : null,
+                          child: const Text('-1 min'),
+                        ),
+                        const SizedBox(width: 8),
+                        OutlinedButton(
+                          onPressed: () => setState(() => _restMin++),
+                          child: const Text('+1 min'),
+                        ),
+                        const SizedBox(width: 8),
+                        OutlinedButton(
+                          onPressed: () => setState(() =>
+                              _restSec = (_restSec == 0 ? 45 : _restSec - 15)),
+                          child: const Text('-15s'),
+                        ),
+                        const SizedBox(width: 8),
+                        OutlinedButton(
+                          onPressed: () => setState(() =>
+                              _restSec = (_restSec == 45 ? 0 : _restSec + 15)),
+                          child: const Text('+15s'),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+
+            // Speichern-Button
+            ElevatedButton(
+              key: const Key('apply_block_button'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.volt,
+                foregroundColor: AppColors.navy,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
+              ),
+              onPressed: _save,
+              child: const Text(
+                'Block anwenden',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

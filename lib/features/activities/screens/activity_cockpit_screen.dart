@@ -609,10 +609,9 @@ class _ActivityCockpitScreenState extends ConsumerState<ActivityCockpitScreen> {
     final hasPlanned =
         activity.plannedWorkoutId != null || activity.matchStatus != null;
 
-    final plannedDurationSec = (activity.durationSec > 0
-            ? activity.durationSec * 0.95
-            : 3600.0)
-        .round();
+    final plannedDurationSec =
+        (activity.durationSec > 0 ? activity.durationSec * 0.95 : 3600.0)
+            .round();
     final actualDurationSec = activity.durationSec.round();
     final diffSec = (actualDurationSec - plannedDurationSec).abs();
     final diffPercent =
@@ -805,8 +804,7 @@ class _ActivityCockpitScreenState extends ConsumerState<ActivityCockpitScreen> {
                   value: powerOrPaceVal,
                   subValue: powerOrPaceSub,
                   icon: isRun ? Icons.speed_rounded : Icons.bolt_rounded,
-                  accentColor:
-                      isRun ? const Color(0xFF38BDF8) : AppColors.volt,
+                  accentColor: isRun ? const Color(0xFF38BDF8) : AppColors.volt,
                 ),
               ),
               const SizedBox(width: 8),

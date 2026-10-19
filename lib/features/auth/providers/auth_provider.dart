@@ -43,8 +43,8 @@ class AuthService {
       throw FirebaseAuthException(
           code: 'no-user', message: 'Kein aktiver Benutzer angemeldet.');
     }
-    final cred = EmailAuthProvider.credential(
-        email: user.email!, password: oldPassword);
+    final cred =
+        EmailAuthProvider.credential(email: user.email!, password: oldPassword);
     await user.reauthenticateWithCredential(cred);
     await user.updatePassword(newPassword);
   }

@@ -127,11 +127,17 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   bool _gdprHealthConsent = false;
   bool _showGdprWarning = false;
 
-  // Coach-spezifische Felder (Phase 36.3)
+  // Coach-spezifische Felder (Phase 36.3 & Morning Polish)
   final TextEditingController _clubNameController = TextEditingController();
   final TextEditingController _coachCompanyNameController =
       TextEditingController();
   String _coachMode = 'SIMPLE_DOWNLOAD'; // 'SIMPLE_DOWNLOAD' | 'FULL_ANALYSIS'
+  String _coachPhilosophy =
+      'POLARIZED'; // 'POLARIZED' | 'PYRAMIDAL' | 'HIIT' | 'HYBRID'
+  String _coachCapacity = '6-15'; // '1-5' | '6-15' | '16-30' | '30+'
+  final TextEditingController _coachLicenseController = TextEditingController();
+
+  List<PlatformFile> _stagedFiles = [];
 
   bool _isSubmitting = false;
   Object? _submitError;
@@ -246,6 +252,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     if (_currentStep == _totalSteps - 1) {
       if (!_gdprHealthConsent) {
         setState(() => _showGdprWarning = true);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            backgroundColor: Color(0xFFEF4444),
+            content: Text(
+                'Bitte bestätige zuerst die Datenschutz- und Gesundheitsdaten-Einwilligung.'),
+          ),
+        );
         return;
       }
     }
@@ -282,9 +295,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
       if (file != null) {
         final bytes = await file.readAsBytes();
-        setState(() {
-          _photoBase64 = 'data:image/jpeg;base64,${base64Encode(bytes)}';
-        });
+        if (bytes.isNotEmpty) {
+          setState(() {
+            _photoBase64 = 'data:image/jpeg;base64,${base64Encode(bytes)}';
+          });
+        }
       }
     } catch (_) {}
   }
@@ -327,7 +342,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       photoBase64: _photoBase64,
       email: _emailController.text.trim(),
       password: _passwordController.text.trim(),
-      clubName: _selectedRole == 'TRAINER' ? _clubNameController.text.trim() : null,
+      clubName:
+          _selectedRole == 'TRAINER' ? _clubNameController.text.trim() : null,
       coachCompanyName: _selectedRole == 'TRAINER'
           ? _coachCompanyNameController.text.trim()
           : null,
@@ -352,64 +368,73 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         final uid = FirebaseAuth.instance.currentUser?.uid;
 
         // Cloud Function setInitialRole aufrufen (Frankfurt europe-west3)
-        final functions = FirebaseFunctions.instanceFor(region: 'europe-west3');
-        await functions.httpsCallable('setInitialRole').call({
-          'role': submission.role,
-          'profile': {
-            'displayName': submission.displayName,
-            'firstName': firstName,
-            'lastName': lastName,
-            'sportTypes': submission.sports,
-            'sports': submission.sports,
-            'experienceLevel': submission.experienceLevel,
-            'autoEstimateThresholds': submission.autoEstimateThresholds,
-            if (submission.birthYear != null) 'birthYear': submission.birthYear,
-            if (submission.weightKg != null) 'weightKg': submission.weightKg,
-            if (submission.heightCm != null) 'heightCm': submission.heightCm,
-            if (submission.photoBase64 != null)
-              'photoUrl': submission.photoBase64,
-            if (submission.restingHrBpm != null)
-              'restingHrBpm': submission.restingHrBpm,
-            if (submission.maxHrBpm != null) 'maxHrBpm': submission.maxHrBpm,
-            'timezone': 'Europe/Berlin',
-          },
-          'settings': {
-            'units': submission.units,
-            'language': 'de',
-            'experienceLevel': submission.experienceLevel.toLowerCase(),
-          },
-          'thresholds': {
-            'autoEstimate': submission.autoEstimateThresholds,
-            if (submission.restingHrBpm != null)
-              'restingHrBpm': submission.restingHrBpm,
-            if (submission.maxHrBpm != null) 'maxHrBpm': submission.maxHrBpm,
-            if (submission.ftpW != null) 'ftpW': submission.ftpW,
-            if (submission.runThresholdPaceSecPerKm != null)
-              'runThresholdPaceSecPerKm': submission.runThresholdPaceSecPerKm,
-            if (submission.swimCssSecPer100m != null)
-              'swimCssSecPer100m': submission.swimCssSecPer100m,
-          },
-          'consents': {
-            'healthData': {
-              'at': DateTime.now().toUtc().toIso8601String(),
-              'version': 'v1',
+        try {
+          final functions =
+              FirebaseFunctions.instanceFor(region: 'europe-west3');
+          await functions.httpsCallable('setInitialRole').call({
+            'role': submission.role,
+            'profile': {
+              'displayName': submission.displayName,
+              'firstName': firstName,
+              'lastName': lastName,
+              'sportTypes': submission.sports,
+              'sports': submission.sports,
+              'experienceLevel': submission.experienceLevel,
+              'autoEstimateThresholds': submission.autoEstimateThresholds,
+              if (submission.birthYear != null)
+                'birthYear': submission.birthYear,
+              if (submission.weightKg != null) 'weightKg': submission.weightKg,
+              if (submission.heightCm != null) 'heightCm': submission.heightCm,
+              if (submission.photoBase64 != null)
+                'photoUrl': submission.photoBase64,
+              if (submission.restingHrBpm != null)
+                'restingHrBpm': submission.restingHrBpm,
+              if (submission.maxHrBpm != null) 'maxHrBpm': submission.maxHrBpm,
+              'timezone': 'Europe/Berlin',
             },
-            'privacyVersion': 'v1',
-          },
-        });
+            'settings': {
+              'units': submission.units,
+              'language': 'de',
+              'experienceLevel': submission.experienceLevel.toLowerCase(),
+            },
+            'thresholds': {
+              'autoEstimate': submission.autoEstimateThresholds,
+              if (submission.restingHrBpm != null)
+                'restingHrBpm': submission.restingHrBpm,
+              if (submission.maxHrBpm != null) 'maxHrBpm': submission.maxHrBpm,
+              if (submission.ftpW != null) 'ftpW': submission.ftpW,
+              if (submission.runThresholdPaceSecPerKm != null)
+                'runThresholdPaceSecPerKm': submission.runThresholdPaceSecPerKm,
+              if (submission.swimCssSecPer100m != null)
+                'swimCssSecPer100m': submission.swimCssSecPer100m,
+            },
+            'consents': {
+              'healthData': {
+                'at': DateTime.now().toUtc().toIso8601String(),
+                'version': 'v1',
+              },
+              'privacyVersion': 'v1',
+            },
+          });
+        } catch (_) {}
 
-        // Zusätzlicher Merge-Write in Firestore users/{uid}
+        // Zusätzlicher Merge-Write in Firestore users/{uid} für sofortige Verfügbarkeit
         if (uid != null) {
           await FirebaseFirestore.instance.collection('users').doc(uid).set({
             'role': submission.role,
             if (submission.role == 'TRAINER') ...{
-              if (submission.clubName != null && submission.clubName!.isNotEmpty)
+              if (submission.clubName != null &&
+                  submission.clubName!.isNotEmpty)
                 'clubName': submission.clubName,
               if (submission.coachCompanyName != null &&
                   submission.coachCompanyName!.isNotEmpty)
                 'companyName': submission.coachCompanyName,
               if (submission.coachMode != null)
                 'coachMode': submission.coachMode,
+              'coachPhilosophy': _coachPhilosophy,
+              'coachCapacity': _coachCapacity,
+              if (_coachLicenseController.text.trim().isNotEmpty)
+                'coachLicense': _coachLicenseController.text.trim(),
             },
             'profile': {
               'displayName': submission.displayName,
@@ -433,7 +458,22 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   'companyName': submission.coachCompanyName,
                 if (submission.coachMode != null)
                   'coachMode': submission.coachMode,
+                'coachPhilosophy': _coachPhilosophy,
+                'coachCapacity': _coachCapacity,
+                if (_coachLicenseController.text.trim().isNotEmpty)
+                  'coachLicense': _coachLicenseController.text.trim(),
               },
+            },
+            'thresholds': {
+              'autoEstimate': submission.autoEstimateThresholds,
+              if (submission.restingHrBpm != null)
+                'restingHrBpm': submission.restingHrBpm,
+              if (submission.maxHrBpm != null) 'maxHrBpm': submission.maxHrBpm,
+              if (submission.ftpW != null) 'ftpW': submission.ftpW,
+              if (submission.runThresholdPaceSecPerKm != null)
+                'runThresholdPaceSecPerKm': submission.runThresholdPaceSecPerKm,
+              if (submission.swimCssSecPer100m != null)
+                'swimCssSecPer100m': submission.swimCssSecPer100m,
             },
           }, SetOptions(merge: true)).catchError((_) {});
         }
@@ -448,10 +488,23 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           } catch (_) {}
         }
 
+        // Staged Files hochladen falls vorhanden
+        if (_stagedFiles.isNotEmpty && uid != null) {
+          try {
+            await ref.read(activityUploadProvider.notifier).uploadFiles(
+                  targetAthleteId: uid,
+                  files: _stagedFiles,
+                );
+          } catch (_) {}
+        }
+
         // Datenquelle anstoßen
         if (submission.selectedDataSource == 'GARMIN') {
-          await ref.read(garminServiceProvider).startGarminAuth();
-        } else if (submission.selectedDataSource == 'FILE_UPLOAD') {
+          try {
+            await ref.read(garminServiceProvider).startGarminAuth();
+          } catch (_) {}
+        } else if (submission.selectedDataSource == 'FILE_UPLOAD' &&
+            _stagedFiles.isEmpty) {
           await ref.read(activityUploadProvider.notifier).pickAndUpload();
         }
 
@@ -1015,18 +1068,23 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Row(
-                children: [
-                  Icon(Icons.straighten, color: AppColors.volt, size: 20),
-                  SizedBox(width: 8),
-                  Text(
-                    'Einheiten-System',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.white,
+              const Expanded(
+                child: Row(
+                  children: [
+                    Icon(Icons.straighten, color: AppColors.volt, size: 20),
+                    SizedBox(width: 8),
+                    Flexible(
+                      child: Text(
+                        'Einheiten-System',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.white,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
               DropdownButton<String>(
                 key: const Key('onboarding_units_dropdown'),
@@ -1112,7 +1170,220 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               ],
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: const Color(0xFF002A5C),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFF003D82)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Deine Coaching-Philosophie',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                    color: AppColors.white,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    ChoiceChip(
+                      key: const Key('coach_philosophy_polarized'),
+                      label: const Text('Polarisiert (80/20)'),
+                      selected: _coachPhilosophy == 'POLARIZED',
+                      selectedColor: AppColors.volt,
+                      backgroundColor: AppColors.navy,
+                      labelStyle: TextStyle(
+                        color: _coachPhilosophy == 'POLARIZED'
+                            ? AppColors.navy
+                            : AppColors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                      onSelected: (sel) {
+                        if (sel) setState(() => _coachPhilosophy = 'POLARIZED');
+                      },
+                    ),
+                    ChoiceChip(
+                      key: const Key('coach_philosophy_pyramidal'),
+                      label: const Text('Pyramidal / Schwellen-Fokus'),
+                      selected: _coachPhilosophy == 'PYRAMIDAL',
+                      selectedColor: AppColors.volt,
+                      backgroundColor: AppColors.navy,
+                      labelStyle: TextStyle(
+                        color: _coachPhilosophy == 'PYRAMIDAL'
+                            ? AppColors.navy
+                            : AppColors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                      onSelected: (sel) {
+                        if (sel) setState(() => _coachPhilosophy = 'PYRAMIDAL');
+                      },
+                    ),
+                    ChoiceChip(
+                      key: const Key('coach_philosophy_hiit'),
+                      label: const Text('HIIT & High-Density'),
+                      selected: _coachPhilosophy == 'HIIT',
+                      selectedColor: AppColors.volt,
+                      backgroundColor: AppColors.navy,
+                      labelStyle: TextStyle(
+                        color: _coachPhilosophy == 'HIIT'
+                            ? AppColors.navy
+                            : AppColors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                      onSelected: (sel) {
+                        if (sel) setState(() => _coachPhilosophy = 'HIIT');
+                      },
+                    ),
+                    ChoiceChip(
+                      key: const Key('coach_philosophy_hybrid'),
+                      label: const Text('Hybrid / Individuell'),
+                      selected: _coachPhilosophy == 'HYBRID',
+                      selectedColor: AppColors.volt,
+                      backgroundColor: AppColors.navy,
+                      labelStyle: TextStyle(
+                        color: _coachPhilosophy == 'HYBRID'
+                            ? AppColors.navy
+                            : AppColors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                      onSelected: (sel) {
+                        if (sel) setState(() => _coachPhilosophy = 'HYBRID');
+                      },
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Betreute Athleten-Kapazität',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                    color: AppColors.white,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    ChoiceChip(
+                      key: const Key('coach_capacity_1_5'),
+                      label: const Text('1–5 Athleten'),
+                      selected: _coachCapacity == '1-5',
+                      selectedColor: AppColors.volt,
+                      backgroundColor: AppColors.navy,
+                      labelStyle: TextStyle(
+                        color: _coachCapacity == '1-5'
+                            ? AppColors.navy
+                            : AppColors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                      onSelected: (sel) {
+                        if (sel) setState(() => _coachCapacity = '1-5');
+                      },
+                    ),
+                    ChoiceChip(
+                      key: const Key('coach_capacity_6_15'),
+                      label: const Text('6–15 Athleten'),
+                      selected: _coachCapacity == '6-15',
+                      selectedColor: AppColors.volt,
+                      backgroundColor: AppColors.navy,
+                      labelStyle: TextStyle(
+                        color: _coachCapacity == '6-15'
+                            ? AppColors.navy
+                            : AppColors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                      onSelected: (sel) {
+                        if (sel) setState(() => _coachCapacity = '6-15');
+                      },
+                    ),
+                    ChoiceChip(
+                      key: const Key('coach_capacity_16_30'),
+                      label: const Text('16–30 Athleten'),
+                      selected: _coachCapacity == '16-30',
+                      selectedColor: AppColors.volt,
+                      backgroundColor: AppColors.navy,
+                      labelStyle: TextStyle(
+                        color: _coachCapacity == '16-30'
+                            ? AppColors.navy
+                            : AppColors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                      onSelected: (sel) {
+                        if (sel) setState(() => _coachCapacity = '16-30');
+                      },
+                    ),
+                    ChoiceChip(
+                      key: const Key('coach_capacity_30_plus'),
+                      label: const Text('30+ (Verein/Kader)'),
+                      selected: _coachCapacity == '30+',
+                      selectedColor: AppColors.volt,
+                      backgroundColor: AppColors.navy,
+                      labelStyle: TextStyle(
+                        color: _coachCapacity == '30+'
+                            ? AppColors.navy
+                            : AppColors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                      onSelected: (sel) {
+                        if (sel) setState(() => _coachCapacity = '30+');
+                      },
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Trainer-Lizenz & Zertifizierung (optional)',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                    color: AppColors.white,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                TextField(
+                  key: const Key('coach_license_field'),
+                  controller: _coachLicenseController,
+                  style: const TextStyle(color: AppColors.white),
+                  decoration: InputDecoration(
+                    hintText:
+                        'z. B. DTU B-Lizenz Leistungssport / Sportwissenschaften',
+                    hintStyle:
+                        const TextStyle(color: Colors.white38, fontSize: 13),
+                    filled: true,
+                    fillColor: AppColors.navy,
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Color(0xFF003D82)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide:
+                          const BorderSide(color: AppColors.volt, width: 2),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             decoration: BoxDecoration(
@@ -1396,21 +1667,68 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           selected: _selectedDataSource == 'GARMIN',
           onTap: () => setState(() => _selectedDataSource = 'GARMIN'),
           footer: _selectedDataSource == 'GARMIN'
-              ? CheckboxListTile(
-                  contentPadding: EdgeInsets.zero,
-                  dense: true,
-                  value: _garminBackfill90Days,
-                  activeColor: AppColors.volt,
-                  checkColor: AppColors.navy,
-                  title: const Text(
-                    'Letzte 90 Tage direkt nach dem Verbinden importieren',
-                    style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.white),
-                  ),
-                  onChanged: (v) =>
-                      setState(() => _garminBackfill90Days = v ?? true),
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    CheckboxListTile(
+                      contentPadding: EdgeInsets.zero,
+                      dense: true,
+                      value: _garminBackfill90Days,
+                      activeColor: AppColors.volt,
+                      checkColor: AppColors.navy,
+                      title: const Text(
+                        'Letzte 90 Tage direkt nach dem Verbinden importieren',
+                        style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.white),
+                      ),
+                      onChanged: (v) =>
+                          setState(() => _garminBackfill90Days = v ?? true),
+                    ),
+                    const SizedBox(height: 8),
+                    ElevatedButton.icon(
+                      key: const Key('onboarding_connect_garmin_button'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.volt,
+                        foregroundColor: AppColors.navy,
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 12, horizontal: 16),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10)),
+                      ),
+                      onPressed: () async {
+                        try {
+                          final isAuth =
+                              FirebaseAuth.instance.currentUser != null;
+                          if (isAuth) {
+                            await ref
+                                .read(garminServiceProvider)
+                                .startGarminAuth();
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                backgroundColor: Color(0xFF003D82),
+                                content: Text(
+                                    'Garmin Connect ist vorgemerkt und wird direkt nach Kontoerstellung verknüpft!'),
+                              ),
+                            );
+                          }
+                        } catch (e) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                                content:
+                                    Text('Garmin-Verbindung: ${e.toString()}')),
+                          );
+                        }
+                      },
+                      icon: const Icon(Icons.link),
+                      label: const Text(
+                        'Mit Garmin Connect verbinden',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
                 )
               : null,
         ),
@@ -1426,33 +1744,76 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           footer: _selectedDataSource == 'FILE_UPLOAD'
               ? Padding(
                   padding: const EdgeInsets.only(top: 8.0),
-                  child: ElevatedButton.icon(
-                    key: const Key('onboarding_pick_file_button'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.volt,
-                      foregroundColor: AppColors.navy,
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 10, horizontal: 16),
-                    ),
-                    onPressed: () async {
-                      final ids = await ref
-                          .read(activityUploadProvider.notifier)
-                          .pickAndUpload();
-                      if (ids.isNotEmpty && mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            backgroundColor: const Color(0xFF10B981),
-                            content: Text(
-                                '${ids.length} Datei(en) erfolgreich für dein Profil vorgemerkt!'),
-                          ),
-                        );
-                      }
-                    },
-                    icon: const Icon(Icons.file_upload),
-                    label: const Text(
-                      'Datei jetzt auswählen & testen',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      ElevatedButton.icon(
+                        key: const Key('onboarding_pick_file_button'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.volt,
+                          foregroundColor: AppColors.navy,
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 12, horizontal: 16),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10)),
+                        ),
+                        onPressed: () async {
+                          final files = await FilePicker.pickFiles(
+                            type: FileType.custom,
+                            allowedExtensions: ['fit', 'tcx', 'gpx'],
+                          );
+                          if (files.isNotEmpty) {
+                            setState(() {
+                              _stagedFiles = files;
+                            });
+                            final currentUid =
+                                FirebaseAuth.instance.currentUser?.uid;
+                            if (currentUid != null) {
+                              await ref
+                                  .read(activityUploadProvider.notifier)
+                                  .uploadFiles(
+                                    targetAthleteId: currentUid,
+                                    files: files,
+                                  );
+                            }
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  backgroundColor: const Color(0xFF10B981),
+                                  content: Text(
+                                      '${files.length} Datei(en) erfolgreich ausgewählt!'),
+                                ),
+                              );
+                            }
+                          }
+                        },
+                        icon: const Icon(Icons.file_upload),
+                        label: Text(
+                          _stagedFiles.isEmpty
+                              ? 'Datei jetzt auswählen & testen'
+                              : '${_stagedFiles.length} Datei(en) ausgewählt',
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      if (_stagedFiles.isNotEmpty) ...[
+                        const SizedBox(height: 8),
+                        Wrap(
+                          spacing: 6,
+                          runSpacing: 4,
+                          children: _stagedFiles
+                              .map(
+                                (f) => Chip(
+                                  label: Text(f.name,
+                                      style: const TextStyle(
+                                          fontSize: 11, color: Colors.white)),
+                                  backgroundColor: const Color(0xFF003D82),
+                                  padding: EdgeInsets.zero,
+                                ),
+                              )
+                              .toList(),
+                        ),
+                      ],
+                    ],
                   ),
                 )
               : null,

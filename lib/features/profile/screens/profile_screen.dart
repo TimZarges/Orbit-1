@@ -7,6 +7,7 @@ import '../../../core/config/app_config.dart';
 import '../../../core/design/app_colors.dart';
 import '../../../core/design/app_typography.dart';
 import '../../beta_feedback/widgets/beta_bug_reporter_sheet.dart';
+import '../../onboarding/widgets/triathlon_combined_icon.dart';
 
 /// Athleten- und Benutzerprofil-Bildschirm.
 ///
@@ -105,10 +106,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
       if (file != null) {
         final bytes = await file.readAsBytes();
-        final base64Image = 'data:image/jpeg;base64,${base64Encode(bytes)}';
-        setState(() {
-          _photoBase64 = base64Image;
-        });
+        if (bytes.isNotEmpty) {
+          final base64Image = 'data:image/jpeg;base64,${base64Encode(bytes)}';
+          setState(() {
+            _photoBase64 = base64Image;
+          });
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -447,13 +450,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _sportChip(String code, String label, IconData icon) {
     final isSelected = _selectedSports.contains(code);
     return FilterChip(
-      avatar: Icon(icon,
-          size: 18, color: isSelected ? AppColors.navy : AppColors.volt),
+      showCheckmark: false,
+      avatar: code == 'TRIATHLON'
+          ? TriathlonCombinedIcon(
+              size: 16,
+              color: isSelected ? AppColors.navy : AppColors.volt,
+            )
+          : Icon(
+              icon,
+              size: 18,
+              color: isSelected ? AppColors.navy : AppColors.volt,
+            ),
       label: Text(label),
       selected: isSelected,
       selectedColor: AppColors.volt,
       backgroundColor: const Color(0xFF001F47),
-      checkmarkColor: AppColors.navy,
       labelStyle: TextStyle(
         color: isSelected ? AppColors.navy : AppColors.white,
         fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,

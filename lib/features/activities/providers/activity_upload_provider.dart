@@ -11,6 +11,7 @@ import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:uuid/uuid.dart';
 import '../../coach_link/providers/athlete_context_provider.dart';
@@ -82,7 +83,8 @@ class FileValidationResult {
 }
 
 /// Analysiert Rohbytes im Hintergrund-Isolate zur Entlastung des 120Hz-UI-Threads.
-FileValidationResult _validateAndInspectBytes(Uint8List bytes, String filename) {
+FileValidationResult _validateAndInspectBytes(
+    Uint8List bytes, String filename) {
   final lowerName = filename.toLowerCase();
   String ext = 'fit';
   if (lowerName.endsWith('.fit.gz') || lowerName.endsWith('.fit')) {
@@ -166,8 +168,10 @@ class ActivityUploadNotifier extends StateNotifier<ActivityUploadState> {
 
   /// Öffnet den Datei-Picker mit `withData: true` (SAF-kompatibel für Android 16)
   /// und lädt ausgewählte `.fit`, `.tcx` und `.gpx` Dateien hoch.
-  Future<List<String>> pickAndUpload() async {
-    final athleteId = ref.read(viewedAthleteIdProvider);
+  Future<List<String>> pickAndUpload({String? targetAthleteId}) async {
+    final athleteId = targetAthleteId ??
+        ref.read(viewedAthleteIdProvider) ??
+        FirebaseAuth.instance.currentUser?.uid;
     if (athleteId == null) {
       state = ActivityUploadState(error: 'Kein aktiver Athleten-Kontext');
       return [];
@@ -264,9 +268,8 @@ class ActivityUploadNotifier extends StateNotifier<ActivityUploadState> {
             );
 
         final metadata = SettableMetadata(
-          contentType: ext == 'fit'
-              ? 'application/octet-stream'
-              : 'application/xml',
+          contentType:
+              ext == 'fit' ? 'application/octet-stream' : 'application/xml',
           customMetadata: {
             'originalName': platformFile.name,
             'athleteId': athleteId,
@@ -286,7 +289,8 @@ class ActivityUploadNotifier extends StateNotifier<ActivityUploadState> {
         final now = DateTime.now();
         final localDate = now.toIso8601String().split('T')[0];
         final cleanTitle = platformFile.name
-            .replaceAll(RegExp(r'\.(fit|tcx|gpx|gz)$', caseSensitive: false), '')
+            .replaceAll(
+                RegExp(r'\.(fit|tcx|gpx|gz)$', caseSensitive: false), '')
             .replaceAll('_', ' ');
 
         final activityPayload = {
@@ -295,7 +299,9 @@ class ActivityUploadNotifier extends StateNotifier<ActivityUploadState> {
           'localDate': localDate,
           'utcOffsetMinutes': now.timeZoneOffset.inMinutes,
           'sport': validation.sport,
-          'title': cleanTitle.isNotEmpty ? cleanTitle : 'Training (${validation.sport})',
+          'title': cleanTitle.isNotEmpty
+              ? cleanTitle
+              : 'Training (${validation.sport})',
           'source': '${ext.toUpperCase()}_UPLOAD',
           'externalId': activityId,
           'durationSec': validation.estimatedDurationSec,
@@ -336,6 +342,167 @@ class ActivityUploadNotifier extends StateNotifier<ActivityUploadState> {
 
       if (successCount > 0) {
         ref.invalidate(homeDashboardProvider(athleteId));
+        ref.invalidate(activitiesProvider);
+      }
+
+      state = ActivityUploadState(
+        isUploading: false,
+        successfulUploads: successCount,
+        totalFiles: total,
+        progress: 1.0,
+        statusMessage:
+            '$successCount von $total Datei(en) erfolgreich importiert!',
+        uploadedActivityIds: List.unmodifiable(uploadedIds),
+      );
+
+      return uploadedIds;
+    } catch (e) {
+      state = ActivityUploadState(
+        isUploading: false,
+        error: 'Fehler beim Datei-Upload: $e',
+      );
+      return [];
+    }
+  }
+
+  /// Lädt eine gegebene Liste an Dateien direkt für einen Athleten hoch (z. B. nach Onboarding).
+  Future<List<String>> uploadFiles({
+    required String targetAthleteId,
+    required List<PlatformFile> files,
+  }) async {
+    if (files.isEmpty) return [];
+
+    try {
+      final filesToUpload = files.take(50).toList();
+      final total = filesToUpload.length;
+
+      state = ActivityUploadState(
+        isUploading: true,
+        progress: 0.0,
+        totalFiles: total,
+        currentFileIndex: 0,
+        successfulUploads: 0,
+        statusMessage: 'Starte Import von $total Datei(en)...',
+      );
+
+      int successCount = 0;
+      final uploadedIds = <String>[];
+
+      for (int i = 0; i < total; i++) {
+        final platformFile = filesToUpload[i];
+
+        state = state.copyWith(
+          currentFileIndex: i + 1,
+          progress: i / total,
+          statusMessage:
+              'Lade Datei ${i + 1} von $total hoch (${platformFile.name})...',
+        );
+
+        final fileSize =
+            platformFile.lengthSync() ?? await platformFile.length() ?? 0;
+        if (fileSize > 25 * 1024 * 1024) {
+          state = state.copyWith(
+            error:
+                'Datei ${platformFile.name} ist größer als 25 MB und wurde übersprungen.',
+          );
+          continue;
+        }
+
+        Uint8List fileBytes;
+        try {
+          fileBytes = await platformFile.readAsBytes();
+        } catch (readErr) {
+          state = state.copyWith(
+            error: 'Konnte Datei ${platformFile.name} nicht lesen: $readErr',
+          );
+          continue;
+        }
+
+        if (fileBytes.isEmpty) {
+          state = state.copyWith(
+            error: 'Datei ${platformFile.name} ist leer.',
+          );
+          continue;
+        }
+
+        final validation = await Isolate.run(
+          () => _validateAndInspectBytes(fileBytes, platformFile.name),
+        );
+
+        if (!validation.isValid) {
+          state = state.copyWith(
+            error: validation.error ?? 'Ungültiges Dateiformat.',
+          );
+          continue;
+        }
+
+        final activityId = const Uuid().v4();
+        final ext = validation.extension;
+
+        final storage = FirebaseStorage.instance;
+        final rawStorageRef = storage.ref().child(
+              'users/$targetAthleteId/rawActivities/$activityId.$ext',
+            );
+        final fitStorageRef = storage.ref().child(
+              'users/$targetAthleteId/fit/$activityId.$ext',
+            );
+
+        final metadata = SettableMetadata(
+          contentType:
+              ext == 'fit' ? 'application/octet-stream' : 'application/xml',
+          customMetadata: {
+            'originalName': platformFile.name,
+            'athleteId': targetAthleteId,
+            'uploadedAt': DateTime.now().toUtc().toIso8601String(),
+          },
+        );
+
+        await rawStorageRef.putData(fileBytes, metadata);
+        try {
+          await fitStorageRef.putData(fileBytes, metadata);
+        } catch (_) {}
+
+        final now = DateTime.now();
+        final localDate =
+            '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+
+        await FirebaseFirestore.instance
+            .collection('activities')
+            .doc(activityId)
+            .set({
+          'id': activityId,
+          'athleteId': targetAthleteId,
+          'userId': targetAthleteId,
+          'title': platformFile.name.replaceAll(RegExp(r'\.[a-zA-Z0-9]+$'), ''),
+          'sport': validation.sport,
+          'type': validation.sport,
+          'startTimeUtc': DateTime.now().toUtc().toIso8601String(),
+          'localDate': localDate,
+          'durationSec': validation.estimatedDurationSec,
+          'distanceM': validation.estimatedDistanceM,
+          'elevationGainM': 0.0,
+          'source': ext.toUpperCase(),
+          'externalId': activityId,
+          'storagePath':
+              'users/$targetAthleteId/rawActivities/$activityId.$ext',
+          'fitFilePath': 'users/$targetAthleteId/fit/$activityId.$ext',
+          'hasStreams': false,
+          'createdAt': FieldValue.serverTimestamp(),
+          'updatedAt': FieldValue.serverTimestamp(),
+        }, SetOptions(merge: true));
+
+        successCount++;
+        uploadedIds.add(activityId);
+
+        state = state.copyWith(
+          successfulUploads: successCount,
+          progress: (i + 1) / total,
+          uploadedActivityIds: List.unmodifiable(uploadedIds),
+        );
+      }
+
+      if (successCount > 0) {
+        ref.invalidate(homeDashboardProvider(targetAthleteId));
         ref.invalidate(activitiesProvider);
       }
 

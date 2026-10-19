@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/design/app_colors.dart';
+import '../../../core/utils/orbit_date_formatter.dart';
 import '../../workout_builder/models/workout_builder_models.dart';
 import '../../workout_builder/widgets/workout_profile_chart.dart';
 import '../domain/workout_block_extractor.dart';
@@ -98,7 +99,8 @@ class WorkoutCard extends StatelessWidget {
                             if (showDate) ...[
                               const SizedBox(width: 8),
                               Text(
-                                workout.localDate,
+                                OrbitDateFormatter.formatDateString(
+                                    workout.localDate),
                                 style: theme.textTheme.labelSmall?.copyWith(
                                   color: isDark
                                       ? const Color(0xFF94A3B8)
@@ -213,17 +215,25 @@ class WorkoutCard extends StatelessWidget {
       } catch (_) {}
     }
 
-    // Konsistente lineare Segment-Vorschau aus den extrahierten Schritten
+    // Konsistente dynamische Segment-Vorschau aus den extrahierten Schritten
+    final totalDuration = steps.fold<int>(0, (sum, s) => sum + s.durationSec);
     return ClipRRect(
       borderRadius: BorderRadius.circular(3),
-      child: SizedBox(
-        height: 6,
+      child: Container(
+        height: 18,
+        color: const Color(0xFF001F47),
+        padding: const EdgeInsets.symmetric(horizontal: 1, vertical: 1),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
           children: steps.map((s) {
-            final flexVal = (s.durationSec / 30).clamp(1, 100).toInt();
+            final flexVal = totalDuration > 0
+                ? ((s.durationSec / totalDuration) * 100).round().clamp(1, 100)
+                : 1;
+            final heightFraction = (s.zone / 7.0).clamp(0.28, 1.0);
             return Expanded(
               flex: flexVal,
               child: Container(
+                height: 16 * heightFraction,
                 color: s.color,
                 margin: const EdgeInsets.symmetric(horizontal: 0.5),
               ),

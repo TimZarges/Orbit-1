@@ -180,7 +180,8 @@ class BetaFeedbackTicketCard extends StatelessWidget {
               if (onDetailsPressed != null)
                 TextButton(
                   style: TextButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     minimumSize: const Size(0, 28),
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
@@ -204,15 +205,18 @@ class BetaFeedbackTicketCard extends StatelessWidget {
                   itemBuilder: (context) => const [
                     PopupMenuItem(
                       value: 'OPEN',
-                      child: Text('🟢 Auf Offen setzen', style: TextStyle(color: Colors.white)),
+                      child: Text('🟢 Auf Offen setzen',
+                          style: TextStyle(color: Colors.white)),
                     ),
                     PopupMenuItem(
                       value: 'IN_PROGRESS',
-                      child: Text('🟡 Auf In Arbeit setzen', style: TextStyle(color: Colors.white)),
+                      child: Text('🟡 Auf In Arbeit setzen',
+                          style: TextStyle(color: Colors.white)),
                     ),
                     PopupMenuItem(
                       value: 'RESOLVED',
-                      child: Text('✅ Auf Gelöst setzen', style: TextStyle(color: Colors.white)),
+                      child: Text('✅ Auf Gelöst setzen',
+                          style: TextStyle(color: Colors.white)),
                     ),
                   ],
                 ),

@@ -86,14 +86,29 @@ Hier werden alle von Vereinsathleten, Trainern oder automatisierten Tests gemeld
 
 ## 4. Live gemeldete Beta-Feedback- & Bug-Tickets (Automatisch synchronisiert)
 
-> Zuletzt aktualisiert per `npm --prefix functions run feedback:pull`: 2026-10-18T21:02:16.748Z
+> Zuletzt aktualisiert per `npm --prefix functions run feedback:pull`: 2026-10-19T05:59:12.666Z
 
 | Ticket-ID | Kategorie | Status | Melder (User-ID) | Datum | Gerät / Version | Beschreibung |
 | :--- | :--- | :---: | :--- | :--- | :--- | :--- |
+| **#ORB-021** | `DESIGN_SUGGESTION` | 🟢 Behoben | `Asj8kRlT...` | 19.10.2026, 06:32:34 | android (v1.0.0 (Build 1) • Closed Beta) | Im Profil ist bei den gewählten Sportarten ein Punkt |
+| **#ORB-020** | `DESIGN_SUGGESTION` | 🟢 Behoben | `Asj8kRlT...` | 19.10.2026, 06:31:47 | android (v1.0.0 (Build 1) • Closed Beta) | Die Blöcke sollen sich auch in der höhe unterscheiden abhängig von der Intensität |
+| **#ORB-019** | `BUG_CRASH` | 🟢 Behoben | `Asj8kRlT...` | 19.10.2026, 06:30:39 | android (v1.0.0 (Build 1) • Closed Beta) | Wenn Training geplant wird ist es anschließend nicht sicht bar |
+| **#ORB-018** | `DESIGN_SUGGESTION` | 🟢 Behoben | `Asj8kRlT...` | 19.10.2026, 06:26:59 | android (v1.0.0 (Build 1) • Closed Beta) | Workout Builder muss nicht nur für 4×4min. funktionieren sondern Grundsätzlich. Intensität lässt sich nach wie vor nicht |
+| **#ORB-017** | `BUG_CRASH` | 🟢 Behoben | `Asj8kRlT...` | 19.10.2026, 06:24:07 | android (v1.0.0 (Build 1) • Closed Beta) | alle Gelsen verändert nix, womöglich erst wieder nach Logout |
+| **#ORB-016** | `DESIGN_SUGGESTION` | 🟢 Behoben | `Asj8kRlT...` | 19.10.2026, 06:23:03 | android (v1.0.0 (Build 1) • Closed Beta) | Passen die Ramen um die Mitteilungen? |
+| **#ORB-015** | `BUG_CRASH` | 🟢 Behoben | `Asj8kRlT...` | 19.10.2026, 06:22:15 | android (v1.0.0 (Build 1) • Closed Beta) | keine Liste meiner Meldungen |
+| **#ORB-014** | `GARMIN_UPLOAD` | 🟢 Behoben | `Asj8kRlT...` | 19.10.2026, 06:21:13 | android (v1.0.0 (Build 1) • Closed Beta) | g |
+| **#ORB-013** | `GARMIN_UPLOAD` | 🟢 Behoben | `Asj8kRlT...` | 19.10.2026, 06:21:01 | android (v1.0.0 (Build 1) • Closed Beta) | g |
+| **#ORB-012** | `DESIGN_SUGGESTION` | 🟢 Behoben | `Asj8kRlT...` | 19.10.2026, 06:20:30 | android (v1.0.0 (Build 1) • Closed Beta) | Datum für das Training in falscher Schreibweise |
+| **#ORB-011** | `BUG_CRASH` | 🟢 Behoben | `Asj8kRlT...` | 19.10.2026, 06:19:38 | android (v1.0.0 (Build 1) • Closed Beta) | kein Live Sync wie im Kalender, so bleibt Einheit am ursprünglichen Tag |
+| **#ORB-010** | `DESIGN_SUGGESTION` | 🟢 Behoben | `Asj8kRlT...` | 19.10.2026, 06:17:43 | android (v1.0.0 (Build 1) • Closed Beta) | Auf Heute passen die blöcke nicht zur Einheit |
+| **#ORB-009** | `BUG_CRASH` | 🟢 Behoben | `Asj8kRlT...` | 19.10.2026, 06:17:06 | android (v1.0.0 (Build 1) • Closed Beta) | kein zurück kommen aus Detail Übersicht möglich |
+| **#ORB-008** | `BUG_CRASH` | 🟢 Behoben | `Asj8kRlT...` | 19.10.2026, 06:15:44 | android (v1.0.0 (Build 1) • Closed Beta) | Garmin |
+| **#ORB-007** | `BUG_CRASH` | 🟢 Behoben | `Asj8kRlT...` | 19.10.2026, 06:14:40 | android (v1.0.0 (Build 1) • Closed Beta) | Beim Garmin Daten import |
 | **#ORB-006** | `DESIGN_SUGGESTION` | 🔴 Offen | `JMpW6PPX...` | 18.10.2026, 21:35:13 | android (v1.0.0 (Build 1) • Closed Beta) | Lesbarkeit |
-| **#ORB-005** | `BUG_CRASH` | 🔴 Offen | `Asj8kRlT...` | 18.10.2026, 20:58:26 | android (v1.0.0 (Build 1) • Closed Beta) | Block Profil passt nicht zum Titel der Einheit, es muss drauf geachtet werden das die echten Blöcke der Einheit gezeigt  |
-| **#ORB-004** | `DESIGN_SUGGESTION` | 🔴 Offen | `Asj8kRlT...` | 18.10.2026, 20:53:36 | android (v1.0.0 (Build 1) • Closed Beta) | wenn Sport ausgewählt Punkt hinter dem Piktogramm |
-| **#ORB-003** | `DESIGN_SUGGESTION` | 🔴 Offen | `Asj8kRlT...` | 18.10.2026, 20:52:58 | android (v1.0.0 (Build 1) • Closed Beta) | Pictogramm von Triathlon nicht passend |
-| **#ORB-002** | `BUG_CRASH` | 🔴 Offen | `Asj8kRlT...` | 18.10.2026, 20:52:09 | android (v1.0.0 (Build 1) • Closed Beta) | komme nicht auf heute nach Onboarding |
+| **#ORB-005** | `BUG_CRASH` | 🟢 Behoben | `Asj8kRlT...` | 18.10.2026, 20:58:26 | android (v1.0.0 (Build 1) • Closed Beta) | Block Profil passt nicht zum Titel der Einheit, es muss drauf geachtet werden das die echten Blöcke der Einheit gezeigt  |
+| **#ORB-004** | `DESIGN_SUGGESTION` | 🟢 Behoben | `Asj8kRlT...` | 18.10.2026, 20:53:36 | android (v1.0.0 (Build 1) • Closed Beta) | wenn Sport ausgewählt Punkt hinter dem Piktogramm |
+| **#ORB-003** | `DESIGN_SUGGESTION` | 🟢 Behoben | `Asj8kRlT...` | 18.10.2026, 20:52:58 | android (v1.0.0 (Build 1) • Closed Beta) | Pictogramm von Triathlon nicht passend |
+| **#ORB-002** | `BUG_CRASH` | 🟢 Behoben | `Asj8kRlT...` | 18.10.2026, 20:52:09 | android (v1.0.0 (Build 1) • Closed Beta) | komme nicht auf heute nach Onboarding |
 | **#ORB-001** | `BUG_CRASH` | 🟡 In Arbeit | `EcGwkRwx...` | 17.10.2026, 17:54:11 | android (1.0.0+1 (v0.19.0-beta)) | Pixel 10 Pro Live Hardware Test |
 

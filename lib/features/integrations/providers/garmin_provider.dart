@@ -88,4 +88,3 @@ class GarminService {
     return Map<String, dynamic>.from(result.data as Map);
   }
 }
-

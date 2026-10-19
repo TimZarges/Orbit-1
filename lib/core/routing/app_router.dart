@@ -25,7 +25,8 @@ import '../../features/auth/screens/email_verification_waiting_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 /// Globaler Root-Navigator-Key für Dialoge, Overlays und den globalen Bug-Käfer.
-final rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'orbitRootNavigator');
+final rootNavigatorKey =
+    GlobalKey<NavigatorState>(debugLabel: 'orbitRootNavigator');
 
 /// Zentraler Router-Provider der ORBIT-Applikation auf Basis von GoRouter.
 ///

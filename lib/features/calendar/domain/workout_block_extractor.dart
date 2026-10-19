@@ -121,8 +121,35 @@ class WorkoutBlockExtractor {
       final type = b['type']?.toString().toUpperCase();
 
       if (type == 'STEP' || type == null) {
-        final dur = (b['durationSec'] as num?)?.toInt() ?? 300;
-        final zone = (b['zone'] as num?)?.toInt() ?? 2;
+        int dur = (b['durationSec'] as num?)?.toInt() ?? 300;
+        if (b['target'] is Map<String, dynamic>) {
+          dur = (b['target']['durationSec'] as num?)?.toInt() ?? dur;
+        }
+
+        int zone = (b['zone'] as num?)?.toInt() ?? 2;
+        if (b['intensity'] is Map<String, dynamic>) {
+          final intensityMap = b['intensity'] as Map<String, dynamic>;
+          final kind = intensityMap['kind']?.toString().toUpperCase();
+          if (kind == 'ZONE') {
+            zone = (intensityMap['low'] as num?)?.toInt() ?? zone;
+          } else if (kind == 'PCT_FTP') {
+            final pct = (intensityMap['low'] as num?)?.toInt() ?? 100;
+            if (pct < 55) {
+              zone = 1;
+            } else if (pct < 75) {
+              zone = 2;
+            } else if (pct < 90) {
+              zone = 3;
+            } else if (pct < 105) {
+              zone = 4;
+            } else if (pct < 120) {
+              zone = 5;
+            } else {
+              zone = 6;
+            }
+          }
+        }
+
         final role = b['role']?.toString().toLowerCase();
 
         String label = 'Belastung';
@@ -145,9 +172,37 @@ class WorkoutBlockExtractor {
         for (int i = 0; i < count; i++) {
           for (final sub in inner) {
             if (sub is! Map<String, dynamic>) continue;
-            final dur = (sub['durationSec'] as num?)?.toInt() ?? 180;
-            final zone = (sub['zone'] as num?)?.toInt() ?? 4;
-            final isRest = zone <= 2;
+            int dur = (sub['durationSec'] as num?)?.toInt() ?? 180;
+            if (sub['target'] is Map<String, dynamic>) {
+              dur = (sub['target']['durationSec'] as num?)?.toInt() ?? dur;
+            }
+
+            int zone = (sub['zone'] as num?)?.toInt() ?? 4;
+            if (sub['intensity'] is Map<String, dynamic>) {
+              final intensityMap = sub['intensity'] as Map<String, dynamic>;
+              final kind = intensityMap['kind']?.toString().toUpperCase();
+              if (kind == 'ZONE') {
+                zone = (intensityMap['low'] as num?)?.toInt() ?? zone;
+              } else if (kind == 'PCT_FTP') {
+                final pct = (intensityMap['low'] as num?)?.toInt() ?? 100;
+                if (pct < 55) {
+                  zone = 1;
+                } else if (pct < 75) {
+                  zone = 2;
+                } else if (pct < 90) {
+                  zone = 3;
+                } else if (pct < 105) {
+                  zone = 4;
+                } else if (pct < 120) {
+                  zone = 5;
+                } else {
+                  zone = 6;
+                }
+              }
+            }
+
+            final isRest =
+                (sub['role']?.toString().toLowerCase() == 'rest') || zone <= 2;
 
             steps.add(_buildStep(
               stepIndex: stepCounter++,

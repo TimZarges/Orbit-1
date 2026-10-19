@@ -441,7 +441,8 @@ class _GarminConnectionScreenState
                       ? null
                       : _triggerBackfill,
                   icon: const Icon(Icons.history),
-                  label: const Text('Historische Daten anfordern (Garmin Queue)'),
+                  label:
+                      const Text('Historische Daten anfordern (Garmin Queue)'),
                 ),
 
                 const SizedBox(height: 16),

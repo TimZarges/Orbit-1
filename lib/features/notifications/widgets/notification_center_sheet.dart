@@ -5,6 +5,7 @@ import '../../../core/design/app_colors.dart';
 import '../../../core/design/app_typography.dart';
 import '../../../core/routing/app_router.dart';
 import '../../../core/utils/orbit_date_formatter.dart';
+import '../../beta_feedback/widgets/beta_bug_reporter_sheet.dart';
 import '../models/app_notification.dart';
 import '../providers/notifications_provider.dart';
 
@@ -115,14 +116,24 @@ class NotificationCenterSheet extends ConsumerWidget {
                     ),
                   ],
                 ),
-                TextButton(
-                  onPressed: () {
-                    ref.read(notificationsControllerProvider).markAllAsRead();
-                  },
-                  child: Text(
-                    'Alle gelesen',
-                    style: AppTypography.label.copyWith(color: AppColors.volt),
-                  ),
+                Row(
+                  children: [
+                    const BetaBugReportIconButton(),
+                    const SizedBox(width: 4),
+                    TextButton(
+                      key: const Key('mark_all_notifications_read_button'),
+                      onPressed: () {
+                        ref
+                            .read(notificationsControllerProvider)
+                            .markAllAsRead();
+                      },
+                      child: Text(
+                        'Alle gelesen',
+                        style:
+                            AppTypography.label.copyWith(color: AppColors.volt),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -193,11 +204,11 @@ class NotificationCenterSheet extends ConsumerWidget {
           child: Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: AppColors.card,
+              color: const Color(0xFF002A5C),
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: item.read ? Colors.white24 : AppColors.volt,
-                width: item.read ? 1.0 : 1.5,
+                color: item.read ? Colors.white38 : AppColors.volt,
+                width: item.read ? 1.2 : 1.5,
               ),
             ),
             child: Row(

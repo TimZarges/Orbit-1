@@ -271,6 +271,22 @@ class WorkoutBuilderNotifier extends StateNotifier<WorkoutBuilderState> {
     updateStructure(updated);
   }
 
+  /// Aktualisiert den Block an Position [index].
+  void updateBlock(int index, WorkoutBlock newBlock) {
+    final currentBlocks = state.structure?.blocks ?? [];
+    if (index < 0 || index >= currentBlocks.length) return;
+
+    final updatedBlocks = List<WorkoutBlock>.from(currentBlocks);
+    updatedBlocks[index] = newBlock;
+
+    final updated = WorkoutStructure(
+      schemaVersion: 1,
+      sport: state.sport,
+      blocks: updatedBlocks,
+    );
+    updateStructure(updated);
+  }
+
   /// Umschließt einen Block in eine Wiederholung (z. B. `4x(...)`).
   void wrapBlockInRepeat(int index, {int repeatCount = 4}) {
     final currentBlocks = state.structure?.blocks ?? [];

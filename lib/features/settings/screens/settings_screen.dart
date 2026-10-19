@@ -203,7 +203,8 @@ class SettingsScreen extends ConsumerWidget {
             key: const Key('settings_my_feedback_tile'),
             leading: const Icon(Icons.inbox_outlined, color: AppColors.volt),
             title: const Text('Meine gemeldeten Tickets'),
-            subtitle: const Text('Status deiner Bug-Reports und Feedback-Vorschläge'),
+            subtitle:
+                const Text('Status deiner Bug-Reports und Feedback-Vorschläge'),
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
               context.push('/my-feedback');
@@ -293,8 +294,7 @@ class SettingsScreen extends ConsumerWidget {
           final hasLower = newPw.contains(RegExp(r'[a-z]'));
           final hasDigitOrSpecial =
               newPw.contains(RegExp(r'[0-9!@#\$%^&*(),.?":{}|<>]'));
-          final matchesConfirm =
-              confirmPw.isNotEmpty && confirmPw == newPw;
+          final matchesConfirm = confirmPw.isNotEmpty && confirmPw == newPw;
           final allValid = hasMinLength &&
               hasUpper &&
               hasLower &&
@@ -377,8 +377,8 @@ class SettingsScreen extends ConsumerWidget {
                         hasUpper, 'Mindestens 1 Großbuchstabe (A-Z)'),
                     _buildCriterion(
                         hasLower, 'Mindestens 1 Kleinbuchstabe (a-z)'),
-                    _buildCriterion(
-                        hasDigitOrSpecial, 'Mindestens 1 Zahl oder Sonderzeichen'),
+                    _buildCriterion(hasDigitOrSpecial,
+                        'Mindestens 1 Zahl oder Sonderzeichen'),
                     _buildCriterion(
                         matchesConfirm, 'Passwörter stimmen überein'),
                   ],
@@ -410,8 +410,8 @@ class SettingsScreen extends ConsumerWidget {
                               Navigator.of(ctx).pop();
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                  content:
-                                      Text('Passwort erfolgreich aktualisiert.'),
+                                  content: Text(
+                                      'Passwort erfolgreich aktualisiert.'),
                                   backgroundColor: AppColors.emerald,
                                 ),
                               );

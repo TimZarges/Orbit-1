@@ -10,6 +10,8 @@ import '../../workout_builder/domain/workout_calculator.dart';
 import '../domain/workout_block_extractor.dart';
 import '../models/planned_workout.dart';
 import '../providers/calendar_provider.dart';
+import '../../beta_feedback/widgets/beta_bug_reporter_sheet.dart';
+import '../../home/providers/home_dashboard_provider.dart';
 
 /// Öffnet das Bottom Sheet mit den Details, Blöcken und Aktionen für ein [PlannedWorkout] (Phase 37.2).
 void showWorkoutDetailSheet(BuildContext context, PlannedWorkout workout) {
@@ -85,6 +87,13 @@ class WorkoutDetailSheet extends ConsumerWidget {
 
     final sportColor = _getSportColor(workout.sport);
 
+    void invalidateWorkouts() {
+      ref.invalidate(homeDashboardProvider(workout.athleteId));
+      ref.invalidate(athleteCurrentWeekWorkoutsProvider(workout.athleteId));
+      ref.invalidate(athleteCurrentMonthWorkoutsProvider(workout.athleteId));
+      ref.invalidate(weekSummaryProvider(workout.athleteId));
+    }
+
     return SafeArea(
       child: ConstrainedBox(
         constraints: BoxConstraints(
@@ -110,7 +119,7 @@ class WorkoutDetailSheet extends ConsumerWidget {
                 ),
               ),
 
-              // Header mit Sportart, Datum und Lösch-Button
+              // Header mit Sportart, Datum, Lösch-Button, Bug-Käfer und Schließen-Button
               Row(
                 children: [
                   Container(
@@ -180,9 +189,17 @@ class WorkoutDetailSheet extends ConsumerWidget {
                       );
                       if (confirm == true) {
                         await repo.delete(workout.id);
+                        invalidateWorkouts();
                         if (context.mounted) Navigator.pop(context);
                       }
                     },
+                  ),
+                  const BetaBugReportIconButton(),
+                  IconButton(
+                    key: const Key('workout_detail_close_button'),
+                    icon: const Icon(Icons.close, color: AppColors.white),
+                    tooltip: 'Schließen',
+                    onPressed: () => Navigator.of(context).pop(),
                   ),
                 ],
               ),
@@ -306,6 +323,7 @@ class WorkoutDetailSheet extends ConsumerWidget {
                           await repo.unlinkActivity(
                               workoutId: workout.id,
                               activityId: linkedActivity!.id);
+                          invalidateWorkouts();
                           if (context.mounted) Navigator.pop(context);
                         },
                         icon: const Icon(Icons.link_off, size: 16),
@@ -373,6 +391,7 @@ class WorkoutDetailSheet extends ConsumerWidget {
                                 workoutId: workout.id,
                                 activityId: act.id,
                                 matchStatus: 'MANUAL');
+                            invalidateWorkouts();
                             if (context.mounted) Navigator.pop(context);
                           },
                           child: const Text('Zuordnen',
@@ -413,6 +432,7 @@ class WorkoutDetailSheet extends ConsumerWidget {
                       final dateStr = DateFormat('yyyy-MM-dd').format(tomorrow);
                       await repo.reschedule(
                           workoutId: workout.id, newLocalDate: dateStr);
+                      invalidateWorkouts();
                       if (context.mounted) Navigator.pop(context);
                     },
                   ),
@@ -449,6 +469,7 @@ class WorkoutDetailSheet extends ConsumerWidget {
                         final dateStr = DateFormat('yyyy-MM-dd').format(picked);
                         await repo.reschedule(
                             workoutId: workout.id, newLocalDate: dateStr);
+                        invalidateWorkouts();
                         if (context.mounted) Navigator.pop(context);
                       }
                     },
@@ -463,6 +484,7 @@ class WorkoutDetailSheet extends ConsumerWidget {
                           style: TextStyle(color: Colors.white)),
                       onPressed: () async {
                         await repo.markSkipped(workout.id);
+                        invalidateWorkouts();
                         if (context.mounted) Navigator.pop(context);
                       },
                     ),
@@ -476,6 +498,7 @@ class WorkoutDetailSheet extends ConsumerWidget {
                           style: TextStyle(color: Colors.white)),
                       onPressed: () async {
                         await repo.markPlanned(workout.id);
+                        invalidateWorkouts();
                         if (context.mounted) Navigator.pop(context);
                       },
                     ),
@@ -489,42 +512,53 @@ class WorkoutDetailSheet extends ConsumerWidget {
   }
 
   /// Rendert den durchgehenden, proportionalen Block-Balken über die volle Breite.
+  /// Skaliert Breite proportional zur Dauer und Höhe proportional zur Intensität/Zone (Z1-Z7).
   Widget _buildFullWidthBlockBar(List<ExtractedWorkoutStep> steps) {
     if (steps.isEmpty) return const SizedBox.shrink();
 
+    final totalDuration = steps.fold<int>(0, (sum, s) => sum + s.durationSec);
+
     return Container(
-      height: 32,
+      height: 48,
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 3),
       decoration: BoxDecoration(
         color: const Color(0xFF001F47),
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: BorderRadius.circular(8),
         border: Border.all(color: const Color(0xFF003D82)),
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(5),
-        child: Row(
-          children: steps.map((s) {
-            final flexVal = (s.durationSec / 20).clamp(1, 200).toInt();
-            return Expanded(
-              flex: flexVal,
-              child: Container(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: steps.map((s) {
+          final flexVal = totalDuration > 0
+              ? ((s.durationSec / totalDuration) * 100).round().clamp(1, 100)
+              : 1;
+          final heightFraction = (s.zone / 7.0).clamp(0.28, 1.0);
+
+          return Expanded(
+            flex: flexVal,
+            child: Container(
+              height: 42 * heightFraction,
+              margin: const EdgeInsets.symmetric(horizontal: 0.5),
+              decoration: BoxDecoration(
                 color: s.color,
-                margin: const EdgeInsets.symmetric(horizontal: 0.5),
-                child: Center(
-                  child: s.durationSec >= 180
-                      ? Text(
-                          'Z${s.zone}',
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                            color: s.zone >= 4 ? Colors.black : Colors.white,
-                          ),
-                        )
-                      : const SizedBox.shrink(),
-                ),
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(3)),
               ),
-            );
-          }).toList(),
-        ),
+              child: Center(
+                child: s.durationSec >= 120 && flexVal >= 8
+                    ? Text(
+                        'Z${s.zone}',
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          color: s.zone >= 4 ? Colors.black : Colors.white,
+                        ),
+                      )
+                    : const SizedBox.shrink(),
+              ),
+            ),
+          );
+        }).toList(),
       ),
     );
   }

@@ -96,8 +96,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 decoration: InputDecoration(
                   labelText: 'E-Mail-Adresse',
                   labelStyle: const TextStyle(color: Colors.white70),
-                  prefixIcon: const Icon(Icons.email_outlined,
-                      color: AppColors.volt),
+                  prefixIcon:
+                      const Icon(Icons.email_outlined, color: AppColors.volt),
                   filled: true,
                   fillColor: const Color(0xFF001F47),
                   border: OutlineInputBorder(

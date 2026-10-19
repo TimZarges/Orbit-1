@@ -177,7 +177,8 @@ class _AdminFeedbackScreenState extends ConsumerState<AdminFeedbackScreen> {
                     return BetaFeedbackTicketCard(
                       report: report,
                       isAdmin: isAdmin,
-                      onDetailsPressed: () => _showTicketDetails(context, report),
+                      onDetailsPressed: () =>
+                          _showTicketDetails(context, report),
                       onStatusSelected: (newStatus) async {
                         await FirebaseFirestore.instance
                             .collection('betaFeedback')

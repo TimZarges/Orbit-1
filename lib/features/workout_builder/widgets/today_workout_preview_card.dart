@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../../core/design/app_colors.dart';
+import '../../calendar/domain/workout_block_extractor.dart';
 import '../../calendar/domain/workout_compliance_evaluator.dart';
 import '../../calendar/models/planned_workout.dart';
+import '../domain/workout_calculator.dart';
 
 /// Visuelle Block-Vorschau-Karte für das heutige Training auf dem „Heute“-Tab.
 ///
@@ -31,7 +33,7 @@ class TodayWorkoutPreviewCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final sportColor = _getSportColor(workout.sport);
-    final blocks = _extractBlocks(workout.structure);
+    final blocks = _extractBlocks();
     final targetLabel = _formatTargetIntensity(workout, ftpWatts, fthrBpm);
 
     // Soll-/Ist-Ampel evaluieren falls abgeschlossen oder Ist-Werte vorhanden
@@ -256,34 +258,37 @@ class TodayWorkoutPreviewCard extends StatelessWidget {
     final totalDuration = blocks.fold<int>(0, (sum, b) => sum + b.durationSec);
 
     return Container(
-      height: 38,
-      padding: const EdgeInsets.all(3),
+      height: 44,
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 3),
       decoration: BoxDecoration(
-        color: AppColors.navy,
+        color: const Color(0xFF001F47), // Deep Navy
         borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(0xFF003D82)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: blocks.map((b) {
-          final flex =
-              ((b.durationSec / totalDuration) * 100).round().clamp(1, 100);
-          final heightFraction = (b.zone / 6.0).clamp(0.35, 1.0);
+          final flex = totalDuration > 0
+              ? ((b.durationSec / totalDuration) * 100).round().clamp(1, 100)
+              : 1;
+          final heightFraction = (b.zone / 7.0).clamp(0.28, 1.0);
 
           return Expanded(
             flex: flex,
             child: Container(
               margin: const EdgeInsets.symmetric(horizontal: 1),
-              height: 32 * heightFraction,
+              height: 38 * heightFraction,
               decoration: BoxDecoration(
                 color: b.color,
-                borderRadius: BorderRadius.circular(4),
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(3)),
               ),
               alignment: Alignment.center,
-              child: flex > 12
+              child: flex > 10
                   ? Text(
                       'Z${b.zone}',
-                      style: const TextStyle(
-                        color: AppColors.navy,
+                      style: TextStyle(
+                        color: b.zone >= 4 ? Colors.black : Colors.white,
                         fontSize: 9,
                         fontWeight: FontWeight.w900,
                       ),
@@ -296,9 +301,16 @@ class TodayWorkoutPreviewCard extends StatelessWidget {
     );
   }
 
-  List<_PreviewBlock> _extractBlocks(Map<String, dynamic>? structure) {
-    if (structure == null || !structure.containsKey('blocks')) {
-      // Standard-Profil wenn keine Struktur hinterlegt ist (Warmup, Hauptteil, Cooldown)
+  List<_PreviewBlock> _extractBlocks() {
+    final extracted = WorkoutBlockExtractor.extractSteps(
+      workout,
+      thresholds: AthleteThresholds(
+        ftp: ftpWatts?.toDouble(),
+        lthr: fthrBpm?.toInt(),
+      ),
+    );
+
+    if (extracted.isEmpty) {
       final duration =
           workout.plannedDurationSec > 0 ? workout.plannedDurationSec : 3600;
       final warmup = (duration * 0.15).round();
@@ -306,53 +318,19 @@ class TodayWorkoutPreviewCard extends StatelessWidget {
       final main = duration - warmup - cooldown;
 
       return [
-        _PreviewBlock(durationSec: warmup, zone: 2, color: AppColors.zone2),
-        _PreviewBlock(durationSec: main, zone: 3, color: AppColors.zone3),
+        _PreviewBlock(durationSec: warmup, zone: 1, color: AppColors.zone1),
+        _PreviewBlock(durationSec: main, zone: 2, color: AppColors.zone2),
         _PreviewBlock(durationSec: cooldown, zone: 1, color: AppColors.zone1),
       ];
     }
 
-    final rawBlocks = structure['blocks'] as List<dynamic>? ?? [];
-    final result = <_PreviewBlock>[];
-
-    for (final raw in rawBlocks) {
-      if (raw is Map<String, dynamic>) {
-        final type = raw['type']?.toString().toUpperCase();
-        if (type == 'STEP' || type == null) {
-          final dur = (raw['durationSec'] as num?)?.toInt() ?? 300;
-          final zone = (raw['zone'] as num?)?.toInt() ?? 2;
-          result.add(_PreviewBlock(
-            durationSec: dur,
-            zone: zone,
-            color: AppColors.zoneColor(zone),
-          ));
-        } else if (type == 'REPEAT') {
-          final count = (raw['count'] as num?)?.toInt() ?? 3;
-          final inner = raw['blocks'] as List<dynamic>? ?? [];
-          for (int i = 0; i < count; i++) {
-            for (final sub in inner) {
-              if (sub is Map<String, dynamic>) {
-                final dur = (sub['durationSec'] as num?)?.toInt() ?? 180;
-                final zone = (sub['zone'] as num?)?.toInt() ?? 4;
-                result.add(_PreviewBlock(
-                  durationSec: dur,
-                  zone: zone,
-                  color: AppColors.zoneColor(zone),
-                ));
-              }
-            }
-          }
-        }
-      }
-    }
-
-    return result.isEmpty
-        ? [
-            _PreviewBlock(durationSec: 900, zone: 2, color: AppColors.zone2),
-            _PreviewBlock(durationSec: 1800, zone: 4, color: AppColors.zone4),
-            _PreviewBlock(durationSec: 900, zone: 1, color: AppColors.zone1),
-          ]
-        : result;
+    return extracted
+        .map((s) => _PreviewBlock(
+              durationSec: s.durationSec,
+              zone: s.zone,
+              color: s.color,
+            ))
+        .toList();
   }
 
   String _formatTargetIntensity(PlannedWorkout workout, num? ftp, num? fthr) {

@@ -10,6 +10,8 @@ import '../../workout_builder/screens/workout_builder_screen.dart';
 import '../../workout_builder/screens/workout_template_library_screen.dart';
 import '../models/planned_workout.dart';
 import '../providers/calendar_provider.dart';
+import '../../beta_feedback/widgets/beta_bug_reporter_sheet.dart';
+import '../../home/providers/home_dashboard_provider.dart';
 
 /// Öffnet das Formular zur Schnelleingabe einer neuen geplanten Trainingseinheit oder eines Wettkampfs (Phase 37.4).
 Future<void> showCreateWorkoutDialog(
@@ -161,9 +163,15 @@ class _CreateWorkoutDialogState extends ConsumerState<CreateWorkoutDialog> {
                         color: Colors.white,
                       ),
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.close, color: Colors.white70),
-                      onPressed: () => Navigator.pop(context),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const BetaBugReportIconButton(),
+                        IconButton(
+                          icon: const Icon(Icons.close, color: Colors.white70),
+                          onPressed: () => Navigator.pop(context),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -696,6 +704,11 @@ class _CreateWorkoutDialogState extends ConsumerState<CreateWorkoutDialog> {
       final workoutRepo = ref.read(plannedWorkoutRepositoryProvider);
       await workoutRepo.create(planned);
 
+      ref.invalidate(homeDashboardProvider(widget.athleteId));
+      ref.invalidate(athleteCurrentWeekWorkoutsProvider(widget.athleteId));
+      ref.invalidate(athleteCurrentMonthWorkoutsProvider(widget.athleteId));
+      ref.invalidate(weekSummaryProvider(widget.athleteId));
+
       if (mounted) {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
@@ -756,6 +769,11 @@ class _CreateWorkoutDialogState extends ConsumerState<CreateWorkoutDialog> {
 
       final repo = ref.read(plannedWorkoutRepositoryProvider);
       await repo.create(workout);
+
+      ref.invalidate(homeDashboardProvider(widget.athleteId));
+      ref.invalidate(athleteCurrentWeekWorkoutsProvider(widget.athleteId));
+      ref.invalidate(athleteCurrentMonthWorkoutsProvider(widget.athleteId));
+      ref.invalidate(weekSummaryProvider(widget.athleteId));
 
       if (mounted) {
         Navigator.pop(context);

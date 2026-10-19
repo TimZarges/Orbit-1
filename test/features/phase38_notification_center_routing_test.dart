@@ -98,8 +98,8 @@ void main() {
       matching: find.byType(Container),
     ));
     final readBox = readContainer.decoration as BoxDecoration;
-    expect((readBox.border as Border).top.color, Colors.white24);
-    expect((readBox.border as Border).top.width, 1.0);
+    expect((readBox.border as Border).top.color, Colors.white38);
+    expect((readBox.border as Border).top.width, 1.2);
 
     // 3. Klick löst markAsRead aus
     await tester.tap(unreadCardFinder);

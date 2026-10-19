@@ -43,9 +43,8 @@ class _EmailVerificationWaitingScreenState
     _pollingTimer?.cancel();
     _pollingTimer = Timer.periodic(const Duration(seconds: 3), (timer) async {
       try {
-        final verified = await ref
-            .read(authServiceProvider)
-            .reloadAndCheckEmailVerified();
+        final verified =
+            await ref.read(authServiceProvider).reloadAndCheckEmailVerified();
         if (verified && mounted) {
           timer.cancel();
           context.go('/');
