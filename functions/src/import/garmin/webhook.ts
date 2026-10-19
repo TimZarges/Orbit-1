@@ -16,6 +16,7 @@ import {
   expandStreamsTo,
   getActiveCoachIdForActivities,
   initStreams,
+  parseActivityAndSave,
 } from "../activityParser";
 
 /**
@@ -360,38 +361,301 @@ export function extractGarminStreamsAndLaps(
  * Muss öffentlich erreichbar sein und innerhalb von <= 3 Sekunden mit HTTP 200 OK antworten.
  * Unterstützt auch GET-Pings für die Endpunkt-Verifizierung von Garmin.
  */
-export const garminWebhook = onRequest(async (req, res) => {
-  // Garmin Health / Activity API sendet gelegentlich GET oder HEAD zur URL-Validierung
-  if (req.method === "GET" || req.method === "HEAD") {
-    res.status(200).send("OK");
-    return;
+export const garminWebhook = onRequest(
+  { secrets: [garminConsumerKey, garminConsumerSecret] },
+  async (req, res) => {
+    // Garmin Health / Activity API sendet gelegentlich GET oder HEAD zur URL-Validierung
+    if (req.method === "GET" || req.method === "HEAD") {
+      res.status(200).send("OK");
+      return;
+    }
+
+    // Sicherheits-Check: Nur POST erlaubt für Payloads
+    if (req.method !== "POST") {
+      res.status(405).send("Method Not Allowed");
+      return;
+    }
+
+    try {
+      const payload = req.body;
+
+      // Roh-Payload sofort in Firestore ablegen für asynchrone Bearbeitung (Antwortzeit <= 3s)
+      await admin.firestore().collection("webhookEvents").add({
+        source: "GARMIN",
+        payload: payload,
+        status: "RECEIVED",
+        receivedAt: FieldValue.serverTimestamp(),
+      });
+
+      // Garmin verlangt 200 OK oder 202 Accepted
+      res.status(200).send("OK");
+    } catch (error) {
+      console.error("Garmin Webhook Ingestion Error:", error);
+      // Bei internen Fehlern trotzdem 200 senden, um Garmin Retry-Stürme zu verhindern
+      res.status(200).send("OK");
+    }
+  }
+);
+
+/**
+ * Verarbeitet einen Garmin-Webhook-Payload über alle 20 Endpunkt-Kategorien hinweg
+ * (inkl. binärer `.fit`-Downloads über `activityFiles` sowie `activities`, `activityDetails` und Health-Metriken).
+ */
+export async function processGarminWebhookPayload(
+  payload: any,
+  secrets?: { key: string; secret: string }
+): Promise<{
+  activitiesProcessed: number;
+  filesProcessed: number;
+  healthProcessed: number;
+  fileLogs: string[];
+}> {
+  let activitiesProcessed = 0;
+  let filesProcessed = 0;
+  let healthProcessed = 0;
+  const fileLogs: string[] = [];
+
+  if (!payload || typeof payload !== "object") {
+    return { activitiesProcessed, filesProcessed, healthProcessed, fileLogs };
   }
 
-  // Sicherheits-Check: Nur POST erlaubt für Payloads
-  if (req.method !== "POST") {
-    res.status(405).send("Method Not Allowed");
-    return;
+  // 1. De-Registrierungen verarbeiten (Nutzer hat App bei Garmin getrennt)
+  if (Array.isArray(payload.deregistrations)) {
+    for (const dereg of payload.deregistrations) {
+      if (dereg.userId) {
+        await handleDeregistration(dereg.userId);
+      }
+    }
   }
 
+  // 2. Aktivitäten-Summaries & Details verarbeiten (Push & Ping/callbackURL)
+  const rawActivities = [
+    ...(Array.isArray(payload.activities) ? payload.activities : []),
+    ...(Array.isArray(payload.activityDetails) ? payload.activityDetails : []),
+    ...(Array.isArray(payload.manuallyUpdatedActivities) ? payload.manuallyUpdatedActivities : []),
+    ...(Array.isArray(payload.moveIQActivities) ? payload.moveIQActivities : []),
+  ];
+
+  if (rawActivities.length > 0) {
+    const resolvedActivities = await resolveGarminWebhookItems(rawActivities, secrets);
+    for (const act of resolvedActivities) {
+      await handleGarminActivity(act);
+      activitiesProcessed++;
+    }
+  }
+
+  // 3. Originale binäre FIT-Aktivitätsdateien (activityFiles) herunterladen und parsen
+  if (Array.isArray(payload.activityFiles) && payload.activityFiles.length > 0) {
+    for (const fileItem of payload.activityFiles) {
+      const logMsg = await handleGarminActivityFile(fileItem, secrets);
+      fileLogs.push(logMsg);
+      filesProcessed++;
+    }
+  }
+
+  // 4. Sämtliche Gesundheits- & Telemetrie-Metriken verarbeiten (Push & Ping/callbackURL)
+  const healthCategories: Array<{
+    key: string;
+    type:
+      | "daily"
+      | "sleep"
+      | "hrv"
+      | "epoch"
+      | "bodyComp"
+      | "stress"
+      | "userMetrics"
+      | "pulseox"
+      | "respiration"
+      | "skinTemp"
+      | "healthSnapshot"
+      | "bloodPressure"
+      | "mct";
+  }> = [
+    { key: "dailies", type: "daily" },
+    { key: "sleeps", type: "sleep" },
+    { key: "hrv", type: "hrv" },
+    { key: "epochs", type: "epoch" },
+    { key: "bodyComps", type: "bodyComp" },
+    { key: "stressDetails", type: "stress" },
+    { key: "userMetrics", type: "userMetrics" },
+    { key: "pulseox", type: "pulseox" },
+    { key: "allDayRespiration", type: "respiration" },
+    { key: "skinTemp", type: "skinTemp" },
+    { key: "healthSnapshot", type: "healthSnapshot" },
+    { key: "bloodPressures", type: "bloodPressure" },
+    { key: "mct", type: "mct" },
+    { key: "menstrualCycleTracking", type: "mct" },
+  ];
+
+  for (const cat of healthCategories) {
+    if (Array.isArray(payload[cat.key]) && payload[cat.key].length > 0) {
+      const resolvedItems = await resolveGarminWebhookItems(payload[cat.key], secrets);
+      for (const item of resolvedItems) {
+        await handleDailyMetrics(item, cat.type);
+        healthProcessed++;
+      }
+    }
+  }
+
+  return { activitiesProcessed, filesProcessed, healthProcessed, fileLogs };
+}
+
+/**
+ * Lädt eine binäre Garmin `.fit`-Datei über die `callbackURL` eines `activityFiles`-Events herunter,
+ * archiviert sie verlustfrei in Cloud Storage und parst sämtliche 1Hz-Streams & Laps über `@garmin/fitsdk`.
+ */
+export async function handleGarminActivityFile(
+  fileItem: any,
+  secrets?: { key: string; secret: string }
+): Promise<string> {
+  if (!fileItem || typeof fileItem !== "object") return "skip_empty";
+
+  const garminUserId = fileItem.userId;
+  if (!garminUserId) return "skip_no_userid";
+
+  const uid = await getUidForGarminUser(garminUserId);
+  if (!uid) return `skip_no_uid_for_${garminUserId}`;
+
+  const rawId = fileItem.activityId
+    ? String(fileItem.activityId)
+    : fileItem.summaryId
+    ? String(fileItem.summaryId).replace(/-file$/, "")
+    : String(fileItem.startTimeInSeconds || Date.now());
+  const targetActivityId = `garmin_${rawId}`;
+
+  const db = admin.firestore();
+  const bucket = admin.storage().bucket();
+  const archiveFile = bucket.file(`users/${uid}/rawActivities/${targetActivityId}.fit`);
+
+  let fitBuffer: Buffer | null = null;
+  const diagParts: string[] = [];
+
+  // 1. Prüfen, ob die FIT-Datei bereits in Cloud Storage archiviert wurde (da Garmin callbackURL oft Single-Use ist)
   try {
-    const payload = req.body;
-
-    // Roh-Payload sofort in Firestore ablegen für asynchrone Bearbeitung (Antwortzeit <= 3s)
-    await admin.firestore().collection("webhookEvents").add({
-      source: "GARMIN",
-      payload: payload,
-      status: "RECEIVED",
-      receivedAt: FieldValue.serverTimestamp(),
-    });
-
-    // Garmin verlangt 200 OK oder 202 Accepted
-    res.status(200).send("OK");
-  } catch (error) {
-    console.error("Garmin Webhook Ingestion Error:", error);
-    // Bei internen Fehlern trotzdem 200 senden, um Garmin Retry-Stürme zu verhindern
-    res.status(200).send("OK");
+    const [exists] = await archiveFile.exists();
+    diagParts.push(`arch=${exists}`);
+    if (exists) {
+      const [downloaded] = await archiveFile.download();
+      if (downloaded && downloaded.length > 0) {
+        fitBuffer = downloaded;
+        diagParts.push(`archBytes=${fitBuffer.length}`);
+      }
+    }
+  } catch (archErr: any) {
+    diagParts.push(`archErr=${archErr.message}`);
   }
-});
+
+  // 2. Falls noch nicht archiviert, per OAuth 1.0a von Garmin callbackURL herunterladen
+  if (!fitBuffer && typeof fileItem.callbackURL === "string" && fileItem.callbackURL.length > 0) {
+    const tokenDoc = await db.collection("users").doc(uid).collection("private").doc("integrations").get();
+    const garminData = tokenDoc.data()?.garmin;
+    const key = secrets?.key || garminConsumerKey.value();
+    const secret = secrets?.secret || garminConsumerSecret.value();
+
+    if (garminData?.oauthToken && garminData?.oauthTokenSecret && key && secret) {
+      try {
+        const oauth = getOAuthClient(key, secret);
+        const authHeader = oauth.toHeader(
+          oauth.authorize(
+            { url: fileItem.callbackURL, method: "GET" },
+            { key: garminData.oauthToken, secret: garminData.oauthTokenSecret }
+          )
+        );
+        const res = await axios.get(fileItem.callbackURL, {
+          headers: authHeader,
+          responseType: "arraybuffer",
+          timeout: 15000,
+        });
+        diagParts.push(`dlStatus=${res.status}`);
+        if (res.data) {
+          fitBuffer = Buffer.from(res.data);
+          diagParts.push(`dlBytes=${fitBuffer.length}`);
+          diagParts.push(`hex=${fitBuffer.subarray(0, 14).toString("hex")}`);
+          // Sofort in Cloud Storage sichern, bevor geparst wird
+          try {
+            await archiveFile.save(fitBuffer, {
+              contentType: "application/octet-stream",
+              metadata: {
+                source: "GARMIN_ACTIVITY_FILE",
+                activityId: targetActivityId,
+                athleteId: uid,
+              },
+            });
+          } catch (saveErr: any) {
+            diagParts.push(`saveErr=${saveErr.message}`);
+          }
+        }
+      } catch (dlErr: any) {
+        const errBody = dlErr.response?.data
+          ? Buffer.isBuffer(dlErr.response.data)
+            ? dlErr.response.data.toString("utf-8").substring(0, 200)
+            : JSON.stringify(dlErr.response.data).substring(0, 200)
+          : dlErr.message;
+        diagParts.push(`dlErr=${dlErr.response?.status}:${errBody}`);
+      }
+    } else {
+      diagParts.push("missing_tokens_or_secrets");
+    }
+  }
+
+  // 3. FIT-Buffer mit @garmin/fitsdk parsen und in Firestore/Storage speichern
+  if (fitBuffer && fitBuffer.length > 0) {
+    try {
+      const extHint =
+        typeof fileItem.fileType === "string" && fileItem.fileType.toUpperCase() === "TCX"
+          ? `${targetActivityId}.tcx`
+          : typeof fileItem.fileType === "string" && fileItem.fileType.toUpperCase() === "GPX"
+          ? `${targetActivityId}.gpx`
+          : `${targetActivityId}.fit`;
+
+      const saved = await parseActivityAndSave(uid, targetActivityId, fitBuffer, "GARMIN", extHint);
+      const actDocSnap = await db.collection("activities").doc(saved.activityId).get();
+      const actData = actDocSnap.data() || {};
+
+      // Titel und externe ID aus Garmin-Metadaten anreichern
+      const customTitle =
+        fileItem.activityName ||
+        (actData.title && !String(actData.title).startsWith("Import ")
+          ? actData.title
+          : `Garmin ${actData.sport || "Training"}`);
+
+      const enriched: Record<string, any> = {
+        ...actData,
+        title: customTitle,
+        source: "GARMIN",
+        externalId: rawId,
+        metricsVersion: null,
+      };
+      if (fileItem.deviceName) {
+        enriched.deviceName = fileItem.deviceName;
+      }
+
+      await db.collection("activities").doc(saved.activityId).set(enriched, { merge: true });
+      await db
+        .collection("users")
+        .doc(uid)
+        .collection("activities")
+        .doc(saved.activityId)
+        .set(enriched, { merge: true });
+
+      await db.collection("users").doc(uid).collection("integrationStatus").doc("garmin").set(
+        {
+          lastSyncAt: FieldValue.serverTimestamp(),
+          "backfill.receivedActivities": FieldValue.increment(1),
+        },
+        { merge: true }
+      );
+
+      return `ok_fit_${saved.activityId}_bytes_${fitBuffer.length} (${diagParts.join(",")})`;
+    } catch (parseErr: any) {
+      diagParts.push(`parseErr=${parseErr.message}`);
+    }
+  }
+
+  // 4. Fallback: Falls kein FIT-Buffer verfügbar war, zumindest die Summary-Metadaten speichern
+  await handleGarminActivity(fileItem);
+  return `fallback_summary_${targetActivityId} (${diagParts.join(",")})`;
+}
 
 /**
  * Asynchrone Hintergrund-Verarbeitung der Webhook-Payloads via Firestore Trigger.
@@ -411,51 +675,7 @@ export const processGarminWebhook = onDocumentCreated(
 
     try {
       const payload = data.payload || {};
-
-      // 1. De-Registrierungen verarbeiten (Nutzer hat App bei Garmin getrennt)
-      if (Array.isArray(payload.deregistrations)) {
-        for (const dereg of payload.deregistrations) {
-          if (dereg.userId) {
-            await handleDeregistration(dereg.userId);
-          }
-        }
-      }
-
-      // 2. Aktivitäten verarbeiten (activities & activityDetails, inkl. Ping/callbackURL)
-      const rawActivities = [
-        ...(Array.isArray(payload.activities) ? payload.activities : []),
-        ...(Array.isArray(payload.activityDetails) ? payload.activityDetails : []),
-      ];
-
-      if (rawActivities.length > 0) {
-        const resolvedActivities = await resolveGarminWebhookItems(rawActivities);
-        for (const act of resolvedActivities) {
-          await handleGarminActivity(act);
-        }
-      }
-
-      // 3. Tägliche Gesundheitsmetriken verarbeiten (Push & Ping/callbackURL)
-      const healthCategories: Array<{
-        key: string;
-        type: "daily" | "sleep" | "hrv" | "epoch" | "bodyComp" | "stress" | "userMetrics";
-      }> = [
-        { key: "dailies", type: "daily" },
-        { key: "sleeps", type: "sleep" },
-        { key: "hrv", type: "hrv" },
-        { key: "epochs", type: "epoch" },
-        { key: "bodyComps", type: "bodyComp" },
-        { key: "stressDetails", type: "stress" },
-        { key: "userMetrics", type: "userMetrics" },
-      ];
-
-      for (const cat of healthCategories) {
-        if (Array.isArray(payload[cat.key]) && payload[cat.key].length > 0) {
-          const resolvedItems = await resolveGarminWebhookItems(payload[cat.key]);
-          for (const item of resolvedItems) {
-            await handleDailyMetrics(item, cat.type);
-          }
-        }
-      }
+      await processGarminWebhookPayload(payload);
 
       // Event als verarbeitet markieren
       await doc.ref.update({
@@ -637,8 +857,9 @@ export async function handleGarminActivity(act: any) {
   });
   activityData.rawFilePath = rawFilePath;
 
-  // Verlängerung / Merge in Firestore
+  // Verlängerung / Merge in Firestore (Top-Level & Nutzer-Subcollection synchron halten)
   await activityDocRef.set(activityData, { merge: true });
+  await db.collection("users").doc(uid).collection("activities").doc(targetActivityId).set(activityData, { merge: true });
 
   // Falls Backfill aktiv ist, Zähler hochzählen
   await db.collection("users").doc(uid).collection("integrationStatus").doc("garmin").set({
@@ -649,11 +870,25 @@ export async function handleGarminActivity(act: any) {
 
 /**
  * Verarbeitet eingehende Health-Objekte von Garmin und führt sie per Upsert zusammen.
- * Schreibt in users/{uid}/dailyMetrics/{localDate} per { merge: true }.
+ * Schreibt in users/{uid}/dailyMetrics/{localDate} per { merge: true } und sichert
+ * erweiterte Rohfelder für zukünftige Auswertungen.
  */
-async function handleDailyMetrics(
+export async function handleDailyMetrics(
   item: any,
-  type: "daily" | "sleep" | "hrv" | "epoch" | "bodyComp" | "stress" | "userMetrics"
+  type:
+    | "daily"
+    | "sleep"
+    | "hrv"
+    | "epoch"
+    | "bodyComp"
+    | "stress"
+    | "userMetrics"
+    | "pulseox"
+    | "respiration"
+    | "skinTemp"
+    | "healthSnapshot"
+    | "bloodPressure"
+    | "mct"
 ) {
   const garminUserId = item.userId;
   if (!garminUserId) return;
@@ -697,6 +932,12 @@ async function handleDailyMetrics(
     if (typeof item.bodyBatteryChargedValue === "number" || typeof item.bodyBattery === "number") {
       updateData.bodyBattery = item.bodyBattery ?? item.bodyBatteryChargedValue;
     }
+    if (typeof item.activeKilocalories === "number") {
+      updateData.activeKcal = item.activeKilocalories;
+    }
+    if (typeof item.bmrKilocalories === "number") {
+      updateData.bmrKcal = item.bmrKilocalories;
+    }
   } else if (type === "sleep") {
     if (typeof item.durationInSeconds === "number") {
       updateData.sleepSeconds = item.durationInSeconds;
@@ -705,6 +946,15 @@ async function handleDailyMetrics(
     if (typeof sleepScore === "number") {
       updateData.sleepScore = sleepScore;
     }
+    if (typeof item.deepSleepDurationInSeconds === "number") {
+      updateData.deepSleepSeconds = item.deepSleepDurationInSeconds;
+    }
+    if (typeof item.remSleepInSeconds === "number") {
+      updateData.remSleepSeconds = item.remSleepInSeconds;
+    }
+    if (typeof item.lightSleepDurationInSeconds === "number") {
+      updateData.lightSleepSeconds = item.lightSleepDurationInSeconds;
+    }
   } else if (type === "hrv") {
     const hrvValue = item.lastNightAvg ?? item.hrv;
     if (typeof hrvValue === "number") {
@@ -712,6 +962,9 @@ async function handleDailyMetrics(
     }
     if (typeof item.weeklyAvg === "number") {
       updateData.hrvWeeklyAvg = item.weeklyAvg;
+    }
+    if (typeof item.lastNight5MinHigh === "number") {
+      updateData.hrv5MinHighMs = item.lastNight5MinHigh;
     }
   } else if (type === "epoch") {
     if (typeof item.steps === "number") {
@@ -724,6 +977,9 @@ async function handleDailyMetrics(
     if (typeof item.bodyFatPercentage === "number") {
       updateData.bodyFatPct = +item.bodyFatPercentage.toFixed(1);
     }
+    if (typeof item.bmi === "number") {
+      updateData.bmi = +item.bmi.toFixed(1);
+    }
   } else if (type === "stress") {
     if (typeof item.averageStressLevel === "number") {
       updateData.stress = item.averageStressLevel;
@@ -735,8 +991,34 @@ async function handleDailyMetrics(
     if (typeof item.vo2Max === "number") {
       updateData.vo2Max = item.vo2Max;
     }
+    if (typeof item.vo2MaxCycling === "number") {
+      updateData.vo2MaxCycling = item.vo2MaxCycling;
+    }
     if (typeof item.fitnessAge === "number") {
       updateData.fitnessAge = item.fitnessAge;
+    }
+  } else if (type === "pulseox") {
+    if (typeof item.averageSpo2 === "number" || typeof item.lowestSpo2 === "number") {
+      updateData.spo2Avg = item.averageSpo2;
+      updateData.spo2Lowest = item.lowestSpo2;
+    }
+  } else if (type === "respiration") {
+    if (typeof item.avgWakingRespirationValue === "number") {
+      updateData.respirationWakingAvg = item.avgWakingRespirationValue;
+    }
+    if (typeof item.avgSleepRespirationValue === "number") {
+      updateData.respirationSleepAvg = item.avgSleepRespirationValue;
+    }
+  } else if (type === "skinTemp") {
+    if (typeof item.avgDeviationCelsius === "number") {
+      updateData.skinTempDeviationC = item.avgDeviationCelsius;
+    }
+  } else if (type === "bloodPressure") {
+    if (typeof item.systolic === "number") {
+      updateData.systolicBp = item.systolic;
+    }
+    if (typeof item.diastolic === "number") {
+      updateData.diastolicBp = item.diastolic;
     }
   }
 

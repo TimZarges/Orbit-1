@@ -3,6 +3,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../activities/providers/activities_provider.dart';
+import '../../home/providers/home_dashboard_provider.dart';
 import '../models/garmin_status.dart';
 import '../providers/garmin_provider.dart';
 import '../../../core/design/app_colors.dart';
@@ -94,6 +96,8 @@ class _GarminConnectionScreenState
       // Direkt nach erfolgreicher Autorisierung die Einheiten aktiv synchronisieren
       final syncResult =
           await ref.read(garminServiceProvider).syncActivitiesNow(days: 90);
+      ref.invalidate(activitiesProvider);
+      ref.invalidate(homeDashboardProvider);
 
       if (mounted) {
         setState(() {
@@ -136,6 +140,8 @@ class _GarminConnectionScreenState
     try {
       final syncResult =
           await ref.read(garminServiceProvider).syncActivitiesNow(days: 90);
+      ref.invalidate(activitiesProvider);
+      ref.invalidate(homeDashboardProvider);
       if (mounted) {
         setState(() => _isLoading = false);
         final success = syncResult['success'] == true;

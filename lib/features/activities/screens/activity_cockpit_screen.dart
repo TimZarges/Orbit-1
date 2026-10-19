@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/design/app_colors.dart';
@@ -95,7 +96,8 @@ class _ActivityCockpitScreenState extends ConsumerState<ActivityCockpitScreen> {
     super.dispose();
   }
 
-  /// Lädt oder synthetisiert den Telemetrie-Stream und berechnet W'bal sowie LTTB-Downsampling.
+  /// Lädt den echten 1Hz-Telemetrie-Stream aus Cloud Storage (`users/{uid}/streams/{id}.json.gz`)
+  /// und berechnet Skiba W'bal sowie LTTB-Downsampling.
   Future<void> _loadStream() async {
     final duration = widget.activity.durationSec > 0
         ? widget.activity.durationSec.toInt()
@@ -103,13 +105,34 @@ class _ActivityCockpitScreenState extends ConsumerState<ActivityCockpitScreen> {
     final isBike = widget.activity.sport.toUpperCase() == 'BIKE' ||
         widget.activity.sport.toUpperCase() == 'RADFAHREN';
 
-    var stream = StreamDecoder.generateSyntheticStream(
-      durationSec: duration,
-      sport: widget.activity.sport,
-      hasPower: isBike || widget.activity.summary?.avgPowerW != null,
-      hasHr: widget.activity.summary?.avgHr != null,
-      hasGps: widget.activity.distanceM > 0,
-    );
+    ActivityStream? loadedStream;
+    if (widget.activity.athleteId.isNotEmpty && widget.activity.id.isNotEmpty) {
+      try {
+        final streamPath =
+            'users/${widget.activity.athleteId}/streams/${widget.activity.id}.json.gz';
+        final bytes = await FirebaseStorage.instance
+            .ref(streamPath)
+            .getData(15 * 1024 * 1024);
+        if (bytes != null && bytes.isNotEmpty) {
+          final decoded = await StreamDecoder.decodeBytes(bytes);
+          if (decoded.points.isNotEmpty) {
+            loadedStream = decoded;
+          }
+        }
+      } catch (e) {
+        debugPrint(
+            'Hinweis: Konnte Telemetrie-Stream nicht aus Storage laden: $e');
+      }
+    }
+
+    var stream = loadedStream ??
+        StreamDecoder.generateSyntheticStream(
+          durationSec: duration,
+          sport: widget.activity.sport,
+          hasPower: isBike || widget.activity.summary?.avgPowerW != null,
+          hasHr: widget.activity.summary?.avgHr != null,
+          hasGps: widget.activity.distanceM > 0,
+        );
 
     // Berechne Skiba W'bal-Kurve falls Leistung vorhanden ist
     if (stream.hasPower) {

@@ -32,7 +32,9 @@ class _MockNotificationsController extends StateNotifier<AsyncValue<void>>
 }
 
 void main() {
-  testWidgets('Mitteilungszentrale rendert Volt-Rahmen für ungelesen und markiert bei Klick', (tester) async {
+  testWidgets(
+      'Mitteilungszentrale rendert Volt-Rahmen für ungelesen und markiert bei Klick',
+      (tester) async {
     final mockController = _MockNotificationsController();
 
     final testNotifications = [
@@ -59,7 +61,8 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          notificationsStreamProvider.overrideWith((ref) => Stream.value(testNotifications)),
+          notificationsStreamProvider
+              .overrideWith((ref) => Stream.value(testNotifications)),
           notificationsControllerProvider.overrideWith((ref) => mockController),
         ],
         child: const MaterialApp(

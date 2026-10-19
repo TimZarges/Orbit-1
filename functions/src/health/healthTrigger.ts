@@ -24,19 +24,21 @@ export async function computeDailyHealthScores(
 ): Promise<void> {
   const metricsCol = db.collection("users").doc(uid).collection("dailyMetrics");
 
-  // Letzte 30 Tage Historie bis einschließlich targetDate laden
-  const historySnap = await metricsCol
-    .where(admin.firestore.FieldPath.documentId(), "<=", targetDate)
-    .orderBy(admin.firestore.FieldPath.documentId(), "desc")
-    .limit(30)
-    .get();
+  // Letzte 30 Tage Historie bis einschließlich targetDate laden (ohne absteigenden __name__-Index)
+  const historySnap = await metricsCol.limit(90).get();
 
   if (historySnap.empty) {
     return;
   }
 
-  // Chronologisch sortieren (älteste zuerst)
-  const historyDocs = historySnap.docs.reverse();
+  // Chronologisch sortieren (älteste zuerst) und bis targetDate begrenzen
+  const historyDocs = historySnap.docs
+    .filter((doc) => doc.id <= targetDate)
+    .sort((a, b) => a.id.localeCompare(b.id))
+    .slice(-30);
+  if (historyDocs.length === 0) {
+    return;
+  }
   const history: DailyHealthInput[] = historyDocs.map((doc) => {
     const d = doc.data();
     return {
@@ -153,9 +155,9 @@ export async function computeDailyHealthScores(
         needHours: sleepNeed.needHours,
         actualHours: +actualSleepHours.toFixed(2),
         accumulatedDebtHours,
-        durationScore: sleepScoreResult.durationScore,
-        efficiencyScore: sleepScoreResult.efficiencyScore,
-        stagesScore: sleepScoreResult.stagesScore,
+        durationScore: sleepScoreResult.durationScore ?? null,
+        efficiencyScore: sleepScoreResult.efficiencyScore ?? null,
+        stagesScore: sleepScoreResult.stagesScore ?? null,
       },
       orbitScore: {
         score: orbitScoreResult.score,

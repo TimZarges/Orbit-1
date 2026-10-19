@@ -29,6 +29,16 @@ export const processFitUpload = onObjectFinalized(
     const activityId = match[2];
     const extension = match[3].toLowerCase();
 
+    // Verhindere Endlosschleifen & Überschreiben, wenn parseActivityAndSave oder handleGarminActivityFile die Datei selbst archiviert hat
+    if (
+      event.data.metadata?.archivedByBackend === "true" ||
+      event.data.metadata?.source === "GARMIN_ACTIVITY_FILE" ||
+      activityId.startsWith("garmin_")
+    ) {
+      logger.info(`Skipping backend-archived or Garmin activity file in storage trigger: ${filePath}`);
+      return;
+    }
+
     let source: "FIT_UPLOAD" | "TCX_UPLOAD" | "GPX_UPLOAD" = "FIT_UPLOAD";
     if (extension === "tcx") source = "TCX_UPLOAD";
     else if (extension === "gpx") source = "GPX_UPLOAD";

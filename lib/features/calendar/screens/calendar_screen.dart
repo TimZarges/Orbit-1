@@ -3,6 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../core/design/app_colors.dart';
 import '../../../core/utils/orbit_date_formatter.dart';
+import '../../activities/models/activity.dart';
+import '../../activities/providers/activities_provider.dart';
+import '../../activities/screens/activity_detail_screen.dart';
 import '../../coach_link/providers/athlete_context_provider.dart';
 import '../models/planned_workout.dart';
 import '../providers/calendar_provider.dart';
@@ -12,6 +15,8 @@ import '../widgets/workout_detail_sheet.dart';
 
 /// Haupt-Kalender-Screen von ORBIT: Wochen-, Monats- und Listenansicht
 /// für Athleten und Trainer.
+/// Zeigt sowohl geplante Einheiten ([PlannedWorkout]) als auch absolvierte
+/// Garmin- und Datei-Aktivitäten ([Activity]) mit direkter Navigation ins Analyse-Cockpit.
 class CalendarScreen extends ConsumerWidget {
   /// Optionale ID des Athleten. Falls null, wird der aktuelle Kontext herangezogen.
   final String? athleteId;
@@ -172,7 +177,7 @@ class CalendarScreen extends ConsumerWidget {
               ),
               const SizedBox(width: 8),
               Text(
-                '${summary.completedWorkoutsCount}/${summary.totalPlannedWorkoutsCount} Einheiten',
+                '${summary.trainingDaysCount} aktive Tage · ${summary.completedWorkoutsCount}/${summary.totalPlannedWorkoutsCount} geplant',
                 style: theme.textTheme.labelSmall?.copyWith(
                   color: isDark
                       ? const Color(0xFF94A3B8)
@@ -188,7 +193,7 @@ class CalendarScreen extends ConsumerWidget {
             child: LinearProgressIndicator(
               value: (summary.plannedDurationSec > 0
                       ? summary.actualDurationSec / summary.plannedDurationSec
-                      : 0.0)
+                      : (summary.actualDurationSec > 0 ? 1.0 : 0.0))
                   .clamp(0.0, 1.0),
               backgroundColor:
                   isDark ? const Color(0xFF001F47) : const Color(0xFFE2E8F0),
@@ -201,7 +206,7 @@ class CalendarScreen extends ConsumerWidget {
     );
   }
 
-  /// Wochenansicht: 7 scrollbare Wochentage
+  /// Wochenansicht: 7 scrollbare Wochentage inkl. absolvierter Aktivitäten
   Widget _buildWeekView(
     BuildContext context,
     WidgetRef ref,
@@ -211,6 +216,7 @@ class CalendarScreen extends ConsumerWidget {
     final workoutsAsync =
         ref.watch(athleteCurrentWeekWorkoutsProvider(athleteId));
     final workouts = workoutsAsync.valueOrNull ?? [];
+    final activities = ref.watch(activitiesProvider).valueOrNull ?? [];
 
     final monday =
         selectedDate.subtract(Duration(days: selectedDate.weekday - 1));
@@ -223,10 +229,19 @@ class CalendarScreen extends ConsumerWidget {
         final dayStr = DateFormat('yyyy-MM-dd').format(day);
         final dayWorkouts =
             workouts.where((w) => w.localDate == dayStr).toList();
+        final dayActivities =
+            activities.where((a) => a.localDate == dayStr).toList();
         final isToday =
             DateFormat('yyyy-MM-dd').format(DateTime.now()) == dayStr;
 
-        return _buildDaySection(context, day, dayWorkouts, isToday, athleteId);
+        return _buildDaySection(
+          context,
+          day,
+          dayWorkouts,
+          dayActivities,
+          isToday,
+          athleteId,
+        );
       },
     );
   }
@@ -235,6 +250,7 @@ class CalendarScreen extends ConsumerWidget {
     BuildContext context,
     DateTime date,
     List<PlannedWorkout> workouts,
+    List<Activity> activities,
     bool isToday,
     String athleteId,
   ) {
@@ -272,7 +288,7 @@ class CalendarScreen extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 6),
-          if (workouts.isEmpty)
+          if (workouts.isEmpty && activities.isEmpty)
             InkWell(
               onTap: () => showCreateWorkoutDialog(context,
                   athleteId: athleteId, initialDate: date),
@@ -293,18 +309,21 @@ class CalendarScreen extends ConsumerWidget {
                 ),
               ),
             )
-          else
+          else ...[
+            for (final a in activities)
+              _buildCompletedActivityCard(context, a, showDate: false),
             for (final w in workouts)
               WorkoutCard(
                 workout: w,
                 onTap: () => showWorkoutDetailSheet(context, w),
               ),
+          ],
         ],
       ),
     );
   }
 
-  /// Monatsansicht: Monatsraster mit Terminpunkten
+  /// Monatsansicht: Monatsraster mit Terminpunkten für absolvierte Aktivitäten und geplante Workouts
   Widget _buildMonthView(
     BuildContext context,
     WidgetRef ref,
@@ -314,6 +333,7 @@ class CalendarScreen extends ConsumerWidget {
     final workoutsAsync =
         ref.watch(athleteCurrentMonthWorkoutsProvider(athleteId));
     final workouts = workoutsAsync.valueOrNull ?? [];
+    final activities = ref.watch(activitiesProvider).valueOrNull ?? [];
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final firstDayOfMonth = DateTime(selectedDate.year, selectedDate.month, 1);
@@ -324,6 +344,8 @@ class CalendarScreen extends ConsumerWidget {
     final selectedDayStr = DateFormat('yyyy-MM-dd').format(selectedDate);
     final selectedDayWorkouts =
         workouts.where((w) => w.localDate == selectedDayStr).toList();
+    final selectedDayActivities =
+        activities.where((a) => a.localDate == selectedDayStr).toList();
 
     return Column(
       children: [
@@ -367,6 +389,8 @@ class CalendarScreen extends ConsumerWidget {
               final isSelected = dayStr == selectedDayStr;
               final dayWorkouts =
                   workouts.where((w) => w.localDate == dayStr).toList();
+              final dayActivities =
+                  activities.where((a) => a.localDate == dayStr).toList();
 
               Color? cellBg;
               Border? cellBorder;
@@ -390,6 +414,14 @@ class CalendarScreen extends ConsumerWidget {
                   width: 0.5,
                 );
               }
+
+              // Kombinierte Indikatoren (absolvierte Aktivitäten gefüllt, geplante hohl/gefüllt)
+              final dotEntries = <({Color color, bool filled})>[
+                for (final a in dayActivities)
+                  (color: _getSportColor(a.sport), filled: true),
+                for (final w in dayWorkouts)
+                  (color: _getSportColor(w.sport), filled: w.isCompleted),
+              ];
 
               return InkWell(
                 onTap: () {
@@ -416,19 +448,19 @@ class CalendarScreen extends ConsumerWidget {
                           color: textColor,
                         ),
                       ),
-                      if (dayWorkouts.isNotEmpty)
+                      if (dotEntries.isNotEmpty)
                         Padding(
                           padding: const EdgeInsets.only(top: 2),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               for (int i = 0;
-                                  i < dayWorkouts.length.clamp(0, 4);
+                                  i < dotEntries.length.clamp(0, 4);
                                   i++) ...[
                                 () {
-                                  final w = dayWorkouts[i];
-                                  final sColor = _getSportColor(w.sport);
-                                  final isDone = w.isCompleted;
+                                  final entry = dotEntries[i];
+                                  final sColor = entry.color;
+                                  final isDone = entry.filled;
 
                                   return Container(
                                     width: 6,
@@ -436,13 +468,13 @@ class CalendarScreen extends ConsumerWidget {
                                     margin: const EdgeInsets.symmetric(
                                         horizontal: 1),
                                     decoration: BoxDecoration(
-                                      color:
-                                          isDone ? sColor : Colors.transparent,
+                                      color: isDone
+                                          ? (isToday ? AppColors.navy : sColor)
+                                          : Colors.transparent,
                                       shape: BoxShape.circle,
                                       border: Border.all(
-                                        color: isToday && !isDone
-                                            ? AppColors.navy
-                                            : sColor,
+                                        color:
+                                            isToday ? AppColors.navy : sColor,
                                         width: 1.5,
                                       ),
                                     ),
@@ -465,7 +497,7 @@ class CalendarScreen extends ConsumerWidget {
         // Liste der Einheiten des am Raster angetippten Tages
         Expanded(
           flex: 2,
-          child: selectedDayWorkouts.isEmpty
+          child: (selectedDayWorkouts.isEmpty && selectedDayActivities.isEmpty)
               ? Center(
                   child: TextButton.icon(
                     onPressed: () => showCreateWorkoutDialog(
@@ -477,23 +509,24 @@ class CalendarScreen extends ConsumerWidget {
                     label: const Text('Einheit an diesem Tag planen'),
                   ),
                 )
-              : ListView.builder(
+              : ListView(
                   padding: const EdgeInsets.fromLTRB(16, 8, 16, 80),
-                  itemCount: selectedDayWorkouts.length,
-                  itemBuilder: (context, idx) {
-                    final w = selectedDayWorkouts[idx];
-                    return WorkoutCard(
-                      workout: w,
-                      onTap: () => showWorkoutDetailSheet(context, w),
-                    );
-                  },
+                  children: [
+                    for (final a in selectedDayActivities)
+                      _buildCompletedActivityCard(context, a, showDate: false),
+                    for (final w in selectedDayWorkouts)
+                      WorkoutCard(
+                        workout: w,
+                        onTap: () => showWorkoutDetailSheet(context, w),
+                      ),
+                  ],
                 ),
         ),
       ],
     );
   }
 
-  /// Listenansicht: Chronologische Liste
+  /// Listenansicht: Chronologische Liste aller absolvierten Aktivitäten und geplanten Workouts
   Widget _buildListView(
     BuildContext context,
     WidgetRef ref,
@@ -502,15 +535,16 @@ class CalendarScreen extends ConsumerWidget {
     final workoutsAsync =
         ref.watch(athleteCurrentMonthWorkoutsProvider(athleteId));
     final workouts = workoutsAsync.valueOrNull ?? [];
+    final activities = ref.watch(activitiesProvider).valueOrNull ?? [];
 
-    if (workouts.isEmpty) {
+    if (workouts.isEmpty && activities.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Icon(Icons.event_note, size: 48, color: Colors.grey),
             const SizedBox(height: 12),
-            const Text('Keine geplanten Einheiten in diesem Zeitraum.'),
+            const Text('Keine Einheiten in diesem Zeitraum.'),
             const SizedBox(height: 12),
             ElevatedButton.icon(
               onPressed: () =>
@@ -523,18 +557,214 @@ class CalendarScreen extends ConsumerWidget {
       );
     }
 
-    return ListView.builder(
+    return ListView(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 80),
-      itemCount: workouts.length,
-      itemBuilder: (context, index) {
-        final w = workouts[index];
-        return WorkoutCard(
-          workout: w,
-          showDate: true,
-          onTap: () => showWorkoutDetailSheet(context, w),
-        );
-      },
+      children: [
+        for (final a in activities)
+          _buildCompletedActivityCard(context, a, showDate: true),
+        for (final w in workouts)
+          WorkoutCard(
+            workout: w,
+            showDate: true,
+            onTap: () => showWorkoutDetailSheet(context, w),
+          ),
+      ],
     );
+  }
+
+  /// Rendert eine absolvierte Aktivität (z. B. aus Garmin Connect oder FIT-Upload) im Kalender.
+  Widget _buildCompletedActivityCard(
+    BuildContext context,
+    Activity activity, {
+    required bool showDate,
+  }) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final sportColor = _getSportColor(activity.sport);
+    final cardBg = isDark ? const Color(0xFF002A5C) : Colors.white;
+    final cardBorder =
+        isDark ? const Color(0xFF003D82) : const Color(0xFFE2E8F0);
+    const doneColor = Color(0xFF10B981);
+
+    final durMin = (activity.durationSec / 60).round();
+    final hours = durMin ~/ 60;
+    final mins = durMin % 60;
+    final durStr = hours > 0 ? '${hours}h ${mins}m' : '${mins}m';
+    final distKm = activity.distanceM > 0
+        ? (activity.distanceM / 1000).toStringAsFixed(1)
+        : null;
+    final avgPower = activity.summary?.avgPowerW?.round();
+    final avgHr = activity.summary?.avgHr?.round();
+    final tss = activity.metrics?.tss?.round();
+
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 4),
+      decoration: BoxDecoration(
+        color: cardBg,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: cardBorder),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => ActivityDetailScreen(activity: activity),
+              ),
+            );
+          },
+          borderRadius: BorderRadius.circular(12),
+          child: IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Container(width: 4, color: sportColor),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(_getSportIcon(activity.sport),
+                                size: 16, color: sportColor),
+                            const SizedBox(width: 6),
+                            Text(
+                              activity.sport,
+                              style: theme.textTheme.labelSmall?.copyWith(
+                                color: sportColor,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            if (showDate) ...[
+                              const SizedBox(width: 8),
+                              Text(
+                                OrbitDateFormatter.formatDateString(
+                                    activity.localDate),
+                                style: theme.textTheme.labelSmall?.copyWith(
+                                  color: isDark
+                                      ? const Color(0xFF94A3B8)
+                                      : const Color(0xFF64748B),
+                                ),
+                              ),
+                            ],
+                            const Spacer(),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: doneColor.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: const Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.check_circle,
+                                      size: 12, color: doneColor),
+                                  SizedBox(width: 4),
+                                  Text(
+                                    'Absolviert',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                      color: doneColor,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          activity.title,
+                          style: theme.textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: isDark ? AppColors.white : AppColors.navy,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 4),
+                        Wrap(
+                          spacing: 6,
+                          runSpacing: 2,
+                          children: [
+                            Text(
+                              durStr,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                fontWeight: FontWeight.w600,
+                                color: isDark
+                                    ? const Color(0xFFCBD5E1)
+                                    : const Color(0xFF475569),
+                              ),
+                            ),
+                            if (distKm != null)
+                              Text(
+                                '· $distKm km',
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: isDark
+                                      ? const Color(0xFF94A3B8)
+                                      : const Color(0xFF64748B),
+                                ),
+                              ),
+                            if (avgPower != null && avgPower > 0)
+                              Text(
+                                '· Ø $avgPower W',
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: isDark
+                                      ? const Color(0xFF94A3B8)
+                                      : const Color(0xFF64748B),
+                                ),
+                              ),
+                            if (avgHr != null && avgHr > 0)
+                              Text(
+                                '· Ø $avgHr bpm',
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: isDark
+                                      ? const Color(0xFF94A3B8)
+                                      : const Color(0xFF64748B),
+                                ),
+                              ),
+                            if (tss != null && tss > 0)
+                              Text(
+                                '· $tss Load',
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: isDark
+                                      ? const Color(0xFF94A3B8)
+                                      : const Color(0xFF64748B),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  IconData _getSportIcon(String sport) {
+    switch (sport.toUpperCase()) {
+      case 'BIKE':
+        return Icons.directions_bike;
+      case 'RUN':
+        return Icons.directions_run;
+      case 'SWIM':
+        return Icons.pool;
+      case 'STRENGTH':
+        return Icons.fitness_center;
+      default:
+        return Icons.bolt;
+    }
   }
 
   Color _getSportColor(String sport) {

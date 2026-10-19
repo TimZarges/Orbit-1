@@ -158,19 +158,58 @@ async function parseFitFile(buffer: Buffer): Promise<ParsedActivityData> {
   const streams = initStreams(durationSec);
   const records = messages.recordMesgs || [];
 
+  let hrSum = 0;
+  let hrCount = 0;
+  let maxHrRec = 0;
+  let powerSum = 0;
+  let powerCount = 0;
+  let maxPowerRec = 0;
+  let cadSum = 0;
+  let cadCount = 0;
+  let elevGainRec = 0;
+  let prevAlt: number | null = null;
+
   for (const r of records) {
     if (!r.timestamp) continue;
-    const t = (r.timestamp as number) + FIT_EPOCH_S;
+    const t = Math.round(r.timestamp as number) + FIT_EPOCH_S;
     const offset = t - startTimeUtcSec;
 
-    if (offset >= 0 && offset < durationSec * 2) {
+    if (offset >= 0 && offset < Math.max(durationSec * 2, 1)) {
       expandStreamsTo(streams, offset);
 
-      streams.heartRate[offset] = (r.heartRate as number) ?? null;
-      streams.power[offset] = (r.power as number) ?? null;
-      streams.cadence[offset] = (r.cadence as number) ?? null;
+      const hrVal = (r.heartRate as number) ?? null;
+      streams.heartRate[offset] = hrVal;
+      if (typeof hrVal === "number" && hrVal > 0) {
+        hrSum += hrVal;
+        hrCount++;
+        if (hrVal > maxHrRec) maxHrRec = hrVal;
+      }
+
+      const pVal = (r.power as number) ?? null;
+      streams.power[offset] = pVal;
+      if (typeof pVal === "number" && pVal >= 0) {
+        powerSum += pVal;
+        powerCount++;
+        if (pVal > maxPowerRec) maxPowerRec = pVal;
+      }
+
+      const cVal = (r.cadence as number) ?? null;
+      streams.cadence[offset] = cVal;
+      if (typeof cVal === "number" && cVal > 0) {
+        cadSum += cVal;
+        cadCount++;
+      }
+
       streams.speed[offset] = (r.enhancedSpeed as number) ?? (r.speed as number) ?? null;
-      streams.altitude[offset] = (r.enhancedAltitude as number) ?? (r.altitude as number) ?? null;
+
+      const altVal = (r.enhancedAltitude as number) ?? (r.altitude as number) ?? null;
+      streams.altitude[offset] = altVal;
+      if (typeof altVal === "number") {
+        if (prevAlt !== null && altVal > prevAlt) {
+          elevGainRec += altVal - prevAlt;
+        }
+        prevAlt = altVal;
+      }
 
       if (r.positionLat) streams.positionLat[offset] = (r.positionLat as number) * (180.0 / 2147483648.0);
       if (r.positionLong) streams.positionLng[offset] = (r.positionLong as number) * (180.0 / 2147483648.0);
@@ -186,36 +225,64 @@ async function parseFitFile(buffer: Buffer): Promise<ParsedActivityData> {
 
   streams.length = streams.time.length;
 
+  const avgHr = (session.avgHeartRate as number | undefined) ?? (hrCount > 0 ? Math.round(hrSum / hrCount) : undefined);
+  const maxHr = (session.maxHeartRate as number | undefined) ?? (maxHrRec > 0 ? maxHrRec : undefined);
+  const avgPowerW = (session.avgPower as number | undefined) ?? (powerCount > 0 ? Math.round(powerSum / powerCount) : undefined);
+  const maxPowerW = (session.maxPower as number | undefined) ?? (maxPowerRec > 0 ? maxPowerRec : undefined);
+  const avgCadence = (session.avgCadence as number | undefined) ?? (cadCount > 0 ? Math.round(cadSum / cadCount) : undefined);
+  const elevationGainM =
+    (session.totalAscent as number | undefined) ?? (elevGainRec > 0 ? Math.round(elevGainRec) : undefined);
+  const avgSpeedMps =
+    (session.enhancedAvgSpeed as number | undefined) ??
+    (session.avgSpeed as number | undefined) ??
+    (distanceM > 0 && durationSec > 0 ? distanceM / durationSec : undefined);
+  const avgPaceSecPerKm =
+    typeof avgSpeedMps === "number" && avgSpeedMps > 0 ? Math.round(1000 / avgSpeedMps) : undefined;
+
   const rawFitLaps = messages.lapMesgs || [];
-  const fitLaps: ActivityLap[] = rawFitLaps.map((lap: any, idx: number) => ({
-    index: idx + 1,
-    startTimeUtcSec: ((lap.startTime as number) || (session.startTime as number) || 0) + FIT_EPOCH_S,
-    durationSec: Math.round((lap.totalTimerTime as number) || (lap.totalElapsedTime as number) || 0),
-    distanceM: Math.round((lap.totalDistance as number) || 0),
-    avgHr: lap.avgHeartRate as number | undefined,
-    maxHr: lap.maxHeartRate as number | undefined,
-    avgPowerW: lap.avgPower as number | undefined,
-    maxPowerW: lap.maxPower as number | undefined,
-    avgCadence: lap.avgCadence as number | undefined,
-    avgSpeedMps: (lap.enhancedAvgSpeed as number | undefined) ?? (lap.avgSpeed as number | undefined),
-    elevationGainM: lap.totalAscent as number | undefined,
-  }));
+  const fitLaps: ActivityLap[] = rawFitLaps.map((lap: any, idx: number) => {
+    const l: ActivityLap = {
+      index: idx + 1,
+      startTimeUtcSec: ((lap.startTime as number) || (session.startTime as number) || 0) + FIT_EPOCH_S,
+      durationSec: Math.round((lap.totalTimerTime as number) || (lap.totalElapsedTime as number) || 0),
+      distanceM: Math.round((lap.totalDistance as number) || 0),
+    };
+    if (typeof lap.avgHeartRate === "number") l.avgHr = lap.avgHeartRate;
+    if (typeof lap.maxHeartRate === "number") l.maxHr = lap.maxHeartRate;
+    if (typeof lap.avgPower === "number") l.avgPowerW = lap.avgPower;
+    if (typeof lap.maxPower === "number") l.maxPowerW = lap.maxPower;
+    if (typeof lap.avgCadence === "number") l.avgCadence = lap.avgCadence;
+    const lapSpeed = (lap.enhancedAvgSpeed as number | undefined) ?? (lap.avgSpeed as number | undefined);
+    if (typeof lapSpeed === "number") l.avgSpeedMps = lapSpeed;
+    if (typeof lap.totalAscent === "number") l.elevationGainM = lap.totalAscent;
+    return l;
+  });
 
   if (fitLaps.length === 0) {
-    fitLaps.push({
+    const singleLap: ActivityLap = {
       index: 1,
       startTimeUtcSec,
       durationSec,
       distanceM,
-      avgHr: session.avgHeartRate as number | undefined,
-      maxHr: session.maxHeartRate as number | undefined,
-      avgPowerW: session.avgPower as number | undefined,
-      maxPowerW: session.maxPower as number | undefined,
-      avgCadence: session.avgCadence as number | undefined,
-      avgSpeedMps: session.avgSpeed as number | undefined,
-      elevationGainM: session.totalAscent as number | undefined,
-    });
+    };
+    if (typeof avgHr === "number") singleLap.avgHr = avgHr;
+    if (typeof maxHr === "number") singleLap.maxHr = maxHr;
+    if (typeof avgPowerW === "number") singleLap.avgPowerW = avgPowerW;
+    if (typeof maxPowerW === "number") singleLap.maxPowerW = maxPowerW;
+    if (typeof avgCadence === "number") singleLap.avgCadence = avgCadence;
+    if (typeof avgSpeedMps === "number") singleLap.avgSpeedMps = avgSpeedMps;
+    if (typeof elevationGainM === "number") singleLap.elevationGainM = elevationGainM;
+    fitLaps.push(singleLap);
   }
+
+  const summary: ParsedActivityData["summary"] = {};
+  if (typeof avgHr === "number") summary.avgHr = avgHr;
+  if (typeof maxHr === "number") summary.maxHr = maxHr;
+  if (typeof avgPowerW === "number") summary.avgPowerW = avgPowerW;
+  if (typeof maxPowerW === "number") summary.maxPowerW = maxPowerW;
+  if (typeof avgCadence === "number") summary.avgCadence = avgCadence;
+  if (typeof elevationGainM === "number") summary.elevationGainM = elevationGainM;
+  if (typeof avgPaceSecPerKm === "number") summary.avgPaceSecPerKm = avgPaceSecPerKm;
 
   return {
     sport,
@@ -225,15 +292,7 @@ async function parseFitFile(buffer: Buffer): Promise<ParsedActivityData> {
     localDate,
     durationSec,
     distanceM,
-    summary: {
-      avgHr: session.avgHeartRate as number | undefined,
-      maxHr: session.maxHeartRate as number | undefined,
-      avgPowerW: session.avgPower as number | undefined,
-      maxPowerW: session.maxPower as number | undefined,
-      avgCadence: session.avgCadence as number | undefined,
-      elevationGainM: session.totalAscent as number | undefined,
-      avgPaceSecPerKm: session.avgSpeed ? Math.round(1000 / (session.avgSpeed as number)) : undefined,
-    },
+    summary,
     laps: fitLaps,
     streams,
   };
@@ -711,19 +770,102 @@ export async function parseActivityAndSave(
     ? "gpx"
     : "fit";
   const rawFilePath = `users/${uid}/rawActivities/${targetActivityId}.${ext}`;
-  const rawFile = bucket.file(rawFilePath);
-  await rawFile.save(buffer, {
-    contentType: "application/octet-stream",
-    metadata: {
-      originalFileName,
-      uploadedAt: new Date().toISOString(),
-      athleteId: uid,
-      activityId: targetActivityId,
-    },
-  });
+  if (source !== "GARMIN") {
+    const rawFile = bucket.file(rawFilePath);
+    await rawFile.save(buffer, {
+      contentType: "application/octet-stream",
+      metadata: {
+        originalFileName,
+        uploadedAt: new Date().toISOString(),
+        athleteId: uid,
+        activityId: targetActivityId,
+        archivedByBackend: "true",
+      },
+    });
+  }
 
   // Aktiven Coach mit Aktivitäten-Berechtigung ermitteln
   const activeCoachId = await getActiveCoachIdForActivities(uid);
+
+  // Wissenschaftliche Metriken direkt aus den 1Hz-Streams berechnen (NP, IF, TSS, VI, EF, Decoupling)
+  const { calculatePowerMetrics } = await import("../metrics/power");
+  const { calculateAerobicDecoupling } = await import("../metrics/decoupling");
+
+  let athleteFtp = 250;
+  let thresholdPaceSecPerKm = 300;
+  try {
+    const threshSnap = await db
+      .collection("users")
+      .doc(uid)
+      .collection("thresholdHistory")
+      .orderBy("effectiveFrom", "desc")
+      .limit(1)
+      .get();
+    if (threshSnap && !threshSnap.empty) {
+      const tData = threshSnap.docs[0].data();
+      if (tData?.ftpW && tData.ftpW > 0) athleteFtp = tData.ftpW;
+      if (tData?.runThresholdPaceSecPerKm && tData.runThresholdPaceSecPerKm > 0) {
+        thresholdPaceSecPerKm = tData.runThresholdPaceSecPerKm;
+      }
+    }
+  } catch {
+    // Standardwerte nutzen
+  }
+
+  const powerSeries = (parsed.streams?.power || []).map((v) => (typeof v === "number" && v >= 0 ? v : 0));
+  const hasPower = (parsed.streams?.power || []).some((v) => typeof v === "number" && v > 0);
+  const hrSeries = (parsed.streams?.heartRate || []).map((v) => (typeof v === "number" && v > 0 ? v : 0));
+  const hasHr = hrSeries.some((v) => v > 0);
+  const speedSeries = (parsed.streams?.speed || []).map((v) => (typeof v === "number" && v >= 0 ? v : 0));
+
+  const computedMetrics: Record<string, any> = {
+    quality: "COMPLETE",
+  };
+
+  if (parsed.sport === "BIKE" && hasPower) {
+    const pm = calculatePowerMetrics(powerSeries, athleteFtp);
+    const npRounded = Math.round(pm.np);
+    const iffRounded = Number(pm.iff.toFixed(3));
+    const tssRounded = Number(pm.tss.toFixed(1));
+    computedMetrics.np = npRounded;
+    computedMetrics.intensityFactor = iffRounded;
+    computedMetrics.tss = tssRounded;
+    computedMetrics.vi = pm.vi;
+    if (parsed.summary.avgHr && parsed.summary.avgHr > 0) {
+      computedMetrics.ef = Number((npRounded / parsed.summary.avgHr).toFixed(2));
+    }
+    if (hasHr && powerSeries.length >= 600) {
+      const dec = calculateAerobicDecoupling(powerSeries, hrSeries, athleteFtp);
+      computedMetrics.aerobicDecouplingPercent = Number(dec.decouplingPercent.toFixed(1));
+      computedMetrics.decouplingClassification = dec.classification;
+    }
+    (parsed.summary as Record<string, any>).normalizedPowerW = npRounded;
+    (parsed.summary as Record<string, any>).orbitLoad = Math.round(tssRounded);
+    (parsed.summary as Record<string, any>).intensityFactor = iffRounded;
+  } else if (parsed.sport === "RUN" && parsed.distanceM > 0 && parsed.durationSec > 0) {
+    const avgSpeedMps = parsed.distanceM / parsed.durationSec;
+    const vThreshMps = 1000 / thresholdPaceSecPerKm;
+    const iffRounded = Number((avgSpeedMps / vThreshMps).toFixed(3));
+    const tssRounded = Number(((parsed.durationSec * Math.pow(iffRounded, 2)) / 36).toFixed(1));
+    computedMetrics.intensityFactor = iffRounded;
+    computedMetrics.tss = tssRounded;
+    if (hasHr && speedSeries.length >= 600) {
+      const dec = calculateAerobicDecoupling(speedSeries, hrSeries, vThreshMps);
+      computedMetrics.aerobicDecouplingPercent = Number(dec.decouplingPercent.toFixed(1));
+      computedMetrics.decouplingClassification = dec.classification;
+    }
+    (parsed.summary as Record<string, any>).orbitLoad = Math.round(tssRounded);
+    (parsed.summary as Record<string, any>).intensityFactor = iffRounded;
+  }
+
+  const cleanSummary = Object.fromEntries(
+    Object.entries(parsed.summary || {}).filter(([, v]) => v !== undefined && !Number.isNaN(v))
+  );
+  const cleanLaps = (parsed.laps || []).map((lap) =>
+    Object.fromEntries(
+      Object.entries(lap || {}).filter(([, v]) => v !== undefined && !Number.isNaN(v))
+    )
+  );
 
   // 3. Aktivitäts-Dokument in Firestore anlegen/aktualisieren
   const activityData: Record<string, any> = {
@@ -739,10 +881,12 @@ export async function parseActivityAndSave(
     duplicateHash,
     durationSec: parsed.durationSec,
     distanceM: parsed.distanceM,
-    summary: parsed.summary,
-    laps: parsed.laps,
+    summary: cleanSummary,
+    metrics: computedMetrics,
+    laps: cleanLaps,
     streamsPath,
     rawFilePath,
+    metricsVersion: null,
     createdAt: FieldValue.serverTimestamp(),
     processing: { state: "READY" },
   };
@@ -752,6 +896,10 @@ export async function parseActivityAndSave(
   }
 
   await db.collection("activities").doc(targetActivityId).set(activityData, { merge: true });
+  const userDocRef = db.collection("users").doc(uid);
+  if (userDocRef && typeof userDocRef.collection === "function") {
+    await userDocRef.collection("activities").doc(targetActivityId).set(activityData, { merge: true });
+  }
 
   return { activityId: targetActivityId, isDuplicate };
 }

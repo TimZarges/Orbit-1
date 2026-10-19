@@ -77,7 +77,12 @@ export const onActivityWritten = onDocumentWritten("activities/{activityId}", as
   let calculatedIf = 0;
   let quality: "COMPLETE" | "ESTIMATED" | "INSUFFICIENT" = "ESTIMATED";
 
-  if (sport === "BIKE") {
+  if (data.metrics?.quality === "COMPLETE" && typeof data.metrics?.tss === "number" && data.metrics.tss > 0) {
+    calculatedTss = data.metrics.tss;
+    calculatedNp = data.metrics.np || data.summary?.normalizedPowerW || 0;
+    calculatedIf = data.metrics.intensityFactor || data.summary?.intensityFactor || 0;
+    quality = "COMPLETE";
+  } else if (sport === "BIKE") {
     if (data.summary?.avgPowerW && data.summary.avgPowerW > 0) {
       // Wenn keine Sekunden-Streams direkt im Doc liegen, Annäherung über AvgPower / NP
       const avgW = data.summary.avgPowerW;
@@ -128,11 +133,11 @@ export const onActivityWritten = onDocumentWritten("activities/{activityId}", as
 
   // Metriken ins Aktivitäts-Dokument schreiben
   await after.ref.update({
-    metricsVersion: '1',
-    'metrics.quality': quality,
-    'metrics.tss': calculatedTss,
-    'metrics.np': calculatedNp > 0 ? calculatedNp : null,
-    'metrics.intensityFactor': calculatedIf > 0 ? calculatedIf : null,
+    metricsVersion: "1",
+    "metrics.quality": quality,
+    "metrics.tss": calculatedTss,
+    "metrics.np": calculatedNp > 0 ? calculatedNp : null,
+    "metrics.intensityFactor": calculatedIf > 0 ? calculatedIf : null,
   });
 
   // Tägliche Aggregation für den Kalendertag aktualisieren
@@ -154,63 +159,91 @@ export const onActivityWritten = onDocumentWritten("activities/{activityId}", as
 });
 
 /**
- * Aktualisiert die tägliche Belastungs-Aggregation (CTL, ATL, TSB) für einen bestimmten Tag.
- * Berechnet den exponentiell geglätteten Durchschnitt (EMA) über 42 Tage (Fitness / CTL)
- * und 7 Tage (Ermüdung / ATL) und speichert den Wert in `users/{uid}/aggregates/{localDate}`.
+ * Aktualisiert die tägliche Belastungs-Aggregation (CTL, ATL, TSB) lückenlos über die Zeitreihe
+ * bis zum heutigen Tag (`todayStr`). Dadurch gehen CTL/ATL an Ruhetagen (ohne Aktivität) nicht
+ * verloren, sondern klingen exponentiell über die Banister-Zeitkonstanten (42d / 7d) ab.
+ * Synchronisiert zudem `activitiesTss` in `users/{uid}/dailyMetrics/{date}` und berechnet
+ * die täglichen Erholungs- und Belastungs-Scores neu.
  *
  * @param uid - Athleten-ID
- * @param localDate - Lokales Datum im Format YYYY-MM-DD
+ * @param localDate - Optionales lokales Datum im Format YYYY-MM-DD
  */
-async function updateAggregates(uid: string, localDate: string | undefined) {
-  if (!localDate) return;
+export async function updateAggregates(uid: string, localDate?: string) {
   const db = admin.firestore();
 
   try {
-    // Alle Aktivitäten dieses Tages laden und TSS aufsummieren
-    const dayActsSnap = await db.collection("activities")
+    const allActsSnap = await db.collection("activities")
       .where("athleteId", "==", uid)
-      .where("localDate", "==", localDate)
       .get();
 
-    let dayTss = 0;
-    for (const doc of dayActsSnap.docs) {
+    const dailyTssMap: Record<string, number> = {};
+    let earliestDate: string | null = null;
+    for (const doc of allActsSnap.docs) {
       const act = doc.data();
-      dayTss += (act.metrics?.tss || 0);
+      const dStr = act.localDate;
+      if (!dStr || typeof dStr !== "string") continue;
+      const tss = act.metrics?.tss ?? act.summary?.orbitLoad ?? 0;
+      dailyTssMap[dStr] = (dailyTssMap[dStr] || 0) + (typeof tss === "number" ? tss : 0);
+      if (!earliestDate || dStr < earliestDate) {
+        earliestDate = dStr;
+      }
     }
 
-    // Vorheriges Aggregat laden für CTL/ATL EMA
-    const prevDateObj = new Date(localDate + "T12:00:00Z");
-    prevDateObj.setDate(prevDateObj.getDate() - 1);
-    const prevDateStr = prevDateObj.toISOString().split("T")[0];
+    const todayStr = new Date().toISOString().split("T")[0];
+    const startStr = earliestDate && earliestDate < todayStr ? earliestDate : (localDate || todayStr);
+    const endStr = localDate && localDate > todayStr ? localDate : todayStr;
 
-    let prevCtl = 0;
-    let prevAtl = 0;
+    const startObj = new Date(startStr + "T12:00:00Z");
+    const endObj = new Date(endStr + "T12:00:00Z");
+    const cutoffObj = new Date(endObj.getTime() - 28 * 86400 * 1000);
 
-    const prevAggDoc = await db.collection("users").doc(uid)
-      .collection("aggregates")
-      .doc(prevDateStr)
-      .get();
+    let ctl = 0;
+    let atl = 0;
 
-    if (prevAggDoc.exists) {
-      prevCtl = prevAggDoc.data()?.ctl || 0;
-      prevAtl = prevAggDoc.data()?.atl || 0;
+    for (let cur = new Date(startObj.getTime()); cur <= endObj; cur.setUTCDate(cur.getUTCDate() + 1)) {
+      const curStr = cur.toISOString().split("T")[0];
+      const dayTss = dailyTssMap[curStr] || 0;
+      const prevCtl = ctl;
+      const prevAtl = atl;
+      ctl = calculateDailyLoadEMA(prevCtl, dayTss, 42);
+      atl = calculateDailyLoadEMA(prevAtl, dayTss, 7);
+      const tsb = ctl - atl;
+
+      if (dayTss > 0 || cur >= cutoffObj || curStr === localDate || curStr === todayStr) {
+        await db.collection("users").doc(uid)
+          .collection("aggregates")
+          .doc(curStr)
+          .set({
+            dailyLoad: Math.round(dayTss),
+            ctl: Number(ctl.toFixed(1)),
+            atl: Number(atl.toFixed(1)),
+            tsb: Number(tsb.toFixed(1)),
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+            metricsVersion: "1",
+          }, { merge: true });
+      }
+
+      if (dayTss > 0 || curStr === localDate || curStr === todayStr) {
+        await db.collection("users").doc(uid)
+          .collection("dailyMetrics")
+          .doc(curStr)
+          .set({
+            date: curStr,
+            activitiesTss: Math.round(dayTss),
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          }, { merge: true });
+      }
     }
 
-    const ctl = calculateDailyLoadEMA(prevCtl, dayTss, 42);
-    const atl = calculateDailyLoadEMA(prevAtl, dayTss, 7);
-    const tsb = prevCtl - prevAtl;
-
-    await db.collection("users").doc(uid)
-      .collection("aggregates")
-      .doc(localDate)
-      .set({
-        dailyLoad: Math.round(dayTss),
-        ctl: Number(ctl.toFixed(1)),
-        atl: Number(atl.toFixed(1)),
-        tsb: Number(tsb.toFixed(1)),
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-        metricsVersion: '1',
-      }, { merge: true });
+    try {
+      const { computeDailyHealthScores } = await import("../health/healthTrigger");
+      if (localDate && localDate !== todayStr) {
+        await computeDailyHealthScores(db, uid, localDate);
+      }
+      await computeDailyHealthScores(db, uid, todayStr);
+    } catch (_) {
+      // Optionaler Health-Score-Refresh
+    }
   } catch (_) {
     // Fehler protokollieren aber Trigger nicht blockieren
   }

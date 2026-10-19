@@ -7,7 +7,9 @@ import 'package:orbit/features/beta_feedback/widgets/beta_feedback_ticket_card.d
 
 void main() {
   group('Nutzer Beta-Feedback Inbox (Phase 38.4)', () {
-    testWidgets('AdminFeedbackScreen rendert Titel Meine gemeldeten Tickets für Tester', (tester) async {
+    testWidgets(
+        'AdminFeedbackScreen rendert Titel Meine gemeldeten Tickets für Tester',
+        (tester) async {
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
@@ -25,7 +27,9 @@ void main() {
       expect(find.text('Meine gemeldeten Tickets'), findsOneWidget);
     });
 
-    testWidgets('BetaFeedbackTicketCard visualisiert Ticket-ID, OrbitDateFormatter und Status-Badges', (tester) async {
+    testWidgets(
+        'BetaFeedbackTicketCard visualisiert Ticket-ID, OrbitDateFormatter und Status-Badges',
+        (tester) async {
       final reportOpen = BetaFeedbackReport(
         id: 'rep_1',
         ticketId: '#ORB-101',
@@ -33,7 +37,7 @@ void main() {
         description: 'GPS-Strecke springt nach Tunnel',
         status: 'OPEN',
         includeDiagnostics: false,
-      userId: 'test_user',
+        userId: 'test_user',
         createdAt: DateTime(2026, 10, 18, 14, 30),
       );
 
@@ -44,7 +48,7 @@ void main() {
         description: 'Schriftgröße im Zonen-Diagramm',
         status: 'IN_PROGRESS',
         includeDiagnostics: false,
-      userId: 'test_user',
+        userId: 'test_user',
         createdAt: DateTime(2026, 10, 17, 9, 15),
       );
 
@@ -55,7 +59,7 @@ void main() {
         description: 'FTP-Schwellenwert um 5W abweichend',
         status: 'RESOLVED',
         includeDiagnostics: false,
-      userId: 'test_user',
+        userId: 'test_user',
         createdAt: DateTime(2026, 10, 16, 18, 45),
       );
 
@@ -66,8 +70,10 @@ void main() {
               child: Column(
                 children: [
                   BetaFeedbackTicketCard(report: reportOpen, isAdmin: false),
-                  BetaFeedbackTicketCard(report: reportInProgress, isAdmin: false),
-                  BetaFeedbackTicketCard(report: reportResolved, isAdmin: false),
+                  BetaFeedbackTicketCard(
+                      report: reportInProgress, isAdmin: false),
+                  BetaFeedbackTicketCard(
+                      report: reportResolved, isAdmin: false),
                 ],
               ),
             ),

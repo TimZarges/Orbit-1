@@ -9,7 +9,9 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('Phase 36.1: Login-First & Passwort-Reset', () {
-    testWidgets('LoginScreen rendert sauberes Branding, Passwort vergessen und Registrierungs-Button', (tester) async {
+    testWidgets(
+        'LoginScreen rendert sauberes Branding, Passwort vergessen und Registrierungs-Button',
+        (tester) async {
       await tester.pumpWidget(
         const ProviderScope(
           child: MaterialApp(
@@ -29,11 +31,13 @@ void main() {
       expect(find.text('Konto erstellen / Registrieren'), findsOneWidget);
 
       // Passwort vergessen Button
-      expect(find.byKey(const Key('login_forgot_password_button')), findsOneWidget);
+      expect(find.byKey(const Key('login_forgot_password_button')),
+          findsOneWidget);
       expect(find.text('Passwort vergessen?'), findsOneWidget);
     });
 
-    testWidgets('Passwort-vergessen-Dialog lässt sich aufrufen', (tester) async {
+    testWidgets('Passwort-vergessen-Dialog lässt sich aufrufen',
+        (tester) async {
       await tester.pumpWidget(
         const ProviderScope(
           child: MaterialApp(
@@ -47,11 +51,14 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Passwort zurücksetzen'), findsOneWidget);
-      expect(find.byKey(const Key('forgot_password_email_field')), findsOneWidget);
-      expect(find.byKey(const Key('forgot_password_submit_button')), findsOneWidget);
+      expect(
+          find.byKey(const Key('forgot_password_email_field')), findsOneWidget);
+      expect(find.byKey(const Key('forgot_password_submit_button')),
+          findsOneWidget);
     });
 
-    testWidgets('SettingsScreen enthält Option zum Passwort ändern', (tester) async {
+    testWidgets('SettingsScreen enthält Option zum Passwort ändern',
+        (tester) async {
       await tester.pumpWidget(
         const ProviderScope(
           child: MaterialApp(
@@ -67,7 +74,8 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.byKey(const Key('settings_change_password_tile')), findsOneWidget);
+      expect(find.byKey(const Key('settings_change_password_tile')),
+          findsOneWidget);
       expect(find.text('Passwort ändern'), findsOneWidget);
     });
   });

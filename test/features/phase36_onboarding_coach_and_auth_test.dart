@@ -12,11 +12,11 @@ void main() {
   group('Phase 36.2: Passwort-Validierung & Kriterien-Checkliste', () {
     test('isPasswordValid prüft alle 4 Sicherheitskriterien korrekt', () {
       // Zu kurz (< 8 Zeichen)
-      expect(PasswordCriteriaChecklist.isPasswordValid('Abc1', 'Abc1'), isFalse);
+      expect(
+          PasswordCriteriaChecklist.isPasswordValid('Abc1', 'Abc1'), isFalse);
 
       // Keine Zahl
-      expect(
-          PasswordCriteriaChecklist.isPasswordValid('Abcdefgh', 'Abcdefgh'),
+      expect(PasswordCriteriaChecklist.isPasswordValid('Abcdefgh', 'Abcdefgh'),
           isFalse);
 
       // Kein Buchstabe
@@ -25,14 +25,12 @@ void main() {
 
       // Passwörter stimmen nicht überein
       expect(
-          PasswordCriteriaChecklist.isPasswordValid(
-              'Sicher123', 'Sicher124'),
+          PasswordCriteriaChecklist.isPasswordValid('Sicher123', 'Sicher124'),
           isFalse);
 
       // Gültig: >= 8 Zeichen, Buchstabe, Zahl, identisch
       expect(
-          PasswordCriteriaChecklist.isPasswordValid(
-              'Sicher123', 'Sicher123'),
+          PasswordCriteriaChecklist.isPasswordValid('Sicher123', 'Sicher123'),
           isTrue);
     });
 
@@ -85,10 +83,10 @@ void main() {
       expect(find.text('Bestätige deine E-Mail'), findsOneWidget);
       expect(find.byKey(const Key('verify_email_check_now_button')),
           findsOneWidget);
-      expect(find.byKey(const Key('verify_email_resend_button')),
-          findsOneWidget);
-      expect(find.byKey(const Key('verify_email_signout_button')),
-          findsOneWidget);
+      expect(
+          find.byKey(const Key('verify_email_resend_button')), findsOneWidget);
+      expect(
+          find.byKey(const Key('verify_email_signout_button')), findsOneWidget);
     });
   });
 
@@ -120,20 +118,26 @@ void main() {
       await tester.pumpAndSettle();
 
       // Standardrolle ist ATHLETE -> Geburtsjahr, Gewicht, Größe sichtbar
-      expect(find.byKey(const Key('onboarding_birth_year_field')), findsOneWidget);
+      expect(
+          find.byKey(const Key('onboarding_birth_year_field')), findsOneWidget);
       expect(find.byKey(const Key('onboarding_weight_field')), findsOneWidget);
       expect(find.byKey(const Key('onboarding_height_field')), findsOneWidget);
-      expect(find.byKey(const Key('onboarding_coach_club_field')), findsNothing);
+      expect(
+          find.byKey(const Key('onboarding_coach_club_field')), findsNothing);
 
       // Auf Coach umschalten
       await tester.tap(find.byKey(const Key('onboarding_role_trainer')));
       await tester.pumpAndSettle();
 
       // Nun Coach-spezifische Felder sichtbar, Athleten-Körpermaße verborgen
-      expect(find.byKey(const Key('onboarding_coach_club_field')), findsOneWidget);
-      expect(find.byKey(const Key('onboarding_coach_company_field')), findsOneWidget);
-      expect(find.byKey(const Key('onboarding_coach_mode_simple')), findsOneWidget);
-      expect(find.byKey(const Key('onboarding_birth_year_field')), findsNothing);
+      expect(
+          find.byKey(const Key('onboarding_coach_club_field')), findsOneWidget);
+      expect(find.byKey(const Key('onboarding_coach_company_field')),
+          findsOneWidget);
+      expect(find.byKey(const Key('onboarding_coach_mode_simple')),
+          findsOneWidget);
+      expect(
+          find.byKey(const Key('onboarding_birth_year_field')), findsNothing);
 
       // Sportart-Chips: Keine Checkmarks & TriathlonCombinedIcon gerendert
       expect(find.byType(TriathlonCombinedIcon), findsOneWidget);

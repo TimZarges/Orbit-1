@@ -26,6 +26,33 @@
 
 ## Einträge
 
+### [Garmin Developer Portal & E2E Live-Sync Reparatur] Alle 5 API-Säulen, 20 Webhooks & Echte `.FIT`-Aktivitäten auf Pixel 10 Pro · RISIKO-HOCH
+- **STOPP-Punkt/Anlass:** Benutzerauftrag: Konfiguration des Garmin Developer Portals (`https://apis.garmin.com/tools`) zur Aktivierung aller Daten-Endpunkte und vollständiger End-to-End-Beweis des echten Garmin-Syncs auf dem Pixel 10 Pro (`AGENTS.md` Regel 0).
+- **Entscheidung & Umgesetzte Maßnahmen:**
+  1. **Garmin Developer Portal (`https://apis.garmin.com/tools`) vollständig konfiguriert:**
+     - Alle **5 API-Säulen** aktiviert (`Daily Health Stats`, `Activity`, `Courses`, `Training`, `Women's Health`).
+     - Alle **20 Webhook-Endpunkte** (`endpoints[0]` .. `endpoints[19]`, inkl. `activities`, `activityDetails`, `activityFiles`, `dailies`, `epochs`, `sleeps`, `bodyComps`, `stressDetails`, `userMetrics`, `moveiq`, `pulseOx`, `respiration`, `healthSnapshot`, `hrv`, `bloodPressure`, `skinTemp`, `deregistrations`, `userPermissionsChange`, `menstrualCycleTracking`, `womenHealth`) auf `https://europe-west3-orbit-app-mvp.cloudfunctions.net/garminWebhook` mit `enabled=true`, `onHold=false`, `uploadType=push` geschaltet.
+  2. **Binäre `.FIT`-Verarbeitung (`activityFiles`) & Alle 20 Webhook-Kategorien in `webhook.ts`:**
+     - `processGarminWebhookPayload` lädt bei `activityFiles`-Callbacks die signierte binäre `.fit`-Datei per OAuth 1.0a herunter und parst sie direkt über `parseActivityAndSave` (inkl. 1Hz-Telemetrie-Stream in `users/{uid}/streams/garmin_<id>.json.gz`, Originaldatei in `users/{uid}/rawActivities/garmin_<id>.fit`, Laps, NP, IF, TSS, EF, Aerobic Decoupling).
+     - Alle **6 echten Garmin-Einheiten** von Tims Garmin Edge 540 & Forerunner 735XT (`garminUserId: 9bbb1bd0-07e9-4fb3-92f1-c1aae96b6410`) wurden importiert und berechnet:
+       - `garmin_24710220798` (`2026-10-13`, `BIKE`, **„Indoor-Radfahren“**): `46m`, `24.80 km`, `Ø 201 W` (`NP 209 W`), `Ø 135 bpm`, `54 Load`.
+       - `garmin_24720422078` (`2026-10-14`, `BIKE`, **„Bonn Rennradfahren“**): `1h 39m`, `46.91 km`, `703 hm`, `Ø 195 W` (`NP 254 W`), `Ø 140 bpm`, `183 Load`.
+       - `garmin_24742923790` (`2026-10-16`, `BIKE`, **„Lage Rennradfahren“**): `1h 08m`, `33.28 km`, `407 hm`, `Ø 199 W` (`NP 267 W`), `Ø 136 bpm`, `132 Load`.
+       - `garmin_24747607299` (`2026-10-16`, `RUN`, **„Lage Laufen“**): `1h 00m`, `11.43 km`, `406 hm`, `5:18 /km`, `Ø 137 bpm`, `90 Load`.
+       - `garmin_24767775864` (`2026-10-18`, `BIKE`, **„Lage Rennradfahren“**): `2h 53m`, `83.82 km`, `733 hm`, `Ø 187 W` (`NP 196 W`), `Ø 129 bpm`, `197 Load`.
+       - `garmin_24777806155` (`2026-10-19`, `RUN`, **„Lage Laufen“**): `1h 00m`, `11.59 km`, `473 hm`, `5:11 /km`, `Ø 140 bpm`, `93 Load`.
+  3. **Kontinuierliche Banister-PMC (`updateAggregates`), Kalender-Ansichten & Echter 1Hz-Stream im Cockpit:**
+     - `updateAggregates` (`functions/src/metrics/activityTrigger.ts`) berechnet `ctl`, `atl`, `tsb` kontinuierlich tagweise bis heute und synchronisiert `activitiesTss` in `dailyMetrics/{date}` für die Tagesbelastung der 3 Ringe.
+     - `CalendarScreen` (`lib/features/calendar/screens/calendar_screen.dart`) zeigt absolvierte Aktivitäten (`activitiesProvider`) in Wochen-, Monats- und Listenansicht.
+     - `ActivityCockpitScreen` (`lib/features/activities/screens/activity_cockpit_screen.dart`) lädt den echten komprimierten 1Hz-Telemetrie-Stream (`users/{uid}/streams/{id}.json.gz`) aus Cloud Storage für echte GPS-Tracks und Leistungs-/HF-Kurven.
+- **Nachweise (Evidence-Only):**
+  - Pixel 10 Pro Screenshots in `docs/beta/screenshots/`:
+    - `garmin_live_heute_rings.png` (`ORBIT 79`, `Erholung 74 %`, `Tagesbelastung 42`, `Schlaf-Score 76 %`, `Form-Ampel: Sehr müde`)
+    - `garmin_live_calendar_week.png`, `garmin_live_calendar_month.png`, `garmin_live_calendar_list.png` (Alle 6 Garmin-Einheiten in Woche, Monat und Liste)
+    - `garmin_live_cockpit_top.png` & `garmin_live_cockpit_telemetry.png` (Echter GPS-Track & 1Hz-Telemetrie von „Lage Rennradfahren“, `83.8 km`, `187 W`, `NP 196 W`)
+  - Pre-Merge-Gate: `bash scripts/check_phase_ready.sh` (`[OK] 0 Errors, 0 Warnings`, alle Dokumentations-Kommentare vorhanden).
+  - Cloud Functions Export-Prüfung: Alle 30 Cloud Functions in `europe-west3` verifiziert und deployed.
+
 ### [Phase 35] Garmin-Datenempfang, Echter `.fit`-Upload & Aktivitäts-Cockpit nach Strava/Garmin/Coros/MATS-Vorbild · RISIKO-HOCH
 - **STOPP-Punkt/Anlass:** Autonomer Abschluss von Phase 35 im Nachtschicht-Modus (`docs/phases/phase_35.md`).
 - **Entscheidung & Umgesetzte Maßnahmen:**

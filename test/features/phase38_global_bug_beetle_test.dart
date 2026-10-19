@@ -3,7 +3,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:orbit/features/beta_feedback/widgets/global_floating_bug_beetle.dart';
 
 void main() {
-  testWidgets('GlobalFloatingBugBeetle rendert, ist verschiebbar und bleibt über Sheets sichtbar', (tester) async {
+  testWidgets(
+      'GlobalFloatingBugBeetle rendert, ist verschiebbar und bleibt über Sheets sichtbar',
+      (tester) async {
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(

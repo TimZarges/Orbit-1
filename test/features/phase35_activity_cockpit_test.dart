@@ -56,7 +56,9 @@ void main() {
   }
 
   group('ActivityCockpitScreen (Phase 35.3 High-End Cockpit)', () {
-    testWidgets('Rendert Header mit Sport-Badge, deutschem Datum und editierbarem Titel', (tester) async {
+    testWidgets(
+        'Rendert Header mit Sport-Badge, deutschem Datum und editierbarem Titel',
+        (tester) async {
       final activity = createTestActivity();
       await tester.pumpWidget(createWidgetUnderTest(activity));
       await tester.pumpAndSettle();
@@ -72,10 +74,13 @@ void main() {
       // Editierbarer Titel & Edit-Button
       expect(find.byKey(const Key('activity_title_text')), findsOneWidget);
       expect(find.text('Schwellen-Intervalle 4x4m'), findsWidgets);
-      expect(find.byKey(const Key('activity_title_edit_button')), findsOneWidget);
+      expect(
+          find.byKey(const Key('activity_title_edit_button')), findsOneWidget);
     });
 
-    testWidgets('Titel-Änderungsdialog lässt sich öffnen und aktualisiert den Titel', (tester) async {
+    testWidgets(
+        'Titel-Änderungsdialog lässt sich öffnen und aktualisiert den Titel',
+        (tester) async {
       final activity = createTestActivity();
       await tester.pumpWidget(createWidgetUnderTest(activity));
       await tester.pumpAndSettle();
@@ -85,12 +90,15 @@ void main() {
       await tester.pumpAndSettle();
 
       // Prüfe, ob Dialog geöffnet ist
-      expect(find.byKey(const Key('activity_title_input_field')), findsOneWidget);
-      expect(find.byKey(const Key('activity_title_save_button')), findsOneWidget);
+      expect(
+          find.byKey(const Key('activity_title_input_field')), findsOneWidget);
+      expect(
+          find.byKey(const Key('activity_title_save_button')), findsOneWidget);
 
       // Neuen Titel eingeben
       await tester.enterText(
-          find.byKey(const Key('activity_title_input_field')), 'Neuer Titel 5x5m');
+          find.byKey(const Key('activity_title_input_field')),
+          'Neuer Titel 5x5m');
       await tester.tap(find.byKey(const Key('activity_title_save_button')));
       await tester.pumpAndSettle();
 
@@ -98,12 +106,14 @@ void main() {
       expect(find.text('Neuer Titel 5x5m'), findsWidgets);
     });
 
-    testWidgets('2x3 Kern-Metrik-Grid rendert alle 6 Daten-Kacheln vollständig', (tester) async {
+    testWidgets('2x3 Kern-Metrik-Grid rendert alle 6 Daten-Kacheln vollständig',
+        (tester) async {
       final activity = createTestActivity();
       await tester.pumpWidget(createWidgetUnderTest(activity));
       await tester.pumpAndSettle();
 
-      expect(find.byKey(const Key('activity_core_metrics_grid')), findsOneWidget);
+      expect(
+          find.byKey(const Key('activity_core_metrics_grid')), findsOneWidget);
       expect(find.byKey(const Key('metric_card_distance')), findsOneWidget);
       expect(find.byKey(const Key('metric_card_duration')), findsOneWidget);
       expect(find.byKey(const Key('metric_card_power_pace')), findsOneWidget);
@@ -112,30 +122,60 @@ void main() {
       expect(find.byKey(const Key('metric_card_load_if')), findsOneWidget);
 
       // Werte-Prüfung (gescoped auf die jeweiligen Kacheln)
-      expect(find.descendant(of: find.byKey(const Key('metric_card_distance')), matching: find.text('32.0 km')), findsOneWidget);
-      expect(find.descendant(of: find.byKey(const Key('metric_card_duration')), matching: find.text('1:00:00')), findsOneWidget);
-      expect(find.descendant(of: find.byKey(const Key('metric_card_power_pace')), matching: find.text('255 W')), findsOneWidget);
-      expect(find.descendant(of: find.byKey(const Key('metric_card_elevation')), matching: find.text('+340 hm')), findsOneWidget);
-      expect(find.descendant(of: find.byKey(const Key('metric_card_heart_rate')), matching: find.text('148 bpm')), findsOneWidget);
-      expect(find.descendant(of: find.byKey(const Key('metric_card_load_if')), matching: find.text('78')), findsOneWidget);
+      expect(
+          find.descendant(
+              of: find.byKey(const Key('metric_card_distance')),
+              matching: find.text('32.0 km')),
+          findsOneWidget);
+      expect(
+          find.descendant(
+              of: find.byKey(const Key('metric_card_duration')),
+              matching: find.text('1:00:00')),
+          findsOneWidget);
+      expect(
+          find.descendant(
+              of: find.byKey(const Key('metric_card_power_pace')),
+              matching: find.text('255 W')),
+          findsOneWidget);
+      expect(
+          find.descendant(
+              of: find.byKey(const Key('metric_card_elevation')),
+              matching: find.text('+340 hm')),
+          findsOneWidget);
+      expect(
+          find.descendant(
+              of: find.byKey(const Key('metric_card_heart_rate')),
+              matching: find.text('148 bpm')),
+          findsOneWidget);
+      expect(
+          find.descendant(
+              of: find.byKey(const Key('metric_card_load_if')),
+              matching: find.text('78')),
+          findsOneWidget);
     });
 
-    testWidgets('Soll/Ist-Erfüllungs-Banner zeigt Ampel bei geplanter Einheit', (tester) async {
-      final plannedActivity = createTestActivity(plannedWorkoutId: 'workout-plan-999');
+    testWidgets('Soll/Ist-Erfüllungs-Banner zeigt Ampel bei geplanter Einheit',
+        (tester) async {
+      final plannedActivity =
+          createTestActivity(plannedWorkoutId: 'workout-plan-999');
       await tester.pumpWidget(createWidgetUnderTest(plannedActivity));
       await tester.pumpAndSettle();
 
-      expect(find.byKey(const Key('activity_compliance_banner')), findsOneWidget);
+      expect(
+          find.byKey(const Key('activity_compliance_banner')), findsOneWidget);
       expect(find.textContaining('Soll/Ist-Abgleich:'), findsOneWidget);
       expect(find.textContaining('Plan-Treue'), findsOneWidget);
     });
 
-    testWidgets('Soll/Ist-Banner zeigt Freie-Einheit-Status wenn kein Workout verknüpft ist', (tester) async {
+    testWidgets(
+        'Soll/Ist-Banner zeigt Freie-Einheit-Status wenn kein Workout verknüpft ist',
+        (tester) async {
       final freeActivity = createTestActivity(plannedWorkoutId: null);
       await tester.pumpWidget(createWidgetUnderTest(freeActivity));
       await tester.pumpAndSettle();
 
-      expect(find.byKey(const Key('activity_compliance_banner')), findsOneWidget);
+      expect(
+          find.byKey(const Key('activity_compliance_banner')), findsOneWidget);
       expect(find.textContaining('Freie Trainingseinheit'), findsOneWidget);
     });
   });

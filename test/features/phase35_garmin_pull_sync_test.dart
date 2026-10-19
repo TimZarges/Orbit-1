@@ -20,11 +20,13 @@ void main() {
       expect(status.state, GarminConnectionState.connected);
       expect(status.garminUserId, 'garmin_user_test_123');
       expect(status.lastSyncCount, 5);
-      expect(status.lastSyncMessage, '5 Aktivitäten erfolgreich synchronisiert');
+      expect(
+          status.lastSyncMessage, '5 Aktivitäten erfolgreich synchronisiert');
       expect(status.lastSyncAt, isNotNull);
     });
 
-    testWidgets('GarminConnectionScreen zeigt Button "Jetzt synchronisieren (REST-Pull)" im verbundenen Zustand',
+    testWidgets(
+        'GarminConnectionScreen zeigt Button "Jetzt synchronisieren (REST-Pull)" im verbundenen Zustand',
         (WidgetTester tester) async {
       final mockStatus = GarminStatus(
         state: GarminConnectionState.connected,
@@ -37,7 +39,8 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            garminStatusStreamProvider.overrideWith((ref) => Stream.value(mockStatus)),
+            garminStatusStreamProvider
+                .overrideWith((ref) => Stream.value(mockStatus)),
           ],
           child: const MaterialApp(
             home: GarminConnectionScreen(),
@@ -48,7 +51,8 @@ void main() {
 
       expect(find.byKey(const Key('garmin_sync_now_button')), findsOneWidget);
       expect(find.text('Jetzt synchronisieren (REST-Pull)'), findsOneWidget);
-      expect(find.text('Historische Daten anfordern (Garmin Queue)'), findsOneWidget);
+      expect(find.text('Historische Daten anfordern (Garmin Queue)'),
+          findsOneWidget);
     });
   });
 }

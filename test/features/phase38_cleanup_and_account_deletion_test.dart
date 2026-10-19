@@ -33,7 +33,9 @@ class _MockAuthService implements AuthService {
 
 void main() {
   group('DSGVO-Kontolöschung & Galerie-Cleanup (Phase 38.5)', () {
-    testWidgets('PrivacySettingsSheet öffnet Löschdialog und ruft signOut() auf', (tester) async {
+    testWidgets(
+        'PrivacySettingsSheet öffnet Löschdialog und ruft signOut() auf',
+        (tester) async {
       final mockAuth = _MockAuthService();
 
       await tester.pumpWidget(
@@ -62,7 +64,8 @@ void main() {
 
       // 2. Dialog ist sichtbar mit Warnung
       expect(find.text('Konto und Daten löschen?'), findsOneWidget);
-      final confirmButtonFinder = find.byKey(const Key('confirm_delete_account_button'));
+      final confirmButtonFinder =
+          find.byKey(const Key('confirm_delete_account_button'));
       expect(confirmButtonFinder, findsOneWidget);
 
       // 3. Bestätigung antippen

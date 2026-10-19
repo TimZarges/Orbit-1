@@ -3,16 +3,20 @@ import 'package:orbit/core/utils/orbit_date_formatter.dart';
 
 void main() {
   group('OrbitDateFormatter (Phase 38.2)', () {
-    test('formatDate formatiert Datum exakt im deutschen Format DD.MM.YYYY mit führenden Nullen', () {
+    test(
+        'formatDate formatiert Datum exakt im deutschen Format DD.MM.YYYY mit führenden Nullen',
+        () {
       final dt = DateTime(2026, 4, 5, 14, 30);
       expect(OrbitDateFormatter.formatDate(dt), '05.04.2026');
     });
 
     test('formatDateString wandelt ISO-Strings zuverlässig um', () {
       expect(OrbitDateFormatter.formatDateString('2026-10-18'), '18.10.2026');
-      expect(OrbitDateFormatter.formatDateString('2026-03-09T08:15:00Z'), '09.03.2026');
+      expect(OrbitDateFormatter.formatDateString('2026-03-09T08:15:00Z'),
+          '09.03.2026');
       // Ungültiger Fallback
-      expect(OrbitDateFormatter.formatDateString('ungueltiges_datum'), 'ungueltiges_datum');
+      expect(OrbitDateFormatter.formatDateString('ungueltiges_datum'),
+          'ungueltiges_datum');
     });
 
     test('formatTime liefert 24h-Format mit und ohne Suffix', () {
@@ -21,7 +25,8 @@ void main() {
       expect(OrbitDateFormatter.formatTime(dt, withSuffix: false), '19:06');
 
       final morningDt = DateTime(2026, 10, 18, 8, 5);
-      expect(OrbitDateFormatter.formatTime(morningDt, withSuffix: true), '08:05 Uhr');
+      expect(OrbitDateFormatter.formatTime(morningDt, withSuffix: true),
+          '08:05 Uhr');
     });
 
     test('formatDateTime kombiniert Datum und 24h-Uhrzeit', () {
@@ -51,7 +56,8 @@ void main() {
       expect(OrbitDateFormatter.formatRelativeDate(yesterday), 'Gestern');
     });
 
-    test('toIsoDateKey erzeugt sauberen yyyy-MM-dd Schlüssel für Firestore', () {
+    test('toIsoDateKey erzeugt sauberen yyyy-MM-dd Schlüssel für Firestore',
+        () {
       final dt = DateTime(2026, 7, 3);
       expect(OrbitDateFormatter.toIsoDateKey(dt), '2026-07-03');
     });
