@@ -11,7 +11,12 @@ import { setGlobalOptions } from "firebase-functions/v2";
 setGlobalOptions({ region: "europe-west3", enforceAppCheck: false });
 
 // 1. Auth Functions (onCall)
-export { setInitialRole, deleteAccount, exportAccount } from "./auth";
+export {
+  setInitialRole,
+  deleteAccount,
+  exportAccount,
+  verifyBetaUserEmail,
+} from "./auth";
 
 // 2. Coach & Collaboration Functions
 export {

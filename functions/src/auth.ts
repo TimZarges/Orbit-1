@@ -166,3 +166,16 @@ export const exportAccount = onCall(async (request) => {
   };
 });
 
+/**
+ * Setzt den E-Mail-Verifizierungsstatus eines Beta-Nutzers über das Admin SDK
+ * direkt auf `true`, damit Login und Onboarding ohne E-Mail-Loop funktionieren.
+ *
+ * @param uid - Die Firebase Auth UID des Testnutzers.
+ */
+export async function verifyBetaUserEmail(uid: string): Promise<void> {
+  await admin.auth().updateUser(uid, {
+    emailVerified: true,
+  });
+}
+
+

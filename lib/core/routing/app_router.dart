@@ -22,6 +22,7 @@ import '../../features/health/screens/health_cockpit_screen.dart';
 import '../../features/activities/screens/activity_detail_loader.dart';
 import '../../features/coach_link/screens/trainer_athletes_tab_screen.dart';
 import '../../features/auth/screens/email_verification_waiting_screen.dart';
+import '../../features/auth/services/auth_guard_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 /// Globaler Root-Navigator-Key für Dialoge, Overlays und den globalen Bug-Käfer.
@@ -60,7 +61,15 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         return (isLoggingIn || isOnboarding) ? null : '/login';
       }
 
-      // Wenn eingeloggt, prüfe das Onboarding
+      final currentUser = authState.valueOrNull;
+      final isVerifyEmail = state.matchedLocation == '/verify-email';
+
+      // Harte E-Mail-Schranke nur durchsetzen, wenn nicht im Beta-Modus
+      if (currentUser != null && !AuthGuardService.canAccessApp(currentUser)) {
+        return isVerifyEmail ? null : '/verify-email';
+      }
+
+      // Wenn eingeloggt und Zugriff erlaubt, prüfe das Onboarding
       if (isAuth && userDocState.valueOrNull != null) {
         final userData = userDocState.valueOrNull!;
         final hasCompletedOnboarding =
@@ -70,7 +79,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
 
         if (!hasCompletedOnboarding) {
           return isOnboarding ? null : '/onboarding';
-        } else if (isLoggingIn || isOnboarding) {
+        } else if (isLoggingIn || isOnboarding || isVerifyEmail) {
           return '/';
         }
       } else if (isAuth &&

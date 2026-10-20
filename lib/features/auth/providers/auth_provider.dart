@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../services/auth_guard_service.dart';
 
 final firebaseAuthProvider = Provider<FirebaseAuth>((ref) {
   return FirebaseAuth.instance;
@@ -25,9 +26,9 @@ class AuthService {
   Future<void> signUpWithEmail(String email, String password) async {
     final cred = await _auth.createUserWithEmailAndPassword(
         email: email, password: password);
-    // Wir senden direkt eine Verifizierungs-E-Mail
-    if (cred.user != null && !cred.user!.emailVerified) {
-      await cred.user!.sendEmailVerification();
+    // Verifizierungs-E-Mail sicher anstoßen, ohne bei Fehlern abzubrechen
+    if (cred.user != null) {
+      await AuthGuardService.triggerVerificationEmailSafely(cred.user!);
     }
   }
 

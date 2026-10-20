@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/design/app_colors.dart';
 import '../../../core/design/app_typography.dart';
 import '../providers/auth_provider.dart';
+import '../services/auth_guard_service.dart';
 
 /// Wartebildschirm für die E-Mail-Verifikation nach der Registrierung (Phase 36.2).
 ///
@@ -246,6 +247,21 @@ class _EmailVerificationWaitingScreenState
                     ),
                     onPressed: _isResending ? null : _resendVerification,
                   ),
+                  if (AuthGuardService.kBetaAllowUnverifiedEmail) ...[
+                    const SizedBox(height: 12),
+                    TextButton.icon(
+                      key: const Key('verify_email_skip_beta_button'),
+                      icon: const Icon(Icons.arrow_forward, size: 18),
+                      label: const Text('Beta: Vorerst überspringen'),
+                      style: TextButton.styleFrom(
+                        foregroundColor: AppColors.volt,
+                      ),
+                      onPressed: () {
+                        _pollingTimer?.cancel();
+                        context.go('/');
+                      },
+                    ),
+                  ],
                 ],
               ),
             ),

@@ -13,6 +13,7 @@ import '../../../core/widgets/info_term.dart';
 import '../../activities/providers/activity_upload_provider.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../auth/providers/user_provider.dart';
+import '../../auth/services/auth_guard_service.dart';
 import '../../beta_feedback/models/beta_feedback_report.dart';
 import '../../beta_feedback/widgets/beta_bug_reporter_sheet.dart';
 import '../../coach_link/providers/coach_link_provider.dart';
@@ -510,10 +511,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
         ref.invalidate(userDocumentProvider);
         final user = FirebaseAuth.instance.currentUser;
-        if (user != null && !user.emailVerified) {
-          try {
-            await user.sendEmailVerification();
-          } catch (_) {}
+        if (user != null) {
+          // E-Mail-Bestätigung im Hintergrund triggern, ohne den User zu blockieren
+          await AuthGuardService.triggerVerificationEmailSafely(user);
+        }
+
+        if (user != null && !AuthGuardService.canAccessApp(user)) {
           if (mounted) {
             context.go('/verify-email');
           }
