@@ -26,6 +26,26 @@
 
 ## Einträge
 
+### [Phase 43] Schlankes V1.0.0 Onboarding (`V1SimpleOnboardingWizard`), „Profil Einfach“ (`V1SimpleProfileView`), Auth-Flows (Passwort-Reset & E-Mail-Verifikation) · RISIKO-HOCH
+- **Branch / Tag:** `feature/phase-43-onboarding-simple-profile-auth` · `v0.43.0`
+- **Umgesetzte Module & Konsistenz:**
+  - `lib/features/onboarding/widgets/v1_simple_onboarding_wizard.dart` & `lib/features/onboarding/screens/onboarding_screen.dart` (3-Schritt-Onboarding für Athlet & Coach, Sprache DE/EN, Design Hell/Dunkel/System, Wohnland für `dd.mm.yy • 24h`, Triathlon-Auswahl, Datenquellen Garmin/`.fit`, nicht vorangekreuzte DSGVO Art. 9 Checkbox; Bestands-Tests `phase19` & `phase36` über `ReleaseConfig.overrideForTesting(v2: true)` abgesichert).
+  - `lib/features/profile/widgets/v1_simple_profile_view.dart` & `lib/features/profile/screens/profile_screen.dart` („Profil Einfach“ inkl. Triathlon-Badge, Wohnland-Formatvorschau `21.10.26 • 19:54`, Garmin-Status, `.FIT`-Upload & App-Version-/Region-Footer).
+  - `.fit`-Pfad-Konsistenz geprüft: `lib/features/activities/providers/activity_upload_provider.dart`, `functions/src/import/activityParser.ts` und `functions/src/import/garmin/webhook.ts` verwenden einheitlich `users/{uid}/rawActivities/{activityId}.fit` + `rawFilePath`.
+  - `lib/features/auth/screens/login_screen.dart`, `lib/features/auth/screens/email_verification_waiting_screen.dart` & `lib/features/settings/screens/settings_screen.dart` (Clean Professional Light/Dark Theme, DE/EN Passwort-Reset-Dialog `sendPasswordResetEmail`, 60s-Cooldown bei `sendEmailVerification` & `reloadAndCheckEmailVerified`).
+  - Neue Testsuite: `test/phase43_onboarding_simple_profile_and_auth_v1_test.dart`.
+- **Pre-Merge-Gate (`bash scripts/check_phase_ready.sh`):**
+  - `flutter analyze`: `No issues found!` (`0 Errors, 0 Warnings, 0 Infos`)
+  - `npm --prefix functions run build && npm --prefix functions run lint`: `0 Errors`
+  - Deutsche Doku-Kommentar-Prüfung: `100 %` bestanden
+  - `flutter test`: `239/239` Tests bestanden (`All tests passed!`)
+- **Hardware-Verifikation Google Pixel 10 Pro (`58251FDCR00EQ2`):**
+  - Release-APK gebaut (`build/app/outputs/flutter-apk/app-release.apk`, `66.5MB`) und per `adb install -r` installiert (`Success`).
+  - Beweis-Screenshots erstellt & visuell geprüft:
+    - `docs/beta/screenshots/phase43_pixel10_simple_profile_top.png` („Profil Einfach“ Stammdaten, Wohnland `21.10.26 • 19:54`, Triathlon-Chip mit `TriathlonCombinedIcon`)
+    - `docs/beta/screenshots/phase43_pixel10_simple_profile_bottom.png` (`Garmin Connect: Verbunden`, `.FIT-Datei manuell hochladen`, `ORBIT v1.0.0 (Build 1) • Closed Beta`, `Server-Region: Deutschland (Frankfurt am Main)`)
+    - `docs/beta/screenshots/phase43_pixel10_auth_reset_dialog.png` (`Passwort zurücksetzen`-Dialog aus `Einstellungen` -> `Passwort zurücksetzen (E-Mail-Link)`)
+
 ### [Phase 42] Einheitliche COROS-Vorschaukarte (`TrainingPreviewCard`), Echter `.FIT`-Download-Service, Strikte V1.0.0 Heute-Ansicht & Kalender (Woche, Monat, Liste) · RISIKO-HOCH
 - **STOPP-Punkt/Anlass:** Abschluss von Phase 42 (`docs/phases/phase_42.md`) inkl. Live-Hardware-Verifikation auf dem Google Pixel 10 Pro (`58251FDCR00EQ2`).
 - **Entscheidung & Umgesetzte Maßnahmen:**

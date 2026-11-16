@@ -6,6 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/config/release_config.dart';
 import '../../../core/design/app_colors.dart';
 import '../../../core/design/app_typography.dart';
 import '../../../core/error/orbit_error_handler.dart';
@@ -19,6 +20,7 @@ import '../../beta_feedback/widgets/beta_bug_reporter_sheet.dart';
 import '../../coach_link/providers/coach_link_provider.dart';
 import '../../integrations/providers/garmin_provider.dart';
 import '../widgets/triathlon_combined_icon.dart';
+import '../widgets/v1_simple_onboarding_wizard.dart';
 import '../../auth/widgets/password_criteria_checklist.dart';
 
 /// Datenstruktur für den abgeschlossenen 4-Schritte-Onboarding-Assistenten.
@@ -543,6 +545,15 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Im V1.0.0-Standardbetrieb (isV2Enabled == false) wird der schlanke,
+    // modulare V1SimpleOnboardingWizard ohne V2-Schwellenwert-Rechner genutzt.
+    final isV2Enabled = ref.watch(
+      releaseConfigProvider.select((cfg) => cfg.isV2Enabled),
+    );
+    if (!isV2Enabled && widget.onCompleteOverride == null) {
+      return const V1SimpleOnboardingWizard();
+    }
+
     final stepTitles = [
       'Rolle & Profil',
       'Basiswerte & Zonen',

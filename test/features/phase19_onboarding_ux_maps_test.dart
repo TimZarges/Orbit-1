@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:orbit/core/config/release_config.dart';
 import 'package:orbit/core/error/orbit_error_handler.dart';
 import 'package:orbit/features/activities/models/activity_stream.dart';
 import 'package:orbit/features/activities/widgets/telemetry_map_widget.dart';
@@ -12,6 +13,8 @@ void main() {
   group('Phase 19.1 - Guided Mobile-First Onboarding Assistent', () {
     testWidgets('4-Schritte Flow von Rolle bis DSGVO-Abschluss',
         (WidgetTester tester) async {
+      ReleaseConfig.overrideForTesting(v2: true);
+      addTearDown(ReleaseConfig.resetTestingOverrides);
       tester.view.physicalSize = const Size(800, 1200);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() => tester.view.resetPhysicalSize());

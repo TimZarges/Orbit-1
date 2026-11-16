@@ -1,16 +1,30 @@
+/// Datei-Header: `lib/features/auth/screens/login_screen.dart`
+/// Zweck: Anmelde-Bildschirm der ORBIT-Applikation im Clean Professional Design
+/// (Hell & Dunkel) mit vollständiger DE/EN-Lokalisierung, „Passwort vergessen /
+/// zurücksetzen“-Flow (`sendPasswordResetEmail`) und Einstieg ins Onboarding.
+/// Architektur-Einordnung: Präsentationsschicht (`lib/features/auth/screens/`),
+/// nutzt granulare Riverpod-Selektoren (`.select(...)`) (`AGENTS.md` Regel 10).
+library;
+
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/design/app_colors.dart';
 import '../../../core/design/app_typography.dart';
 import '../../beta_feedback/widgets/beta_bug_reporter_sheet.dart';
+import '../../settings/providers/settings_provider.dart';
 import '../providers/auth_provider.dart';
 
-/// Anmelde-Bildschirm der ORBIT-Applikation (Phase 36 Login-First).
+/// Anmelde-Bildschirm der ORBIT-Applikation (Login-First, Clean Professional Design).
 ///
-/// Ermöglicht bestehenden Athleten und Trainern den Login via E-Mail und Passwort,
-/// bietet einen Passwort-Zurücksetzen-Flow per E-Mail sowie den direkten Einstieg
-/// in die Registrierung / das Onboarding für Neukunden.
+/// Was:
+/// - Ermöglicht bestehenden Athleten und Coaches die Anmeldung via E-Mail & Passwort.
+/// - Bietet einen lokalisierten (DE/EN) „Passwort vergessen / zurücksetzen“-Flow
+///   mit E-Mail-Validierung, Ladezustand und verständlichen Fehlermeldungen.
+/// - Bietet den direkten Einstieg in die Registrierung / das Onboarding.
+/// Warum: Vollständig an das Hell-/Dunkel-Theme und die DE/EN-Sprachsteuerung
+/// von Phase 41–43 angebunden.
 class LoginScreen extends ConsumerStatefulWidget {
   /// Erstellt den Anmelde-Bildschirm.
   const LoginScreen({super.key});
@@ -31,13 +45,46 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     super.dispose();
   }
 
-  Future<void> _login() async {
+  /// Übersetzt Firebase-Auth-Fehlercodes verständlich auf Deutsch oder Englisch.
+  String _localizeAuthError(Object error, {required bool isEn}) {
+    if (error is FirebaseAuthException) {
+      switch (error.code) {
+        case 'user-not-found':
+        case 'invalid-credential':
+          return isEn
+              ? 'Invalid email or password.'
+              : 'E-Mail-Adresse oder Passwort ist ungültig.';
+        case 'wrong-password':
+          return isEn ? 'Incorrect password.' : 'Das Passwort ist nicht korrekt.';
+        case 'invalid-email':
+          return isEn
+              ? 'Please enter a valid email address.'
+              : 'Bitte gib eine gültige E-Mail-Adresse ein.';
+        case 'too-many-requests':
+          return isEn
+              ? 'Too many attempts. Please try again later.'
+              : 'Zu viele Versuche. Bitte warte kurz und versuche es erneut.';
+        default:
+          return error.message ?? error.code;
+      }
+    }
+    return error.toString();
+  }
+
+  /// Führt die Anmeldung über [AuthService.signInWithEmail] aus.
+  Future<void> _login({required bool isEn}) async {
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
 
     if (email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Bitte gib E-Mail und Passwort ein.')),
+        SnackBar(
+          content: Text(
+            isEn
+                ? 'Please enter your email and password.'
+                : 'Bitte gib E-Mail und Passwort ein.',
+          ),
+        ),
       );
       return;
     }
@@ -49,8 +96,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Anmeldung fehlgeschlagen: $e'),
-            backgroundColor: AppColors.red,
+            content: Text(
+              isEn
+                  ? 'Sign in failed: ${_localizeAuthError(e, isEn: true)}'
+                  : 'Anmeldung fehlgeschlagen: ${_localizeAuthError(e, isEn: false)}',
+            ),
+            backgroundColor: AppColors.coral,
           ),
         );
       }
@@ -59,127 +110,168 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
   }
 
-  /// Öffnet den „Passwort vergessen?“-Dialog und sendet bei Bestätigung eine Reset-E-Mail.
-  Future<void> _showForgotPasswordDialog() async {
+  /// Öffnet den lokalisierten „Passwort zurücksetzen“-Dialog mit Ladezustand & Fehlerbehandlung.
+  Future<void> _showForgotPasswordDialog({required bool isEn}) async {
     final resetEmailController =
         TextEditingController(text: _emailController.text.trim());
     final formKey = GlobalKey<FormState>();
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
-    final targetEmail = await showDialog<String>(
+    bool isSending = false;
+    String? dialogError;
+
+    await showDialog<void>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF0F172A),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(color: Color(0xFF1E293B)),
-        ),
-        title: const Text(
-          'Passwort zurücksetzen',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
-        content: Form(
-          key: formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Gib deine E-Mail-Adresse ein. Wir senden dir umgehend einen sicheren Link zum Zurücksetzen deines Passworts.',
-                style: TextStyle(color: Colors.white70, fontSize: 13),
+      builder: (ctx) => StatefulBuilder(
+        builder: (dialogContext, setDialogState) {
+          return AlertDialog(
+            backgroundColor:
+                isDark ? AppColors.anthraciteCard : AppColors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+              side: BorderSide(
+                color: isDark ? AppColors.darkSubtleBorder : AppColors.cardBorder,
               ),
-              const SizedBox(height: 16),
-              TextFormField(
-                key: const Key('forgot_password_email_field'),
-                controller: resetEmailController,
-                style: const TextStyle(color: Colors.white),
-                keyboardType: TextInputType.emailAddress,
-                decoration: InputDecoration(
-                  labelText: 'E-Mail-Adresse',
-                  labelStyle: const TextStyle(color: Colors.white70),
-                  prefixIcon:
-                      const Icon(Icons.email_outlined, color: AppColors.volt),
-                  filled: true,
-                  fillColor: const Color(0xFF001F47),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: const BorderSide(color: Color(0xFF1E293B)),
+            ),
+            title: Text(
+              isEn ? 'Reset Password' : 'Passwort zurücksetzen',
+              style: TextStyle(
+                color: isDark ? AppColors.white : AppColors.lightTextPrimary,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            content: Form(
+              key: formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    isEn
+                        ? 'Enter your email address. We will send you a secure link to reset your password.'
+                        : 'Gib deine E-Mail-Adresse ein. Wir senden dir umgehend einen sicheren Link zum Zurücksetzen deines Passworts.',
+                    style: TextStyle(
+                      color: isDark
+                          ? AppColors.textSecondaryDark
+                          : const Color(0xFF475569),
+                      fontSize: 13,
+                    ),
                   ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide:
-                        const BorderSide(color: AppColors.volt, width: 2),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    key: const Key('forgot_password_email_field'),
+                    controller: resetEmailController,
+                    keyboardType: TextInputType.emailAddress,
+                    decoration: InputDecoration(
+                      labelText: isEn ? 'Email Address' : 'E-Mail-Adresse',
+                      prefixIcon: const Icon(Icons.email_outlined),
+                    ),
+                    validator: (val) {
+                      if (val == null ||
+                          val.trim().isEmpty ||
+                          !val.contains('@')) {
+                        return isEn
+                            ? 'Please enter a valid email address'
+                            : 'Bitte gib eine gültige E-Mail-Adresse ein';
+                      }
+                      return null;
+                    },
                   ),
-                ),
-                validator: (val) {
-                  if (val == null || val.trim().isEmpty || !val.contains('@')) {
-                    return 'Bitte gib eine gültige E-Mail-Adresse ein';
-                  }
-                  return null;
-                },
+                  if (dialogError != null) ...[
+                    const SizedBox(height: 10),
+                    Text(
+                      dialogError!,
+                      style: const TextStyle(
+                        color: AppColors.coral,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed:
+                    isSending ? null : () => Navigator.of(ctx).pop(),
+                child: Text(isEn ? 'Cancel' : 'Abbrechen'),
+              ),
+              ElevatedButton(
+                key: const Key('forgot_password_submit_button'),
+                onPressed: isSending
+                    ? null
+                    : () async {
+                        if (!(formKey.currentState?.validate() ?? false)) {
+                          return;
+                        }
+                        final targetEmail = resetEmailController.text.trim();
+                        setDialogState(() {
+                          isSending = true;
+                          dialogError = null;
+                        });
+                        try {
+                          await ref
+                              .read(authServiceProvider)
+                              .resetPassword(targetEmail);
+                          if (!mounted) return;
+                          if (ctx.mounted) Navigator.of(ctx).pop();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                isEn
+                                    ? 'We sent a password reset link to $targetEmail.'
+                                    : 'Wir haben dir einen Link zum Zurücksetzen an $targetEmail gesendet.',
+                              ),
+                              backgroundColor: AppColors.emerald,
+                            ),
+                          );
+                        } catch (e) {
+                          if (ctx.mounted) {
+                            setDialogState(() {
+                              isSending = false;
+                              dialogError = _localizeAuthError(e, isEn: isEn);
+                            });
+                          }
+                        }
+                      },
+                child: isSending
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : Text(
+                        isEn ? 'Send Link' : 'Link senden',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
               ),
             ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Abbrechen',
-                style: TextStyle(color: Colors.white54),),
-          ),
-          ElevatedButton(
-            key: const Key('forgot_password_submit_button'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.volt,
-              foregroundColor: AppColors.navy,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),),
-            ),
-            onPressed: () {
-              if (formKey.currentState?.validate() ?? false) {
-                Navigator.of(ctx).pop(resetEmailController.text.trim());
-              }
-            },
-            child: const Text('Link senden',
-                style: TextStyle(fontWeight: FontWeight.bold),),
-          ),
-        ],
+          );
+        },
       ),
     );
-
-    if (targetEmail != null && targetEmail.isNotEmpty) {
-      try {
-        await ref.read(authServiceProvider).resetPassword(targetEmail);
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                'Wir haben dir einen Link zum Zurücksetzen an $targetEmail gesendet.',
-              ),
-              backgroundColor: AppColors.emerald,
-            ),
-          );
-        }
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('E-Mail konnte nicht gesendet werden: $e'),
-              backgroundColor: AppColors.coral,
-            ),
-          );
-        }
-      }
-    }
   }
 
   @override
   Widget build(BuildContext context) {
+    // Granularer Selektor für die aktive Sprache (DE / EN)
+    final lang = ref.watch(
+      settingsControllerProvider.select((s) => s.languageCode),
+    );
+    final isEn = lang == 'en';
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final primaryText = isDark ? AppColors.white : AppColors.lightTextPrimary;
+    final secondaryText =
+        isDark ? AppColors.textSecondaryDark : const Color(0xFF475569);
+    final accentColor = isDark ? AppColors.volt : AppColors.navy;
+
     return Scaffold(
-      backgroundColor: AppColors.navy,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        title: const Text('Anmelden', style: TextStyle(color: AppColors.white)),
+        title: Text(isEn ? 'Sign In' : 'Anmelden'),
         actions: const [
           BetaBugReportIconButton(),
         ],
@@ -201,7 +293,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       width: 88,
                       height: 88,
                       decoration: BoxDecoration(
-                        color: const Color(0xFF002A5C),
+                        color: isDark
+                            ? AppColors.anthraciteCard
+                            : AppColors.navy,
                         borderRadius: BorderRadius.circular(24),
                         border: Border.all(color: AppColors.volt, width: 2),
                       ),
@@ -229,7 +323,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     key: const Key('login_brand_title'),
                     textAlign: TextAlign.center,
                     style: AppTypography.headline.copyWith(
-                      color: AppColors.white,
+                      color: primaryText,
                       fontSize: 26,
                       fontWeight: FontWeight.w900,
                       letterSpacing: 3.0,
@@ -237,10 +331,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    'High-End Telemetrie & Performance Coaching',
+                    isEn
+                        ? 'Endurance Telemetry & Coaching Platform'
+                        : 'Ausdauer-Telemetrie & Performance-Plattform',
                     textAlign: TextAlign.center,
                     style: AppTypography.bodySmall.copyWith(
-                      color: Colors.white70,
+                      color: secondaryText,
                       fontSize: 13,
                     ),
                   ),
@@ -248,111 +344,70 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   TextField(
                     key: const Key('login_email_field'),
                     controller: _emailController,
-                    style: const TextStyle(color: AppColors.white),
-                    decoration: InputDecoration(
-                      labelText: 'E-Mail-Adresse',
-                      labelStyle: const TextStyle(color: Colors.white70),
-                      prefixIcon: const Icon(Icons.email_outlined,
-                          color: AppColors.volt,),
-                      filled: true,
-                      fillColor: const Color(0xFF002A5C),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide: const BorderSide(color: Color(0xFF003D82)),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide:
-                            const BorderSide(color: AppColors.volt, width: 2),
-                      ),
-                    ),
                     keyboardType: TextInputType.emailAddress,
+                    decoration: InputDecoration(
+                      labelText: isEn ? 'Email Address' : 'E-Mail-Adresse',
+                      prefixIcon: const Icon(Icons.email_outlined),
+                    ),
                   ),
                   const SizedBox(height: 16),
                   TextField(
                     key: const Key('login_password_field'),
                     controller: _passwordController,
-                    style: const TextStyle(color: AppColors.white),
-                    decoration: InputDecoration(
-                      labelText: 'Passwort',
-                      labelStyle: const TextStyle(color: Colors.white70),
-                      prefixIcon:
-                          const Icon(Icons.lock_outline, color: AppColors.volt),
-                      filled: true,
-                      fillColor: const Color(0xFF002A5C),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide: const BorderSide(color: Color(0xFF003D82)),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide:
-                            const BorderSide(color: AppColors.volt, width: 2),
-                      ),
-                    ),
                     obscureText: true,
+                    decoration: InputDecoration(
+                      labelText: isEn ? 'Password' : 'Passwort',
+                      prefixIcon: const Icon(Icons.lock_outline),
+                    ),
                   ),
-                  // Passwort vergessen Button
                   Align(
                     alignment: Alignment.centerRight,
                     child: TextButton(
                       key: const Key('login_forgot_password_button'),
-                      onPressed: _showForgotPasswordDialog,
-                      style:
-                          TextButton.styleFrom(foregroundColor: AppColors.volt),
-                      child: const Text('Passwort vergessen?'),
+                      onPressed: () => _showForgotPasswordDialog(isEn: isEn),
+                      child: Text(
+                        isEn ? 'Forgot password?' : 'Passwort vergessen?',
+                        style: TextStyle(
+                          color: accentColor,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  if (_isLoading)
-                    const Center(
-                      child: CircularProgressIndicator(color: AppColors.volt),
-                    )
-                  else ...[
-                    ElevatedButton(
-                      key: const Key('login_submit_button'),
-                      onPressed: _login,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.volt,
-                        foregroundColor: AppColors.navy,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        elevation: 0,
-                      ),
-                      child: const Text(
-                        'Anmelden',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 14),
-                    OutlinedButton(
-                      key: const Key('login_register_button'),
-                      onPressed: () {
-                        context.go('/onboarding');
-                      },
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: AppColors.volt,
-                        side:
-                            const BorderSide(color: AppColors.volt, width: 1.5),
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                      ),
-                      child: const Text(
-                        'Konto erstellen / Registrieren',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                        ),
+                  const SizedBox(height: 8),
+                  ElevatedButton(
+                    key: const Key('login_submit_button'),
+                    onPressed: _isLoading ? null : () => _login(isEn: isEn),
+                    child: _isLoading
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : Text(
+                            isEn ? 'Sign In' : 'Anmelden',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                  ),
+                  const SizedBox(height: 14),
+                  OutlinedButton.icon(
+                    key: const Key('login_register_button'),
+                    onPressed: () => context.go('/onboarding'),
+                    icon: const Icon(Icons.person_add_alt_1_outlined, size: 18),
+                    label: Text(
+                      isEn
+                          ? 'Create Account / Register'
+                          : 'Konto erstellen / Registrieren',
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                  ],
+                  ),
                 ],
               ),
             ),

@@ -3,11 +3,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/config/app_config.dart';
+import '../../../core/config/release_config.dart';
 import '../../../core/design/app_colors.dart';
 import '../../../core/design/app_typography.dart';
 import '../../beta_feedback/widgets/beta_bug_reporter_sheet.dart';
 import '../../onboarding/widgets/triathlon_combined_icon.dart';
+import '../widgets/v1_simple_profile_view.dart';
 
 /// Athleten- und Benutzerprofil-Bildschirm.
 ///
@@ -187,6 +190,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Im V1.0.0-Standardbetrieb (isV2Enabled == false) wird „Profil Einfach“ gerendert.
+    if (!ReleaseConfig.isV2Enabled) {
+      bool hasProviderScope = true;
+      try {
+        ProviderScope.containerOf(context, listen: false);
+      } catch (_) {
+        hasProviderScope = false;
+      }
+      return hasProviderScope
+          ? const V1SimpleProfileView()
+          : const ProviderScope(child: V1SimpleProfileView());
+    }
+
     String email = '';
     try {
       email = FirebaseAuth.instance.currentUser?.email ?? '';

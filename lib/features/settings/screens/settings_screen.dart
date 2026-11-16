@@ -319,7 +319,7 @@ class SettingsScreen extends ConsumerWidget {
 
           const Divider(),
 
-          // 10. Passwort ändern
+          // 10. Passwort ändern & Passwort zurücksetzen
           ListTile(
             key: const Key('settings_change_password_tile'),
             leading: const Icon(Icons.lock_reset, color: AppColors.volt),
@@ -330,6 +330,23 @@ class SettingsScreen extends ConsumerWidget {
             onTap: () {
               _showChangePasswordDialog(context, ref, lang: lang);
             },
+          ),
+          ListTile(
+            key: const Key('settings_reset_password_email_tile'),
+            leading: const Icon(Icons.mark_email_read_outlined,
+                color: AppColors.volt,),
+            title: Text(
+              isEn
+                  ? 'Reset Password (Email Link)'
+                  : 'Passwort zurücksetzen (E-Mail-Link)',
+            ),
+            subtitle: Text(
+              isEn
+                  ? 'Send a reset link to your email address'
+                  : 'Sicherer Link zum Zurücksetzen an deine E-Mail senden',
+            ),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => _showResetPasswordEmailDialog(context, ref, isEn: isEn),
           ),
 
           const Divider(),
@@ -381,6 +398,99 @@ class SettingsScreen extends ConsumerWidget {
             },
           ),
         ],
+      ),
+    );
+  }
+
+  /// Öffnet den Dialog zum Senden einer Passwort-Zurücksetzen-E-Mail direkt aus den Einstellungen.
+  Future<void> _showResetPasswordEmailDialog(
+    BuildContext context,
+    WidgetRef ref, {
+    required bool isEn,
+  }) async {
+    final emailCtrl = TextEditingController();
+    final formKey = GlobalKey<FormState>();
+    bool isSending = false;
+
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (dialogCtx, setDialogState) => AlertDialog(
+          title: Text(
+            isEn ? 'Reset Password' : 'Passwort zurücksetzen',
+          ),
+          content: Form(
+            key: formKey,
+            child: TextFormField(
+              key: const Key('settings_reset_password_email_field'),
+              controller: emailCtrl,
+              keyboardType: TextInputType.emailAddress,
+              decoration: InputDecoration(
+                labelText: isEn ? 'Email Address' : 'E-Mail-Adresse',
+              ),
+              validator: (val) =>
+                  (val == null || val.trim().isEmpty || !val.contains('@'))
+                      ? (isEn
+                          ? 'Please enter a valid email address'
+                          : 'Bitte gib eine gültige E-Mail-Adresse ein')
+                      : null,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: isSending ? null : () => Navigator.of(ctx).pop(),
+              child: Text(isEn ? 'Cancel' : 'Abbrechen'),
+            ),
+            ElevatedButton(
+              key: const Key('settings_reset_password_submit_button'),
+              onPressed: isSending
+                  ? null
+                  : () async {
+                      if (!(formKey.currentState?.validate() ?? false)) return;
+                      final target = emailCtrl.text.trim();
+                      setDialogState(() => isSending = true);
+                      try {
+                        await ref.read(authServiceProvider).resetPassword(target);
+                        if (!context.mounted) return;
+                        if (ctx.mounted) Navigator.of(ctx).pop();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              isEn
+                                  ? 'Reset link sent to $target.'
+                                  : 'Link zum Zurücksetzen an $target gesendet.',
+                            ),
+                            backgroundColor: AppColors.emerald,
+                          ),
+                        );
+                      } catch (e) {
+                        if (ctx.mounted) {
+                          setDialogState(() => isSending = false);
+                        }
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                isEn
+                                    ? 'Could not send email: $e'
+                                    : 'E-Mail konnte nicht gesendet werden: $e',
+                              ),
+                              backgroundColor: AppColors.coral,
+                            ),
+                          );
+                        }
+                      }
+                    },
+              child: isSending
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : Text(isEn ? 'Send Link' : 'Link senden'),
+            ),
+          ],
+        ),
       ),
     );
   }

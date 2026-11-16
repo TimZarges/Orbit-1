@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:orbit/core/config/release_config.dart';
 import 'package:orbit/core/design/app_colors.dart';
 import 'package:orbit/features/auth/screens/email_verification_waiting_screen.dart';
 import 'package:orbit/features/auth/widgets/password_criteria_checklist.dart';
@@ -108,6 +109,8 @@ void main() {
 
     testWidgets('Onboarding Rolle Athlete vs Coach schaltet Felder um',
         (tester) async {
+      ReleaseConfig.overrideForTesting(v2: true);
+      addTearDown(ReleaseConfig.resetTestingOverrides);
       await tester.pumpWidget(
         const ProviderScope(
           child: MaterialApp(
