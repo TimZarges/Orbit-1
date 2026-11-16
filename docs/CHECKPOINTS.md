@@ -26,6 +26,39 @@
 
 ## Einträge
 
+### [Phase 41] V1.0.0 Scope-Steuerung (`ReleaseConfig`), Clean Professional Design System (Hell & Dunkel), Vollständige Zweisprachigkeit (`DE` & `EN`) & Wohnland-Formatierer (`dd.mm.yy` / `24h`) · RISIKO-MITTEL
+- **STOPP-Punkt/Anlass:** Abschluss von Phase 41 (`docs/phases/phase_41.md`) inkl. Vorarbeiten aus dem Phase-40-Audit und Live-Hardware-Verifikation auf dem Google Pixel 10 Pro (`58251FDCR00EQ2`).
+- **Entscheidung & Umgesetzte Maßnahmen:**
+  1. **`.gitignore` & Dokumentations-Konsistenz (Vorarbeit aus Phase-40-Audit):**
+     - `.gitignore` geprüft: Nur `docs/research/screenshots/` wird ignoriert, offizielle Phasen-Beweis-Screenshots unter `docs/beta/screenshots/` werden sauber versioniert.
+     - `docs/ROADMAP.md` bereinigt und als eindeutiger Verweis auf die verbindliche Single Source of Truth `docs/ROADMAP_V1_TO_V4.md` ausgerichtet; `PROGRESS.md` und `docs/PROGRESS.md` synchronisiert.
+  2. **Intelligente Feature-Steuerung (`lib/core/config/release_config.dart`):**
+     - `ReleaseConfig` und `ReleaseScopeState` (`releaseConfigProvider`) implementiert:
+       - Produktiv-Standard (V1.0.0): `isV2Enabled = false` (blendet Trainings-Detail-Weiterleitung, Zonen-Rechner, Leistungsdiagnostik, Workout-Builder und Chat aus) und `isV3Enabled = false` (blendet die 3 Daily Health Ringe, Readiness-Score, Morgen-Check-in und ML-Analysen aus).
+       - Test-Überschreibung `ReleaseConfig.overrideForTesting({bool? v2, bool? v3})` + `resetTestingOverrides()` implementiert, sodass alle 218 Bestands-Tests sowie die 9 neuen Phase-41-Tests (**227/227 Tests**) zu 100 % grün durchlaufen.
+  3. **Clean Professional Design System – Hell & Dunkel (`lib/core/theme/orbit_professional_theme.dart` & `lib/core/design/app_theme.dart`):**
+     - **Dark Mode:** Tiefer Carbon-Hintergrund (`#0D0F12`), abgesetzte Anthrazit-Karten (`#16181D`), dezente 1px-Rahmen mit 8 % Weiß-Opazität (`0x14FFFFFF`), gestochen scharfe Typografie (`#F8FAFC`).
+     - **Light Mode:** Klarer Alabaster-Hintergrund (`#F4F6F9`), reinweiße Karten (`#FFFFFF`), feine Schiefergrau-Rahmen (`#E2E8F0`), kontrastreiche dunkle Typografie (`#0F172A`).
+     - Sofortiger, ruckelfreier und persistenter Wechsel zwischen **Hell**, **Dunkel** und **System** in `SettingsScreen` & `SettingsController`.
+  4. **Vollständige Zweisprachigkeit (`DE` & `EN`) & `CountryDateTimeFormatter` (`lib/core/utils/country_date_time_formatter.dart`):**
+     - Alle in V1.0.0 sichtbaren Texte, Labels, Buttons und Navigationselemente in `AppStrings` vollständig auf Deutsch (`de`) und Englisch (`en`) lokalisiert und live in den Einstellungen umschaltbar.
+     - `CountryDateTimeFormatter` erstellt: Formatiert gekoppelt an das im Profil gespeicherte Wohnland (`DE`, `AT`, `CH` und weitere EU-Länder) jedes Datum strikt als `dd.mm.yy` (z. B. `21.10.26` / `14.11.26`) und jede Uhrzeit im `24h`-Format (`19:54` / `11:39`).
+- **Nachweise (Evidence-Only gemäß Regel 0, 2 & 9):**
+  - Pre-Merge-Gate (`bash scripts/check_phase_ready.sh`):
+    - `1/5 Prüfe Flutter Analyze`: `[OK] Flutter Analyze: 0 Errors, 0 Warnings, 0 Infos.`
+    - `2/5 Prüfe TypeScript-Build & ESLint in functions/`: `[OK] TypeScript-Build & Linting in functions/: 0 Errors.`
+    - `3/5 Prüfe deutsche Dokumentations-Kommentare`: `[OK] 100 % aller bestehenden und geänderten .dart- und .ts-Produktionsdateien besitzen deutsche Dokumentations-Kommentare.`
+    - `4/5 Führe alle Flutter Unit- und Widget-Tests aus`: `[OK] 227/227 Tests bestanden (inkl. test/phase41_v1_scope_and_l10n_test.dart).`
+    - `5/5 Prüfe Dokumentations-Status`: `[OK] PROGRESS.md ist vorhanden und gepflegt.`
+  - E2E-Hardware-Nachweis auf Google Pixel 10 Pro (`58251FDCR00EQ2`):
+    - Release-APK (`build/app/outputs/flutter-apk/app-release.apk`, 66.2 MB) gebaut und per `adb -s 58251FDCR00EQ2 install -r` installiert (`Success`).
+    - Live-Screenshots unter `docs/beta/screenshots/`:
+      - `phase41_pixel10_v1_today.png` (DE + Dark Mode `#0D0F12` Carbon / `#16181D` Anthrazit, COROS-Karten mit `.FIT`-Button rechts, `dd.mm.yy • 24h`, keine 3 Ringe)
+      - `phase41_pixel10_avatar_menu.png` (V1.0.0 Avatar-Menü ohne V2/V3-Einträge)
+      - `phase41_pixel10_settings_de_dark.png` (Einstellungen DE + Wohnland `dd.mm.yy & 24h`)
+      - `phase41_pixel10_v1_today_en_dark.png` (Today View auf Englisch `EN` im Dark Mode)
+      - `phase41_pixel10_v1_today_en_light.png` (Today View auf Englisch `EN` im Light Mode `#F4F6F9` Alabaster / `#FFFFFF` Karten / `#0F172A` Typografie)
+
 ### [Phase 40] Verankerung Projekt-Roadmap (V1.0.0–V4.0.0), Phasenplan (Phase 40–46) & Verschärfte Code-Qualitäts-Gesetze · RISIKO-HOCH
 - **STOPP-Punkt/Anlass:** Abschluss von Phase 40 (`docs/phases/phase_40.md`): Verbindliche Verankerung der gesamten Produkt-Roadmap (`V1.0.0` bis `V4.0.0`), des detaillierten Phasenplans (`Phase 40` bis `Phase 46` bis zum V1.0.0 Release), der Benchmark-Analyse (`MATS.coach`, `TrainingPeaks`, `Garmin Connect`) sowie der verschärften Regeln für Effizienz, Clean Code und 100 % deutsche Code-Kommentierung im Repository und auf GitHub (`origin/main`).
 - **Entscheidung & Umgesetzte Maßnahmen:**

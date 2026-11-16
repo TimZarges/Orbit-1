@@ -1,53 +1,26 @@
-# ORBIT Roadmap
+# ORBIT Roadmap — Verbindlicher Verweis auf `docs/ROADMAP_V1_TO_V4.md`
 
-> **Alle 17 Phasen (00–16) sind vorab als Phasendateien ausgearbeitet** (`docs/phases/`). Pläne können veralten, deshalb beginnt jede Phase mit einem **Plan-Check** gegen den tatsächlichen Code. Abweichungen werden in der Phasendatei nachgezogen und in `docs/CHECKPOINTS.md` vermerkt. Ist eine Phase zu groß, teile sie mit `/split-phase NN`.
+> [!IMPORTANT]
+> **Einzige verbindliche Quelle (Single Source of Truth):**  
+> Die gesamte Produkt- und Versions-Roadmap von **V1.0.0 bis V4.0.0** sowie der detaillierte Phasenplan von **Phase 40 bis Phase 46** sind verbindlich in **[`docs/ROADMAP_V1_TO_V4.md`](ROADMAP_V1_TO_V4.md)** definiert.  
+> Den aktuellen Abarbeitungsstand aller Phasen findest du in **[`docs/PROGRESS.md`](PROGRESS.md)** (synchron mit [`PROGRESS.md`](../PROGRESS.md) im Hauptverzeichnis) und die Abnahme-Nachweise in **[`docs/CHECKPOINTS.md`](CHECKPOINTS.md)**.
 
-| Nr | Phase | Datei | Baut auf | Risiko | Kernergebnis |
-|---|---|---|---|---|---|
-| 00 | Fundament | `phase-00-foundation.md` | – | mittel | Audit, Struktur, Design-System, Shell, Dev/Prod, CI, Spikes (Chart, Karte) |
-| 01 | Auth, Onboarding, Rollen, Rules | `phase-01-auth-onboarding.md` | 00 | hoch | Login, Rollen sicher, Rules + Tests, Einwilligung, Löschen/Export |
-| 02 | Trainer-Verknüpfung | `phase-02-coach-link.md` | 01 | hoch | Einladung, Freigaben, `coachId`-Modell, Athleten-Kontext |
-| 03 | Profil, Einstellungen, Schwellenwerte | `phase-03-profile-settings.md` | 01, 02 | mittel | Profil, Zonen, Einheiten, Sprache, Erfahrungsstufen, Info-Icons |
-| 04 | Aktivitäts-Import (FIT, Demo) | `phase-04-activity-import.md` | 01–03 | hoch | Upload → Parser → Aktivität + Streams, Demo-Modus, Liste/Detail |
-| 05 | Metrik-Kern | `phase-05-metrics-core.md` | 03, 04 | hoch | NP/TSS/CTL/ATL, Aggregate, Testvektoren, ORBIT Score (vorläufig) |
-| 06 | Garmin-Connector | `phase-06-garmin-connector.md` | 04, 05 | hoch | OAuth, Webhook, Backfill, Mock-Modus |
-| 07 | Health-Daten | `phase-07-health-data.md` | 04–06 | hoch | Schlaf/Ruhepuls/HRV, Tagesform, Freigabe-Logik |
-| 08 | Kalender und Soll-Ist | `phase-08-calendar.md` | 02, 04, 05 | hoch | Planung, Zuordnung, Wochen-/Monats-/Listenansicht |
-| 09 | Workout Builder, Bibliothek | `phase-09-workout-builder.md` | 03, 05, 08 | mittel–hoch | Text-Kurzeingabe + Editor, Profilgrafik, Vorlagen |
-| 10 | Analyse einfach | `phase-10-analysis-simple.md` | 05, 07, 08 | hoch | Ampel, Wochenbelastung, Stufen-Darstellung |
-| 11 | Analyse Cockpit | `phase-11-analysis-cockpit.md` | 04, 05, 10 | hoch | Telemetrie, Scrubbing, Karte, Power-Kurve |
-| 12 | Leistungsdiagnostik | `phase-12-diagnostics.md` | 03, 05, 11 | hoch | Schwellenwert-Vorschläge, geführte Tests, Neuberechnung |
-| 13 | Chat und Push | `phase-13-chat-push.md` | 02, 04 | hoch | Echtzeit-Chat, Anhänge, FCM, geplante Pushes |
-| 14 | Home („Heute") | `phase-14-home.md` | 07, 08, 10, 12, 13 | mittel | Daily Ring, Karten, Prioritätslogik |
-| 15 | Coach-Desktop und Web | `phase-15-coach-desktop.md` | 02, 08–13 | hoch | Dashboard, Raster, Drag & Drop, Massenzuweisung, Web |
-| 16 | Qualität, Datenschutz, Release | `phase-16-release.md` | 00–14 | hoch | Tests, Sicherheit, Datenschutz-Doku, Android-Release |
+---
 
-## Reihenfolge-Logik
-Fundament (00) → Identität und Sicherheit (01) → **Trainer-Beziehung früh** (02), damit alles `athleteId`-fähig ist → Profil/Schwellenwerte (03) → **Daten rein** (04–07) → Planung (08–09) → Analyse (10–12) → Kommunikation (13) → Veredelung (14–16).
+## 1. Kurzübersicht der Versions-Meilensteine (Details in `docs/ROADMAP_V1_TO_V4.md`)
 
-## Zulässige Umstellungen
-- **Chat (13) früher:** braucht nur 02 und 04. Sinnvoll, wenn Athlet-Trainer-Kommunikation Priorität bekommt. Dann Push-Teile für „neues Workout" und „neue Aktivität" später nachziehen.
-- **Garmin (06) später:** Ohne Freigabe laufen 04, 05, 08, 09, 10 und 11 vollständig mit FIT-Upload und Demo-Daten. 06 kann nach hinten wandern, ohne etwas zu blockieren.
-- **Health (07) später:** nur 10 (Tagesform-Karte) und 14 (Home) hängen leicht daran.
-- **Nicht umstellen:** 01 → 02 vor allem anderen, 04 → 05 vor 08/10/11, 05 vor 12.
+| Version | Fokus & Kern-Umfang | Phasen |
+| :--- | :--- | :--- |
+| **V1.0.0** | **Core Launch (Datei- & Kalender-Hub, Garmin-Sync, Athlet-Coach-Brücke & `.FIT`-Download)**<br>• COROS-inspirierte Trainings-Vorschaukarte (nicht klickbar in V1.0.0, rechts direkter `.FIT`-Download-Button statt GPX-Grafik).<br>• Heute-Ansicht zeigt ausschließlich absolviertes Training (+ Schnellzugriff Garmin Sync & Datei-Upload).<br>• Kalender zeigt Training in Woche, Monat und Liste.<br>• Onboarding & Profil „Einfach“ für Athlet & Coach inkl. Triathlon, Hell-/Dunkel-Modus (`#F4F6F9` / `#0D0F12`), Sprache DE & EN, Datum `dd.mm.yy` und 24h-Format nach Wohnland.<br>• Coach-Funktionen: Athleten-Verbindung, eigene Coach-Navigation (*Athleten*, *Kalender*, *Profil/Einstellungen*) & `.FIT`-Download.<br>• Volle DE/EU-Rechtskonformität (DSGVO Art. 9 Opt-In, Art. 17 Kontolöschung In-App & Web, Art. 13/14 Datenschutzerklärung & DDG § 5 Impressum). | **Phasen 40–46** (`v0.40.0` bis `v1.0.0`) |
+| **V2.0.0** | **Profi-Coaching, Visueller Block-Workout-Builder & Analyse Einfach**<br>• MATS-inspirierter 2D Post-Workout-Puck (Wohlbefinden vs. Intensität) & Athleten-Verfügbarkeitsprofile.<br>• Mobiler Klick-Workout-Builder (`#lit`/`#mit`/`#hit` + Ernährungsvorgaben) & Soll/Ist-Erfüllungs-Ampel.<br>• Klickbare Trainingskarten → Basis-Aktivitätsdetail & Wettkampf-Kalender (A/B/C). | Geparkt in `ReleaseConfig.isV2Enabled` |
+| **V3.0.0** | **Wissenschaftliches Telemetrie- & Health-Cockpit**<br>• 1Hz Multi-Stream-Scrubber, NP/Iso-Power, IF, ORBIT Load, VI, EF, Aerobic Decoupling (`Pw:Hr`), Skiba $W'\text{bal}$, MMP Power-Duration-Kurve.<br>• Banister PMC (CTL/ATL/TSB) mit Fitness-Rampenraten (7d, 28d, 90d, 365d).<br>• 3-Ringe Health & Recovery Cockpit, 30d-Baselines ($\mu \pm 1\sigma$), 45s Morgen-Check-in & 2 globale Coach-Modi. | Geparkt in `ReleaseConfig.isV3Enabled` |
+| **V3.1.0 / V4.0.0** | **Team-Ökosystem, Drittanbieter-Connectoren & ORBIT KI-Co-Coach**<br>• Wahoo, Polar, Coros, Zwift, Apple Health, Android Health Connect & strukturierter Workout-Export auf Garmin-Uhren.<br>• Vereins-Boards, Trainingslager, Equipment-Tracking & konversationeller AI Co-Coach. | Ausbaustufe nach V3.0.0 |
 
-## Parallelisierbar (nur mit getrennten Branches und bewusstem Merge)
-Nicht empfohlen im Autopilot. Möglich für dich manuell: 06 (Garmin-Antrag und Wartezeit) parallel zu 08/09 vorbereiten.
+---
 
-## Was vor welcher Phase von dir kommen muss
-| Vor Phase | Von dir |
-|---|---|
-| 00 | Package-ID, Firebase dev/prod (Region `europe-west3`) oder bewusst Emulator-only, Emulator/Gerät, Berechtigungen |
-| 01 | Auth-Anbieter, SHA-Fingerprints, App Check, AV-Vertrag mit Google |
-| 04 | 2–3 eigene, anonymisierte FIT-Dateien |
-| 06 | Garmin-Entwicklerzugang, Secrets, Webhook-URLs, `assetlinks.json` |
-| 11 | Mittelklasse-Android-Gerät für Performance-Messung, ggf. Kartenanbieter-Konto |
-| 13 | FCM aktiv, zwei echte Geräte, ggf. Cloud Scheduler |
-| 15 | Hosting/Domain (optional), Desktop-Browser |
-| 16 | Play-Console, Upload-Key, Datenschutz-Fachperson, Impressum, Domain für Löschseite |
+## 2. Historisches Phasen-Archiv (Phasen 00–39)
 
-## Plan ändern
-1. Änderung in `docs/DECISIONS.md` begründen.
-2. Betroffene Phasendatei anpassen (oder `/split-phase NN`).
-3. Diese Tabelle aktualisieren.
-4. Nie stillschweigend: Abweichungen immer in `docs/CHECKPOINTS.md` vermerken.
+- **Phasen 00–16:** Fundament & Basis-Architektur (`docs/phases/phase-00-foundation.md` bis `phase-16-release.md`).
+- **Phasen 17–24:** Beta-Reparatur, Daten-Pipeline, GoldenCheetah-Formel-Verifikation, Whoop-inspiriertes Health-Cockpit, Web-Plattform & 150-FIT-Stresstest (`docs/phases/phase_17.md` bis `phase_24.md`).
+- **Phasen 25–39:** Autonome E2E-Hardware-Audits auf dem Google Pixel 10 Pro, Garmin Live-OAuth & 20 Webhooks, 100 % deutsche Code-Dokumentation (`docs/phases/phase_25.md` bis `phase_39.md`).
+- **Ab Phase 40:** Siehe [`docs/ROADMAP_V1_TO_V4.md`](ROADMAP_V1_TO_V4.md) und `docs/phases/phase_40.md` ff.

@@ -1,47 +1,92 @@
+/// Datei-Header: `lib/features/settings/screens/settings_screen.dart`
+/// Zweck: Einstellungs- und Präferenz-Bildschirm der ORBIT-Applikation (Phase 41).
+/// Architektur-Einordnung: Präsentationsschicht (`lib/features/settings/screens/`),
+/// nutzt granulare Riverpod-Selektoren (`ref.watch(settingsControllerProvider.select(...))`)
+/// gemäß `AGENTS.md` Regel 10, unterstützt Echtzeit-Wechsel zwischen Deutsch (`de`)
+/// und Englisch (`en`), Hell/Dunkel/System-Modus sowie Wohnland-Auswahl (`dd.mm.yy` & `24h`).
+library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import '../providers/settings_provider.dart';
-import '../models/app_settings.dart';
-import '../widgets/privacy_settings_sheet.dart';
-import '../../auth/providers/auth_provider.dart';
-import '../../beta_feedback/widgets/beta_bug_reporter_sheet.dart';
-import '../../../core/metrics/term_resolver.dart';
+import '../../../core/config/release_config.dart';
 import '../../../core/design/app_colors.dart';
 import '../../../core/localization/app_strings.dart';
+import '../../../core/metrics/term_resolver.dart';
+import '../../../core/utils/country_date_time_formatter.dart';
+import '../../auth/providers/auth_provider.dart';
+import '../../beta_feedback/widgets/beta_bug_reporter_sheet.dart';
+import '../models/app_settings.dart';
+import '../providers/settings_provider.dart';
+import '../widgets/privacy_settings_sheet.dart';
 
 /// Einstellungs- und Präferenz-Bildschirm der ORBIT-Applikation.
 ///
-/// Bietet Konfigurationsmöglichkeiten für Sprache (DE/EN), Maßeinheiten (Metrisch/Imperial),
-/// Erfahrungsstufe (Einsteiger/Fortgeschritten/Pro), Datenschutz- und DSGVO-Exporte,
-/// Account-Aktionen (Logout, Profil löschen) sowie Entwickler-Werkzeuge.
+/// Was: Bietet Konfigurationsmöglichkeiten für Sprache (DE/EN), Wohnland (`dd.mm.yy` & `24h`),
+/// Maßeinheiten (Metrisch/Imperial), Darstellung (Hell/Dunkel/System), Erfahrungsstufe
+/// (in V2/V3), Datenschutz- und DSGVO-Exporte sowie Account-Aktionen (Passwort ändern, Logout).
+/// Warum: Nutzt granulare Riverpod-Selektoren (`select`), um unnötige Widget-Rebuilds
+/// zu vermeiden (`AGENTS.md` Regel 10).
 class SettingsScreen extends ConsumerWidget {
   /// Erstellt den Einstellungs-Bildschirm.
   const SettingsScreen({super.key});
 
+  /// Unterstützte Wohnländer im Dropdown.
+  static const List<String> _selectableCountries = [
+    'DE',
+    'AT',
+    'CH',
+    'LU',
+    'NL',
+    'BE',
+    'FR',
+    'IT',
+    'ES',
+    'GB',
+  ];
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final settings = ref.watch(settingsControllerProvider);
+    // Granulare Selektoren gemäß Effizienz-Gebot (AGENTS.md Regel 10)
+    final lang = ref.watch(
+      settingsControllerProvider.select((s) => s.languageCode),
+    );
+    final countryCode = ref.watch(
+      settingsControllerProvider.select((s) => s.countryCode),
+    );
+    final measurementSystem = ref.watch(
+      settingsControllerProvider.select((s) => s.measurementSystem),
+    );
+    final themeMode = ref.watch(
+      settingsControllerProvider.select((s) => s.themeMode),
+    );
+    final experienceLevel = ref.watch(
+      settingsControllerProvider.select((s) => s.experienceLevel),
+    );
+    final isV2Enabled = ref.watch(
+      releaseConfigProvider.select((cfg) => cfg.isV2Enabled),
+    );
+
+    final isEn = lang == 'en';
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Einstellungen'),
+        title: Text(AppStrings.navSettings(lang: lang)),
         actions: const [
           BetaBugReportIconButton(),
         ],
       ),
       body: ListView(
         children: [
-          // Sprache
+          // 1. Sprache (DE & EN)
           ListTile(
+            key: const Key('settings_language_tile'),
             leading: const Icon(Icons.language),
-            title: const Text('Sprache'),
-            subtitle:
-                Text(settings.languageCode == 'de' ? 'Deutsch' : 'English'),
+            title: Text(AppStrings.settingsLanguageTitle(lang: lang)),
+            subtitle: Text(isEn ? 'English' : 'Deutsch'),
             trailing: DropdownButton<String>(
-              value: settings.languageCode,
+              key: const Key('settings_language_dropdown'),
+              value: lang,
               items: const [
                 DropdownMenuItem(value: 'de', child: Text('DE')),
                 DropdownMenuItem(value: 'en', child: Text('EN')),
@@ -56,23 +101,68 @@ class SettingsScreen extends ConsumerWidget {
             ),
           ),
 
-          // Einheiten
+          // 2. Wohnland (steuert dd.mm.yy & 24h-Uhrzeitformat)
           ListTile(
-            leading: const Icon(Icons.straighten),
-            title: const Text('Einheiten'),
+            key: const Key('settings_country_tile'),
+            leading: const Icon(Icons.public),
+            title: Text(AppStrings.settingsCountryTitle(lang: lang)),
             subtitle: Text(
-                AppStrings.measurementSystemLabel(settings.measurementSystem),),
+              '${CountryDateTimeFormatter.countryLabel(countryCode, lang: lang)} • '
+              '${CountryDateTimeFormatter.formatDateTime(DateTime(2026, 10, 21, 19, 54), countryCode: countryCode)}',
+            ),
+            trailing: DropdownButton<String>(
+              key: const Key('settings_country_dropdown'),
+              value: _selectableCountries.contains(countryCode)
+                  ? countryCode
+                  : 'DE',
+              items: _selectableCountries
+                  .map(
+                    (code) => DropdownMenuItem<String>(
+                      value: code,
+                      child: Text(code),
+                    ),
+                  )
+                  .toList(),
+              onChanged: (val) {
+                if (val != null) {
+                  ref
+                      .read(settingsControllerProvider.notifier)
+                      .setCountryCode(val);
+                }
+              },
+            ),
+          ),
+
+          // 3. Einheiten (Metrisch / Imperial)
+          ListTile(
+            key: const Key('settings_units_tile'),
+            leading: const Icon(Icons.straighten),
+            title: Text(AppStrings.settingsUnitsTitle(lang: lang)),
+            subtitle: Text(
+              AppStrings.measurementSystemLabel(measurementSystem, lang: lang),
+            ),
             trailing: DropdownButton<MeasurementSystem>(
-              value: settings.measurementSystem,
+              key: const Key('settings_units_dropdown'),
+              value: measurementSystem,
               items: [
                 DropdownMenuItem(
-                    value: MeasurementSystem.metric,
-                    child: Text(AppStrings.measurementSystemLabel(
-                        MeasurementSystem.metric,),),),
+                  value: MeasurementSystem.metric,
+                  child: Text(
+                    AppStrings.measurementSystemLabel(
+                      MeasurementSystem.metric,
+                      lang: lang,
+                    ),
+                  ),
+                ),
                 DropdownMenuItem(
-                    value: MeasurementSystem.imperial,
-                    child: Text(AppStrings.measurementSystemLabel(
-                        MeasurementSystem.imperial,),),),
+                  value: MeasurementSystem.imperial,
+                  child: Text(
+                    AppStrings.measurementSystemLabel(
+                      MeasurementSystem.imperial,
+                      lang: lang,
+                    ),
+                  ),
+                ),
               ],
               onChanged: (val) {
                 if (val != null) {
@@ -84,23 +174,34 @@ class SettingsScreen extends ConsumerWidget {
             ),
           ),
 
-          // Theme
+          // 4. Darstellung (Hell / Dunkel / System)
           ListTile(
+            key: const Key('settings_theme_tile'),
             leading: const Icon(Icons.brightness_6),
-            title: const Text('Darstellung'),
-            subtitle: Text(AppStrings.themeModeLabel(settings.themeMode)),
+            title: Text(AppStrings.settingsThemeTitle(lang: lang)),
+            subtitle: Text(AppStrings.themeModeLabel(themeMode, lang: lang)),
             trailing: DropdownButton<ThemeMode>(
-              value: settings.themeMode,
+              key: const Key('settings_theme_dropdown'),
+              value: themeMode,
               items: [
                 DropdownMenuItem(
-                    value: ThemeMode.system,
-                    child: Text(AppStrings.themeModeLabel(ThemeMode.system)),),
+                  value: ThemeMode.system,
+                  child: Text(
+                    AppStrings.themeModeLabel(ThemeMode.system, lang: lang),
+                  ),
+                ),
                 DropdownMenuItem(
-                    value: ThemeMode.light,
-                    child: Text(AppStrings.themeModeLabel(ThemeMode.light)),),
+                  value: ThemeMode.light,
+                  child: Text(
+                    AppStrings.themeModeLabel(ThemeMode.light, lang: lang),
+                  ),
+                ),
                 DropdownMenuItem(
-                    value: ThemeMode.dark,
-                    child: Text(AppStrings.themeModeLabel(ThemeMode.dark)),),
+                  value: ThemeMode.dark,
+                  child: Text(
+                    AppStrings.themeModeLabel(ThemeMode.dark, lang: lang),
+                  ),
+                ),
               ],
               onChanged: (val) {
                 if (val != null) {
@@ -112,55 +213,63 @@ class SettingsScreen extends ConsumerWidget {
             ),
           ),
 
-          // Erfahrungsstufe
-          ListTile(
-            leading: const Icon(Icons.school),
-            title: const Text('Erfahrungsstufe'),
-            subtitle:
-                Text(AppStrings.experienceLevelLabel(settings.experienceLevel)),
-            trailing: DropdownButton<ExperienceLevel>(
-              value: settings.experienceLevel,
-              items: [
-                DropdownMenuItem(
+          // 5. Erfahrungsstufe (In V1.0.0 fest auf "Einfach", Auswahl ab V2.0.0 aktiv)
+          if (isV2Enabled)
+            ListTile(
+              key: const Key('settings_experience_tile'),
+              leading: const Icon(Icons.school),
+              title: Text(AppStrings.settingsExperienceTitle(lang: lang)),
+              subtitle: Text(
+                AppStrings.experienceLevelLabel(experienceLevel, lang: lang),
+              ),
+              trailing: DropdownButton<ExperienceLevel>(
+                value: experienceLevel,
+                items: [
+                  DropdownMenuItem(
                     value: ExperienceLevel.beginner,
-                    child: Text(AppStrings.experienceLevelLabel(
-                        ExperienceLevel.beginner,),),),
-                DropdownMenuItem(
+                    child: Text(
+                      AppStrings.experienceLevelLabel(
+                        ExperienceLevel.beginner,
+                        lang: lang,
+                      ),
+                    ),
+                  ),
+                  DropdownMenuItem(
                     value: ExperienceLevel.advanced,
-                    child: Text(AppStrings.experienceLevelLabel(
-                        ExperienceLevel.advanced,),),),
-                DropdownMenuItem(
+                    child: Text(
+                      AppStrings.experienceLevelLabel(
+                        ExperienceLevel.advanced,
+                        lang: lang,
+                      ),
+                    ),
+                  ),
+                  DropdownMenuItem(
                     value: ExperienceLevel.expert,
-                    child: Text(AppStrings.experienceLevelLabel(
-                        ExperienceLevel.expert,),),),
-              ],
-              onChanged: (val) {
-                if (val != null) {
-                  ref
-                      .read(settingsControllerProvider.notifier)
-                      .setExperienceLevel(val);
-                  final uid = FirebaseAuth.instance.currentUser?.uid;
-                  if (uid != null) {
-                    FirebaseFirestore.instance
-                        .collection('users')
-                        .doc(uid)
-                        .set({
-                      'settings': {'experienceLevel': val.name},
-                      'profile': {'experienceLevel': val.name.toUpperCase()},
-                    }, SetOptions(merge: true),).catchError((_) {});
+                    child: Text(
+                      AppStrings.experienceLevelLabel(
+                        ExperienceLevel.expert,
+                        lang: lang,
+                      ),
+                    ),
+                  ),
+                ],
+                onChanged: (val) {
+                  if (val != null) {
+                    ref
+                        .read(settingsControllerProvider.notifier)
+                        .setExperienceLevel(val);
                   }
-                }
-              },
+                },
+              ),
             ),
-          ),
 
           const Divider(),
 
-          // Externe Verbindungen
+          // 6. Externe Verbindungen (Garmin)
           ListTile(
             leading: const Icon(Icons.sync_alt),
-            title: const Text('Verbindungen (Garmin)'),
-            subtitle: const Text('Garmin Connect verknüpfen oder verwalten'),
+            title: Text(AppStrings.settingsGarminTitle(lang: lang)),
+            subtitle: Text(AppStrings.settingsGarminSubtitle(lang: lang)),
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
               context.go('/settings/garmin');
@@ -169,12 +278,11 @@ class SettingsScreen extends ConsumerWidget {
 
           const Divider(),
 
-          // Datenschutz
+          // 7. Datenschutz (DSGVO Art. 9, 13/14, 17)
           ListTile(
             leading: const Icon(Icons.privacy_tip),
-            title: const Text('Datenschutz'),
-            subtitle:
-                const Text('Gesundheitsdaten widerrufen, Datenexport, DSGVO'),
+            title: Text(AppStrings.settingsPrivacyTitle(lang: lang)),
+            subtitle: Text(AppStrings.settingsPrivacySubtitle(lang: lang)),
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
               PrivacySettingsSheet.show(context);
@@ -183,13 +291,12 @@ class SettingsScreen extends ConsumerWidget {
 
           const Divider(),
 
-          // Feedback & Bug melden
+          // 8. Fehler melden & Verbesserung vorschlagen
           ListTile(
             leading:
                 const Icon(Icons.bug_report_outlined, color: AppColors.volt),
-            title: const Text('Fehler melden & Verbesserung vorschlagen'),
-            subtitle:
-                const Text('Direktes Feedback an das ORBIT-Entwicklerteam'),
+            title: Text(AppStrings.settingsBugReportTitle(lang: lang)),
+            subtitle: Text(AppStrings.settingsBugReportSubtitle(lang: lang)),
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
               showBetaBugReporterSheet(context);
@@ -198,13 +305,12 @@ class SettingsScreen extends ConsumerWidget {
 
           const Divider(),
 
-          // Meine gemeldeten Tickets (Phase 38.4)
+          // 9. Meine gemeldeten Tickets
           ListTile(
             key: const Key('settings_my_feedback_tile'),
             leading: const Icon(Icons.inbox_outlined, color: AppColors.volt),
-            title: const Text('Meine gemeldeten Tickets'),
-            subtitle:
-                const Text('Status deiner Bug-Reports und Feedback-Vorschläge'),
+            title: Text(AppStrings.navMyFeedback(lang: lang)),
+            subtitle: Text(AppStrings.settingsMyFeedbackSubtitle(lang: lang)),
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
               context.push('/my-feedback');
@@ -213,52 +319,56 @@ class SettingsScreen extends ConsumerWidget {
 
           const Divider(),
 
-          // Passwort ändern (Phase 36.1)
+          // 10. Passwort ändern
           ListTile(
             key: const Key('settings_change_password_tile'),
             leading: const Icon(Icons.lock_reset, color: AppColors.volt),
-            title: const Text('Passwort ändern'),
+            title: Text(AppStrings.settingsChangePasswordTitle(lang: lang)),
             subtitle:
-                const Text('Sichere Aktualisierung deines Login-Passworts'),
+                Text(AppStrings.settingsChangePasswordSubtitle(lang: lang)),
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
-              _showChangePasswordDialog(context, ref);
+              _showChangePasswordDialog(context, ref, lang: lang);
             },
           ),
 
           const Divider(),
 
-          // Abmelden
+          // 11. Abmelden
           ListTile(
+            key: const Key('settings_logout_tile'),
             leading: const Icon(Icons.logout, color: Colors.redAccent),
-            title: const Text(
-              'Abmelden',
-              style: TextStyle(
+            title: Text(
+              AppStrings.navLogout(lang: lang),
+              style: const TextStyle(
                 color: Colors.redAccent,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            subtitle: const Text('Aus diesem Konto abmelden'),
+            subtitle: Text(AppStrings.settingsLogoutSubtitle(lang: lang)),
             onTap: () async {
               final confirm = await showDialog<bool>(
                 context: context,
                 builder: (ctx) => AlertDialog(
-                  title: const Text('Abmelden?'),
-                  content: const Text(
-                      'Möchtest du dich wirklich von ORBIT abmelden?',),
+                  title: Text(isEn ? 'Sign Out?' : 'Abmelden?'),
+                  content: Text(
+                    isEn
+                        ? 'Do you really want to sign out of ORBIT?'
+                        : 'Möchtest du dich wirklich von ORBIT abmelden?',
+                  ),
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.of(ctx).pop(false),
-                      child: const Text('Abbrechen'),
+                      child: Text(isEn ? 'Cancel' : 'Abbrechen'),
                     ),
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.redAccent,
                       ),
                       onPressed: () => Navigator.of(ctx).pop(true),
-                      child: const Text(
-                        'Abmelden',
-                        style: TextStyle(color: Colors.white),
+                      child: Text(
+                        AppStrings.navLogout(lang: lang),
+                        style: const TextStyle(color: Colors.white),
                       ),
                     ),
                   ],
@@ -276,8 +386,17 @@ class SettingsScreen extends ConsumerWidget {
   }
 
   /// Öffnet den Dialog zur Änderung des Passworts mit Live-Validierungs-Checkliste.
+  ///
+  /// [context]: Aktueller BuildContext.
+  /// [ref]: Riverpod WidgetRef.
+  /// [lang]: Aktiver Sprachcode (`'de'` oder `'en'`).
   Future<void> _showChangePasswordDialog(
-      BuildContext context, WidgetRef ref,) async {
+    BuildContext context,
+    WidgetRef ref, {
+    String lang = 'de',
+  }) async {
+    // Initialisiert Controller und Form-Key für den Passwort-Dialog
+    final isEn = lang == 'en';
     final oldPwController = TextEditingController();
     final newPwController = TextEditingController();
     final confirmPwController = TextEditingController();
@@ -302,15 +421,17 @@ class SettingsScreen extends ConsumerWidget {
               matchesConfirm;
 
           return AlertDialog(
-            backgroundColor: const Color(0xFF0F172A),
+            backgroundColor: AppColors.anthraciteCard,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
-              side: const BorderSide(color: Color(0xFF1E293B)),
+              side: const BorderSide(color: AppColors.darkSubtleBorder),
             ),
-            title: const Text(
-              'Passwort ändern',
-              style:
-                  TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+            title: Text(
+              AppStrings.settingsChangePasswordTitle(lang: lang),
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             content: SingleChildScrollView(
               child: Form(
@@ -325,16 +446,19 @@ class SettingsScreen extends ConsumerWidget {
                       obscureText: true,
                       style: const TextStyle(color: Colors.white),
                       decoration: InputDecoration(
-                        labelText: 'Aktuelles Passwort',
+                        labelText:
+                            isEn ? 'Current password' : 'Aktuelles Passwort',
                         labelStyle: const TextStyle(color: Colors.white70),
                         filled: true,
-                        fillColor: const Color(0xFF001F47),
+                        fillColor: AppColors.carbonDark,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
                       ),
                       validator: (val) => (val == null || val.isEmpty)
-                          ? 'Bitte aktuelles Passwort eingeben'
+                          ? (isEn
+                              ? 'Please enter your current password'
+                              : 'Bitte aktuelles Passwort eingeben')
                           : null,
                     ),
                     const SizedBox(height: 12),
@@ -345,10 +469,10 @@ class SettingsScreen extends ConsumerWidget {
                       style: const TextStyle(color: Colors.white),
                       onChanged: (_) => setDialogState(() {}),
                       decoration: InputDecoration(
-                        labelText: 'Neues Passwort',
+                        labelText: isEn ? 'New password' : 'Neues Passwort',
                         labelStyle: const TextStyle(color: Colors.white70),
                         filled: true,
-                        fillColor: const Color(0xFF001F47),
+                        fillColor: AppColors.carbonDark,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
@@ -362,25 +486,44 @@ class SettingsScreen extends ConsumerWidget {
                       style: const TextStyle(color: Colors.white),
                       onChanged: (_) => setDialogState(() {}),
                       decoration: InputDecoration(
-                        labelText: 'Neues Passwort bestätigen',
+                        labelText: isEn
+                            ? 'Confirm new password'
+                            : 'Neues Passwort bestätigen',
                         labelStyle: const TextStyle(color: Colors.white70),
                         filled: true,
-                        fillColor: const Color(0xFF001F47),
+                        fillColor: AppColors.carbonDark,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
                       ),
                     ),
                     const SizedBox(height: 14),
-                    _buildCriterion(hasMinLength, 'Mindestens 8 Zeichen'),
                     _buildCriterion(
-                        hasUpper, 'Mindestens 1 Großbuchstabe (A-Z)',),
+                      hasMinLength,
+                      isEn ? 'At least 8 characters' : 'Mindestens 8 Zeichen',
+                    ),
                     _buildCriterion(
-                        hasLower, 'Mindestens 1 Kleinbuchstabe (a-z)',),
-                    _buildCriterion(hasDigitOrSpecial,
-                        'Mindestens 1 Zahl oder Sonderzeichen',),
+                      hasUpper,
+                      isEn
+                          ? 'At least 1 uppercase letter (A-Z)'
+                          : 'Mindestens 1 Großbuchstabe (A-Z)',
+                    ),
                     _buildCriterion(
-                        matchesConfirm, 'Passwörter stimmen überein',),
+                      hasLower,
+                      isEn
+                          ? 'At least 1 lowercase letter (a-z)'
+                          : 'Mindestens 1 Kleinbuchstabe (a-z)',
+                    ),
+                    _buildCriterion(
+                      hasDigitOrSpecial,
+                      isEn
+                          ? 'At least 1 digit or special character'
+                          : 'Mindestens 1 Zahl oder Sonderzeichen',
+                    ),
+                    _buildCriterion(
+                      matchesConfirm,
+                      isEn ? 'Passwords match' : 'Passwörter stimmen überein',
+                    ),
                   ],
                 ),
               ),
@@ -388,8 +531,10 @@ class SettingsScreen extends ConsumerWidget {
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(ctx).pop(),
-                child: const Text('Abbrechen',
-                    style: TextStyle(color: Colors.white54),),
+                child: Text(
+                  isEn ? 'Cancel' : 'Abbrechen',
+                  style: const TextStyle(color: Colors.white54),
+                ),
               ),
               ElevatedButton(
                 key: const Key('change_password_save_button'),
@@ -409,9 +554,12 @@ class SettingsScreen extends ConsumerWidget {
                             if (context.mounted) {
                               Navigator.of(ctx).pop();
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
+                                SnackBar(
                                   content: Text(
-                                      'Passwort erfolgreich aktualisiert.',),
+                                    isEn
+                                        ? 'Password updated successfully.'
+                                        : 'Passwort erfolgreich aktualisiert.',
+                                  ),
                                   backgroundColor: AppColors.emerald,
                                 ),
                               );
@@ -421,7 +569,10 @@ class SettingsScreen extends ConsumerWidget {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
                                   content: Text(
-                                      'Fehler beim Ändern des Passworts: $e',),
+                                    isEn
+                                        ? 'Failed to change password: $e'
+                                        : 'Fehler beim Ändern des Passworts: $e',
+                                  ),
                                   backgroundColor: AppColors.coral,
                                 ),
                               );
@@ -430,8 +581,10 @@ class SettingsScreen extends ConsumerWidget {
                         }
                       }
                     : null,
-                child: const Text('Speichern',
-                    style: TextStyle(fontWeight: FontWeight.bold),),
+                child: Text(
+                  isEn ? 'Save' : 'Speichern',
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
               ),
             ],
           );
@@ -440,6 +593,7 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
+  /// Rendert eine einzelne Kriterien-Zeile innerhalb des Passwort-Dialogs.
   Widget _buildCriterion(bool satisfied, String text) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2.0),

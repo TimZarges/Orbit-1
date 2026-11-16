@@ -1,88 +1,132 @@
+/// Datei-Header: `lib/features/activities/screens/today_tab_screen.dart`
+/// Zweck: Der Haupt-Tab „Heute" / „Today" für Athleten mit striktem V1.0.0-Scope-Gating
+/// (`ReleaseConfig`) sowie voller V2/V3-Kompatibilität.
+/// Architektur-Einordnung: Präsentationsschicht (`lib/features/activities/screens/`),
+/// nutzt `ListView.builder`, `const`-Konstruktoren und granulare Riverpod-Selektoren
+/// gemäß `AGENTS.md` Regel 10.
+library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import '../../../core/config/release_config.dart';
 import '../../../core/design/app_colors.dart';
-import '../../../core/design/app_typography.dart';
 import '../../../core/design/app_spacing.dart';
+import '../../../core/design/app_typography.dart';
 import '../../../core/error/orbit_error_handler.dart';
+import '../../../core/localization/app_strings.dart';
 import '../../../core/metrics/term_resolver.dart';
-import '../../settings/providers/settings_provider.dart';
+import '../../analysis/widgets/form_traffic_light_card.dart';
 import '../../beta_feedback/models/beta_feedback_report.dart';
 import '../../beta_feedback/widgets/beta_bug_reporter_sheet.dart';
-
-import '../../coach_link/providers/athlete_context_provider.dart';
-import '../../health/widgets/readiness_card.dart';
-import '../../health/screens/health_cockpit_screen.dart';
-import '../../analysis/widgets/form_traffic_light_card.dart';
 import '../../calendar/widgets/workout_detail_sheet.dart';
-import '../../diagnostics/screens/diagnostics_screen.dart';
 import '../../chat/screens/chat_list_screen.dart';
+import '../../coach_link/providers/athlete_context_provider.dart';
+import '../../diagnostics/screens/diagnostics_screen.dart';
+import '../../health/screens/health_cockpit_screen.dart';
+import '../../health/widgets/readiness_card.dart';
+import '../../home/domain/home_card_resolver.dart';
+import '../../home/models/home_dashboard_data.dart';
+import '../../home/providers/home_dashboard_provider.dart';
+import '../../home/widgets/edit_race_goal_sheet.dart';
+import '../../home/widgets/home_action_banner.dart';
+import '../../home/widgets/home_hero_card.dart';
+import '../../home/widgets/home_recent_activity_card.dart';
+import '../../home/widgets/race_countdown_card.dart';
+import '../../settings/providers/settings_provider.dart';
+import '../models/activity.dart';
+import '../providers/activities_provider.dart';
 import '../providers/activity_upload_provider.dart';
 import 'activity_detail_screen.dart';
 
-import '../../home/models/home_dashboard_data.dart';
-import '../../home/domain/home_card_resolver.dart';
-import '../../home/providers/home_dashboard_provider.dart';
-import '../../home/widgets/home_hero_card.dart';
-import '../../home/widgets/home_action_banner.dart';
-import '../../home/widgets/race_countdown_card.dart';
-import '../../home/widgets/home_recent_activity_card.dart';
-import '../../home/widgets/edit_race_goal_sheet.dart';
-
 /// Der Haupt-Tab „Heute" (Home-Dashboard) für Athleten.
 ///
-/// Bietet ein ruhiges, priorisiertes Dashboard:
-/// 1. Action-Banner (bei dringenden To-Dos wie neuen Schwellenwerten oder Trainer-Nachrichten)
-/// 2. Zentrale Navy Hero-Karte mit Daily Ring (Volt) und heutigem Trainingsziel
-/// 3. Saisonziel-Countdown mit Bearbeitungsmöglichkeit
-/// 4. Physiologische Form-Ampel & Erholungsstatus
-/// 5. Letzte absolvierte Trainingseinheit mit Direktzugriff auf das Analyse-Cockpit
+/// Was:
+/// - Im V1.0.0-Standardbetrieb (`ReleaseConfig.isStrictV1 == true`):
+///   - Zeigt ausschließlich **absolviertes Training** (COROS-Vorschaukarten, nicht klickbar,
+///     rechts direkter `.FIT`-Download-Button) sowie oben den **Schnellzugriff auf Garmin Sync
+///     & Datei-Upload** (`.fit`, `.tcx`, `.gpx`).
+///   - Blendet die 3 Daily Health Ringe (`HomeHeroCard`), den Readiness-Score (`ReadinessCard`),
+///     die Form-Ampel und den Wettkampf-Countdown strikt aus.
+/// - Im V2/V3-Modus (`ReleaseConfig.isV2Enabled || ReleaseConfig.isV3Enabled`):
+///   - Rendert das erweiterte Cockpit inkl. 3 Ringe, Form-Ampel, Action-Banner und Saisonziel.
+/// Warum: Setzt die verbindlichen V1.0.0-Vorgaben aus `docs/ROADMAP_V1_TO_V4.md` um, ohne
+/// bestehenden V2/V3-Code zu löschen.
 class TodayTabScreen extends ConsumerWidget {
+  /// Erstellt den `TodayTabScreen`.
   const TodayTabScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Granulare Riverpod-Selektoren gemäß Effizienz-Gebot (AGENTS.md Regel 10)
     final athleteId = ref.watch(currentAthleteIdProvider);
     final homeDataAsync = ref.watch(homeDashboardProvider(athleteId));
     final uploadState = ref.watch(activityUploadProvider);
+    final lang = ref.watch(
+      settingsControllerProvider.select((s) => s.languageCode),
+    );
+    final isV2Enabled = ref.watch(
+      releaseConfigProvider.select((cfg) => cfg.isV2Enabled),
+    );
+    final isV3Enabled = ref.watch(
+      releaseConfigProvider.select((cfg) => cfg.isV3Enabled),
+    );
+
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: AppColors.lightBackground,
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: RefreshIndicator(
-        color: AppColors.navy,
-        backgroundColor: AppColors.white,
+        color: isDark ? AppColors.volt : AppColors.navy,
+        backgroundColor: isDark ? AppColors.anthraciteCard : AppColors.white,
         onRefresh: () async {
           ref.invalidate(homeDashboardProvider(athleteId));
+          ref.invalidate(activitiesProvider);
           await ref.read(homeDashboardProvider(athleteId).future);
         },
         child: homeDataAsync.when(
-          data: (data) => _buildDashboardContent(
-            context,
-            ref,
-            athleteId,
-            data,
-            uploadState,
-          ),
+          data: (data) => (!isV2Enabled && !isV3Enabled)
+              ? _buildV1CompletedTrainingView(
+                  context,
+                  ref,
+                  athleteId: athleteId,
+                  data: data,
+                  uploadState: uploadState,
+                  lang: lang,
+                )
+              : _buildDashboardContent(
+                  context,
+                  ref,
+                  athleteId,
+                  data,
+                  uploadState,
+                  lang: lang,
+                  isV2Enabled: isV2Enabled,
+                  isV3Enabled: isV3Enabled,
+                ),
           loading: () => _buildLoadingSkeleton(context),
           error: (error, stack) =>
               _buildErrorState(context, ref, athleteId, error),
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        tooltip: 'Aktivitäten importieren (.fit, .tcx, .gpx)',
-        backgroundColor: AppColors.navy,
-        foregroundColor: AppColors.volt,
+        key: const Key('today_fab_upload_button'),
+        tooltip: AppStrings.fileUploadAction(lang: lang),
+        backgroundColor: isDark ? AppColors.volt : AppColors.navy,
+        foregroundColor: isDark ? AppColors.navy : AppColors.volt,
         onPressed: uploadState.isUploading
             ? null
             : () => ref
                 .read(activityUploadProvider.notifier)
                 .pickAndUpload(targetAthleteId: athleteId),
         child: uploadState.isUploading
-            ? const SizedBox(
+            ? SizedBox(
                 width: 24,
                 height: 24,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
-                  color: AppColors.volt,
+                  color: isDark ? AppColors.navy : AppColors.volt,
                 ),
               )
             : const Icon(Icons.add),
@@ -90,14 +134,253 @@ class TodayTabScreen extends ConsumerWidget {
     );
   }
 
-  /// Rendert das Dashboard basierend auf den von HomeCardResolver aufgelösten sichtbaren Karten.
+  /// Rendert die fokussierte V1.0.0-Heute-Ansicht:
+  /// 1. Schnellzugriffs-Leiste für Garmin Sync & Datei-Upload (`.fit`, `.tcx`, `.gpx`).
+  /// 2. Liste ausschließlich absolvierter Trainings im COROS-Stil (mit `ListView.builder`).
+  Widget _buildV1CompletedTrainingView(
+    BuildContext context,
+    WidgetRef ref, {
+    required String athleteId,
+    required HomeDashboardData data,
+    required ActivityUploadState uploadState,
+    required String lang,
+  }) {
+    // Bezieht alle absolvierten Aktivitäten (oder fällt auf latestActivity aus HomeDashboardData zurück)
+    final activitiesList = ref.watch(
+      activitiesProvider.select((asyncList) => asyncList.valueOrNull),
+    );
+    final List<Activity> completedActivities =
+        (activitiesList != null && activitiesList.isNotEmpty)
+            ? activitiesList
+            : (data.latestActivity != null
+                ? <Activity>[data.latestActivity!]
+                : const <Activity>[]);
+
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final cardBg = isDark ? AppColors.anthraciteCard : AppColors.white;
+    final borderColor =
+        isDark ? AppColors.darkSubtleBorder : AppColors.cardBorder;
+    final primaryTextColor =
+        isDark ? AppColors.white : AppColors.lightTextPrimary;
+    final secondaryTextColor =
+        isDark ? AppColors.textSecondaryDark : const Color(0xFF475569);
+
+    return ListView.builder(
+      key: const Key('v1_today_completed_list'),
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.mobilePageMargin,
+        vertical: AppSpacing.p16,
+      ),
+      itemCount: completedActivities.isEmpty ? 2 : completedActivities.length + 1,
+      itemBuilder: (context, index) {
+        // Index 0: Schnellzugriffs-Karte (Garmin Sync & Datei-Upload) + Abschnitts-Header
+        if (index == 0) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Upload-Fortschritt (falls aktiv)
+              if (uploadState.isUploading)
+                _buildUploadProgressBanner(uploadState),
+
+              // Schnellzugriff: Garmin Sync & Datei-Upload
+              Container(
+                key: const Key('v1_today_quick_actions_card'),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: cardBg,
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(color: borderColor),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      AppStrings.todayCompletedTrainingHeader(lang: lang),
+                      style: AppTypography.title.copyWith(
+                        fontSize: 18,
+                        color: primaryTextColor,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      AppStrings.todayQuickSyncSubtitle(lang: lang),
+                      style: AppTypography.bodySmall.copyWith(
+                        color: secondaryTextColor,
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            key: const Key('v1_today_garmin_sync_button'),
+                            onPressed: () => context.push('/settings/garmin'),
+                            icon: const Icon(Icons.sync_rounded, size: 18),
+                            label: Text(
+                              AppStrings.garminSyncAction(lang: lang),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            key: const Key('v1_today_file_upload_button'),
+                            onPressed: uploadState.isUploading
+                                ? null
+                                : () => ref
+                                    .read(activityUploadProvider.notifier)
+                                    .pickAndUpload(targetAthleteId: athleteId),
+                            icon: const Icon(
+                              Icons.upload_file_rounded,
+                              size: 18,
+                            ),
+                            label: Text(
+                              lang == 'en' ? 'File Upload' : 'Datei-Upload',
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+          );
+        }
+
+        // Leerer Zustand, falls noch keine absolvierten Einheiten vorliegen
+        if (completedActivities.isEmpty) {
+          return Container(
+            key: const Key('v1_today_empty_completed_card'),
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: cardBg,
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: borderColor),
+            ),
+            child: Column(
+              children: [
+                Icon(
+                  Icons.directions_bike_rounded,
+                  size: 40,
+                  color: isDark ? AppColors.volt : AppColors.navy,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  lang == 'en'
+                      ? 'No completed workouts yet'
+                      : 'Noch kein absolviertes Training',
+                  textAlign: TextAlign.center,
+                  style: AppTypography.title.copyWith(
+                    color: primaryTextColor,
+                    fontSize: 16,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  lang == 'en'
+                      ? 'Use Garmin Sync or File Upload above to import your first .FIT activity.'
+                      : 'Nutze oben Garmin Sync oder Datei-Upload, um deine erste .FIT-Einheit zu importieren.',
+                  textAlign: TextAlign.center,
+                  style: AppTypography.bodySmall.copyWith(
+                    color: secondaryTextColor,
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+
+        // Rendert jede absolvierte Einheit als nicht-klickbare COROS-Karte mit direktem .FIT-Download
+        final activity = completedActivities[index - 1];
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: HomeRecentActivityCard(
+            activity: activity,
+            onOpenCockpit: null,
+          ),
+        );
+      },
+    );
+  }
+
+  /// Rendert das Fortschritts-Banner während eines laufenden Datei-Uploads.
+  Widget _buildUploadProgressBanner(ActivityUploadState uploadState) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: AppSpacing.p12),
+      padding: const EdgeInsets.all(AppSpacing.p12),
+      decoration: BoxDecoration(
+        color: AppColors.volt.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.volt),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              const SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: AppColors.navy,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  uploadState.statusMessage ??
+                      'Aktivitätsdateien werden hochgeladen und verarbeitet...',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 13,
+                    color: AppColors.navy,
+                  ),
+                ),
+              ),
+              if (uploadState.totalFiles > 0)
+                Text(
+                  '${uploadState.currentFileIndex}/${uploadState.totalFiles}',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 12,
+                    color: AppColors.navy,
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: LinearProgressIndicator(
+              value: uploadState.progress,
+              backgroundColor: AppColors.navy.withValues(alpha: 0.12),
+              color: AppColors.navy,
+              minHeight: 6,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Rendert das V2/V3-Dashboard basierend auf den von [HomeCardResolver] aufgelösten Karten.
   Widget _buildDashboardContent(
     BuildContext context,
     WidgetRef ref,
     String athleteId,
     HomeDashboardData data,
-    ActivityUploadState uploadState,
-  ) {
+    ActivityUploadState uploadState, {
+    required String lang,
+    required bool isV2Enabled,
+    required bool isV3Enabled,
+  }) {
     final cardContext = HomeCardContext(
       isBrandNewUser: data.isBrandNewUser,
       isDemo: data.isDemo,
@@ -113,17 +396,40 @@ class TodayTabScreen extends ConsumerWidget {
       raceGoal: data.raceGoal,
     );
 
-    final experienceLevel = ref.watch(settingsProvider).experienceLevel;
+    final experienceLevel = ref.watch(
+      settingsControllerProvider.select((s) => s.experienceLevel),
+    );
     final visibleCards = const HomeCardResolver()
         .resolveVisibleCards(cardContext)
-        .where((c) =>
-            experienceLevel != ExperienceLevel.beginner ||
-            c != HomeCardType.formTrafficLight,)
+        .where((c) {
+          // V3-Karten (3 Ringe & Readiness/Form-Ampel) nur bei aktivem V3 anzeigen
+          if (!isV3Enabled &&
+              (c == HomeCardType.heroDailyRing ||
+                  c == HomeCardType.formTrafficLight)) {
+            return false;
+          }
+          // V2-Karten (Action-Banner & Race-Countdown) nur bei aktivem V2 anzeigen
+          if (!isV2Enabled &&
+              (c == HomeCardType.actionBanner ||
+                  c == HomeCardType.raceCountdown)) {
+            return false;
+          }
+          return experienceLevel != ExperienceLevel.beginner ||
+              c != HomeCardType.formTrafficLight;
+        })
         .toList();
 
     if (visibleCards.length == 1 &&
         visibleCards.first == HomeCardType.emptyGetStarted) {
-      return _buildEmptyState(context, ref, athleteId, uploadState);
+      return _buildEmptyState(
+        context,
+        ref,
+        athleteId,
+        uploadState,
+        lang: lang,
+        isV2Enabled: isV2Enabled,
+        isV3Enabled: isV3Enabled,
+      );
     }
 
     return LayoutBuilder(
@@ -142,68 +448,8 @@ class TodayTabScreen extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Upload-Fortschrittsanzeige (falls aktiv)
-                  if (uploadState.isUploading) ...[
-                    Container(
-                      margin: const EdgeInsets.only(bottom: AppSpacing.p12),
-                      padding: const EdgeInsets.all(AppSpacing.p12),
-                      decoration: BoxDecoration(
-                        color: AppColors.volt.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: AppColors.volt),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Row(
-                            children: [
-                              const SizedBox(
-                                width: 18,
-                                height: 18,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: AppColors.navy,
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Text(
-                                  uploadState.statusMessage ??
-                                      'Aktivitätsdateien werden hochgeladen und verarbeitet...',
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 13,
-                                    color: AppColors.navy,
-                                  ),
-                                ),
-                              ),
-                              if (uploadState.totalFiles > 0)
-                                Text(
-                                  '${uploadState.currentFileIndex}/${uploadState.totalFiles}',
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 12,
-                                    color: AppColors.navy,
-                                  ),
-                                ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(4),
-                            child: LinearProgressIndicator(
-                              value: uploadState.progress,
-                              backgroundColor:
-                                  AppColors.navy.withValues(alpha: 0.12),
-                              color: AppColors.navy,
-                              minHeight: 6,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-
+                  if (uploadState.isUploading)
+                    _buildUploadProgressBanner(uploadState),
                   if (uploadState.error != null) ...[
                     Padding(
                       padding: const EdgeInsets.only(bottom: AppSpacing.p12),
@@ -221,8 +467,6 @@ class TodayTabScreen extends ConsumerWidget {
                       ),
                     ),
                   ],
-
-                  // Karten-Rendering
                   if (isWide)
                     _buildWideLayout(
                       context,
@@ -248,7 +492,7 @@ class TodayTabScreen extends ConsumerWidget {
     );
   }
 
-  /// Kompakte Ansicht (Mobile) – Eine vertikale Spalte
+  /// Kompakte Ansicht (Mobile) – Eine vertikale Spalte.
   Widget _buildCompactLayout(
     BuildContext context,
     WidgetRef ref,
@@ -267,7 +511,7 @@ class TodayTabScreen extends ConsumerWidget {
     );
   }
 
-  /// Breite Ansicht (Tablet / Desktop) – 2 Spalten
+  /// Breite Ansicht (Tablet / Desktop) – 2 Spalten.
   Widget _buildWideLayout(
     BuildContext context,
     WidgetRef ref,
@@ -280,7 +524,6 @@ class TodayTabScreen extends ConsumerWidget {
 
     for (var i = 0; i < visibleCards.length; i++) {
       final card = visibleCards[i];
-      // Hero-Card und Action-Banner bevorzugt links oder oben
       if (card == HomeCardType.actionBanner ||
           card == HomeCardType.heroDailyRing) {
         leftCards.add(card);
@@ -321,7 +564,7 @@ class TodayTabScreen extends ConsumerWidget {
     );
   }
 
-  /// Rendert eine einzelne Home-Karte nach Typ
+  /// Rendert eine einzelne Home-Karte nach [HomeCardType].
   Widget _renderCard(
     BuildContext context,
     WidgetRef ref,
@@ -348,7 +591,6 @@ class TodayTabScreen extends ConsumerWidget {
             );
           },
           onMatchTap: () {
-            // Zeigt Kalender zur Zuordnung
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
                 content: Text('Öffne Kalender, um Aktivitäten zuzuordnen.'),
@@ -409,7 +651,7 @@ class TodayTabScreen extends ConsumerWidget {
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           decoration: BoxDecoration(
-            color: const Color(0xFF1E293B),
+            color: AppColors.anthraciteCard,
             borderRadius: BorderRadius.circular(12),
           ),
           child: Row(
@@ -431,13 +673,17 @@ class TodayTabScreen extends ConsumerWidget {
     }
   }
 
-  /// Leerer Zustand für brandneue Nutzer
+  /// Leerer Zustand für brandneue Nutzer im V2/V3-Modus.
   Widget _buildEmptyState(
     BuildContext context,
     WidgetRef ref,
     String athleteId,
-    ActivityUploadState uploadState,
-  ) {
+    ActivityUploadState uploadState, {
+    required String lang,
+    required bool isV2Enabled,
+    required bool isV3Enabled,
+  }) {
+    final isEn = lang == 'en';
     return SingleChildScrollView(
       physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
@@ -471,20 +717,18 @@ class TodayTabScreen extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 24),
-              const Text(
-                'Willkommen bei ORBIT',
+              Text(
+                isEn ? 'Welcome to ORBIT' : 'Willkommen bei ORBIT',
                 textAlign: TextAlign.center,
                 style: AppTypography.headline,
               ),
               const SizedBox(height: 12),
               Text(
-                'Verbinde dein Garmin-Konto oder lade eine FIT-Datei hoch, um dein Home-Dashboard mit dem täglichen Belastungsring, Form-Status und Analysen zu aktivieren.',
+                AppStrings.todayQuickSyncSubtitle(lang: lang),
                 textAlign: TextAlign.center,
-                style: AppTypography.body.copyWith(color: Colors.grey.shade700),
+                style: AppTypography.body.copyWith(color: Colors.grey.shade600),
               ),
               const SizedBox(height: 32),
-
-              // Multi-Format Batch-Upload Button
               ElevatedButton.icon(
                 onPressed: uploadState.isUploading
                     ? null
@@ -503,45 +747,33 @@ class TodayTabScreen extends ConsumerWidget {
                     : const Icon(Icons.upload_file),
                 label: Text(
                   uploadState.isUploading
-                      ? (uploadState.statusMessage ?? 'Lade Dateien hoch...')
-                      : 'Aktivitäten importieren (.fit, .tcx, .gpx)',
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.volt,
-                  foregroundColor: AppColors.navy,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  elevation: 0,
+                      ? (uploadState.statusMessage ??
+                          (isEn
+                              ? 'Uploading files...'
+                              : 'Lade Dateien hoch...'))
+                      : AppStrings.fileUploadAction(lang: lang),
                 ),
               ),
-              const SizedBox(height: 12),
-
-              // Saisonziel Button
-              OutlinedButton.icon(
-                onPressed: () {
-                  EditRaceGoalSheet.show(
-                    context,
-                    onSaved: () =>
-                        ref.refresh(homeDashboardProvider(athleteId)),
-                  );
-                },
-                icon: const Icon(Icons.emoji_events_outlined),
-                label: const Text('Saisonziel festlegen'),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: AppColors.navy,
-                  side: const BorderSide(color: AppColors.navy),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+              if (isV2Enabled) ...[
+                const SizedBox(height: 12),
+                OutlinedButton.icon(
+                  onPressed: () {
+                    EditRaceGoalSheet.show(
+                      context,
+                      onSaved: () =>
+                          ref.refresh(homeDashboardProvider(athleteId)),
+                    );
+                  },
+                  icon: const Icon(Icons.emoji_events_outlined),
+                  label: Text(
+                    isEn ? 'Set Season Goal' : 'Saisonziel festlegen',
                   ),
                 ),
-              ),
-              const SizedBox(height: 24),
-
-              // Tagesform
-              ReadinessCard(athleteId: athleteId),
+              ],
+              if (isV3Enabled) ...[
+                const SizedBox(height: 24),
+                ReadinessCard(athleteId: athleteId),
+              ],
             ],
           ),
         ),
@@ -549,8 +781,13 @@ class TodayTabScreen extends ConsumerWidget {
     );
   }
 
-  /// Skeleton Loader während des Datenabrufs
+  /// Skeleton-Loader während des Datenabrufs.
   Widget _buildLoadingSkeleton(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardColor = isDark ? AppColors.anthraciteCard : AppColors.white;
+    final borderColor =
+        isDark ? AppColors.darkSubtleBorder : AppColors.cardBorder;
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(AppSpacing.p16),
       child: Center(
@@ -559,35 +796,24 @@ class TodayTabScreen extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Hero Skeleton
               Container(
-                height: 240,
+                height: 120,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF0F172A).withValues(alpha: 0.8),
-                  borderRadius: BorderRadius.circular(24),
+                  color: cardColor,
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(color: borderColor),
                 ),
                 child: const Center(
                   child: CircularProgressIndicator(color: AppColors.volt),
                 ),
               ),
               const SizedBox(height: AppSpacing.p16),
-              // Secondary Card Skeleton
               Container(
                 height: 110,
                 decoration: BoxDecoration(
-                  color: AppColors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: AppColors.cardBorder),
-                ),
-              ),
-              const SizedBox(height: AppSpacing.p16),
-              // Form Skeleton
-              Container(
-                height: 130,
-                decoration: BoxDecoration(
-                  color: AppColors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppColors.cardBorder),
+                  color: cardColor,
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(color: borderColor),
                 ),
               ),
             ],
@@ -597,7 +823,7 @@ class TodayTabScreen extends ConsumerWidget {
     );
   }
 
-  /// Fehlerzustand mit Wiederholen- und Problem-melden-Button
+  /// Fehlerzustand mit Wiederholen- und Problem-melden-Button.
   Widget _buildErrorState(
     BuildContext context,
     WidgetRef ref,

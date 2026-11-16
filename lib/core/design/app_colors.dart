@@ -6,9 +6,14 @@ class AppColors {
   static const Color navyLight = Color(0xFF00357A);
   static const Color volt = Color(0xFFCDFB17);
 
-  // Surfaces
+  // Surfaces (inklusiv Clean Professional Tokens aus Phase 41)
   static const Color white = Color(0xFFFFFFFF);
-  static const Color greyLight = Color(0xFFF8FAFC);
+  static const Color greyLight = Color(0xFFF4F6F9);
+  static const Color alabaster = Color(0xFFF4F6F9);
+  static const Color carbonDark = Color(0xFF0D0F12);
+  static const Color anthraciteCard = Color(0xFF16181D);
+  static const Color darkSubtleBorder = Color(0x14FFFFFF);
+  static const Color lightTextPrimary = Color(0xFF0F172A);
   static const Color cockpit = Color(0xFF001F47);
   static const Color cardDark = Color(0xFF002A5C);
   static const Color card = cardDark;
@@ -62,11 +67,11 @@ class AppColors {
   static const Color sportMulti = navy;
 
   // Aliase & Komfort-Getter
-  static const Color background = Color(0xFF0A0F1D);
-  static const Color backgroundLight = Color(0xFFF8FAFC);
+  static const Color background = Color(0xFF0D0F12);
+  static const Color backgroundLight = Color(0xFFF4F6F9);
   static const Color accentVolt = volt;
   static const Color techGrey = Color(0xFF64748B);
-  static const Color lightBackground = Color(0xFFF8FAFC);
+  static const Color lightBackground = Color(0xFFF4F6F9);
   static const Color borderDark = Color(0xFF003D82);
   static const Color textSecondaryDark = Color(0xFF94A3B8);
   static const Color textTertiaryDark = Color(0xFF64748B);

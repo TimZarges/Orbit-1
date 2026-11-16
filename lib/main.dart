@@ -69,8 +69,14 @@ class OrbitApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Granulare Selektoren gemäß Effizienz-Gebot (AGENTS.md Regel 10)
     final goRouter = ref.watch(goRouterProvider);
-    final settings = ref.watch(settingsControllerProvider);
+    final themeMode = ref.watch(
+      settingsControllerProvider.select((s) => s.themeMode),
+    );
+    final languageCode = ref.watch(
+      settingsControllerProvider.select((s) => s.languageCode),
+    );
 
     return VersionGateWrapper(
       child: RepaintBoundary(
@@ -79,8 +85,8 @@ class OrbitApp extends ConsumerWidget {
           title: 'ORBIT',
           theme: AppTheme.lightTheme,
           darkTheme: AppTheme.darkTheme,
-          themeMode: settings.themeMode,
-          locale: Locale(settings.languageCode),
+          themeMode: themeMode,
+          locale: Locale(languageCode),
           localizationsDelegates: const [
             AppLocalizations.delegate,
             GlobalMaterialLocalizations.delegate,
