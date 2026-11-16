@@ -26,6 +26,37 @@
 
 ## Einträge
 
+### [Phase 42] Einheitliche COROS-Vorschaukarte (`TrainingPreviewCard`), Echter `.FIT`-Download-Service, Strikte V1.0.0 Heute-Ansicht & Kalender (Woche, Monat, Liste) · RISIKO-HOCH
+- **STOPP-Punkt/Anlass:** Abschluss von Phase 42 (`docs/phases/phase_42.md`) inkl. Live-Hardware-Verifikation auf dem Google Pixel 10 Pro (`58251FDCR00EQ2`).
+- **Entscheidung & Umgesetzte Maßnahmen:**
+  1. **Einheitliche COROS-Vorschaukarte (`TrainingPreviewCard` / `HomeRecentActivityCard` in `lib/features/home/widgets/home_recent_activity_card.dart`):**
+     - Identisches Rendering auf dem Heute-Screen und in allen drei Kalender-Ansichten (Woche, Monat, Liste):
+       - Linke Spalte (~68 %): Sportart-Icon in definierter Sport-Akzentfarbe (Triathlon, Radfahren, Laufen, Schwimmen, Kraft, Sonstige) + Hauptmetrik groß & fett (`km`/`m` bei Outdoor/Ausdauer, `hh:mm:ss` bei Indoor/Kraft), Sekundärmetriken kompakt (Dauer, Pace `/km` bzw. Ø-Leistung `W`, Ø-Puls `bpm`, `kcal`), Titel + lokalisiertes Datum & Uhrzeit via `CountryDateTimeFormatter` (`dd.mm.yy • 24h`).
+       - Rechte Spalte (~32 %): Interaktiver `.FIT`-Download-Button mit Ladeindikator (ohne GPX-Minigrafik).
+       - Bei `ReleaseConfig.isV2Enabled == false` ist der Kartenkörper strikt nicht klickbar (`onTap: null`, kein Ripple, keine Weiterleitung ins `ActivityCockpitScreen`).
+  2. **Echter `.FIT`-Download-Service (`lib/features/activities/services/fit_download_service.dart`):**
+     - Lädt originale `.FIT`-Dateien (`activity.rawFilePath` bzw. `users/{uid}/rawActivities/{id}.fit`, max. 25 MB) aus Firebase Cloud Storage und exportiert sie plattformübergreifend über `FilePicker.saveFile` (Android SAF, iOS, Desktop, Web).
+     - Liefert bei fehlender Rohdatei eine lokalisierte (DE/EN), nutzerfreundliche Meldung (`FitDownloadStatus.notFound`).
+  3. **Strikte V1.0.0 Heute-Ansicht (`lib/features/activities/screens/today_tab_screen.dart`):**
+     - Filtert im V1.0.0-Modus strikt auf am aktuellen Kalendertag absolvierte Trainings (`localDate == todayIsoKey`) und bietet im Header sowie im aufgeräumten Empty-State direkten Zugriff auf **Garmin Sync** und **Datei-Upload (`.fit`)**.
+  4. **Überarbeiteter V1.0.0 Kalender (`lib/features/calendar/screens/calendar_screen.dart`):**
+     - Umschalter **Woche / Monat / Liste** im Clean Professional Design (Light & Dark Mode) auf Deutsch & Englisch; bei `ReleaseConfig.isV2Enabled == false` werden sämtliche V2-Planungsfunktionen (Wochensoll-Karte, geplante Workouts, „Training planen“-FAB) ausgeblendet.
+     - Wochen-, Monats- (mit Sportart-Farbpunkten) und chronologische `ListView.builder`-Listenansicht rendern durchgängig `TrainingPreviewCard` mit `.FIT`-Download-Button.
+- **Nachweise (Evidence-Only gemäß Regel 0, 2 & 9):**
+  - Pre-Merge-Gate (`bash scripts/check_phase_ready.sh`):
+    - `1/5 Prüfe Flutter Analyze`: `[OK] Flutter Analyze: 0 Errors, 0 Warnings, 0 Infos.`
+    - `2/5 Prüfe TypeScript-Build & ESLint in functions/`: `[OK] TypeScript-Build & Linting in functions/: 0 Errors.`
+    - `3/5 Prüfe deutsche Dokumentations-Kommentare`: `[OK] 100 % aller bestehenden und geänderten .dart- und .ts-Produktionsdateien besitzen deutsche Dokumentations-Kommentare.`
+    - `4/5 Führe alle Flutter Unit- und Widget-Tests aus`: `[OK] 234/234 Tests bestanden (inkl. test/phase42_training_preview_and_calendar_v1_test.dart).`
+    - `5/5 Prüfe Dokumentations-Status`: `[OK] PROGRESS.md ist vorhanden und gepflegt.`
+  - E2E-Hardware-Nachweis auf Google Pixel 10 Pro (`58251FDCR00EQ2`):
+    - Release-APK (`build/app/outputs/flutter-apk/app-release.apk`, 66.2 MB) gebaut und per `adb -s 58251FDCR00EQ2 install -r` installiert (`Success`).
+    - Live-Screenshots unter `docs/beta/screenshots/`:
+      - `phase42_pixel10_today.png` (Heute-Ansicht mit striktem Tagesfilter & Empty-State für Garmin Sync + `.FIT`-Upload)
+      - `phase42_pixel10_calendar_week.png` (Wochenansicht mit Sportart-Farbpunkten & COROS-Karten inkl. `.FIT`-Button)
+      - `phase42_pixel10_calendar_month.png` (Monatsansicht mit Sportart-Farbpunkten & Tages-Vorschaukarte)
+      - `phase42_pixel10_calendar_list.png` (Chronologische Listenansicht aller Garmin-Einheiten im COROS-Stil)
+
 ### [Phase 41] V1.0.0 Scope-Steuerung (`ReleaseConfig`), Clean Professional Design System (Hell & Dunkel), Vollständige Zweisprachigkeit (`DE` & `EN`) & Wohnland-Formatierer (`dd.mm.yy` / `24h`) · RISIKO-MITTEL
 - **STOPP-Punkt/Anlass:** Abschluss von Phase 41 (`docs/phases/phase_41.md`) inkl. Vorarbeiten aus dem Phase-40-Audit und Live-Hardware-Verifikation auf dem Google Pixel 10 Pro (`58251FDCR00EQ2`).
 - **Entscheidung & Umgesetzte Maßnahmen:**

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:orbit/core/config/release_config.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:orbit/features/activities/providers/activities_provider.dart';
 import 'package:orbit/features/auth/providers/user_provider.dart';
@@ -183,6 +184,9 @@ void main() {
 
     testWidgets('CalendarScreen rendert Wochensoll-Karte und SegmentedButton',
         (tester) async {
+      ReleaseConfig.overrideForTesting(v2: true);
+      addTearDown(ReleaseConfig.resetTestingOverrides);
+
       await tester.pumpWidget(
         ProviderScope(
           overrides: [

@@ -201,6 +201,93 @@ class AppStrings {
           ? 'Downloading original .FIT file for "$title"...'
           : 'Original .FIT-Datei für „$title“ wird heruntergeladen...';
 
+  /// Erfolgs-Meldung nach gespeichertem `.FIT`-Download.
+  static String fitDownloadSuccess(String fileName, {String lang = 'de'}) =>
+      _isEn(lang)
+          ? 'Saved .FIT file: $fileName'
+          : '.FIT-Datei gespeichert: $fileName';
+
+  /// Nutzerfreundliche Meldung, wenn für eine Test-/Alt-Einheit keine `.fit`-Datei vorliegt.
+  static String fitDownloadNotFound({String lang = 'de'}) => _isEn(lang)
+      ? 'No original .FIT file stored for this session yet.'
+      : 'Für diese Einheit liegt noch keine originale .FIT-Datei vor.';
+
+  /// Fehler-Meldung bei fehlgeschlagenem `.FIT`-Download.
+  static String fitDownloadError(String details, {String lang = 'de'}) =>
+      _isEn(lang)
+          ? 'Could not download .FIT file: $details'
+          : '.FIT-Datei konnte nicht geladen werden: $details';
+
+  // ===========================================================================
+  // Kalender (V1.0.0: Woche, Monat, Liste)
+  // ===========================================================================
+
+  /// Kalender-Button „Heute“ / „Today“.
+  static String calendarToday({String lang = 'de'}) =>
+      _isEn(lang) ? 'Today' : 'Heute';
+
+  /// Kalender-Segment „Woche“ / „Week“.
+  static String calendarWeek({String lang = 'de'}) =>
+      _isEn(lang) ? 'Week' : 'Woche';
+
+  /// Kalender-Segment „Monat“ / „Month“.
+  static String calendarMonth({String lang = 'de'}) =>
+      _isEn(lang) ? 'Month' : 'Monat';
+
+  /// Kalender-Segment „Liste“ / „List“.
+  static String calendarList({String lang = 'de'}) =>
+      _isEn(lang) ? 'List' : 'Liste';
+
+  /// Leerzustand für Kalender ohne absolvierte Einheiten im Zeitraum.
+  static String calendarNoCompletedSessions({String lang = 'de'}) => _isEn(lang)
+      ? 'No completed training sessions yet.'
+      : 'Noch keine absolvierten Einheiten vorhanden.';
+
+  /// Leerzustand für einen einzelnen Tag ohne absolvierte Einheiten.
+  static String calendarNoSessionsOnDay({String lang = 'de'}) => _isEn(lang)
+      ? 'No completed training on this day.'
+      : 'Kein absolviertes Training an diesem Tag.';
+
+  /// Kurze Wochentags-Header (Mo–So bzw. Mon–Sun).
+  static List<String> weekdayShortLabels({String lang = 'de'}) => _isEn(lang)
+      ? const ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+      : const ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
+
+  /// Lokalisierte Monats- und Jahresanzeige (z. B. „November 2026“).
+  static String formatMonthYear(DateTime dt, {String lang = 'de'}) {
+    const monthsDe = [
+      'Januar',
+      'Februar',
+      'März',
+      'April',
+      'Mai',
+      'Juni',
+      'Juli',
+      'August',
+      'September',
+      'Oktober',
+      'November',
+      'Dezember',
+    ];
+    const monthsEn = [
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
+    ];
+    final local = dt.isUtc ? dt.toLocal() : dt;
+    final list = _isEn(lang) ? monthsEn : monthsDe;
+    return '${list[(local.month - 1).clamp(0, 11)]} ${local.year}';
+  }
+
   // ===========================================================================
   // Einstellungen (SettingsScreen)
   // ===========================================================================

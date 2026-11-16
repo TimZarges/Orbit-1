@@ -1,61 +1,94 @@
+/// Datei-Header: `lib/features/calendar/screens/calendar_screen.dart`
+/// Zweck: Haupt-Kalender-Screen von ORBIT mit Wochen-, Monats- und Listenansicht
+/// im Clean Professional Design (Hell & Dunkel), vollständiger DE/EN-Lokalisierung
+/// und striktem V1.0.0-Scope-Gating über [ReleaseConfig].
+/// Architektur-Einordnung: Präsentationsschicht (`lib/features/calendar/screens/`),
+/// nutzt `ListView.builder`, `const`-Konstruktoren, granulare Riverpod-Selektoren
+/// (`.select(...)`) sowie die einheitliche [TrainingPreviewCard] (`AGENTS.md` Regel 10).
+library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
+import '../../../core/config/release_config.dart';
 import '../../../core/design/app_colors.dart';
-import '../../../core/utils/orbit_date_formatter.dart';
+import '../../../core/localization/app_strings.dart';
+import '../../../core/utils/country_date_time_formatter.dart';
 import '../../activities/models/activity.dart';
 import '../../activities/providers/activities_provider.dart';
 import '../../activities/screens/activity_detail_screen.dart';
 import '../../coach_link/providers/athlete_context_provider.dart';
+import '../../home/widgets/home_recent_activity_card.dart';
+import '../../settings/providers/settings_provider.dart';
 import '../models/planned_workout.dart';
 import '../providers/calendar_provider.dart';
 import '../widgets/create_workout_dialog.dart';
 import '../widgets/workout_card.dart';
 import '../widgets/workout_detail_sheet.dart';
 
-/// Haupt-Kalender-Screen von ORBIT: Wochen-, Monats- und Listenansicht
-/// für Athleten und Trainer.
-/// Zeigt sowohl geplante Einheiten ([PlannedWorkout]) als auch absolvierte
-/// Garmin- und Datei-Aktivitäten ([Activity]) mit direkter Navigation ins Analyse-Cockpit.
+/// Haupt-Kalender-Screen von ORBIT (Woche, Monat und Liste).
+///
+/// Was:
+/// - **V1.0.0-Standardmodus (`ReleaseConfig.isV2Enabled == false`):**
+///   Stellt ausschließlich absolvierte Trainings in den drei Ansichten **Woche**,
+///   **Monat** und **Liste** über die einheitliche [TrainingPreviewCard] (inkl. `.FIT`-
+///   Download-Button rechts, nicht klickbar) dar. Blendet alle V2-Planungsfunktionen
+///   (geplante Workouts, Wochensoll-Karte, „Training planen“-FAB) sauber aus.
+/// - **V2/V3-Modus (`ReleaseConfig.isV2Enabled == true`):**
+///   Zeigt zusätzlich geplante Workouts, Wochensoll-Abgleich und den Planungs-FAB.
+/// Warum: Entspricht den verbindlichen V1.0.0-Vorgaben aus `docs/ROADMAP_V1_TO_V4.md`
+/// bei gleichzeitiger 100-%-Kompatibilität für alle V2-Bestandstests.
 class CalendarScreen extends ConsumerWidget {
-  /// Optionale ID des Athleten. Falls null, wird der aktuelle Kontext herangezogen.
+  /// Optionale ID des Athleten. Falls `null`, wird der aktive Kontext verwendet.
   final String? athleteId;
 
+  /// Erstellt den [CalendarScreen].
   const CalendarScreen({super.key, this.athleteId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Granulare Riverpod-Selektoren gemäß Effizienz-Gebot (AGENTS.md Regel 10)
     final String activeAthleteId =
         athleteId ?? (ref.watch(viewedAthleteIdProvider) ?? 'me');
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
+    final lang = ref.watch(
+      settingsControllerProvider.select((s) => s.languageCode),
+    );
+    final countryCode = ref.watch(
+      settingsControllerProvider.select((s) => s.countryCode),
+    );
+    final isV2Enabled = ref.watch(
+      releaseConfigProvider.select((cfg) => cfg.isV2Enabled),
+    );
     final selectedDate = ref.watch(selectedCalendarDateProvider);
     final viewMode = ref.watch(calendarViewModeProvider);
-    final summary = ref.watch(weekSummaryProvider(activeAthleteId));
+
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          OrbitDateFormatter.formatMonthYear(selectedDate),
+          AppStrings.formatMonthYear(selectedDate, lang: lang),
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         actions: [
-          // "Heute" Button
+          // Schnell-Sprung auf das heutige Datum
           TextButton.icon(
+            key: const Key('calendar_today_button'),
             onPressed: () {
               ref.read(selectedCalendarDateProvider.notifier).state =
                   DateTime.now();
             },
             icon: const Icon(Icons.today, size: 18),
-            label: const Text('Heute'),
+            label: Text(AppStrings.calendarToday(lang: lang)),
           ),
-          // Vorherige / Nächste Periode
+          // Perioden-Navigation (- / +)
           IconButton(
+            key: const Key('calendar_prev_button'),
             icon: const Icon(Icons.chevron_left),
             onPressed: () => _navigateDate(ref, viewMode, -1),
           ),
           IconButton(
+            key: const Key('calendar_next_button'),
             icon: const Icon(Icons.chevron_right),
             onPressed: () => _navigateDate(ref, viewMode, 1),
           ),
@@ -63,25 +96,26 @@ class CalendarScreen extends ConsumerWidget {
       ),
       body: Column(
         children: [
-          // View Mode Umschalter (Woche / Monat / Liste)
+          // Umschalter zwischen Woche, Monat und Liste
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: SegmentedButton<CalendarViewMode>(
-              segments: const [
-                ButtonSegment(
+              key: const Key('calendar_view_mode_segmented'),
+              segments: [
+                ButtonSegment<CalendarViewMode>(
                   value: CalendarViewMode.week,
-                  icon: Icon(Icons.view_week_outlined),
-                  label: Text('Woche'),
+                  icon: const Icon(Icons.view_week_outlined),
+                  label: Text(AppStrings.calendarWeek(lang: lang)),
                 ),
-                ButtonSegment(
+                ButtonSegment<CalendarViewMode>(
                   value: CalendarViewMode.month,
-                  icon: Icon(Icons.calendar_month_outlined),
-                  label: Text('Monat'),
+                  icon: const Icon(Icons.calendar_month_outlined),
+                  label: Text(AppStrings.calendarMonth(lang: lang)),
                 ),
-                ButtonSegment(
+                ButtonSegment<CalendarViewMode>(
                   value: CalendarViewMode.list,
-                  icon: Icon(Icons.view_list_outlined),
-                  label: Text('Liste'),
+                  icon: const Icon(Icons.view_list_outlined),
+                  label: Text(AppStrings.calendarList(lang: lang)),
                 ),
               ],
               selected: {viewMode},
@@ -92,35 +126,64 @@ class CalendarScreen extends ConsumerWidget {
             ),
           ),
 
-          // Wochen-Soll-Ist-Zusammenfassung (nur in Woche & Liste)
-          if (viewMode != CalendarViewMode.month)
-            _buildWeekSummaryCard(context, theme, isDark, summary),
+          // V2-Wochensoll-Karte nur bei aktiviertem V2-Scope anzeigen
+          if (isV2Enabled && viewMode != CalendarViewMode.month)
+            _buildWeekSummaryCard(
+              context,
+              theme,
+              isDark,
+              ref.watch(weekSummaryProvider(activeAthleteId)),
+            ),
 
-          // Haupt-Inhalt je nach Ansicht
+          // Hauptinhalt je nach aktivem Ansichtsmodus
           Expanded(
             child: switch (viewMode) {
-              CalendarViewMode.week =>
-                _buildWeekView(context, ref, activeAthleteId, selectedDate),
-              CalendarViewMode.month =>
-                _buildMonthView(context, ref, activeAthleteId, selectedDate),
-              CalendarViewMode.list =>
-                _buildListView(context, ref, activeAthleteId),
+              CalendarViewMode.week => _buildWeekView(
+                  context,
+                  ref,
+                  activeAthleteId,
+                  selectedDate,
+                  lang: lang,
+                  countryCode: countryCode,
+                  isV2Enabled: isV2Enabled,
+                ),
+              CalendarViewMode.month => _buildMonthView(
+                  context,
+                  ref,
+                  activeAthleteId,
+                  selectedDate,
+                  lang: lang,
+                  countryCode: countryCode,
+                  isV2Enabled: isV2Enabled,
+                ),
+              CalendarViewMode.list => _buildListView(
+                  context,
+                  ref,
+                  activeAthleteId,
+                  lang: lang,
+                  isV2Enabled: isV2Enabled,
+                ),
             },
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => showCreateWorkoutDialog(
-          context,
-          athleteId: activeAthleteId,
-          initialDate: selectedDate,
-        ),
-        icon: const Icon(Icons.add),
-        label: const Text('Training planen'),
-      ),
+      // Planungs-FAB ausschließlich in V2.0.0 sichtbar
+      floatingActionButton: isV2Enabled
+          ? FloatingActionButton.extended(
+              key: const Key('calendar_plan_workout_fab'),
+              onPressed: () => showCreateWorkoutDialog(
+                context,
+                athleteId: activeAthleteId,
+                initialDate: selectedDate,
+              ),
+              icon: const Icon(Icons.add),
+              label: const Text('Training planen'),
+            )
+          : null,
     );
   }
 
+  /// Verschiebt das ausgewählte Kalenderdatum um einen Monat oder eine Woche.
   void _navigateDate(WidgetRef ref, CalendarViewMode viewMode, int direction) {
     final current = ref.read(selectedCalendarDateProvider);
     if (viewMode == CalendarViewMode.month) {
@@ -132,7 +195,7 @@ class CalendarScreen extends ConsumerWidget {
     }
   }
 
-  /// Wochen-Zusammenfassungskarte mit Soll-Ist Abweichung
+  /// V2-Wochensoll-Zusammenfassungskarte (nur bei `isV2Enabled == true` gerendert).
   Widget _buildWeekSummaryCard(
     BuildContext context,
     ThemeData theme,
@@ -140,9 +203,9 @@ class CalendarScreen extends ConsumerWidget {
     WeekSummary summary,
   ) {
     final compliance = summary.durationCompliancePercentage;
-    final cardBg = isDark ? const Color(0xFF002A5C) : const Color(0xFFF8FAFC);
+    final cardBg = isDark ? AppColors.anthraciteCard : AppColors.white;
     final cardBorder =
-        isDark ? const Color(0xFF003D82) : const Color(0xFFE2E8F0);
+        isDark ? AppColors.darkSubtleBorder : AppColors.cardBorder;
 
     final plannedHours = (summary.plannedDurationSec / 3600).toStringAsFixed(1);
     final actualHours = (summary.actualDurationSec / 3600).toStringAsFixed(1);
@@ -169,7 +232,7 @@ class CalendarScreen extends ConsumerWidget {
                   'Wochensoll: ${actualHours}h von ${plannedHours}h (${compliance.toStringAsFixed(0)} %)',
                   style: theme.textTheme.labelMedium?.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: isDark ? AppColors.white : AppColors.navy,
+                    color: isDark ? AppColors.white : AppColors.lightTextPrimary,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -180,7 +243,7 @@ class CalendarScreen extends ConsumerWidget {
                 '${summary.trainingDaysCount} aktive Tage · ${summary.completedWorkoutsCount}/${summary.totalPlannedWorkoutsCount} geplant',
                 style: theme.textTheme.labelSmall?.copyWith(
                   color: isDark
-                      ? const Color(0xFF94A3B8)
+                      ? AppColors.textSecondaryDark
                       : const Color(0xFF64748B),
                   fontWeight: FontWeight.w600,
                 ),
@@ -196,7 +259,7 @@ class CalendarScreen extends ConsumerWidget {
                       : (summary.actualDurationSec > 0 ? 1.0 : 0.0))
                   .clamp(0.0, 1.0),
               backgroundColor:
-                  isDark ? const Color(0xFF001F47) : const Color(0xFFE2E8F0),
+                  isDark ? AppColors.carbonDark : const Color(0xFFE2E8F0),
               color: progressColor,
               minHeight: 6,
             ),
@@ -206,33 +269,41 @@ class CalendarScreen extends ConsumerWidget {
     );
   }
 
-  /// Wochenansicht: 7 scrollbare Wochentage inkl. absolvierter Aktivitäten
+  /// Wochenansicht: 7 Tage (Mo–So) mit Sportart-Farbpunkten und COROS-Vorschaukarten.
   Widget _buildWeekView(
     BuildContext context,
     WidgetRef ref,
     String athleteId,
-    DateTime selectedDate,
-  ) {
-    final workoutsAsync =
-        ref.watch(athleteCurrentWeekWorkoutsProvider(athleteId));
-    final workouts = workoutsAsync.valueOrNull ?? [];
-    final activities = ref.watch(activitiesProvider).valueOrNull ?? [];
+    DateTime selectedDate, {
+    required String lang,
+    required String countryCode,
+    required bool isV2Enabled,
+  }) {
+    final workouts = isV2Enabled
+        ? (ref.watch(athleteCurrentWeekWorkoutsProvider(athleteId)).valueOrNull ??
+            const <PlannedWorkout>[])
+        : const <PlannedWorkout>[];
+    final activities = ref.watch(
+          activitiesProvider.select((a) => a.valueOrNull ?? const <Activity>[]),
+        );
 
     final monday =
         selectedDate.subtract(Duration(days: selectedDate.weekday - 1));
+    final todayIso = _toIsoDateKey(DateTime.now());
 
     return ListView.builder(
+      key: const Key('calendar_week_list'),
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 80),
       itemCount: 7,
       itemBuilder: (context, index) {
         final day = monday.add(Duration(days: index));
-        final dayStr = DateFormat('yyyy-MM-dd').format(day);
-        final dayWorkouts =
-            workouts.where((w) => w.localDate == dayStr).toList();
+        final dayStr = _toIsoDateKey(day);
+        final dayWorkouts = isV2Enabled
+            ? workouts.where((w) => w.localDate == dayStr).toList()
+            : const <PlannedWorkout>[];
         final dayActivities =
             activities.where((a) => a.localDate == dayStr).toList();
-        final isToday =
-            DateFormat('yyyy-MM-dd').format(DateTime.now()) == dayStr;
+        final isToday = todayIso == dayStr;
 
         return _buildDaySection(
           context,
@@ -241,34 +312,47 @@ class CalendarScreen extends ConsumerWidget {
           dayActivities,
           isToday,
           athleteId,
+          lang: lang,
+          countryCode: countryCode,
+          isV2Enabled: isV2Enabled,
         );
       },
     );
   }
 
+  /// Rendert einen einzelnen Tag in der Wochenansicht inkl. Sportart-Farbpunkten.
   Widget _buildDaySection(
     BuildContext context,
     DateTime date,
     List<PlannedWorkout> workouts,
     List<Activity> activities,
     bool isToday,
-    String athleteId,
-  ) {
+    String athleteId, {
+    required String lang,
+    required String countryCode,
+    required bool isV2Enabled,
+  }) {
     final theme = Theme.of(context);
-    final formattedHeaderDate = OrbitDateFormatter.formatWeekdayDate(date);
+    final isDark = theme.brightness == Brightness.dark;
+    final weekdayLabels = AppStrings.weekdayShortLabels(lang: lang);
+    final weekdayShort = weekdayLabels[(date.weekday - 1).clamp(0, 6)];
+    final formattedDate =
+        CountryDateTimeFormatter.formatDate(date, countryCode: countryCode);
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.only(bottom: 14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
               Text(
-                formattedHeaderDate,
+                '$weekdayShort, $formattedDate',
                 style: theme.textTheme.titleSmall?.copyWith(
                   fontWeight: FontWeight.bold,
-                  color: isToday ? AppColors.navyLight : null,
+                  color: isToday
+                      ? (isDark ? AppColors.volt : AppColors.navy)
+                      : (isDark ? AppColors.white : AppColors.lightTextPrimary),
                 ),
               ),
               if (isToday) ...[
@@ -277,99 +361,155 @@ class CalendarScreen extends ConsumerWidget {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
-                    color: AppColors.volt.withValues(alpha: 0.3),
+                    color: AppColors.volt.withValues(alpha: 0.25),
                     borderRadius: BorderRadius.circular(4),
                   ),
-                  child: const Text('Heute',
-                      style:
-                          TextStyle(fontSize: 10, fontWeight: FontWeight.bold),),
+                  child: Text(
+                    AppStrings.calendarToday(lang: lang),
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      color: isDark ? AppColors.volt : AppColors.navy,
+                    ),
+                  ),
                 ),
               ],
+              const Spacer(),
+              // Sportart-Farbpunkte für alle absolvierten Einheiten des Tages
+              if (activities.isNotEmpty)
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    for (final a in activities.take(4))
+                      Container(
+                        width: 8,
+                        height: 8,
+                        margin: const EdgeInsets.only(left: 4),
+                        decoration: BoxDecoration(
+                          color: _getSportColor(a.sport),
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                  ],
+                ),
             ],
           ),
           const SizedBox(height: 6),
           if (workouts.isEmpty && activities.isEmpty)
-            InkWell(
-              onTap: () => showCreateWorkoutDialog(context,
-                  athleteId: athleteId, initialDate: date,),
-              borderRadius: BorderRadius.circular(8),
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 10),
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey.withValues(alpha: 0.2)),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Center(
-                  child: Text(
-                    '+ Ruhetag / Einheit planen',
-                    style:
-                        theme.textTheme.bodySmall?.copyWith(color: Colors.grey),
-                  ),
-                ),
-              ),
-            )
+            isV2Enabled
+                ? InkWell(
+                    onTap: () => showCreateWorkoutDialog(
+                      context,
+                      athleteId: athleteId,
+                      initialDate: date,
+                    ),
+                    borderRadius: BorderRadius.circular(8),
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      decoration: BoxDecoration(
+                        border:
+                            Border.all(color: Colors.grey.withValues(alpha: 0.2)),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Center(
+                        child: Text(
+                          '+ Ruhetag / Einheit planen',
+                          style: theme.textTheme.bodySmall
+                              ?.copyWith(color: Colors.grey),
+                        ),
+                      ),
+                    ),
+                  )
+                : Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: Text(
+                      AppStrings.calendarNoSessionsOnDay(lang: lang),
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: isDark
+                            ? AppColors.textSecondaryDark
+                            : const Color(0xFF64748B),
+                      ),
+                    ),
+                  )
           else ...[
             for (final a in activities)
-              _buildCompletedActivityCard(context, a, showDate: false),
-            for (final w in workouts)
-              WorkoutCard(
-                workout: w,
-                onTap: () => showWorkoutDetailSheet(context, w),
+              TrainingPreviewCard(
+                activity: a,
+                onOpenCockpit: isV2Enabled
+                    ? () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => ActivityDetailScreen(activity: a),
+                          ),
+                        )
+                    : null,
               ),
+            if (isV2Enabled)
+              for (final w in workouts)
+                WorkoutCard(
+                  workout: w,
+                  onTap: () => showWorkoutDetailSheet(context, w),
+                ),
           ],
         ],
       ),
     );
   }
 
-  /// Monatsansicht: Monatsraster mit Terminpunkten für absolvierte Aktivitäten und geplante Workouts
+  /// Monatsansicht: Monatsraster mit Sportart-Farbpunkten und darunter die COROS-Karten.
   Widget _buildMonthView(
     BuildContext context,
     WidgetRef ref,
     String athleteId,
-    DateTime selectedDate,
-  ) {
-    final workoutsAsync =
-        ref.watch(athleteCurrentMonthWorkoutsProvider(athleteId));
-    final workouts = workoutsAsync.valueOrNull ?? [];
-    final activities = ref.watch(activitiesProvider).valueOrNull ?? [];
+    DateTime selectedDate, {
+    required String lang,
+    required String countryCode,
+    required bool isV2Enabled,
+  }) {
+    final workouts = isV2Enabled
+        ? (ref.watch(athleteCurrentMonthWorkoutsProvider(athleteId)).valueOrNull ??
+            const <PlannedWorkout>[])
+        : const <PlannedWorkout>[];
+    final activities = ref.watch(
+          activitiesProvider.select((a) => a.valueOrNull ?? const <Activity>[]),
+        );
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final firstDayOfMonth = DateTime(selectedDate.year, selectedDate.month, 1);
     final lastDayOfMonth =
         DateTime(selectedDate.year, selectedDate.month + 1, 0);
 
-    // Ausgewählter Tag im Monat
-    final selectedDayStr = DateFormat('yyyy-MM-dd').format(selectedDate);
-    final selectedDayWorkouts =
-        workouts.where((w) => w.localDate == selectedDayStr).toList();
+    final selectedDayStr = _toIsoDateKey(selectedDate);
+    final selectedDayWorkouts = isV2Enabled
+        ? workouts.where((w) => w.localDate == selectedDayStr).toList()
+        : const <PlannedWorkout>[];
     final selectedDayActivities =
         activities.where((a) => a.localDate == selectedDayStr).toList();
+    final weekdayLabels = AppStrings.weekdayShortLabels(lang: lang);
+    final todayStr = _toIsoDateKey(DateTime.now());
 
     return Column(
       children: [
-        // Wochentags-Header (Mo - So)
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        // Wochentags-Header (Mo - So bzw. Mon - Sun)
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              Text('Mo', style: TextStyle(fontWeight: FontWeight.bold)),
-              Text('Di', style: TextStyle(fontWeight: FontWeight.bold)),
-              Text('Mi', style: TextStyle(fontWeight: FontWeight.bold)),
-              Text('Do', style: TextStyle(fontWeight: FontWeight.bold)),
-              Text('Fr', style: TextStyle(fontWeight: FontWeight.bold)),
-              Text('Sa', style: TextStyle(fontWeight: FontWeight.bold)),
-              Text('So', style: TextStyle(fontWeight: FontWeight.bold)),
+              for (final label in weekdayLabels)
+                Text(
+                  label,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
             ],
           ),
         ),
 
-        // Tage-Grid
+        // Monats-Grid mit Sportart-Farbpunkten an Trainingstagen
         Expanded(
           flex: 2,
           child: GridView.builder(
+            key: const Key('calendar_month_grid'),
             padding: const EdgeInsets.symmetric(horizontal: 16),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 7,
@@ -383,12 +523,12 @@ class CalendarScreen extends ConsumerWidget {
               final dayNum = index - offset + 1;
               final dayDate =
                   DateTime(selectedDate.year, selectedDate.month, dayNum);
-              final dayStr = DateFormat('yyyy-MM-dd').format(dayDate);
-              final todayStr = DateFormat('yyyy-MM-dd').format(DateTime.now());
+              final dayStr = _toIsoDateKey(dayDate);
               final isToday = dayStr == todayStr;
               final isSelected = dayStr == selectedDayStr;
-              final dayWorkouts =
-                  workouts.where((w) => w.localDate == dayStr).toList();
+              final dayWorkouts = isV2Enabled
+                  ? workouts.where((w) => w.localDate == dayStr).toList()
+                  : const <PlannedWorkout>[];
               final dayActivities =
                   activities.where((a) => a.localDate == dayStr).toList();
 
@@ -397,33 +537,43 @@ class CalendarScreen extends ConsumerWidget {
               Color textColor;
 
               if (isToday) {
-                cellBg = AppColors.volt;
-                textColor = AppColors.navy;
-                cellBorder = Border.all(color: AppColors.volt, width: 2);
+                cellBg = isDark ? AppColors.volt : AppColors.navy;
+                textColor = isDark ? AppColors.navy : AppColors.white;
+                cellBorder = Border.all(
+                  color: isDark ? AppColors.volt : AppColors.navy,
+                  width: 2,
+                );
               } else if (isSelected) {
                 cellBg = isDark
-                    ? const Color(0xFF003D82)
-                    : AppColors.volt.withValues(alpha: 0.25);
-                textColor = isDark ? AppColors.white : AppColors.navy;
-                cellBorder = Border.all(color: AppColors.volt, width: 1.5);
-              } else {
-                cellBg = isDark ? const Color(0xFF00224D) : null;
-                textColor = isDark ? AppColors.white : AppColors.navy;
+                    ? AppColors.anthraciteCard
+                    : AppColors.navy.withValues(alpha: 0.08);
+                textColor = isDark ? AppColors.white : AppColors.lightTextPrimary;
                 cellBorder = Border.all(
-                  color: isDark ? const Color(0xFF003366) : Colors.black12,
-                  width: 0.5,
+                  color: isDark ? AppColors.volt : AppColors.navy,
+                  width: 1.5,
+                );
+              } else {
+                cellBg = isDark ? AppColors.anthraciteCard : AppColors.white;
+                textColor = isDark ? AppColors.white : AppColors.lightTextPrimary;
+                cellBorder = Border.all(
+                  color: isDark
+                      ? AppColors.darkSubtleBorder
+                      : AppColors.cardBorder,
+                  width: 0.75,
                 );
               }
 
-              // Kombinierte Indikatoren (absolvierte Aktivitäten gefüllt, geplante hohl/gefüllt)
+              // Sportart-Farbpunkte (absolvierte Einheiten gefüllt, geplante in V2 hohl)
               final dotEntries = <({Color color, bool filled})>[
                 for (final a in dayActivities)
                   (color: _getSportColor(a.sport), filled: true),
-                for (final w in dayWorkouts)
-                  (color: _getSportColor(w.sport), filled: w.isCompleted),
+                if (isV2Enabled)
+                  for (final w in dayWorkouts)
+                    (color: _getSportColor(w.sport), filled: w.isCompleted),
               ];
 
               return InkWell(
+                key: Key('calendar_month_day_$dayStr'),
                 onTap: () {
                   ref.read(selectedCalendarDateProvider.notifier).state =
                       dayDate;
@@ -450,37 +600,29 @@ class CalendarScreen extends ConsumerWidget {
                       ),
                       if (dotEntries.isNotEmpty)
                         Padding(
-                          padding: const EdgeInsets.only(top: 2),
+                          padding: const EdgeInsets.only(top: 3),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               for (int i = 0;
                                   i < dotEntries.length.clamp(0, 4);
-                                  i++) ...[
-                                () {
-                                  final entry = dotEntries[i];
-                                  final sColor = entry.color;
-                                  final isDone = entry.filled;
-
-                                  return Container(
-                                    width: 6,
-                                    height: 6,
-                                    margin: const EdgeInsets.symmetric(
-                                        horizontal: 1,),
-                                    decoration: BoxDecoration(
-                                      color: isDone
-                                          ? (isToday ? AppColors.navy : sColor)
-                                          : Colors.transparent,
-                                      shape: BoxShape.circle,
-                                      border: Border.all(
-                                        color:
-                                            isToday ? AppColors.navy : sColor,
-                                        width: 1.5,
-                                      ),
+                                  i++)
+                                Container(
+                                  width: 6,
+                                  height: 6,
+                                  margin:
+                                      const EdgeInsets.symmetric(horizontal: 1),
+                                  decoration: BoxDecoration(
+                                    color: dotEntries[i].filled
+                                        ? dotEntries[i].color
+                                        : Colors.transparent,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: dotEntries[i].color,
+                                      width: 1.5,
                                     ),
-                                  );
-                                }(),
-                              ],
+                                  ),
+                                ),
                             ],
                           ),
                         ),
@@ -494,48 +636,78 @@ class CalendarScreen extends ConsumerWidget {
 
         const Divider(height: 1),
 
-        // Liste der Einheiten des am Raster angetippten Tages
+        // Liste der Einheiten des ausgewählten Tages (mit ListView.builder)
         Expanded(
           flex: 2,
           child: (selectedDayWorkouts.isEmpty && selectedDayActivities.isEmpty)
               ? Center(
-                  child: TextButton.icon(
-                    onPressed: () => showCreateWorkoutDialog(
-                      context,
-                      athleteId: athleteId,
-                      initialDate: selectedDate,
-                    ),
-                    icon: const Icon(Icons.add),
-                    label: const Text('Einheit an diesem Tag planen'),
-                  ),
+                  child: isV2Enabled
+                      ? TextButton.icon(
+                          onPressed: () => showCreateWorkoutDialog(
+                            context,
+                            athleteId: athleteId,
+                            initialDate: selectedDate,
+                          ),
+                          icon: const Icon(Icons.add),
+                          label: const Text('Einheit an diesem Tag planen'),
+                        )
+                      : Text(
+                          '${CountryDateTimeFormatter.formatDate(selectedDate, countryCode: countryCode)} • ${AppStrings.calendarNoSessionsOnDay(lang: lang)}',
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                color: isDark
+                                    ? AppColors.textSecondaryDark
+                                    : const Color(0xFF64748B),
+                              ),
+                        ),
                 )
-              : ListView(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 80),
-                  children: [
-                    for (final a in selectedDayActivities)
-                      _buildCompletedActivityCard(context, a, showDate: false),
-                    for (final w in selectedDayWorkouts)
-                      WorkoutCard(
-                        workout: w,
-                        onTap: () => showWorkoutDetailSheet(context, w),
-                      ),
-                  ],
+              : ListView.builder(
+                  key: const Key('calendar_month_day_list'),
+                  padding: const EdgeInsets.fromLTRB(16, 10, 16, 80),
+                  itemCount:
+                      selectedDayActivities.length + selectedDayWorkouts.length,
+                  itemBuilder: (context, idx) {
+                    if (idx < selectedDayActivities.length) {
+                      final a = selectedDayActivities[idx];
+                      return TrainingPreviewCard(
+                        activity: a,
+                        onOpenCockpit: isV2Enabled
+                            ? () => Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        ActivityDetailScreen(activity: a),
+                                  ),
+                                )
+                            : null,
+                      );
+                    }
+                    final w = selectedDayWorkouts[
+                        idx - selectedDayActivities.length];
+                    return WorkoutCard(
+                      workout: w,
+                      onTap: () => showWorkoutDetailSheet(context, w),
+                    );
+                  },
                 ),
         ),
       ],
     );
   }
 
-  /// Listenansicht: Chronologische Liste aller absolvierten Aktivitäten und geplanten Workouts
+  /// Listenansicht: Chronologische `ListView.builder`-Liste aller absolvierten Trainings.
   Widget _buildListView(
     BuildContext context,
     WidgetRef ref,
-    String athleteId,
-  ) {
-    final workoutsAsync =
-        ref.watch(athleteCurrentMonthWorkoutsProvider(athleteId));
-    final workouts = workoutsAsync.valueOrNull ?? [];
-    final activities = ref.watch(activitiesProvider).valueOrNull ?? [];
+    String athleteId, {
+    required String lang,
+    required bool isV2Enabled,
+  }) {
+    final workouts = isV2Enabled
+        ? (ref.watch(athleteCurrentMonthWorkoutsProvider(athleteId)).valueOrNull ??
+            const <PlannedWorkout>[])
+        : const <PlannedWorkout>[];
+    final activities = ref.watch(
+          activitiesProvider.select((a) => a.valueOrNull ?? const <Activity>[]),
+        );
 
     if (workouts.isEmpty && activities.isEmpty) {
       return Center(
@@ -544,230 +716,59 @@ class CalendarScreen extends ConsumerWidget {
           children: [
             const Icon(Icons.event_note, size: 48, color: Colors.grey),
             const SizedBox(height: 12),
-            const Text('Keine Einheiten in diesem Zeitraum.'),
-            const SizedBox(height: 12),
-            ElevatedButton.icon(
-              onPressed: () =>
-                  showCreateWorkoutDialog(context, athleteId: athleteId),
-              icon: const Icon(Icons.add),
-              label: const Text('Erste Einheit planen'),
-            ),
+            Text(AppStrings.calendarNoCompletedSessions(lang: lang)),
+            if (isV2Enabled) ...[
+              const SizedBox(height: 12),
+              ElevatedButton.icon(
+                onPressed: () =>
+                    showCreateWorkoutDialog(context, athleteId: athleteId),
+                icon: const Icon(Icons.add),
+                label: const Text('Erste Einheit planen'),
+              ),
+            ],
           ],
         ),
       );
     }
 
-    return ListView(
+    return ListView.builder(
+      key: const Key('calendar_chronological_list'),
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 80),
-      children: [
-        for (final a in activities)
-          _buildCompletedActivityCard(context, a, showDate: true),
-        for (final w in workouts)
-          WorkoutCard(
-            workout: w,
-            showDate: true,
-            onTap: () => showWorkoutDetailSheet(context, w),
-          ),
-      ],
+      itemCount: activities.length + workouts.length,
+      itemBuilder: (context, index) {
+        if (index < activities.length) {
+          final a = activities[index];
+          return TrainingPreviewCard(
+            activity: a,
+            onOpenCockpit: isV2Enabled
+                ? () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => ActivityDetailScreen(activity: a),
+                      ),
+                    )
+                : null,
+          );
+        }
+        final w = workouts[index - activities.length];
+        return WorkoutCard(
+          workout: w,
+          showDate: true,
+          onTap: () => showWorkoutDetailSheet(context, w),
+        );
+      },
     );
   }
 
-  /// Rendert eine absolvierte Aktivität (z. B. aus Garmin Connect oder FIT-Upload) im Kalender.
-  Widget _buildCompletedActivityCard(
-    BuildContext context,
-    Activity activity, {
-    required bool showDate,
-  }) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final sportColor = _getSportColor(activity.sport);
-    final cardBg = isDark ? const Color(0xFF002A5C) : Colors.white;
-    final cardBorder =
-        isDark ? const Color(0xFF003D82) : const Color(0xFFE2E8F0);
-    const doneColor = Color(0xFF10B981);
-
-    final durMin = (activity.durationSec / 60).round();
-    final hours = durMin ~/ 60;
-    final mins = durMin % 60;
-    final durStr = hours > 0 ? '${hours}h ${mins}m' : '${mins}m';
-    final distKm = activity.distanceM > 0
-        ? (activity.distanceM / 1000).toStringAsFixed(1)
-        : null;
-    final avgPower = activity.summary?.avgPowerW?.round();
-    final avgHr = activity.summary?.avgHr?.round();
-    final tss = activity.metrics?.tss?.round();
-
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 4),
-      decoration: BoxDecoration(
-        color: cardBg,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: cardBorder),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => ActivityDetailScreen(activity: activity),
-              ),
-            );
-          },
-          borderRadius: BorderRadius.circular(12),
-          child: IntrinsicHeight(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Container(width: 4, color: sportColor),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(_getSportIcon(activity.sport),
-                                size: 16, color: sportColor,),
-                            const SizedBox(width: 6),
-                            Text(
-                              activity.sport,
-                              style: theme.textTheme.labelSmall?.copyWith(
-                                color: sportColor,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            if (showDate) ...[
-                              const SizedBox(width: 8),
-                              Text(
-                                OrbitDateFormatter.formatDateString(
-                                    activity.localDate,),
-                                style: theme.textTheme.labelSmall?.copyWith(
-                                  color: isDark
-                                      ? const Color(0xFF94A3B8)
-                                      : const Color(0xFF64748B),
-                                ),
-                              ),
-                            ],
-                            const Spacer(),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 6, vertical: 2,),
-                              decoration: BoxDecoration(
-                                color: doneColor.withValues(alpha: 0.15),
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: const Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(Icons.check_circle,
-                                      size: 12, color: doneColor,),
-                                  SizedBox(width: 4),
-                                  Text(
-                                    'Absolviert',
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.bold,
-                                      color: doneColor,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          activity.title,
-                          style: theme.textTheme.titleSmall?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: isDark ? AppColors.white : AppColors.navy,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 4),
-                        Wrap(
-                          spacing: 6,
-                          runSpacing: 2,
-                          children: [
-                            Text(
-                              durStr,
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                fontWeight: FontWeight.w600,
-                                color: isDark
-                                    ? const Color(0xFFCBD5E1)
-                                    : const Color(0xFF475569),
-                              ),
-                            ),
-                            if (distKm != null)
-                              Text(
-                                '· $distKm km',
-                                style: theme.textTheme.bodySmall?.copyWith(
-                                  color: isDark
-                                      ? const Color(0xFF94A3B8)
-                                      : const Color(0xFF64748B),
-                                ),
-                              ),
-                            if (avgPower != null && avgPower > 0)
-                              Text(
-                                '· Ø $avgPower W',
-                                style: theme.textTheme.bodySmall?.copyWith(
-                                  color: isDark
-                                      ? const Color(0xFF94A3B8)
-                                      : const Color(0xFF64748B),
-                                ),
-                              ),
-                            if (avgHr != null && avgHr > 0)
-                              Text(
-                                '· Ø $avgHr bpm',
-                                style: theme.textTheme.bodySmall?.copyWith(
-                                  color: isDark
-                                      ? const Color(0xFF94A3B8)
-                                      : const Color(0xFF64748B),
-                                ),
-                              ),
-                            if (tss != null && tss > 0)
-                              Text(
-                                '· $tss Load',
-                                style: theme.textTheme.bodySmall?.copyWith(
-                                  color: isDark
-                                      ? const Color(0xFF94A3B8)
-                                      : const Color(0xFF64748B),
-                                ),
-                              ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
+  /// Konvertiert ein [DateTime] in das interne ISO-Format `yyyy-MM-dd`.
+  static String _toIsoDateKey(DateTime dt) {
+    final d = dt.day.toString().padLeft(2, '0');
+    final m = dt.month.toString().padLeft(2, '0');
+    final y = dt.year.toString().padLeft(4, '0');
+    return '$y-$m-$d';
   }
 
-  IconData _getSportIcon(String sport) {
-    switch (sport.toUpperCase()) {
-      case 'BIKE':
-        return Icons.directions_bike;
-      case 'RUN':
-        return Icons.directions_run;
-      case 'SWIM':
-        return Icons.pool;
-      case 'STRENGTH':
-        return Icons.fitness_center;
-      default:
-        return Icons.bolt;
-    }
-  }
-
-  Color _getSportColor(String sport) {
+  /// Liefert die definierte Sport-Akzentfarbe für den Monats-/Wochen-Farbpunkt.
+  static Color _getSportColor(String sport) {
     switch (sport.toUpperCase()) {
       case 'BIKE':
         return AppColors.sportBike;
@@ -775,6 +776,8 @@ class CalendarScreen extends ConsumerWidget {
         return AppColors.sportRun;
       case 'SWIM':
         return AppColors.sportSwim;
+      case 'TRIATHLON':
+        return AppColors.volt;
       case 'STRENGTH':
         return AppColors.sportStrength;
       default:

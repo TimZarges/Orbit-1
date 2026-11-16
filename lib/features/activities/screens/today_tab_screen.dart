@@ -136,7 +136,7 @@ class TodayTabScreen extends ConsumerWidget {
 
   /// Rendert die fokussierte V1.0.0-Heute-Ansicht:
   /// 1. Schnellzugriffs-Leiste für Garmin Sync & Datei-Upload (`.fit`, `.tcx`, `.gpx`).
-  /// 2. Liste ausschließlich absolvierter Trainings im COROS-Stil (mit `ListView.builder`).
+  /// 2. Liste ausschließlich der am heutigen Kalendertag absolvierten Trainings im COROS-Stil.
   Widget _buildV1CompletedTrainingView(
     BuildContext context,
     WidgetRef ref, {
@@ -145,16 +145,24 @@ class TodayTabScreen extends ConsumerWidget {
     required ActivityUploadState uploadState,
     required String lang,
   }) {
-    // Bezieht alle absolvierten Aktivitäten (oder fällt auf latestActivity aus HomeDashboardData zurück)
+    // Ermittelt den heutigen ISO-Datumsschlüssel (yyyy-MM-dd) in lokaler Zeit
+    final now = DateTime.now();
+    final todayIsoKey =
+        '${now.year.toString().padLeft(4, '0')}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+
+    // Filtert strikt auf heute absolvierte Einheiten (inkl. Fallback auf latestActivity von heute)
     final activitiesList = ref.watch(
       activitiesProvider.select((asyncList) => asyncList.valueOrNull),
     );
-    final List<Activity> completedActivities =
+    final List<Activity> sourceList =
         (activitiesList != null && activitiesList.isNotEmpty)
             ? activitiesList
             : (data.latestActivity != null
                 ? <Activity>[data.latestActivity!]
                 : const <Activity>[]);
+    final List<Activity> completedToday = sourceList
+        .where((a) => a.localDate == todayIsoKey)
+        .toList(growable: false);
 
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
@@ -173,7 +181,7 @@ class TodayTabScreen extends ConsumerWidget {
         horizontal: AppSpacing.mobilePageMargin,
         vertical: AppSpacing.p16,
       ),
-      itemCount: completedActivities.isEmpty ? 2 : completedActivities.length + 1,
+      itemCount: completedToday.isEmpty ? 2 : completedToday.length + 1,
       itemBuilder: (context, index) {
         // Index 0: Schnellzugriffs-Karte (Garmin Sync & Datei-Upload) + Abschnitts-Header
         if (index == 0) {
@@ -184,7 +192,7 @@ class TodayTabScreen extends ConsumerWidget {
               if (uploadState.isUploading)
                 _buildUploadProgressBanner(uploadState),
 
-              // Schnellzugriff: Garmin Sync & Datei-Upload
+              // Schnellzugriff: Garmin Sync & Datei-Upload (.fit)
               Container(
                 key: const Key('v1_today_quick_actions_card'),
                 padding: const EdgeInsets.all(16),
@@ -253,8 +261,8 @@ class TodayTabScreen extends ConsumerWidget {
           );
         }
 
-        // Leerer Zustand, falls noch keine absolvierten Einheiten vorliegen
-        if (completedActivities.isEmpty) {
+        // Aufgeräumter Empty-State, falls heute noch keine Einheit absolviert wurde
+        if (completedToday.isEmpty) {
           return Container(
             key: const Key('v1_today_empty_completed_card'),
             padding: const EdgeInsets.all(24),
@@ -273,8 +281,8 @@ class TodayTabScreen extends ConsumerWidget {
                 const SizedBox(height: 12),
                 Text(
                   lang == 'en'
-                      ? 'No completed workouts yet'
-                      : 'Noch kein absolviertes Training',
+                      ? 'No completed training today'
+                      : 'Heute noch kein absolviertes Training',
                   textAlign: TextAlign.center,
                   style: AppTypography.title.copyWith(
                     color: primaryTextColor,
@@ -284,26 +292,55 @@ class TodayTabScreen extends ConsumerWidget {
                 const SizedBox(height: 6),
                 Text(
                   lang == 'en'
-                      ? 'Use Garmin Sync or File Upload above to import your first .FIT activity.'
-                      : 'Nutze oben Garmin Sync oder Datei-Upload, um deine erste .FIT-Einheit zu importieren.',
+                      ? 'Sync your Garmin device or upload a .fit file to see today\'s training here.'
+                      : 'Synchronisiere dein Garmin-Gerät oder lade eine .fit-Datei hoch, um dein heutiges Training hier zu sehen.',
                   textAlign: TextAlign.center,
                   style: AppTypography.bodySmall.copyWith(
                     color: secondaryTextColor,
                   ),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        key: const Key('v1_today_empty_garmin_button'),
+                        onPressed: () => context.push('/settings/garmin'),
+                        icon: const Icon(Icons.sync_rounded, size: 16),
+                        label: Text(
+                          AppStrings.garminSyncAction(lang: lang),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        key: const Key('v1_today_empty_upload_button'),
+                        onPressed: uploadState.isUploading
+                            ? null
+                            : () => ref
+                                .read(activityUploadProvider.notifier)
+                                .pickAndUpload(targetAthleteId: athleteId),
+                        icon: const Icon(Icons.upload_file_rounded, size: 16),
+                        label: Text(
+                          lang == 'en' ? 'Upload .FIT' : '.FIT hochladen',
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
           );
         }
 
-        // Rendert jede absolvierte Einheit als nicht-klickbare COROS-Karte mit direktem .FIT-Download
-        final activity = completedActivities[index - 1];
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 12),
-          child: HomeRecentActivityCard(
-            activity: activity,
-            onOpenCockpit: null,
-          ),
+        // Rendert jede heutige Einheit als nicht-klickbare COROS-Vorschaukarte
+        final activity = completedToday[index - 1];
+        return TrainingPreviewCard(
+          activity: activity,
+          onOpenCockpit: null,
         );
       },
     );

@@ -28,6 +28,7 @@ class ActivitySummary {
   final double? avgCadence;
   final double? elevationGainM;
   final double? avgPaceSecPerKm;
+  final double? calories;
 
   ActivitySummary({
     this.avgHr,
@@ -37,6 +38,7 @@ class ActivitySummary {
     this.avgCadence,
     this.elevationGainM,
     this.avgPaceSecPerKm,
+    this.calories,
   });
 
   factory ActivitySummary.fromMap(Map<String, dynamic> map) {
@@ -48,6 +50,10 @@ class ActivitySummary {
       avgCadence: (map['avgCadence'] as num?)?.toDouble(),
       elevationGainM: (map['elevationGainM'] as num?)?.toDouble(),
       avgPaceSecPerKm: (map['avgPaceSecPerKm'] as num?)?.toDouble(),
+      calories: (map['calories'] as num? ??
+              map['kcal'] as num? ??
+              map['energyKcal'] as num?)
+          ?.toDouble(),
     );
   }
 }

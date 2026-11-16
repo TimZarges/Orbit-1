@@ -60,13 +60,22 @@ void main() {
     testWidgets(
         'V1.0.0-Standardmodus blendet 3 Daily Health Ringe, ReadinessCard und Analyse-Tab aus und zeigt COROS-Karte mit .FIT-Download',
         (tester) async {
+      final now = DateTime.now();
+      final todayIso =
+          '${now.year.toString().padLeft(4, '0')}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+      final todayStart = DateTime(now.year, now.month, now.day, 19, 54);
+      final expectedDateTime = CountryDateTimeFormatter.formatDateTime(
+        todayStart,
+        countryCode: 'DE',
+      );
+
       final sampleActivity = Activity(
         id: 'act_v1_test',
         athleteId: 'athlete_1',
         sport: 'BIKE',
         title: 'Bonn Ausfahrt',
-        startTimeUtc: DateTime(2026, 10, 21, 19, 54),
-        localDate: '2026-10-21',
+        startTimeUtc: todayStart,
+        localDate: todayIso,
         durationSec: 3600,
         distanceM: 32500,
         summary: ActivitySummary(avgPowerW: 215, avgHr: 142),
@@ -82,7 +91,7 @@ void main() {
             homeDashboardProvider('athlete_1').overrideWith(
               (ref) => Future.value(
                 HomeDashboardData(
-                  todayLocalDate: '2026-10-21',
+                  todayLocalDate: todayIso,
                   latestActivity: sampleActivity,
                 ),
               ),
@@ -129,12 +138,12 @@ void main() {
       );
       expect(find.text('Bonn Ausfahrt'), findsOneWidget);
 
-      // 4. COROS-Karte zeigt .FIT-Download-Button rechts und Datum als dd.mm.yy • 24h (21.10.26 • 19:54)
+      // 4. COROS-Karte zeigt .FIT-Download-Button rechts und Datum als dd.mm.yy • 24h
       expect(
         find.byKey(const Key('fit_download_button_act_v1_test')),
         findsOneWidget,
       );
-      expect(find.text('21.10.26 • 19:54'), findsOneWidget);
+      expect(find.text(expectedDateTime), findsOneWidget);
       // Kein "Im Analyse-Cockpit öffnen" Button in V1.0.0
       expect(find.text('Im Analyse-Cockpit öffnen'), findsNothing);
     });
