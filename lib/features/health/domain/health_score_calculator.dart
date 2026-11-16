@@ -75,8 +75,8 @@ class HealthScoreCalculator {
       respOrBb.add(today.bodyBattery!.toDouble().clamp(0.0, 100.0));
     }
     if (today.respirationRate != null && today.respirationRate! > 0) {
-      final mean = 14.5;
-      final std = 1.5;
+      const mean = 14.5;
+      const std = 1.5;
       final zResp = (today.respirationRate! - mean) / std;
       final respScore = (100.0 - 35.0 * math.max(0.0, zResp)).clamp(0.0, 100.0);
       respOrBb.add(respScore);

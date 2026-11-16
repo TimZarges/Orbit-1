@@ -118,7 +118,7 @@ class TodayTabScreen extends ConsumerWidget {
         .resolveVisibleCards(cardContext)
         .where((c) =>
             experienceLevel != ExperienceLevel.beginner ||
-            c != HomeCardType.formTrafficLight)
+            c != HomeCardType.formTrafficLight,)
         .toList();
 
     if (visibleCards.length == 1 &&

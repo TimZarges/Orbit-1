@@ -1,3 +1,10 @@
+/**
+ * @file resolveFeedback.ts
+ * @description Wartungs- und Administrationsskript zum Markieren behobener Beta-Feedback-Tickets
+ * in der Firestore-Collection `betaFeedback` (Status `RESOLVED` inkl. Zeitstempel und Lösungsnotiz).
+ * Nutzt primär das Firebase Admin SDK und fällt bei fehlenden lokalen ADC-Credentials auf das
+ * OAuth-Token der lokalen Firebase CLI zurück.
+ */
 import * as admin from "firebase-admin";
 import * as fs from "fs";
 import * as path from "path";
@@ -34,6 +41,12 @@ const TICKETS_TO_RESOLVE = [
   "#ORB-021",
 ];
 
+/**
+ * Durchläuft alle Dokumente in `betaFeedback` und setzt den Status aller in
+ * `TICKETS_TO_RESOLVE` gelisteten Tickets auf `RESOLVED`.
+ *
+ * @return {Promise<void>} Promise, das nach Abschluss aller Updates aufgelöst wird.
+ */
 async function resolveFeedback(): Promise<void> {
   console.log("Aktualisiere Beta-Feedback Tickets auf RESOLVED...");
   const resolvedNotes: Record<string, string> = {

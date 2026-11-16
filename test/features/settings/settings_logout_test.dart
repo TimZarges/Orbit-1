@@ -45,7 +45,7 @@ void main() {
     // Verify confirmation dialog
     expect(find.text('Abmelden?'), findsOneWidget);
     expect(find.text('Möchtest du dich wirklich von ORBIT abmelden?'),
-        findsOneWidget);
+        findsOneWidget,);
 
     // Tap Abbrechen
     await tester.tap(find.text('Abbrechen'));

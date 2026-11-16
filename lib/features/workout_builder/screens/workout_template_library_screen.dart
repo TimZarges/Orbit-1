@@ -147,12 +147,12 @@ class _WorkoutTemplateLibraryScreenState
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(Icons.fitness_center_outlined,
-                              size: 48, color: Colors.grey.shade400),
+                              size: 48, color: Colors.grey.shade400,),
                           const SizedBox(height: 12),
                           const Text(
                             'Keine Vorlagen gefunden',
                             style: TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 16),
+                                fontWeight: FontWeight.bold, fontSize: 16,),
                           ),
                           const SizedBox(height: 6),
                           const Text(
@@ -179,7 +179,7 @@ class _WorkoutTemplateLibraryScreenState
 
                 return ListView.separated(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 16.0, vertical: 8.0),
+                      horizontal: 16.0, vertical: 8.0,),
                   itemCount: templates.length,
                   separatorBuilder: (_, __) => const SizedBox(height: 12),
                   itemBuilder: (context, index) {
@@ -268,7 +268,7 @@ class _WorkoutTemplateLibraryScreenState
                   child: Text(
                     template.title,
                     style: const TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 15),
+                        fontWeight: FontWeight.bold, fontSize: 15,),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -283,7 +283,7 @@ class _WorkoutTemplateLibraryScreenState
                   ),
                   onPressed: () async {
                     await _repository.toggleFavorite(
-                        template.id, template.isFavorite);
+                        template.id, template.isFavorite,);
                     setState(() {});
                   },
                 ),
@@ -449,7 +449,7 @@ class _WorkoutTemplateLibraryScreenState
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-            content: Text('"${template.title}" für $localDateStr eingeplant!')),
+            content: Text('"${template.title}" für $localDateStr eingeplant!'),),
       );
       Navigator.of(context).pop();
     }

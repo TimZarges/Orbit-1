@@ -66,7 +66,7 @@ class ThresholdProgressCard extends ConsumerWidget {
               children: [
                 Row(
                   children: [
-                    Icon(Icons.tune_outlined, size: 20, color: AppColors.navy),
+                    const Icon(Icons.tune_outlined, size: 20, color: AppColors.navy),
                     const SizedBox(width: 8),
                     Text(
                       'Schwellenwerte & Diagnostik',
@@ -76,7 +76,7 @@ class ThresholdProgressCard extends ConsumerWidget {
                   ],
                 ),
                 Icon(Icons.chevron_right,
-                    color: Colors.grey.shade400, size: 20),
+                    color: Colors.grey.shade400, size: 20,),
               ],
             ),
             const SizedBox(height: 14),
@@ -118,7 +118,7 @@ class ThresholdProgressCard extends ConsumerWidget {
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.auto_awesome, size: 16, color: AppColors.navy),
+                    const Icon(Icons.auto_awesome, size: 16, color: AppColors.navy),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
@@ -194,7 +194,7 @@ class _ThresholdItem extends StatelessWidget {
             const SizedBox(width: 4),
             Text(label,
                 style:
-                    AppTypography.label.copyWith(color: Colors.grey.shade600)),
+                    AppTypography.label.copyWith(color: Colors.grey.shade600),),
           ],
         ),
         const SizedBox(height: 4),

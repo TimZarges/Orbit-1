@@ -34,7 +34,7 @@ class HomeActionBanner extends StatelessWidget {
             '$pendingThresholdsCount neuer Schwellenwert-Vorschlag verfügbar',
         actionLabel: 'Prüfen',
         onTap: onThresholdsTap,
-      ));
+      ),);
     }
 
     if (unreadChatMessagesCount > 0) {
@@ -47,7 +47,7 @@ class HomeActionBanner extends StatelessWidget {
             : '$unreadChatMessagesCount neue Nachrichten von deinem Trainer',
         actionLabel: 'Chat',
         onTap: onChatTap,
-      ));
+      ),);
     }
 
     if (unmatchedActivitiesCount > 0) {
@@ -58,7 +58,7 @@ class HomeActionBanner extends StatelessWidget {
         title: 'Einheit noch keinem geplanten Workout zugeordnet',
         actionLabel: 'Zuordnen',
         onTap: onMatchTap,
-      ));
+      ),);
     }
 
     if (items.isEmpty) return const SizedBox.shrink();
@@ -66,7 +66,7 @@ class HomeActionBanner extends StatelessWidget {
     return Column(
       children: items
           .map((w) =>
-              Padding(padding: const EdgeInsets.only(bottom: 10), child: w))
+              Padding(padding: const EdgeInsets.only(bottom: 10), child: w),)
           .toList(),
     );
   }
@@ -109,7 +109,7 @@ class HomeActionBanner extends StatelessWidget {
               elevation: 0,
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8)),
+                  borderRadius: BorderRadius.circular(8),),
             ),
             child: Text(
               actionLabel,

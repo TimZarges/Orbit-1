@@ -105,7 +105,7 @@ class NotificationCenterSheet extends ConsumerWidget {
                 Row(
                   children: [
                     const Icon(Icons.notifications_active_outlined,
-                        color: AppColors.volt, size: 24),
+                        color: AppColors.volt, size: 24,),
                     const SizedBox(width: 10),
                     Text(
                       'Mitteilungen',
@@ -156,7 +156,7 @@ class NotificationCenterSheet extends ConsumerWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         const Icon(Icons.notifications_off_outlined,
-                            size: 48, color: Colors.white38),
+                            size: 48, color: Colors.white38,),
                         const SizedBox(height: 12),
                         Text(
                           'Keine neuen Mitteilungen',
@@ -178,7 +178,7 @@ class NotificationCenterSheet extends ConsumerWidget {
   }
 
   Widget _buildList(
-      BuildContext context, WidgetRef ref, List<AppNotification> list) {
+      BuildContext context, WidgetRef ref, List<AppNotification> list,) {
     return ListView.separated(
       padding: const EdgeInsets.all(16),
       itemCount: list.length,

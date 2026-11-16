@@ -83,7 +83,7 @@ class FtpEstimator {
 
       // Wenn die Differenz kleiner als Mindestgrenze ist, kein Spam-Vorschlag
       if (delta.abs() < minDeltaWatt && deltaPercent.abs() < minDeltaPercent) {
-        return FtpEstimationResult(
+        return const FtpEstimationResult(
           hasProposal: false,
           reasonForNoProposal:
               'Leistungsänderung liegt unter der Relevanzschwelle (< 3 W und < 1.5 %). Aktueller FTP bleibt stabil.',

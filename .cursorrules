@@ -25,9 +25,16 @@
 - Zero-Open-Data: Keine ungesicherten Firestore- oder Storage-Pfade.
 
 ## 6. Pre-Merge-Gate (Regel 9)
-- Vor jedem Phasen-Merge: `bash scripts/check_phase_ready.sh` muss 0 Fehler melden.
+- Vor jedem Phasen-Merge: `bash scripts/check_phase_ready.sh` muss 0 Fehler melden (inkl. `flutter analyze` 0 Errors/Warnings/Infos, TypeScript Build & Lint in `functions/`, 100 % deutsche Kommentare in bestehenden & geänderten Dateien sowie sauberer Test-Durchlauf).
 
-## 7. Eiserne Nachtschicht-Gesetze (Phasen 35–39)
+## 7. Code-Qualität, Effizienz & Clean-Code-Gebot (Regel 10)
+- **EFFIZIENZ-GEBOT:**
+  - Flutter UI: Konsequenter Einsatz von `const`-Konstruktoren, `RepaintBoundary` bei Grafiken, `ListView.builder` für Listen und granularen Riverpod-Selektoren (`ref.watch(provider.select(...))`). Keine Berechnungen oder Objekt-Instanziierungen innerhalb von `build()`-Methoden.
+  - Backend & Firestore: Sparsame Firestore-Abfragen mit klaren Limits, Vermeidung redundanter Lesezugriffe, Streaming bei Datei-Downloads/ `.FIT`-Verarbeitung und saubere Speicherfreigabe.
+- **CLEAN-CODE-GEBOT:** Strikte Trennung in Präsentation (Widgets/Screens), Geschäftslogik (Provider/Controllers) und Datenhaltung (Repositories/Services). Selbsterklärende Bezeichner, Verbot von ungenutztem/auskommentiertem Code und Verbot von hartcodierten UI-Strings (Lokalisierung DE/EN).
+- **100 % DEUTSCHE KOMMENTIERUNG AM GESAMTEN CODE:** Datei-Header-Kommentar in jeder Datei, deutsche Dokumentations-Kommentare (`///` bzw. `/** ... */`) an jeder Klasse, jedem Interface, Enum, Provider, Widget und jeder Methode (öffentlich & privat, Was/Warum/Parameter/Rückgabewert) sowie deutsche Inline-Kommentare (`//`) für logische Abschnitte.
+
+## 8. Eiserne Nachtschicht-Gesetze (Phasen 35–46)
 - Absolutes Frage-Verbot (vollautonomer Durchlauf, Self-Healing).
 - Atomare Commits + Pflichtprotokoll in `docs/NIGHT_SHIFT_LOG.md` & Chat nach jedem Unterpaket.
 - Strikter Phasenabschluss: Fast-Forward-Merge, Tag `v0.XX.0`, Push, APK-Build & Hardware-Screenshots auf Pixel 10 Pro.

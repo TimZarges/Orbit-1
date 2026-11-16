@@ -1,4 +1,4 @@
-import 'package:orbit/features/settings/models/app_settings.dart';
+import '../../features/settings/models/app_settings.dart';
 
 /// Zentrale Schicht zur Formatierung von Einheiten basierend auf dem
 /// Messsystem (Metrisch vs. Imperial).
@@ -22,11 +22,11 @@ class MeasurementFormatter {
   String formatPace(double speedMetersPerSecond) {
     if (speedMetersPerSecond <= 0) return '-:--';
 
-    double distanceMultiplier =
+    final double distanceMultiplier =
         system == MeasurementSystem.imperial ? 1609.34 : 1000.0;
 
     // Sekunden pro km/mi
-    double secondsPerUnit = distanceMultiplier / speedMetersPerSecond;
+    final double secondsPerUnit = distanceMultiplier / speedMetersPerSecond;
 
     int minutes = (secondsPerUnit / 60).floor();
     int seconds = (secondsPerUnit % 60).round();
@@ -45,9 +45,9 @@ class MeasurementFormatter {
     if (speedMetersPerSecond <= 0) return '-:--';
 
     // Für imperial (yd) -> 100yd = 91.44m
-    double distance = system == MeasurementSystem.imperial ? 91.44 : 100.0;
+    final double distance = system == MeasurementSystem.imperial ? 91.44 : 100.0;
 
-    double secondsPerUnit = distance / speedMetersPerSecond;
+    final double secondsPerUnit = distance / speedMetersPerSecond;
 
     int minutes = (secondsPerUnit / 60).floor();
     int seconds = (secondsPerUnit % 60).round();

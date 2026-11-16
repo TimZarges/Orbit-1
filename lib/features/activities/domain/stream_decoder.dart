@@ -31,10 +31,10 @@ class StreamDecoder {
     double alt = 120.0;
     double cumulativeDist = 0.0;
 
-    double basePower = sport == 'BIKE' ? 220.0 : 0.0;
-    double baseHr = 135.0;
-    double baseCadence = sport == 'BIKE' ? 88.0 : 172.0;
-    double baseSpeed =
+    final double basePower = sport == 'BIKE' ? 220.0 : 0.0;
+    const double baseHr = 135.0;
+    final double baseCadence = sport == 'BIKE' ? 88.0 : 172.0;
+    final double baseSpeed =
         sport == 'BIKE' ? 8.5 : 3.3; // m/s (ca. 30 km/h Rad, 5:00/km Lauf)
 
     for (int t = 0; t < durationSec; t++) {
@@ -65,13 +65,13 @@ class StreamDecoder {
       }
 
       // Geschwindigkeit (am Berg langsamer, bergab schneller)
-      double currentSpeed =
+      final double currentSpeed =
           (baseSpeed - (hillFactor * 2.5) + (random.nextDouble() * 0.4 - 0.2))
               .clamp(1.5, 18.0);
       cumulativeDist += currentSpeed;
 
       // Trittfrequenz
-      double currentCadence =
+      final double currentCadence =
           (baseCadence + (random.nextDouble() * 6 - 3)).clamp(60.0, 115.0);
 
       // GPS Drift (Rundkurs)
@@ -92,7 +92,7 @@ class StreamDecoder {
         lng: hasGps ? lng : null,
         tempC: 18.5 + (sin(t / 3600.0) * 3.0),
         distanceM: cumulativeDist,
-      ));
+      ),);
     }
 
     return ActivityStream(

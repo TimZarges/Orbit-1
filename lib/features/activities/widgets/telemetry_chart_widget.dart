@@ -56,13 +56,13 @@ class _TelemetryChartWidgetState extends State<TelemetryChartWidget> {
   }
 
   void _handleLongPressStart(
-      LongPressStartDetails details, BoxConstraints constraints) {
+      LongPressStartDetails details, BoxConstraints constraints,) {
     HapticFeedback.selectionClick();
     _updateScrub(details.localPosition.dx, constraints.maxWidth);
   }
 
   void _handleLongPressMoveUpdate(
-      LongPressMoveUpdateDetails details, BoxConstraints constraints) {
+      LongPressMoveUpdateDetails details, BoxConstraints constraints,) {
     _updateScrub(details.localPosition.dx, constraints.maxWidth);
   }
 
@@ -98,7 +98,7 @@ class _TelemetryChartWidgetState extends State<TelemetryChartWidget> {
         color: const Color(0xFF001F47),
         alignment: Alignment.center,
         child: const Text('Keine Telemetrie-Daten vorhanden',
-            style: TextStyle(color: Colors.white54)),
+            style: TextStyle(color: Colors.white54),),
       );
     }
 
@@ -145,8 +145,9 @@ class _TelemetryChartWidgetState extends State<TelemetryChartWidget> {
                       child: ValueListenableBuilder<int?>(
                         valueListenable: _scrubIndexNotifier,
                         builder: (context, scrubIndex, _) {
-                          if (scrubIndex == null)
+                          if (scrubIndex == null) {
                             return const SizedBox.shrink();
+                          }
                           return CustomPaint(
                             size: Size(constraints.maxWidth, widget.height),
                             painter: _TelemetryCursorPainter(
@@ -187,7 +188,7 @@ class _TelemetryChartWidgetState extends State<TelemetryChartWidget> {
                 right: 8,
                 child: IconButton(
                   icon: const Icon(Icons.fullscreen,
-                      color: Colors.white70, size: 20),
+                      color: Colors.white70, size: 20,),
                   constraints:
                       const BoxConstraints(minWidth: 48, minHeight: 48),
                   onPressed: widget.onToggleFullscreen,
@@ -210,7 +211,7 @@ class _TelemetryChartWidgetState extends State<TelemetryChartWidget> {
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: AppColors.accentVolt.withValues(alpha: 0.8)),
         boxShadow: const [
-          BoxShadow(color: Colors.black54, blurRadius: 6, offset: Offset(0, 2))
+          BoxShadow(color: Colors.black54, blurRadius: 6, offset: Offset(0, 2)),
         ],
       ),
       child: Column(
@@ -224,7 +225,7 @@ class _TelemetryChartWidgetState extends State<TelemetryChartWidget> {
             style: AppTypography.label.copyWith(
                 color: AppColors.accentVolt,
                 fontWeight: FontWeight.bold,
-                fontSize: 10),
+                fontSize: 10,),
           ),
           const SizedBox(height: 2),
           Wrap(
@@ -236,7 +237,7 @@ class _TelemetryChartWidgetState extends State<TelemetryChartWidget> {
                     style: TextStyle(
                         color: TelemetryChannel.power.color,
                         fontSize: 10,
-                        fontWeight: FontWeight.bold)),
+                        fontWeight: FontWeight.bold,),),
               if ((widget.activeChannels.contains(TelemetryChannel.wBal) ||
                       widget.activeChannels.contains(TelemetryChannel.power)) &&
                   point.wBalPercent != null)
@@ -244,35 +245,35 @@ class _TelemetryChartWidgetState extends State<TelemetryChartWidget> {
                     style: TextStyle(
                         color: TelemetryChannel.wBal.color,
                         fontSize: 10,
-                        fontWeight: FontWeight.bold)),
+                        fontWeight: FontWeight.bold,),),
               if (widget.activeChannels.contains(TelemetryChannel.heartRate) &&
                   point.hr != null)
                 Text('${point.hr!.round()} bpm',
                     style: TextStyle(
                         color: TelemetryChannel.heartRate.color,
                         fontSize: 10,
-                        fontWeight: FontWeight.bold)),
+                        fontWeight: FontWeight.bold,),),
               if (widget.activeChannels.contains(TelemetryChannel.speed) &&
                   point.speedMps != null)
                 Text('${(point.speedMps! * 3.6).toStringAsFixed(1)} km/h',
                     style: TextStyle(
                         color: TelemetryChannel.speed.color,
                         fontSize: 10,
-                        fontWeight: FontWeight.bold)),
+                        fontWeight: FontWeight.bold,),),
               if (widget.activeChannels.contains(TelemetryChannel.cadence) &&
                   point.cadence != null)
                 Text('${point.cadence!.round()} rpm',
                     style: TextStyle(
                         color: TelemetryChannel.cadence.color,
                         fontSize: 10,
-                        fontWeight: FontWeight.bold)),
+                        fontWeight: FontWeight.bold,),),
               if (widget.activeChannels.contains(TelemetryChannel.altitude) &&
                   point.altitudeM != null)
                 Text('${point.altitudeM!.round()} m',
                     style: TextStyle(
                         color: TelemetryChannel.altitude.color,
                         fontSize: 10,
-                        fontWeight: FontWeight.bold)),
+                        fontWeight: FontWeight.bold,),),
             ],
           ),
         ],
@@ -360,25 +361,25 @@ class _TelemetryChartStaticPainter extends CustomPainter {
     if (activeChannels.contains(TelemetryChannel.power) && maxPower > 0) {
       _drawLine(canvas, size, h, (p) => p.power, maxPower * 1.1,
           TelemetryChannel.power.color,
-          strokeWidth: 1.5);
+          strokeWidth: 1.5,);
     }
 
     if (activeChannels.contains(TelemetryChannel.heartRate) && maxHr > 0) {
       _drawLine(canvas, size, h, (p) => p.hr, maxHr * 1.05,
           TelemetryChannel.heartRate.color,
-          strokeWidth: 1.5);
+          strokeWidth: 1.5,);
     }
 
     if (activeChannels.contains(TelemetryChannel.speed) && maxSpeed > 0) {
       _drawLine(canvas, size, h, (p) => p.speedMps, maxSpeed * 1.1,
           TelemetryChannel.speed.color,
-          strokeWidth: 1.5);
+          strokeWidth: 1.5,);
     }
 
     if (activeChannels.contains(TelemetryChannel.cadence) && maxCad > 0) {
       _drawLine(canvas, size, h, (p) => p.cadence, maxCad * 1.1,
           TelemetryChannel.cadence.color,
-          strokeWidth: 1.5);
+          strokeWidth: 1.5,);
     }
   }
 

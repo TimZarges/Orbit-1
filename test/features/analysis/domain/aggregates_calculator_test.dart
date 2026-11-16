@@ -24,7 +24,7 @@ void main() {
       ];
 
       final planned = [
-        PlannedWorkout(
+        const PlannedWorkout(
           id: 'p1',
           athleteId: 'a1',
           createdBy: 'a1',
@@ -34,7 +34,7 @@ void main() {
           plannedDurationSec: 3600,
           plannedLoad: 70.0,
         ),
-        PlannedWorkout(
+        const PlannedWorkout(
           id: 'p2',
           athleteId: 'a1',
           createdBy: 'a1',
@@ -112,11 +112,11 @@ void main() {
     test('calculate8WeekTrend und describeWeeklyTrend', () {
       final points = [
         const WeeklyLoadTrendPoint(
-            weekNumber: 1, weekLabel: 'W1', totalLoad: 200),
+            weekNumber: 1, weekLabel: 'W1', totalLoad: 200,),
         const WeeklyLoadTrendPoint(
-            weekNumber: 2, weekLabel: 'W2', totalLoad: 250),
+            weekNumber: 2, weekLabel: 'W2', totalLoad: 250,),
         const WeeklyLoadTrendPoint(
-            weekNumber: 3, weekLabel: 'W3', totalLoad: 280),
+            weekNumber: 3, weekLabel: 'W3', totalLoad: 280,),
       ];
 
       final desc = AggregatesCalculator.describeWeeklyTrend(points);

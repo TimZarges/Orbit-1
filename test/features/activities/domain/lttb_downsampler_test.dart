@@ -42,7 +42,7 @@ void main() {
     test('performant bei 36.000 Datenpunkten (10h Aktivität)', () {
       final input = List.generate(36000, (i) {
         return ActivityStreamPoint(
-            timeSec: i, power: 220.0 + (i % 20), hr: 140.0);
+            timeSec: i, power: 220.0 + (i % 20), hr: 140.0,);
       });
 
       final stopwatch = Stopwatch()..start();

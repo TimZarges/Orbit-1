@@ -40,7 +40,7 @@ class MatchingEngine {
           workout: plan,
           score: scoreData.score,
           reason: scoreData.reason,
-        ));
+        ),);
       }
     }
 
@@ -75,7 +75,7 @@ class MatchingEngine {
 
   /// Berechnet den Zuordnungs-Score (0 bis 100) zwischen einer Aktivität und einem Plan.
   static ({int score, String reason}) _calculateScore(
-      Activity activity, PlannedWorkout plan) {
+      Activity activity, PlannedWorkout plan,) {
     int totalScore = 0;
     final reasons = <String>[];
 

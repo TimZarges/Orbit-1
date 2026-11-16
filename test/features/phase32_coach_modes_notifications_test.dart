@@ -74,7 +74,7 @@ void main() {
           child: MaterialApp(
             home: Scaffold(
               appBar: AppBar(
-                actions: [NotificationBellIconButton()],
+                actions: const [NotificationBellIconButton()],
               ),
             ),
           ),

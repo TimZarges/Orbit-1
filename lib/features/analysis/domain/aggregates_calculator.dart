@@ -105,7 +105,7 @@ class AggregatesCalculator {
 
   /// Berechnet die kumulierte Sportarten-Verteilung.
   static SportDistributionSummary calculateSportDistribution(
-      List<DailyAggregate> aggregates) {
+      List<DailyAggregate> aggregates,) {
     final map = <String, double>{};
     for (final agg in aggregates) {
       agg.sportsBreakdownSec.forEach((sport, sec) {
@@ -117,7 +117,7 @@ class AggregatesCalculator {
 
   /// Berechnet die kumulierte Zonenverteilung.
   static ZoneDistributionSummary calculateZoneDistribution(
-      List<DailyAggregate> aggregates) {
+      List<DailyAggregate> aggregates,) {
     final zones = List<double>.filled(7, 0.0);
     for (final agg in aggregates) {
       for (int i = 0; i < min(7, agg.zoneBreakdownSec.length); i++) {
@@ -129,7 +129,7 @@ class AggregatesCalculator {
 
   /// Erzeugt Datenpunkte für die letzten 8 Wochen.
   static List<WeeklyLoadTrendPoint> calculate8WeekTrend(
-      List<DailyAggregate> sortedAggregatesDesc) {
+      List<DailyAggregate> sortedAggregatesDesc,) {
     final points = <WeeklyLoadTrendPoint>[];
     if (sortedAggregatesDesc.isEmpty) return points;
 
@@ -141,12 +141,12 @@ class AggregatesCalculator {
       final slice = sortedAggregatesDesc.sublist(start, end);
       final load = slice.fold(0.0, (sum, a) => sum + a.dailyLoad);
 
-      final label = w == 0 ? 'Aktuell' : 'KW -${w}';
+      final label = w == 0 ? 'Aktuell' : 'KW -$w';
       points.add(WeeklyLoadTrendPoint(
         weekNumber: 8 - w,
         weekLabel: label,
         totalLoad: load,
-      ));
+      ),);
     }
 
     return points.reversed.toList();
@@ -155,8 +155,9 @@ class AggregatesCalculator {
   /// Erzeugt eine barrierefreie Textzusammenfassung für den 8-Wochen-Trend.
   static String describeWeeklyTrend(List<WeeklyLoadTrendPoint> points) {
     if (points.isEmpty) return 'Noch keine Trenddaten verfügbar.';
-    if (points.length < 2)
+    if (points.length < 2) {
       return 'Belastung der letzten Woche: ${points.first.totalLoad.round()} TSS.';
+    }
 
     final first = points.first.totalLoad;
     final last = points.last.totalLoad;
@@ -179,7 +180,7 @@ class AggregatesCalculator {
 
   /// Erzeugt Zeitreihenpunkte für das CTL/ATL/TSB-Diagramm.
   static List<FitnessFatiguePoint> calculateFitnessFatiguePoints(
-      List<DailyAggregate> aggregatesAsc) {
+      List<DailyAggregate> aggregatesAsc,) {
     return aggregatesAsc.map((a) {
       return FitnessFatiguePoint(
         date: a.localDate,
@@ -208,7 +209,7 @@ class AggregatesCalculator {
         tsb: a.tsb,
         dailyLoad: a.dailyLoad,
         isProjection: false,
-      ));
+      ),);
     }
 
     if (points.isEmpty) return points;
@@ -249,7 +250,7 @@ class AggregatesCalculator {
         tsb: nextTsb,
         dailyLoad: dayTss,
         isProjection: true,
-      ));
+      ),);
 
       lastCtl = nextCtl;
       lastAtl = nextAtl;

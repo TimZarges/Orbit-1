@@ -69,7 +69,7 @@ class InfoTerm extends StatelessWidget {
   Widget build(BuildContext context) {
     return IconButton(
       icon: const Icon(Icons.info_outline, size: 20),
-      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
       onPressed: () => _showInfoSheet(context),
       tooltip: title,
     );

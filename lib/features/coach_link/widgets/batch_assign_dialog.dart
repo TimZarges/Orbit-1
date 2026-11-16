@@ -56,7 +56,7 @@ class _BatchAssignDialogState extends ConsumerState<BatchAssignDialog> {
     if (_selectedTemplate == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-            content: Text('Bitte wähle zuerst eine Workout-Vorlage aus.')),
+            content: Text('Bitte wähle zuerst eine Workout-Vorlage aus.'),),
       );
       return;
     }
@@ -113,7 +113,7 @@ class _BatchAssignDialogState extends ConsumerState<BatchAssignDialog> {
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: const Icon(Icons.group_add_outlined,
-                          size: 20, color: AppColors.navy),
+                          size: 20, color: AppColors.navy,),
                     ),
                     const SizedBox(width: 12),
                     Text(
@@ -139,16 +139,16 @@ class _BatchAssignDialogState extends ConsumerState<BatchAssignDialog> {
             // Vorlagen-Auswahl
             Text('Vorlage auswählen:',
                 style:
-                    AppTypography.body.copyWith(fontWeight: FontWeight.bold)),
+                    AppTypography.body.copyWith(fontWeight: FontWeight.bold),),
             const SizedBox(height: 8),
             templatesAsync.when(
               data: (templates) {
                 if (templates.isEmpty) {
                   return const Text(
-                      'Keine Vorlagen in der Bibliothek vorhanden.');
+                      'Keine Vorlagen in der Bibliothek vorhanden.',);
                 }
                 return DropdownButtonFormField<WorkoutTemplate>(
-                  value: _selectedTemplate,
+                  initialValue: _selectedTemplate,
                   decoration:
                       const InputDecoration(border: OutlineInputBorder()),
                   hint: const Text('Vorlage wählen...'),
@@ -195,9 +195,9 @@ class _BatchAssignDialogState extends ConsumerState<BatchAssignDialog> {
                   children: [
                     Text('Datum: $_targetDate',
                         style:
-                            AppTypography.body.copyWith(color: AppColors.navy)),
+                            AppTypography.body.copyWith(color: AppColors.navy),),
                     const Icon(Icons.calendar_month,
-                        size: 20, color: AppColors.navy),
+                        size: 20, color: AppColors.navy,),
                   ],
                 ),
               ),
@@ -216,7 +216,7 @@ class _BatchAssignDialogState extends ConsumerState<BatchAssignDialog> {
                 child: Row(
                   children: [
                     const Icon(Icons.preview_outlined,
-                        size: 20, color: AppColors.navy),
+                        size: 20, color: AppColors.navy,),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
@@ -224,7 +224,7 @@ class _BatchAssignDialogState extends ConsumerState<BatchAssignDialog> {
                         style: AppTypography.body.copyWith(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
-                            color: AppColors.navy),
+                            color: AppColors.navy,),
                       ),
                     ),
                   ],
@@ -250,15 +250,15 @@ class _BatchAssignDialogState extends ConsumerState<BatchAssignDialog> {
                     backgroundColor: AppColors.volt,
                     foregroundColor: AppColors.navy,
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10)),
+                        borderRadius: BorderRadius.circular(10),),
                   ),
                   child: _isExecuting
                       ? const SizedBox(
                           width: 18,
                           height: 18,
-                          child: CircularProgressIndicator(strokeWidth: 2))
+                          child: CircularProgressIndicator(strokeWidth: 2),)
                       : const Text('Jetzt zuweisen',
-                          style: TextStyle(fontWeight: FontWeight.bold)),
+                          style: TextStyle(fontWeight: FontWeight.bold),),
                 ),
               ],
             ),

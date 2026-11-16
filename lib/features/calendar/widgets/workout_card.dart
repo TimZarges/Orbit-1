@@ -87,7 +87,7 @@ class WorkoutCard extends StatelessWidget {
                         Row(
                           children: [
                             Icon(_getSportIcon(workout.sport),
-                                size: 16, color: sportColor),
+                                size: 16, color: sportColor,),
                             const SizedBox(width: 6),
                             Text(
                               workout.sport,
@@ -100,7 +100,7 @@ class WorkoutCard extends StatelessWidget {
                               const SizedBox(width: 8),
                               Text(
                                 OrbitDateFormatter.formatDateString(
-                                    workout.localDate),
+                                    workout.localDate,),
                                 style: theme.textTheme.labelSmall?.copyWith(
                                   color: isDark
                                       ? const Color(0xFF94A3B8)
@@ -111,7 +111,7 @@ class WorkoutCard extends StatelessWidget {
                             const Spacer(),
                             Container(
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 6, vertical: 2),
+                                  horizontal: 6, vertical: 2,),
                               decoration: BoxDecoration(
                                 color: statusBadgeColor.withValues(alpha: 0.15),
                                 borderRadius: BorderRadius.circular(6),
@@ -120,7 +120,7 @@ class WorkoutCard extends StatelessWidget {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Icon(statusIcon,
-                                      size: 12, color: statusBadgeColor),
+                                      size: 12, color: statusBadgeColor,),
                                   const SizedBox(width: 4),
                                   Text(
                                     statusText,

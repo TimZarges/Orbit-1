@@ -96,14 +96,14 @@ class WorkoutBlockExtractor {
 
     // 3. Intelligente Erkennung von Wiederholungsmustern im Titel (z. B. "4x4min", "5x3 min", "30/30")
     final repeatSteps = _inferFromTitle(
-        workout.title, workout.plannedDurationSec, thresholds, maxHr);
+        workout.title, workout.plannedDurationSec, thresholds, maxHr,);
     if (repeatSteps != null && repeatSteps.isNotEmpty) {
       return repeatSteps;
     }
 
     // 4. Fallback auf dreiteiliges Standard-Profil (Warmup 15 %, GA1 70 %, Cooldown 15 %)
     return _buildDefaultThreePart(
-        workout.plannedDurationSec, thresholds, maxHr);
+        workout.plannedDurationSec, thresholds, maxHr,);
   }
 
   /// Wandelt eine rohe Firestore-Map-Struktur in [ExtractedWorkoutStep]s um.
@@ -164,7 +164,7 @@ class WorkoutBlockExtractor {
           zone: zone,
           thresholds: thresholds,
           maxHr: maxHr,
-        ));
+        ),);
       } else if (type == 'REPEAT') {
         final count = (b['count'] as num?)?.toInt() ?? 3;
         final inner = b['blocks'] as List<dynamic>? ?? [];
@@ -213,7 +213,7 @@ class WorkoutBlockExtractor {
               zone: zone,
               thresholds: thresholds,
               maxHr: maxHr,
-            ));
+            ),);
           }
         }
       }
@@ -251,7 +251,7 @@ class WorkoutBlockExtractor {
           zone: zone,
           thresholds: thresholds,
           maxHr: maxHr,
-        ));
+        ),);
       } else if (b is RepeatBlock) {
         for (int i = 0; i < b.count; i++) {
           for (final sub in b.blocks) {
@@ -272,7 +272,7 @@ class WorkoutBlockExtractor {
                 zone: zone,
                 thresholds: thresholds,
                 maxHr: maxHr,
-              ));
+              ),);
             }
           }
         }
@@ -317,8 +317,8 @@ class WorkoutBlockExtractor {
     final restSec = intervalSec >= 180 ? 120 : (intervalSec ~/ 2).clamp(30, 90);
 
     // Warmup & Cooldown ermitteln
-    final warmupSec = 600; // 10 min
-    final cooldownSec = 600; // 10 min
+    const warmupSec = 600; // 10 min
+    const cooldownSec = 600; // 10 min
 
     final steps = <ExtractedWorkoutStep>[];
     int counter = 1;
@@ -331,7 +331,7 @@ class WorkoutBlockExtractor {
       zone: 2,
       thresholds: thresholds,
       maxHr: maxHr,
-    ));
+    ),);
 
     // 2. Wiederholungsschleife
     for (int i = 0; i < count; i++) {
@@ -342,7 +342,7 @@ class WorkoutBlockExtractor {
         zone: 5,
         thresholds: thresholds,
         maxHr: maxHr,
-      ));
+      ),);
       steps.add(_buildStep(
         stepIndex: counter++,
         label: 'Erholung ${i + 1}/$count',
@@ -350,7 +350,7 @@ class WorkoutBlockExtractor {
         zone: 1,
         thresholds: thresholds,
         maxHr: maxHr,
-      ));
+      ),);
     }
 
     // 3. Cooldown
@@ -361,7 +361,7 @@ class WorkoutBlockExtractor {
       zone: 1,
       thresholds: thresholds,
       maxHr: maxHr,
-    ));
+    ),);
 
     return steps;
   }

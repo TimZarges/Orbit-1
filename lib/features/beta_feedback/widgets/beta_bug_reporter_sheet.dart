@@ -1,4 +1,3 @@
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -456,7 +455,7 @@ class _BetaBugReporterSheetState extends State<BetaBugReporterSheet> {
                         ),
                       )
                     : const Icon(Icons.send_outlined,
-                        size: 18, color: AppColors.navy),
+                        size: 18, color: AppColors.navy,),
                 label: Text(
                   _isSubmitting ? 'Wird gesendet...' : 'Meldung absenden',
                   style: const TextStyle(

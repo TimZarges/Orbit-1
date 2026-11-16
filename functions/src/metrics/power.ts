@@ -44,7 +44,7 @@ export interface CriticalPowerModelResult {
 export function calculatePowerMetrics(
   powerData: number[],
   ftp: number,
-  timestamps?: number[]
+  _timestamps?: number[]
 ): PowerMetricsResult {
   if (!powerData || powerData.length === 0 || ftp <= 0) {
     return { np: 0, iff: 0, tss: 0, avgPower: 0, maxPower: 0, vi: 1.0, workKj: 0 };

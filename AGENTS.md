@@ -46,6 +46,10 @@
 ### Regel 6: Durchgängige deutsche Code-Kommentarpflicht (`///` & `/** ... */`)
 - Jede neu erstellte oder geänderte Datei, Klasse, Provider-Logik, Cloud Function und Security Rule (`firestore.rules`, `storage.rules`) MUSS mit verständlichen **deutschen Dokumentations-Kommentaren** versehen werden.
 - Kommentiere immer das **„Was & Warum“**: Welchen fachlichen Zweck erfüllt die Datei? Welche sportwissenschaftliche Formel oder Schwellenwert-Grenze wird berechnet? Warum erlaubt oder blockiert eine Sicherheitsregel den Zugriff?
+- **100 % DEUTSCHE KOMMENTIERUNG AM GESAMTEN CODE:**
+  - Jede Datei erhält einen deutschen Datei-Header-Kommentar (Zweck der Datei, Einordnung in die Architektur).
+  - Jede Klasse, jedes Interface, jedes Enum, jeder Provider, jedes Widget und jede Methode (öffentlich wie privat) erhält deutsche Dokumentations-Kommentare (`///` in Dart, `/** ... */` in TypeScript) mit Erklärung von Zweck (Was), Architekturentscheidung/Effizienz (Warum), Parametern und Rückgabewerten.
+  - Innerhalb von Methoden wird jeder logische Abschnitt mit klaren deutschen Inline-Kommentaren (`//`) erläutert.
 
 ### Regel 7: Zentrale Sprach- & Farb-Indizes (Zero Hardcoding)
 - Keine hartcodierten UI-Texte oder willkürlichen Hex-Farben in Widgets! Alle Farben laufen über zentrale Design-Tokens (`#001F47` Navy, `#CDFB17` Volt etc. aus `AppColors`) und alle Texte über den zentralen Sprach-Index (`AppStrings` / `.arb` DE/EN).
@@ -56,10 +60,24 @@
 - Niemals dürfen Nutzer-, Gesundheits- oder Trainingsdaten ungeschützt im Internet liegen.
 
 ### Regel 9: Automatischer Qualitäts-Gate vor Merge (`scripts/check_phase_ready.sh`)
-- Vor jedem Phasen-Merge muss `bash scripts/check_phase_ready.sh` erfolgreich durchlaufen:
-  1. `flutter analyze` 0 Errors, 0 Warnings.
-  2. Alle geänderten `.dart`- und `.ts`-Dateien besitzen deutsche Dokumentations-Kommentare (`///` bzw. `/**`).
-  3. `PROGRESS.md` und Phasendatei sind auf aktuellem Stand abgehakt.
+- Vor jedem Phasen-Merge und Commit muss `bash scripts/check_phase_ready.sh` erfolgreich durchlaufen:
+  1. `flutter analyze` (0 Errors, 0 Warnings, 0 Infos).
+  2. TypeScript-Build (`npm --prefix functions run build`) & Linting (`npm --prefix functions run lint`) in `functions/` (0 Errors).
+  3. Automatisierte Prüfung, dass alle geänderten und bestehenden `.dart`- und `.ts`-Dateien über vollständige deutsche Dokumentations-Kommentare (`///` bzw. `/**`) verfügen.
+  4. Sauberer Test-Durchlauf aller Unit- und Widget-Tests (`flutter test` & Backend-Tests).
+  5. `PROGRESS.md` und Phasendatei sind auf aktuellem Stand abgehakt.
+
+### Regel 10: Code-Qualität, Effizienz & Clean-Code-Gebot
+- **EFFIZIENZ-GEBOT:**
+  - **Flutter UI:** Konsequenter Einsatz von `const`-Konstruktoren, `RepaintBoundary` bei Grafiken, `ListView.builder` für Listen und granularen Riverpod-Selektoren (`ref.watch(provider.select(...))`), um unnötige Widget-Rebuilds zu verhindern. Keine Berechnungen oder Objekt-Instanziierungen innerhalb von `build()`-Methoden.
+  - **Backend & Firestore:** Sparsame Firestore-Abfragen mit klaren Limits, Vermeidung redundanter Lesezugriffe, Streaming bei Datei-Downloads/ `.FIT`-Verarbeitung und saubere Speicherfreigabe.
+- **CLEAN-CODE-GEBOT:**
+  - Strikte Trennung in Präsentation (Widgets/Screens), Geschäftslogik (Provider/Controllers) und Datenhaltung (Repositories/Services).
+  - Selbsterklärende Bezeichner, Verbot von ungenutztem/auskommentiertem Code und Verbot von hartcodierten UI-Strings (alles über Lokalisierung DE/EN).
+- **100 % DEUTSCHE KOMMENTIERUNG AM GESAMTEN CODE:**
+  - Jede Datei erhält einen deutschen Datei-Header-Kommentar (Zweck der Datei, Einordnung in die Architektur).
+  - Jede Klasse, jedes Interface, jedes Enum, jeder Provider, jedes Widget und jede Methode (öffentlich wie privat) erhält deutsche Dokumentations-Kommentare (`///` in Dart, `/** ... */` in TypeScript) mit Erklärung von Zweck (Was), Architekturentscheidung/Effizienz (Warum), Parametern und Rückgabewerten.
+  - Innerhalb von Methoden wird jeder logische Abschnitt mit klaren deutschen Inline-Kommentaren (`//`) erläutert.
 
 ---
 

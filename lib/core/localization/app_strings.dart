@@ -7,7 +7,7 @@ import '../../features/settings/models/app_settings.dart';
 class AppStrings {
   // Erfahrungsstufen
   static String experienceLevelLabel(ExperienceLevel level,
-      {String lang = 'de'}) {
+      {String lang = 'de',}) {
     switch (level) {
       case ExperienceLevel.beginner:
         return lang == 'de' ? 'Einfach' : 'Simple';
@@ -19,7 +19,7 @@ class AppStrings {
   }
 
   static String experienceLevelDescription(ExperienceLevel level,
-      {String lang = 'de'}) {
+      {String lang = 'de',}) {
     switch (level) {
       case ExperienceLevel.beginner:
         return lang == 'de'
@@ -50,7 +50,7 @@ class AppStrings {
 
   // Einheiten
   static String measurementSystemLabel(MeasurementSystem system,
-      {String lang = 'de'}) {
+      {String lang = 'de',}) {
     switch (system) {
       case MeasurementSystem.metric:
         return lang == 'de' ? 'Metrisch (km, kg, °C)' : 'Metric (km, kg, °C)';

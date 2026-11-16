@@ -16,7 +16,7 @@ class ActivityActions {
   /// und triggert die Neuberechnung des täglichen Belastungsaggregats.
   Future<void> deleteActivity(String activityId) async {
     final athleteId = ref.read(viewedAthleteIdProvider);
-    if (athleteId == null) throw Exception("No athlete context");
+    if (athleteId == null) throw Exception('No athlete context');
 
     final callable = FirebaseFunctions.instanceFor(region: 'europe-west3')
         .httpsCallable('deleteActivity');

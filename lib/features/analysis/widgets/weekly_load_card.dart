@@ -47,8 +47,8 @@ class WeeklyLoadCard extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Icon(Icons.assessment_outlined,
-                        size: 20, color: AppColors.navy),
+                    const Icon(Icons.assessment_outlined,
+                        size: 20, color: AppColors.navy,),
                     const SizedBox(width: 8),
                     Text(
                       'Wochenbelastung',
@@ -62,7 +62,7 @@ class WeeklyLoadCard extends StatelessWidget {
                   label: 'Information zur Trainingsbelastung',
                   child: IconButton(
                     icon: const Icon(Icons.info_outline,
-                        size: 20, color: Colors.grey),
+                        size: 20, color: Colors.grey,),
                     constraints:
                         const BoxConstraints(minWidth: 48, minHeight: 48),
                     onPressed: () => AnalysisInfoSheet.showTerm(
@@ -127,7 +127,7 @@ class WeeklyLoadCard extends StatelessWidget {
                     color: summary.statusColor.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                        color: summary.statusColor.withValues(alpha: 0.4)),
+                        color: summary.statusColor.withValues(alpha: 0.4),),
                   ),
                   child: Text(
                     summary.statusTextDe,

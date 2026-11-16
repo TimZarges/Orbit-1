@@ -33,7 +33,7 @@ class ChatConversation {
   });
 
   factory ChatConversation.fromDocument(DocumentSnapshot doc,
-      {String? currentUid}) {
+      {String? currentUid,}) {
     final data = (doc.data() as Map<String, dynamic>?) ?? {};
 
     final athleteId = data['athleteId'] as String? ?? '';

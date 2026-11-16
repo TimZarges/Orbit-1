@@ -173,7 +173,7 @@ class _WorkoutBuilderScreenState extends ConsumerState<WorkoutBuilderScreen> {
               foregroundColor: AppColors.navy,
               padding: const EdgeInsets.symmetric(vertical: 14),
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
+                  borderRadius: BorderRadius.circular(12),),
             ),
             icon: const Icon(Icons.calendar_today_outlined),
             label: const Text(
@@ -190,7 +190,7 @@ class _WorkoutBuilderScreenState extends ConsumerState<WorkoutBuilderScreen> {
   }
 
   Widget _buildSportSelector(
-      String currentSport, WorkoutBuilderNotifier notifier) {
+      String currentSport, WorkoutBuilderNotifier notifier,) {
     const sports = [
       ('BIKE', 'Rad', Icons.directions_bike),
       ('RUN', 'Lauf', Icons.directions_run),
@@ -216,7 +216,7 @@ class _WorkoutBuilderScreenState extends ConsumerState<WorkoutBuilderScreen> {
   }
 
   Widget _buildTextInputCard(
-      WorkoutBuilderState state, WorkoutBuilderNotifier notifier) {
+      WorkoutBuilderState state, WorkoutBuilderNotifier notifier,) {
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(
@@ -251,7 +251,7 @@ class _WorkoutBuilderScreenState extends ConsumerState<WorkoutBuilderScreen> {
                           style: TextStyle(
                               color: Colors.green,
                               fontSize: 12,
-                              fontWeight: FontWeight.bold)),
+                              fontWeight: FontWeight.bold,),),
                     ],
                   ),
               ],
@@ -318,13 +318,13 @@ class _WorkoutBuilderScreenState extends ConsumerState<WorkoutBuilderScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Icon(Icons.error_outline,
-                            size: 14, color: Colors.red),
+                            size: 14, color: Colors.red,),
                         const SizedBox(width: 6),
                         Expanded(
                           child: Text(
                             e.messageDe,
                             style: TextStyle(
-                                color: Colors.red.shade900, fontSize: 12),
+                                color: Colors.red.shade900, fontSize: 12,),
                           ),
                         ),
                       ],
@@ -347,30 +347,30 @@ class _WorkoutBuilderScreenState extends ConsumerState<WorkoutBuilderScreen> {
           "4x(4' Z4 / 2' Z1)",
           "3x(10' 90%FTP / 4' Z1)",
           "15' Z2",
-          "@90rpm"
+          '@90rpm',
         ];
       case 'RUN':
         return [
-          "2km Z1",
-          "5x(1000m @4:30/km / 90\")",
+          '2km Z1',
+          '5x(1000m @4:30/km / 90")',
           "6x(3' Z4 / 2' Z2)",
           "15' Z2",
-          "1.5km Z1"
+          '1.5km Z1',
         ];
       case 'SWIM':
         return [
-          "400m Z1",
-          "8x(100m CSS / 20\")",
-          "4x(100m CSS+4\" / 15\")",
+          '400m Z1',
+          '8x(100m CSS / 20")',
+          '4x(100m CSS+4" / 15")',
           "3x(4x(50m Z5 / 15\") / 2')",
-          "200m Z1"
+          '200m Z1',
         ];
       case 'STRENGTH':
         return [
           "5' Z1",
-          "3x(45\" frei [Plank] / 15\")",
-          "3x(45\" frei [Side Plank] / 15\")",
-          "5' frei [Stretching]"
+          '3x(45" frei [Plank] / 15")',
+          '3x(45" frei [Side Plank] / 15")',
+          "5' frei [Stretching]",
         ];
       default:
         return ["10' Z1", "4x(4' Z4 / 2' Z1)", "10' Z1"];
@@ -389,11 +389,11 @@ class _WorkoutBuilderScreenState extends ConsumerState<WorkoutBuilderScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           _buildMetricItem('Dauer', state.calculation.formattedDuration,
-              Icons.timer_outlined),
+              Icons.timer_outlined,),
           _buildMetricItem('Distanz', state.calculation.formattedDistance,
-              Icons.straighten_outlined),
+              Icons.straighten_outlined,),
           _buildMetricItem('ORBIT Score', state.calculation.formattedLoad,
-              Icons.bolt_outlined),
+              Icons.bolt_outlined,),
         ],
       ),
     );
@@ -408,7 +408,7 @@ class _WorkoutBuilderScreenState extends ConsumerState<WorkoutBuilderScreen> {
             Icon(icon, size: 14, color: Colors.grey),
             const SizedBox(width: 4),
             Text(label,
-                style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                style: const TextStyle(fontSize: 11, color: Colors.grey),),
           ],
         ),
         const SizedBox(height: 4),
@@ -436,7 +436,7 @@ class _WorkoutBuilderScreenState extends ConsumerState<WorkoutBuilderScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text('Zeit je Zone',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),),
           const SizedBox(height: 8),
           ClipRRect(
             borderRadius: BorderRadius.circular(6),
@@ -495,7 +495,7 @@ class _WorkoutBuilderScreenState extends ConsumerState<WorkoutBuilderScreen> {
                 style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 12,
-                    color: Colors.black87),
+                    color: Colors.black87,),
               ),
             ],
           ),
@@ -504,13 +504,13 @@ class _WorkoutBuilderScreenState extends ConsumerState<WorkoutBuilderScreen> {
             Padding(
               padding: const EdgeInsets.only(bottom: 2.0),
               child: Text('• $a',
-                  style: const TextStyle(fontSize: 11, color: Colors.black87)),
+                  style: const TextStyle(fontSize: 11, color: Colors.black87),),
             ),
           for (final w in state.calculation.missingThresholdWarnings)
             Padding(
               padding: const EdgeInsets.only(bottom: 2.0),
               child: Text('⚠ $w',
-                  style: TextStyle(fontSize: 11, color: Colors.red.shade900)),
+                  style: TextStyle(fontSize: 11, color: Colors.red.shade900),),
             ),
         ],
       ),
@@ -825,7 +825,7 @@ class _WorkoutBuilderScreenState extends ConsumerState<WorkoutBuilderScreen> {
             const SizedBox(width: 6),
             IconButton(
               icon: const Icon(Icons.delete_outline,
-                  size: 18, color: Colors.redAccent),
+                  size: 18, color: Colors.redAccent,),
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints(),
               onPressed: () => notifier.deleteBlock(index),
@@ -860,9 +860,9 @@ class _WorkoutBuilderScreenState extends ConsumerState<WorkoutBuilderScreen> {
                       IconButton(
                         key: Key('repeat_decrement_$index'),
                         icon: const Icon(Icons.remove,
-                            size: 16, color: AppColors.navy),
+                            size: 16, color: AppColors.navy,),
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 4, vertical: 2),
+                            horizontal: 4, vertical: 2,),
                         constraints: const BoxConstraints(),
                         tooltip: 'Wiederholungen verringern',
                         onPressed: block.count > 2
@@ -874,7 +874,7 @@ class _WorkoutBuilderScreenState extends ConsumerState<WorkoutBuilderScreen> {
                       ),
                       Padding(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 4),
+                            horizontal: 6, vertical: 4,),
                         child: Text(
                           '${block.count}x Serie',
                           key: Key('repeat_count_text_$index'),
@@ -888,9 +888,9 @@ class _WorkoutBuilderScreenState extends ConsumerState<WorkoutBuilderScreen> {
                       IconButton(
                         key: Key('repeat_increment_$index'),
                         icon: const Icon(Icons.add,
-                            size: 16, color: AppColors.navy),
+                            size: 16, color: AppColors.navy,),
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 4, vertical: 2),
+                            horizontal: 4, vertical: 2,),
                         constraints: const BoxConstraints(),
                         tooltip: 'Wiederholungen erhöhen',
                         onPressed: block.count < 30
@@ -944,7 +944,7 @@ class _WorkoutBuilderScreenState extends ConsumerState<WorkoutBuilderScreen> {
                 const SizedBox(width: 6),
                 IconButton(
                   icon: const Icon(Icons.delete_outline,
-                      size: 18, color: Colors.redAccent),
+                      size: 18, color: Colors.redAccent,),
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),
                   onPressed: () => notifier.deleteBlock(index),
@@ -984,7 +984,7 @@ class _WorkoutBuilderScreenState extends ConsumerState<WorkoutBuilderScreen> {
   }
 
   Future<void> _scheduleInCalendar(
-      BuildContext context, WorkoutBuilderState state) async {
+      BuildContext context, WorkoutBuilderState state,) async {
     final now = DateTime.now();
     DateTime chosenDate = widget.targetLocalDate != null
         ? (DateTime.tryParse(widget.targetLocalDate!) ?? now)
@@ -1025,7 +1025,7 @@ class _WorkoutBuilderScreenState extends ConsumerState<WorkoutBuilderScreen> {
                       const Icon(Icons.calendar_today, size: 16),
                       const SizedBox(width: 8),
                       Text('Datum: $dateStr',
-                          style: const TextStyle(fontWeight: FontWeight.bold)),
+                          style: const TextStyle(fontWeight: FontWeight.bold),),
                       const Spacer(),
                       TextButton(
                         key: const Key('plan_workout_date_picker'),
@@ -1128,14 +1128,14 @@ class _WorkoutBuilderScreenState extends ConsumerState<WorkoutBuilderScreen> {
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-            content: Text('Einheit für $localDateStr im Kalender eingeplant!')),
+            content: Text('Einheit für $localDateStr im Kalender eingeplant!'),),
       );
       Navigator.of(context).pop();
     }
   }
 
   Future<void> _showSaveTemplateDialog(
-      BuildContext context, WorkoutBuilderState state) async {
+      BuildContext context, WorkoutBuilderState state,) async {
     final titleController =
         TextEditingController(text: '${state.sport} Einheit');
     final descController = TextEditingController();
@@ -1162,10 +1162,10 @@ class _WorkoutBuilderScreenState extends ConsumerState<WorkoutBuilderScreen> {
         actions: [
           TextButton(
               onPressed: () => Navigator.of(ctx).pop(false),
-              child: const Text('Abbrechen')),
+              child: const Text('Abbrechen'),),
           ElevatedButton(
               onPressed: () => Navigator.of(ctx).pop(true),
-              child: const Text('Speichern')),
+              child: const Text('Speichern'),),
         ],
       ),
     );
@@ -1518,7 +1518,7 @@ class _BlockEditorBottomSheetState extends State<_BlockEditorBottomSheet> {
                 style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
-                    color: Colors.grey),
+                    color: Colors.grey,),
               ),
               const SizedBox(height: 6),
               Wrap(
@@ -1571,7 +1571,7 @@ class _BlockEditorBottomSheetState extends State<_BlockEditorBottomSheet> {
                     style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
-                        color: Colors.grey),
+                        color: Colors.grey,),
                   ),
                   const SizedBox(height: 8),
                   Row(
@@ -1594,26 +1594,26 @@ class _BlockEditorBottomSheetState extends State<_BlockEditorBottomSheet> {
                       OutlinedButton(
                         onPressed: _durationMin > 0
                             ? () => setState(() =>
-                                _durationMin = (_durationMin - 1).clamp(0, 300))
+                                _durationMin = (_durationMin - 1).clamp(0, 300),)
                             : null,
                         child: const Text('-1 min'),
                       ),
                       const SizedBox(width: 8),
                       OutlinedButton(
                         onPressed: () => setState(() =>
-                            _durationMin = (_durationMin + 1).clamp(0, 300)),
+                            _durationMin = (_durationMin + 1).clamp(0, 300),),
                         child: const Text('+1 min'),
                       ),
                       const SizedBox(width: 8),
                       OutlinedButton(
                         onPressed: () => setState(() => _durationSec =
-                            (_durationSec == 0 ? 45 : _durationSec - 15)),
+                            (_durationSec == 0 ? 45 : _durationSec - 15),),
                         child: const Text('-15s'),
                       ),
                       const SizedBox(width: 8),
                       OutlinedButton(
                         onPressed: () => setState(() => _durationSec =
-                            (_durationSec == 45 ? 0 : _durationSec + 15)),
+                            (_durationSec == 45 ? 0 : _durationSec + 15),),
                         child: const Text('+15s'),
                       ),
                     ],
@@ -1641,14 +1641,14 @@ class _BlockEditorBottomSheetState extends State<_BlockEditorBottomSheet> {
                         style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
-                            color: Colors.grey),
+                            color: Colors.grey,),
                       ),
                       const Spacer(),
                       // Umschalter Zone vs % FTP
                       SegmentedButton<bool>(
                         segments: const [
                           ButtonSegment(
-                              value: false, label: Text('Zone (Z1-Z7)')),
+                              value: false, label: Text('Zone (Z1-Z7)'),),
                           ButtonSegment(value: true, label: Text('% FTP')),
                         ],
                         selected: {_isPctFtp},
@@ -1699,12 +1699,12 @@ class _BlockEditorBottomSheetState extends State<_BlockEditorBottomSheet> {
                         ),
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 4),
+                              horizontal: 10, vertical: 4,),
                           decoration: BoxDecoration(
                             color: AppColors.navy,
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(
-                                color: AppColors.volt.withValues(alpha: 0.4)),
+                                color: AppColors.volt.withValues(alpha: 0.4),),
                           ),
                           child: Text(
                             '~ $_liveWatts Watt (bei ${widget.thresholdPower.toInt()}W FTP)',
@@ -1730,25 +1730,25 @@ class _BlockEditorBottomSheetState extends State<_BlockEditorBottomSheet> {
                       children: [
                         OutlinedButton(
                           onPressed: () => setState(
-                              () => _pctFtp = (_pctFtp - 5).clamp(40, 160)),
+                              () => _pctFtp = (_pctFtp - 5).clamp(40, 160),),
                           child: const Text('-5%'),
                         ),
                         const SizedBox(width: 8),
                         OutlinedButton(
                           onPressed: () => setState(
-                              () => _pctFtp = (_pctFtp - 1).clamp(40, 160)),
+                              () => _pctFtp = (_pctFtp - 1).clamp(40, 160),),
                           child: const Text('-1%'),
                         ),
                         const SizedBox(width: 8),
                         OutlinedButton(
                           onPressed: () => setState(
-                              () => _pctFtp = (_pctFtp + 1).clamp(40, 160)),
+                              () => _pctFtp = (_pctFtp + 1).clamp(40, 160),),
                           child: const Text('+1%'),
                         ),
                         const SizedBox(width: 8),
                         OutlinedButton(
                           onPressed: () => setState(
-                              () => _pctFtp = (_pctFtp + 5).clamp(40, 160)),
+                              () => _pctFtp = (_pctFtp + 5).clamp(40, 160),),
                           child: const Text('+5%'),
                         ),
                       ],
@@ -1776,7 +1776,7 @@ class _BlockEditorBottomSheetState extends State<_BlockEditorBottomSheet> {
                       style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
-                          color: Colors.grey),
+                          color: Colors.grey,),
                     ),
                     const SizedBox(height: 8),
                     Row(
@@ -1810,13 +1810,13 @@ class _BlockEditorBottomSheetState extends State<_BlockEditorBottomSheet> {
                         const SizedBox(width: 8),
                         OutlinedButton(
                           onPressed: () => setState(() =>
-                              _restSec = (_restSec == 0 ? 45 : _restSec - 15)),
+                              _restSec = (_restSec == 0 ? 45 : _restSec - 15),),
                           child: const Text('-15s'),
                         ),
                         const SizedBox(width: 8),
                         OutlinedButton(
                           onPressed: () => setState(() =>
-                              _restSec = (_restSec == 45 ? 0 : _restSec + 15)),
+                              _restSec = (_restSec == 45 ? 0 : _restSec + 15),),
                           child: const Text('+15s'),
                         ),
                       ],
@@ -1835,7 +1835,7 @@ class _BlockEditorBottomSheetState extends State<_BlockEditorBottomSheet> {
                 foregroundColor: AppColors.navy,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10)),
+                    borderRadius: BorderRadius.circular(10),),
               ),
               onPressed: _save,
               child: const Text(

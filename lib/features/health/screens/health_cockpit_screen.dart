@@ -101,7 +101,7 @@ class _HealthCockpitScreenState extends ConsumerState<HealthCockpitScreen> {
         backgroundColor: AppColors.navy,
         onRefresh: () async {
           ref.invalidate(
-              athleteDailyMetricsHistoryProvider(effectiveAthleteId));
+              athleteDailyMetricsHistoryProvider(effectiveAthleteId),);
         },
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
@@ -123,7 +123,7 @@ class _HealthCockpitScreenState extends ConsumerState<HealthCockpitScreen> {
                 initialJournal: todayMetrics?.journal,
                 onSaved: (updatedJournal) {
                   ref.invalidate(
-                      athleteDailyMetricsHistoryProvider(effectiveAthleteId));
+                      athleteDailyMetricsHistoryProvider(effectiveAthleteId),);
                 },
               ),
               const SizedBox(height: 18),
@@ -273,7 +273,7 @@ class _HealthCockpitScreenState extends ConsumerState<HealthCockpitScreen> {
             fontWeight: FontWeight.bold,
           ),
           icon: const Icon(Icons.arrow_drop_down,
-              color: AppColors.volt, size: 20),
+              color: AppColors.volt, size: 20,),
           items: const [
             DropdownMenuItem(value: 7, child: Text('7 Tage')),
             DropdownMenuItem(value: 30, child: Text('30 Tage')),

@@ -115,8 +115,8 @@ class _DailyRingWidgetState extends State<DailyRingWidget>
       return Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.battery_charging_full_rounded,
-              color: AppColors.volt, size: 28),
+          const Icon(Icons.battery_charging_full_rounded,
+              color: AppColors.volt, size: 28,),
           const SizedBox(height: 4),
           Text(
             'Ruhetag',

@@ -58,7 +58,7 @@ class FakePlannedWorkoutRepository implements PlannedWorkoutRepository {
 void main() {
   group('Phase 37.1 & 37.2 — WorkoutBlockExtractor & Calendar Blocks', () {
     test('WorkoutBlockExtractor extracts 10 blocks for 4x4min repeat', () {
-      final workout = PlannedWorkout(
+      const workout = PlannedWorkout(
         id: 'w-4x4',
         athleteId: 'ath-1',
         title: '4x4min VO2max Intervalle',
@@ -92,7 +92,7 @@ void main() {
     });
 
     test('WorkoutBlockExtractor extracts pace targets for running repeat', () {
-      final workout = PlannedWorkout(
+      const workout = PlannedWorkout(
         id: 'w-run-repeat',
         athleteId: 'ath-1',
         title: '5x1000m Schwellenläufe',
@@ -118,7 +118,7 @@ void main() {
 
     testWidgets('WorkoutCard renders title and mini block profile',
         (tester) async {
-      final workout = PlannedWorkout(
+      const workout = PlannedWorkout(
         id: 'w-card',
         athleteId: 'ath-1',
         title: '4x4min VO2max Intervalle',
@@ -130,7 +130,7 @@ void main() {
       );
 
       await tester.pumpWidget(
-        MaterialApp(
+        const MaterialApp(
           home: Scaffold(
             body: WorkoutCard(workout: workout),
           ),
@@ -144,7 +144,7 @@ void main() {
 
     testWidgets('WorkoutDetailSheet renders steps and action buttons with keys',
         (tester) async {
-      final workout = PlannedWorkout(
+      const workout = PlannedWorkout(
         id: 'w-sheet',
         athleteId: 'ath-1',
         title: '4x4min VO2max Intervalle',
@@ -165,9 +165,9 @@ void main() {
                   'ftp': 300,
                   'maxHeartRate': 190,
                   'role': 'ATHLETE',
-                })),
+                }),),
           ],
-          child: MaterialApp(
+          child: const MaterialApp(
             home: Scaffold(
               body: WorkoutDetailSheet(workout: workout),
             ),
@@ -183,10 +183,10 @@ void main() {
 
       // Aktionen mit Keys müssen existieren
       expect(find.byKey(const Key('workout_action_postpone_tomorrow')),
-          findsOneWidget);
+          findsOneWidget,);
       expect(find.byKey(const Key('workout_action_pick_date')), findsOneWidget);
       expect(
-          find.byKey(const Key('workout_action_mark_skipped')), findsOneWidget);
+          find.byKey(const Key('workout_action_mark_skipped')), findsOneWidget,);
     });
   });
 }

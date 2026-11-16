@@ -134,7 +134,7 @@ class _EmailVerificationWaitingScreenState
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: const Text('E-Mail bestätigen',
-            style: TextStyle(color: Colors.white)),
+            style: TextStyle(color: Colors.white),),
         actions: [
           IconButton(
             key: const Key('verify_email_signout_button'),
@@ -233,7 +233,7 @@ class _EmailVerificationWaitingScreenState
                             width: 16,
                             height: 16,
                             child: CircularProgressIndicator(
-                                strokeWidth: 2, color: AppColors.volt),
+                                strokeWidth: 2, color: AppColors.volt,),
                           )
                         : const Icon(Icons.send_outlined, size: 18),
                     label: const Text('E-Mail erneut senden'),

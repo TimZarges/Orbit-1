@@ -11,12 +11,12 @@ void main() {
         'AdminFeedbackScreen rendert Titel Meine gemeldeten Tickets für Tester',
         (tester) async {
       await tester.pumpWidget(
-        ProviderScope(
+        const ProviderScope(
           child: MaterialApp(
             home: Scaffold(
               body: AdminFeedbackScreen(
                 isAdminOverride: false,
-                streamOverride: const Stream.empty(),
+                streamOverride: Stream.empty(),
               ),
             ),
           ),
@@ -71,9 +71,9 @@ void main() {
                 children: [
                   BetaFeedbackTicketCard(report: reportOpen, isAdmin: false),
                   BetaFeedbackTicketCard(
-                      report: reportInProgress, isAdmin: false),
+                      report: reportInProgress, isAdmin: false,),
                   BetaFeedbackTicketCard(
-                      report: reportResolved, isAdmin: false),
+                      report: reportResolved, isAdmin: false,),
                 ],
               ),
             ),

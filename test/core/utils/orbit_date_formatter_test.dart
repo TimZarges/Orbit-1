@@ -13,10 +13,10 @@ void main() {
     test('formatDateString wandelt ISO-Strings zuverlässig um', () {
       expect(OrbitDateFormatter.formatDateString('2026-10-18'), '18.10.2026');
       expect(OrbitDateFormatter.formatDateString('2026-03-09T08:15:00Z'),
-          '09.03.2026');
+          '09.03.2026',);
       // Ungültiger Fallback
       expect(OrbitDateFormatter.formatDateString('ungueltiges_datum'),
-          'ungueltiges_datum');
+          'ungueltiges_datum',);
     });
 
     test('formatTime liefert 24h-Format mit und ohne Suffix', () {
@@ -26,7 +26,7 @@ void main() {
 
       final morningDt = DateTime(2026, 10, 18, 8, 5);
       expect(OrbitDateFormatter.formatTime(morningDt, withSuffix: true),
-          '08:05 Uhr');
+          '08:05 Uhr',);
     });
 
     test('formatDateTime kombiniert Datum und 24h-Uhrzeit', () {

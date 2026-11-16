@@ -158,7 +158,7 @@ class ChatMessage {
     ActivityShareSnapshot? share;
     if (data['activityShare'] != null && data['activityShare'] is Map) {
       share = ActivityShareSnapshot.fromMap(
-          Map<String, dynamic>.from(data['activityShare'] as Map));
+          Map<String, dynamic>.from(data['activityShare'] as Map),);
     }
 
     return ChatMessage(

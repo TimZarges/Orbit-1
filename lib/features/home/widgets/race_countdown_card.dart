@@ -95,7 +95,7 @@ class RaceCountdownCard extends StatelessWidget {
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Icon(_getSportIcon(),
-                            size: 18, color: AppColors.navy),
+                            size: 18, color: AppColors.navy,),
                       ),
                       const SizedBox(width: 8),
                       Text(
@@ -107,7 +107,7 @@ class RaceCountdownCard extends StatelessWidget {
                       // Prioritäts-Badge
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 2),
+                            horizontal: 6, vertical: 2,),
                         decoration: BoxDecoration(
                           color: _getPriorityBgColor(),
                           borderRadius: BorderRadius.circular(6),
@@ -126,7 +126,7 @@ class RaceCountdownCard extends StatelessWidget {
                   if (onEdit != null)
                     IconButton(
                       icon: const Icon(Icons.edit_outlined,
-                          size: 18, color: Colors.grey),
+                          size: 18, color: Colors.grey,),
                       onPressed: onEdit,
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
@@ -165,11 +165,11 @@ class RaceCountdownCard extends StatelessWidget {
                       if (raceGoal.targetTime != null ||
                           raceGoal.targetPowerWatts != null)
                         Text(' • ',
-                            style: TextStyle(color: Colors.grey.shade400)),
+                            style: TextStyle(color: Colors.grey.shade400),),
                     ],
                     if (raceGoal.targetTime != null) ...[
                       const Icon(Icons.timer_outlined,
-                          size: 14, color: AppColors.navy),
+                          size: 14, color: AppColors.navy,),
                       const SizedBox(width: 4),
                       Text(
                         'Ziel: ${raceGoal.targetTime}',
@@ -183,7 +183,7 @@ class RaceCountdownCard extends StatelessWidget {
                     if (raceGoal.targetPowerWatts != null) ...[
                       const SizedBox(width: 6),
                       const Icon(Icons.bolt_outlined,
-                          size: 14, color: AppColors.navy),
+                          size: 14, color: AppColors.navy,),
                       const SizedBox(width: 4),
                       Text(
                         '${raceGoal.targetPowerWatts} W',

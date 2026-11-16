@@ -45,7 +45,7 @@ class ZoneDistributionCard extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Icon(Icons.bar_chart, size: 20, color: AppColors.navy),
+                    const Icon(Icons.bar_chart, size: 20, color: AppColors.navy),
                     const SizedBox(width: 8),
                     Text(
                       'Zonenverteilung',

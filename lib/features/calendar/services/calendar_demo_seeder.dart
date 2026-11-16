@@ -6,7 +6,7 @@ import '../repositories/planned_workout_repository.dart';
 class CalendarDemoSeeder {
   /// Schreibt realistische geplante Einheiten für den Athleten [athleteId] in Firestore.
   static Future<void> seedDemoWorkoutsForAthlete(String athleteId,
-      {String? coachId}) async {
+      {String? coachId,}) async {
     final now = DateTime.now();
     final repo = PlannedWorkoutRepository();
 

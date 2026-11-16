@@ -118,7 +118,7 @@ class SleepBreakdownCard extends StatelessWidget {
                   Expanded(
                     flex: remSec,
                     child: Container(
-                        color: const Color(0xFF6366F1)), // Indigo / REM
+                        color: const Color(0xFF6366F1),), // Indigo / REM
                   ),
                   Expanded(
                     flex: lightSec,
@@ -128,7 +128,7 @@ class SleepBreakdownCard extends StatelessWidget {
                   Expanded(
                     flex: awakeSec,
                     child: Container(
-                        color: const Color(0xFFEF4444)), // Red / Awake
+                        color: const Color(0xFFEF4444),), // Red / Awake
                   ),
                 ],
               ),

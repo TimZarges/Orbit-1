@@ -73,7 +73,7 @@ class CoachAthletesTable extends ConsumerWidget {
               ? [
                   DataColumn(
                     label: const Text('Name',
-                        style: TextStyle(fontWeight: FontWeight.bold)),
+                        style: TextStyle(fontWeight: FontWeight.bold),),
                     onSort: (columnIndex, ascending) {
                       ref.read(coachActivePreferenceProvider.notifier).state =
                           activePref.copyWith(
@@ -84,34 +84,34 @@ class CoachAthletesTable extends ConsumerWidget {
                   ),
                   const DataColumn(
                     label: Text('Sport',
-                        style: TextStyle(fontWeight: FontWeight.bold)),
+                        style: TextStyle(fontWeight: FontWeight.bold),),
                   ),
                   const DataColumn(
                     label: Text('Letzte Einheit',
-                        style: TextStyle(fontWeight: FontWeight.bold)),
+                        style: TextStyle(fontWeight: FontWeight.bold),),
                   ),
                   const DataColumn(
                     label: Text('Dauer & Distanz',
-                        style: TextStyle(fontWeight: FontWeight.bold)),
+                        style: TextStyle(fontWeight: FontWeight.bold),),
                   ),
                   const DataColumn(
                     label: Text('Ø Puls & Watt',
-                        style: TextStyle(fontWeight: FontWeight.bold)),
+                        style: TextStyle(fontWeight: FontWeight.bold),),
                   ),
                   const DataColumn(
                     label: Text('Originaldatei (.FIT / .TCX)',
-                        style: TextStyle(fontWeight: FontWeight.bold)),
+                        style: TextStyle(fontWeight: FontWeight.bold),),
                   ),
                   const DataColumn(
                     label: Text('Aktion',
-                        style: TextStyle(fontWeight: FontWeight.bold)),
+                        style: TextStyle(fontWeight: FontWeight.bold),),
                   ),
                 ]
               : [
                   // Name
                   DataColumn(
                     label: const Text('Name',
-                        style: TextStyle(fontWeight: FontWeight.bold)),
+                        style: TextStyle(fontWeight: FontWeight.bold),),
                     onSort: (columnIndex, ascending) {
                       ref.read(coachActivePreferenceProvider.notifier).state =
                           activePref.copyWith(
@@ -123,22 +123,22 @@ class CoachAthletesTable extends ConsumerWidget {
                   // Sport
                   const DataColumn(
                     label: Text('Sport',
-                        style: TextStyle(fontWeight: FontWeight.bold)),
+                        style: TextStyle(fontWeight: FontWeight.bold),),
                   ),
                   // Form
                   const DataColumn(
                     label: Text('Form',
-                        style: TextStyle(fontWeight: FontWeight.bold)),
+                        style: TextStyle(fontWeight: FontWeight.bold),),
                   ),
                   // Erholung
                   const DataColumn(
                     label: Text('Erholung',
-                        style: TextStyle(fontWeight: FontWeight.bold)),
+                        style: TextStyle(fontWeight: FontWeight.bold),),
                   ),
                   // Compliance 7d
                   DataColumn(
                     label: const Text('Soll/Ist (7T)',
-                        style: TextStyle(fontWeight: FontWeight.bold)),
+                        style: TextStyle(fontWeight: FontWeight.bold),),
                     onSort: (columnIndex, ascending) {
                       ref.read(coachActivePreferenceProvider.notifier).state =
                           activePref.copyWith(
@@ -150,12 +150,12 @@ class CoachAthletesTable extends ConsumerWidget {
                   // Belastung 7d
                   const DataColumn(
                     label: Text('Last 7T',
-                        style: TextStyle(fontWeight: FontWeight.bold)),
+                        style: TextStyle(fontWeight: FontWeight.bold),),
                   ),
                   // Saisonziel
                   DataColumn(
                     label: const Text('Saisonziel',
-                        style: TextStyle(fontWeight: FontWeight.bold)),
+                        style: TextStyle(fontWeight: FontWeight.bold),),
                     onSort: (columnIndex, ascending) {
                       ref.read(coachActivePreferenceProvider.notifier).state =
                           activePref.copyWith(
@@ -167,12 +167,12 @@ class CoachAthletesTable extends ConsumerWidget {
                   // Auffälligkeiten / Alerts
                   const DataColumn(
                     label: Text('Status / Alerts',
-                        style: TextStyle(fontWeight: FontWeight.bold)),
+                        style: TextStyle(fontWeight: FontWeight.bold),),
                   ),
                   // Aktionen
                   const DataColumn(
                     label: Text('Aktion',
-                        style: TextStyle(fontWeight: FontWeight.bold)),
+                        style: TextStyle(fontWeight: FontWeight.bold),),
                   ),
                 ],
           rows: athletes.map((athlete) {
@@ -197,7 +197,7 @@ class CoachAthletesTable extends ConsumerWidget {
                       // 2. Sport
                       DataCell(
                         Text(athlete.sport,
-                            style: AppTypography.label.copyWith(fontSize: 12)),
+                            style: AppTypography.label.copyWith(fontSize: 12),),
                       ),
                       // 3. Letzte Einheit
                       DataCell(
@@ -206,7 +206,7 @@ class CoachAthletesTable extends ConsumerWidget {
                               ? '${athlete.latestActivity!['title'] ?? 'Training'}'
                               : '–',
                           style: const TextStyle(
-                              fontSize: 12, fontWeight: FontWeight.bold),
+                              fontSize: 12, fontWeight: FontWeight.bold,),
                         ),
                       ),
                       // 4. Dauer & Distanz
@@ -226,8 +226,8 @@ class CoachAthletesTable extends ConsumerWidget {
                               ? ' · ${(dist / 1000).toStringAsFixed(1)} km'
                               : '';
                           return Text('$durStr$distStr',
-                              style: const TextStyle(fontSize: 12));
-                        }),
+                              style: const TextStyle(fontSize: 12),);
+                        },),
                       ),
                       // 5. Ø Puls & Watt
                       DataCell(
@@ -241,25 +241,25 @@ class CoachAthletesTable extends ConsumerWidget {
                           final hrStr = hr != null ? '${hr.round()} bpm' : '–';
                           final wStr = w != null ? ' · ${w.round()} W' : '';
                           return Text('$hrStr$wStr',
-                              style: const TextStyle(fontSize: 12));
-                        }),
+                              style: const TextStyle(fontSize: 12),);
+                        },),
                       ),
                       // 6. Originaldatei Download (.FIT)
                       DataCell(
                         ElevatedButton.icon(
                           icon: const Icon(Icons.file_download_outlined,
-                              size: 15, color: AppColors.navy),
+                              size: 15, color: AppColors.navy,),
                           label: const Text('.FIT Download',
                               style: TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.bold,
-                                  color: AppColors.navy)),
+                                  color: AppColors.navy,),),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.volt,
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 6),
+                                horizontal: 10, vertical: 6,),
                             shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8)),
+                                borderRadius: BorderRadius.circular(8),),
                           ),
                           onPressed: () {
                             final rawPath = athlete
@@ -270,11 +270,11 @@ class CoachAthletesTable extends ConsumerWidget {
                                 content: Row(
                                   children: [
                                     const Icon(Icons.download_done,
-                                        color: AppColors.volt),
+                                        color: AppColors.volt,),
                                     const SizedBox(width: 8),
                                     Expanded(
                                       child: Text(
-                                          'Download für WKO5/GoldenCheetah bereitgestellt: $rawPath'),
+                                          'Download für WKO5/GoldenCheetah bereitgestellt: $rawPath',),
                                     ),
                                   ],
                                 ),
@@ -289,7 +289,7 @@ class CoachAthletesTable extends ConsumerWidget {
                       DataCell(
                         IconButton(
                           icon: const Icon(Icons.calendar_month,
-                              size: 18, color: AppColors.navy),
+                              size: 18, color: AppColors.navy,),
                           tooltip: 'Kalender öffnen',
                           onPressed: () =>
                               onAthleteOpen(athlete.athleteId, athlete.name),
@@ -302,7 +302,7 @@ class CoachAthletesTable extends ConsumerWidget {
                       // Sport
                       DataCell(
                         Text(athlete.sport,
-                            style: AppTypography.label.copyWith(fontSize: 12)),
+                            style: AppTypography.label.copyWith(fontSize: 12),),
                       ),
                       // Form
                       DataCell(
@@ -359,14 +359,14 @@ class CoachAthletesTable extends ConsumerWidget {
                                 style: const TextStyle(fontSize: 12),
                               )
                             : const Text('–',
-                                style: TextStyle(color: Colors.grey)),
+                                style: TextStyle(color: Colors.grey),),
                       ),
                       // Alerts
                       DataCell(
                         athlete.alert != null
                             ? Container(
                                 padding: const EdgeInsets.symmetric(
-                                    horizontal: 8, vertical: 4),
+                                    horizontal: 8, vertical: 4,),
                                 decoration: BoxDecoration(
                                   color: Colors.amber.shade100,
                                   borderRadius: BorderRadius.circular(8),
@@ -378,12 +378,12 @@ class CoachAthletesTable extends ConsumerWidget {
                                   style: TextStyle(
                                       fontSize: 11,
                                       fontWeight: FontWeight.bold,
-                                      color: Colors.amber.shade900),
+                                      color: Colors.amber.shade900,),
                                 ),
                               )
                             : const Text('Normal',
                                 style: TextStyle(
-                                    fontSize: 12, color: Colors.green)),
+                                    fontSize: 12, color: Colors.green,),),
                       ),
                       // Aktionen
                       DataCell(
@@ -392,16 +392,16 @@ class CoachAthletesTable extends ConsumerWidget {
                           children: [
                             IconButton(
                               icon: const Icon(Icons.auto_awesome,
-                                  size: 18, color: AppColors.navy),
+                                  size: 18, color: AppColors.navy,),
                               tooltip: 'Schwellenwert vorschlagen',
                               onPressed: () => onCreateProposal(athlete),
                             ),
                             IconButton(
                               icon: const Icon(Icons.calendar_month,
-                                  size: 18, color: AppColors.navy),
+                                  size: 18, color: AppColors.navy,),
                               tooltip: 'Kalender öffnen',
                               onPressed: () => onAthleteOpen(
-                                  athlete.athleteId, athlete.name),
+                                  athlete.athleteId, athlete.name,),
                             ),
                           ],
                         ),
@@ -429,14 +429,14 @@ class CoachAthletesTable extends ConsumerWidget {
                 style: const TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.navy),
+                    color: AppColors.navy,),
               ),
             ),
             const SizedBox(width: 8),
             Text(
               athlete.name,
               style: const TextStyle(
-                  fontWeight: FontWeight.w600, color: AppColors.navy),
+                  fontWeight: FontWeight.w600, color: AppColors.navy,),
             ),
             if (athlete.unreadMessagesCount > 0) ...[
               const SizedBox(width: 6),
@@ -451,7 +451,7 @@ class CoachAthletesTable extends ConsumerWidget {
                   style: const TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.navy),
+                      color: AppColors.navy,),
                 ),
               ),
             ],

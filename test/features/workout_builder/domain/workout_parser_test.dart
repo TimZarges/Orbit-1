@@ -28,7 +28,7 @@ void main() {
     test('2. Rad: Sweet Spot mit % FTP & Trittfrequenz', () {
       const parser = WorkoutParser(sport: 'BIKE');
       final result = parser.parse(
-          "15' 55%FTP, 3x(8' 88-92%FTP @90-95rpm / 4' Z1), 10' Z1 [Locker ausfahren]");
+          "15' 55%FTP, 3x(8' 88-92%FTP @90-95rpm / 4' Z1), 10' Z1 [Locker ausfahren]",);
 
       expect(result.isSuccess, isTrue);
       final s = result.structure!;
@@ -147,7 +147,7 @@ void main() {
     test('8. Schwimmen: Stufenserie mit CSS-Offset', () {
       const parser = WorkoutParser(sport: 'SWIM');
       final result = parser.parse(
-          '300m Z1, 4x(100m CSS+4" / 15"), 4x(100m CSS / 15"), 4x(100m CSS-3" / 20"), 200m Z1');
+          '300m Z1, 4x(100m CSS+4" / 15"), 4x(100m CSS / 15"), 4x(100m CSS-3" / 20"), 200m Z1',);
 
       expect(result.isSuccess, isTrue);
       final s = result.structure!;
@@ -157,13 +157,13 @@ void main() {
       expect(
           ((r1.blocks[0] as StepBlock).intensity as CssOffsetIntensity)
               .offsetSecPer100m,
-          4);
+          4,);
 
       final r3 = s.blocks[3] as RepeatBlock;
       expect(
           ((r3.blocks[0] as StepBlock).intensity as CssOffsetIntensity)
               .offsetSecPer100m,
-          -3);
+          -3,);
 
       // Round-Trip
       final formatted = WorkoutFormatter.format(s);
@@ -191,7 +191,7 @@ void main() {
     test('10. Kraft: Rumpf- und Athletikzirkel', () {
       const parser = WorkoutParser(sport: 'STRENGTH');
       final result = parser.parse(
-          '5\' Z1 [Mobilisation], 3x(45" frei [Plank] / 15", 45" frei [Side Plank] / 15"), 5\' frei [Stretching]');
+          '5\' Z1 [Mobilisation], 3x(45" frei [Plank] / 15", 45" frei [Side Plank] / 15"), 5\' frei [Stretching]',);
 
       expect(result.isSuccess, isTrue);
       final s = result.structure!;
@@ -226,7 +226,7 @@ void main() {
 
       expect(result.isSuccess, isTrue);
       expect(
-          (result.structure!.blocks[0] as StepBlock).target.durationSec, 600);
+          (result.structure!.blocks[0] as StepBlock).target.durationSec, 600,);
     });
   });
 
@@ -250,7 +250,7 @@ void main() {
 
     test('Sportartenfremde Intensität meldet passenden Fehlercode', () {
       const parser = WorkoutParser(sport: 'SWIM');
-      final result = parser.parse("400m Z1, 4x(100m 95%FTP / 20\"), 200m Z1");
+      final result = parser.parse('400m Z1, 4x(100m 95%FTP / 20"), 200m Z1');
 
       expect(result.isSuccess, isFalse);
       expect(result.errors.any((e) => e.code == 'FTP_NOT_ALLOWED'), isTrue);
@@ -262,7 +262,7 @@ void main() {
 
       expect(result.isSuccess, isFalse);
       expect(
-          result.errors.any((e) => e.code == 'INVALID_REPEAT_COUNT'), isTrue);
+          result.errors.any((e) => e.code == 'INVALID_REPEAT_COUNT'), isTrue,);
     });
   });
 }

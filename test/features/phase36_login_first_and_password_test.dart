@@ -32,7 +32,7 @@ void main() {
 
       // Passwort vergessen Button
       expect(find.byKey(const Key('login_forgot_password_button')),
-          findsOneWidget);
+          findsOneWidget,);
       expect(find.text('Passwort vergessen?'), findsOneWidget);
     });
 
@@ -52,9 +52,9 @@ void main() {
 
       expect(find.text('Passwort zurücksetzen'), findsOneWidget);
       expect(
-          find.byKey(const Key('forgot_password_email_field')), findsOneWidget);
+          find.byKey(const Key('forgot_password_email_field')), findsOneWidget,);
       expect(find.byKey(const Key('forgot_password_submit_button')),
-          findsOneWidget);
+          findsOneWidget,);
     });
 
     testWidgets('SettingsScreen enthält Option zum Passwort ändern',
@@ -75,7 +75,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byKey(const Key('settings_change_password_tile')),
-          findsOneWidget);
+          findsOneWidget,);
       expect(find.text('Passwort ändern'), findsOneWidget);
     });
   });

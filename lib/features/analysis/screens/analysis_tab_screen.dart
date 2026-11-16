@@ -74,7 +74,7 @@ class AnalysisTabScreen extends ConsumerWidget {
                     color: AppColors.navy.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                        color: AppColors.navy.withValues(alpha: 0.2)),
+                        color: AppColors.navy.withValues(alpha: 0.2),),
                   ),
                   child: Row(
                     children: [
@@ -179,7 +179,7 @@ class AnalysisTabScreen extends ConsumerWidget {
                       ref.watch(racesStreamProvider).valueOrNull ?? [];
                   final raceGoals = races.map(RaceGoal.fromRace).toList();
                   return _buildContent(
-                      context, data, experienceLevel, raceGoals);
+                      context, data, experienceLevel, raceGoals,);
                 },
                 loading: () => _buildLoadingSkeleton(),
                 error: (err, stack) =>
@@ -341,10 +341,10 @@ class AnalysisTabScreen extends ConsumerWidget {
         children: [
           const Icon(Icons.error_outline, size: 40, color: Colors.redAccent),
           const SizedBox(height: 12),
-          Text('Fehler beim Laden der Analyse', style: AppTypography.title),
+          const Text('Fehler beim Laden der Analyse', style: AppTypography.title),
           const SizedBox(height: 8),
           Text(error,
-              style: AppTypography.bodySmall, textAlign: TextAlign.center),
+              style: AppTypography.bodySmall, textAlign: TextAlign.center,),
           const SizedBox(height: 16),
           ElevatedButton.icon(
             onPressed: () => ref.invalidate(analysisStateProvider),
@@ -371,9 +371,9 @@ class AnalysisTabScreen extends ConsumerWidget {
       child: Column(
         children: [
           Icon(Icons.query_stats,
-              size: 48, color: AppColors.navy.withValues(alpha: 0.4)),
+              size: 48, color: AppColors.navy.withValues(alpha: 0.4),),
           const SizedBox(height: 16),
-          Text('Noch keine Trainingsdaten', style: AppTypography.title),
+          const Text('Noch keine Trainingsdaten', style: AppTypography.title),
           const SizedBox(height: 8),
           Text(
             'Sobald du Aktivitäten importierst oder Garmin verbindest, werden hier deine Form-Ampel, Belastung und Trends berechnet.',

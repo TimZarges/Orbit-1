@@ -116,7 +116,7 @@ class VersionGateWrapper extends ConsumerWidget {
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(Icons.build_outlined,
-                          size: 32, color: AppColors.navy),
+                          size: 32, color: AppColors.navy,),
                     ),
                     const SizedBox(height: 24),
                     Text(
@@ -172,7 +172,7 @@ class VersionGateWrapper extends ConsumerWidget {
                       ),
                       child: const Center(
                         child: Icon(Icons.system_update_alt_rounded,
-                            size: 36, color: AppColors.volt),
+                            size: 36, color: AppColors.volt,),
                       ),
                     ),
                     const SizedBox(height: 24),
@@ -206,7 +206,7 @@ class VersionGateWrapper extends ConsumerWidget {
                         onPressed: () async {
                           if (await canLaunchUrlString(config.updateUrl)) {
                             await launchUrlString(config.updateUrl,
-                                mode: LaunchMode.externalApplication);
+                                mode: LaunchMode.externalApplication,);
                           }
                         },
                         style: ElevatedButton.styleFrom(

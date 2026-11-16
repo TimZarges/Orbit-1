@@ -45,7 +45,7 @@ class FormTrafficLightCard extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Icon(Icons.speed_outlined, size: 20, color: AppColors.navy),
+                    const Icon(Icons.speed_outlined, size: 20, color: AppColors.navy),
                     const SizedBox(width: 8),
                     Text(
                       'Form-Ampel',
@@ -59,7 +59,7 @@ class FormTrafficLightCard extends StatelessWidget {
                   label: 'Information zur Form-Ampel anzeigen',
                   child: IconButton(
                     icon: const Icon(Icons.info_outline,
-                        size: 20, color: Colors.grey),
+                        size: 20, color: Colors.grey,),
                     constraints:
                         const BoxConstraints(minWidth: 48, minHeight: 48),
                     onPressed: () =>
@@ -80,7 +80,7 @@ class FormTrafficLightCard extends StatelessWidget {
                     color: form.statusColor.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                        color: form.statusColor.withValues(alpha: 0.4)),
+                        color: form.statusColor.withValues(alpha: 0.4),),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -153,7 +153,7 @@ class FormTrafficLightCard extends StatelessWidget {
             Row(
               children: [
                 Icon(Icons.history_outlined,
-                    size: 14, color: Colors.grey.shade600),
+                    size: 14, color: Colors.grey.shade600,),
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(

@@ -157,9 +157,9 @@ class PerformanceProfileCard extends StatelessWidget {
           const SizedBox(height: 6),
 
           // Dauer-Achsenbeschriftung
-          Row(
+          const Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: const [
+            children: [
               Text('1s', style: TextStyle(color: Colors.grey, fontSize: 10)),
               Text('15s', style: TextStyle(color: Colors.grey, fontSize: 10)),
               Text('1m', style: TextStyle(color: Colors.grey, fontSize: 10)),
@@ -226,7 +226,7 @@ class PerformanceProfileCard extends StatelessWidget {
           width: 12,
           height: 3,
           decoration: BoxDecoration(
-              color: color, borderRadius: BorderRadius.circular(2)),
+              color: color, borderRadius: BorderRadius.circular(2),),
         ),
         const SizedBox(width: 6),
         Text(

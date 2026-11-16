@@ -97,8 +97,8 @@ class DiagnosticsRepository {
 
     double? newFtp = latest?.ftpW;
     double? newLthr = latest?.thresholdHrBpm;
-    double? newMaxHr = latest?.maxHrBpm;
-    double? newRestingHr = latest?.restingHrBpm;
+    final double? newMaxHr = latest?.maxHrBpm;
+    final double? newRestingHr = latest?.restingHrBpm;
     double? newRunPace = latest?.runThresholdPaceSecPerKm;
     double? newSwimCss = latest?.swimCssSecPer100m;
 
@@ -173,7 +173,7 @@ class DiagnosticsRepository {
 
   /// Triggert die serverseitige Neuberechnung für vergangene Einheiten (Phase 05).
   Future<void> _triggerHistoricalRecompute(
-      String athleteId, String fromDate) async {
+      String athleteId, String fromDate,) async {
     try {
       // Protokollierung / Trigger-Dokument für den Worker
       await _firestore

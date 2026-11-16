@@ -77,19 +77,19 @@ class _ChatInputBarState extends State<ChatInputBar> {
                     color: AppColors.techGrey,
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Icon(Icons.share, color: AppColors.navy, size: 20),
+                  child: const Icon(Icons.share, color: AppColors.navy, size: 20),
                 ),
                 title: Text(
                   'Aktivität teilen',
                   style: AppTypography.body.copyWith(
-                      fontWeight: FontWeight.bold, color: AppColors.navy),
+                      fontWeight: FontWeight.bold, color: AppColors.navy,),
                 ),
                 subtitle: const Text(
-                    'Momentaufnahme einer absolvierten Einheit senden.'),
+                    'Momentaufnahme einer absolvierten Einheit senden.',),
                 onTap: () async {
                   Navigator.of(ctx).pop();
                   final snapshot = await ActivitySharePickerSheet.show(
-                      context, widget.athleteId);
+                      context, widget.athleteId,);
                   if (snapshot != null) {
                     widget.onShareActivity(snapshot);
                   }
@@ -102,13 +102,13 @@ class _ChatInputBarState extends State<ChatInputBar> {
                     color: AppColors.techGrey,
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Icon(Icons.image_outlined,
-                      color: AppColors.navy, size: 20),
+                  child: const Icon(Icons.image_outlined,
+                      color: AppColors.navy, size: 20,),
                 ),
                 title: Text(
                   'Bild senden',
                   style: AppTypography.body.copyWith(
-                      fontWeight: FontWeight.bold, color: AppColors.navy),
+                      fontWeight: FontWeight.bold, color: AppColors.navy,),
                 ),
                 subtitle: const Text('Aus Galerie oder Kamera (max. 10 MB).'),
                 onTap: () {
@@ -124,12 +124,12 @@ class _ChatInputBarState extends State<ChatInputBar> {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child:
-                      Icon(Icons.attach_file, color: AppColors.navy, size: 20),
+                      const Icon(Icons.attach_file, color: AppColors.navy, size: 20),
                 ),
                 title: Text(
                   'Datei anhängen',
                   style: AppTypography.body.copyWith(
-                      fontWeight: FontWeight.bold, color: AppColors.navy),
+                      fontWeight: FontWeight.bold, color: AppColors.navy,),
                 ),
                 subtitle: const Text('FIT-Datei oder Dokument (max. 25 MB).'),
                 onTap: () {
@@ -185,8 +185,8 @@ class _ChatInputBarState extends State<ChatInputBar> {
           children: [
             // Anhang-Button
             IconButton(
-              icon: Icon(Icons.add_circle_outline,
-                  color: AppColors.navy, size: 26),
+              icon: const Icon(Icons.add_circle_outline,
+                  color: AppColors.navy, size: 26,),
               onPressed: _showAttachmentOptions,
             ),
             const SizedBox(width: 4),

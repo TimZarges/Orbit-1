@@ -289,7 +289,7 @@ class _PersonalRecordsCardState extends State<PersonalRecordsCard> {
                     children: [
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 2),
+                            horizontal: 6, vertical: 2,),
                         decoration: BoxDecoration(
                           color: AppColors.volt.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(4),
@@ -379,7 +379,7 @@ class _PersonalRecordsCardState extends State<PersonalRecordsCard> {
                     children: [
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 2),
+                            horizontal: 6, vertical: 2,),
                         decoration: BoxDecoration(
                           color: AppColors.sportRun.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(4),
@@ -469,7 +469,7 @@ class _PersonalRecordsCardState extends State<PersonalRecordsCard> {
                     children: [
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 2),
+                            horizontal: 6, vertical: 2,),
                         decoration: BoxDecoration(
                           color: AppColors.sportSwim.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(4),

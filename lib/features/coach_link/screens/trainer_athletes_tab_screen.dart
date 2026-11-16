@@ -160,7 +160,7 @@ class _TrainerAthletesTabScreenState
                 children: [
                   // Toolbar: Suche, Filter & Ansichten-Umschalter
                   _buildToolbar(
-                      context, coachId, selectedIds, activePref, isWide),
+                      context, coachId, selectedIds, activePref, isWide,),
 
                   const Divider(height: 1),
 
@@ -234,7 +234,7 @@ class _TrainerAthletesTabScreenState
                 fillColor: AppColors.techGrey,
                 border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide.none),
+                    borderSide: BorderSide.none,),
               ),
               onChanged: (val) {
                 ref.read(coachAthleteSearchQueryProvider.notifier).state = val;
@@ -250,14 +250,14 @@ class _TrainerAthletesTabScreenState
                 icon: Icon(Icons.file_download_outlined, size: 16),
                 label: Text('Einfach & Download',
                     style:
-                        TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                        TextStyle(fontSize: 12, fontWeight: FontWeight.bold),),
               ),
               ButtonSegment(
                 value: CoachGlobalMode.fullAnalysis,
                 icon: Icon(Icons.analytics_outlined, size: 16),
                 label: Text('Vollanalyse',
                     style:
-                        TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                        TextStyle(fontSize: 12, fontWeight: FontWeight.bold),),
               ),
             ],
             selected: {ref.watch(coachGlobalModeProvider)},
@@ -306,19 +306,19 @@ class _TrainerAthletesTabScreenState
               DropdownMenuItem(
                   value: null,
                   child:
-                      Text('Alle Sportarten', style: TextStyle(fontSize: 12))),
+                      Text('Alle Sportarten', style: TextStyle(fontSize: 12)),),
               DropdownMenuItem(
                   value: 'TRIATHLON',
-                  child: Text('Triathlon', style: TextStyle(fontSize: 12))),
+                  child: Text('Triathlon', style: TextStyle(fontSize: 12)),),
               DropdownMenuItem(
                   value: 'RUN',
-                  child: Text('Lauf', style: TextStyle(fontSize: 12))),
+                  child: Text('Lauf', style: TextStyle(fontSize: 12)),),
               DropdownMenuItem(
                   value: 'BIKE',
-                  child: Text('Rad', style: TextStyle(fontSize: 12))),
+                  child: Text('Rad', style: TextStyle(fontSize: 12)),),
               DropdownMenuItem(
                   value: 'SWIM',
-                  child: Text('Schwimmen', style: TextStyle(fontSize: 12))),
+                  child: Text('Schwimmen', style: TextStyle(fontSize: 12)),),
             ],
             onChanged: (sport) {
               ref.read(coachActivePreferenceProvider.notifier).state =
@@ -329,7 +329,7 @@ class _TrainerAthletesTabScreenState
           // Alerts-Filter Chip
           FilterChip(
             label: const Text('Nur Auffälligkeiten',
-                style: TextStyle(fontSize: 12)),
+                style: TextStyle(fontSize: 12),),
             selected: activePref.alertOnly,
             selectedColor: AppColors.volt.withValues(alpha: 0.25),
             checkmarkColor: AppColors.navy,
@@ -352,7 +352,7 @@ class _TrainerAthletesTabScreenState
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10)),
+                    borderRadius: BorderRadius.circular(10),),
               ),
             ),
           ],
@@ -373,7 +373,7 @@ class _TrainerAthletesTabScreenState
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                    'Erzeuge einen 7 Tage gültigen Einladungscode für deinen Athleten.'),
+                    'Erzeuge einen 7 Tage gültigen Einladungscode für deinen Athleten.',),
                 const SizedBox(height: 16),
                 if (_inviteCode != null) ...[
                   Container(
@@ -397,7 +397,7 @@ class _TrainerAthletesTabScreenState
                   const SizedBox(height: 8),
                   const Text(
                       'Der Athlet gibt diesen Code in seinem Profil ein.',
-                      style: TextStyle(fontSize: 12)),
+                      style: TextStyle(fontSize: 12),),
                 ],
               ],
             ),
@@ -417,13 +417,13 @@ class _TrainerAthletesTabScreenState
                         },
                   style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.navy,
-                      foregroundColor: AppColors.white),
+                      foregroundColor: AppColors.white,),
                   child: _isCreatingInvite
                       ? const SizedBox(
                           width: 16,
                           height: 16,
                           child: CircularProgressIndicator(
-                              strokeWidth: 2, color: Colors.white))
+                              strokeWidth: 2, color: Colors.white,),)
                       : const Text('Code generieren'),
                 ),
             ],

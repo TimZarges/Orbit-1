@@ -5,6 +5,7 @@
 /// ohne Permission-Denial, analysiert Header- und Magic-Bytes im Hintergrund-Isolate (Isolate.run),
 /// archiviert die Rohdaten unter `users/{uid}/rawActivities/{id}.ext` und legt das Aktivitäts-Dokument
 /// sofort in Firestore ab.
+library;
 
 import 'dart:isolate';
 import 'dart:typed_data';
@@ -84,7 +85,7 @@ class FileValidationResult {
 
 /// Analysiert Rohbytes im Hintergrund-Isolate zur Entlastung des 120Hz-UI-Threads.
 FileValidationResult _validateAndInspectBytes(
-    Uint8List bytes, String filename) {
+    Uint8List bytes, String filename,) {
   final lowerName = filename.toLowerCase();
   String ext = 'fit';
   if (lowerName.endsWith('.fit.gz') || lowerName.endsWith('.fit')) {
@@ -320,7 +321,7 @@ class ActivityUploadNotifier extends StateNotifier<ActivityUploadState> {
         final localDate = now.toIso8601String().split('T')[0];
         final cleanTitle = platformFile.name
             .replaceAll(
-                RegExp(r'\.(fit|tcx|gpx|gz)$', caseSensitive: false), '')
+                RegExp(r'\.(fit|tcx|gpx|gz)$', caseSensitive: false), '',)
             .replaceAll('_', ' ');
 
         final activityPayload = {
@@ -531,7 +532,7 @@ class ActivityUploadNotifier extends StateNotifier<ActivityUploadState> {
           'hasStreams': false,
           'createdAt': FieldValue.serverTimestamp(),
           'updatedAt': FieldValue.serverTimestamp(),
-        }, SetOptions(merge: true));
+        }, SetOptions(merge: true),);
 
         successCount++;
         uploadedIds.add(activityId);

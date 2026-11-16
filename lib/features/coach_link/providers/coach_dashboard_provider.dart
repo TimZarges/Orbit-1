@@ -144,7 +144,7 @@ List<CoachDashboardAthlete> _generateDemoAthletes(String coachId) {
     'Tobias',
     'Lea',
     'Jan',
-    'Lisa'
+    'Lisa',
   ];
   final lastNames = [
     'Weber',
@@ -174,7 +174,7 @@ List<CoachDashboardAthlete> _generateDemoAthletes(String coachId) {
     'Lange',
     'Schmitt',
     'Werner',
-    'Schmitz'
+    'Schmitz',
   ];
   final sports = ['TRIATHLON', 'RUN', 'BIKE', 'SWIM'];
   final formStatuses = [

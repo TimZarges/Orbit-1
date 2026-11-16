@@ -111,7 +111,7 @@ class _FitnessFatigueTrendChartState extends State<FitnessFatigueTrendChart> {
                 Row(
                   children: [
                     const Icon(Icons.show_chart,
-                        size: 20, color: AppColors.navy),
+                        size: 20, color: AppColors.navy,),
                     const SizedBox(width: 8),
                     Text(
                       'Performance Management (PMC)',
@@ -170,7 +170,7 @@ class _FitnessFatigueTrendChartState extends State<FitnessFatigueTrendChart> {
                 child: Row(
                   children: [
                     const Icon(Icons.warning_amber_rounded,
-                        color: Color(0xFFEF4444), size: 16),
+                        color: Color(0xFFEF4444), size: 16,),
                     const SizedBox(width: 6),
                     Expanded(
                       child: Text(
@@ -461,7 +461,7 @@ class _FitnessFatiguePainter extends CustomPainter {
                 : (isB ? const Color(0xFF00D2FF) : Colors.grey.shade400)
             ..strokeWidth = isA ? 1.5 : 1.0;
           _drawDashedLine(
-              canvas, Offset(raceX, 20), Offset(raceX, h), polePaint);
+              canvas, Offset(raceX, 20), Offset(raceX, h), polePaint,);
 
           // 3. Flaggen-Badge am oberen Rand (y = 2 bis 18)
           final badgeRect = RRect.fromRectAndRadius(

@@ -78,7 +78,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           button.localToGlobal(Offset.zero, ancestor: overlay),
                           button.localToGlobal(
                               button.size.bottomRight(Offset.zero),
-                              ancestor: overlay),
+                              ancestor: overlay,),
                         ),
                         Offset.zero & overlay.size,
                       );
@@ -115,13 +115,13 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                             value: '/settings',
                             child: Text('Einstellungen'),
                           ),
-                          const PopupMenuDivider(),
-                          const PopupMenuItem(
+                          PopupMenuDivider(),
+                          PopupMenuItem(
                             value: 'logout',
                             child: Row(
                               children: [
                                 Icon(Icons.logout,
-                                    size: 18, color: Colors.redAccent),
+                                    size: 18, color: Colors.redAccent,),
                                 SizedBox(width: 8),
                                 Text(
                                   'Abmelden',
@@ -140,7 +140,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                         if (selected == 'logout') {
                           await ref.read(authServiceProvider).signOut();
                         } else {
-                          btnContext.push(selected);
+                          await btnContext.push(selected);
                         }
                       }
                     },

@@ -107,11 +107,11 @@ class AnalysisInfoSheet extends StatelessWidget {
                   children: [
                     Text('Formel / Berechnung:',
                         style: AppTypography.label
-                            .copyWith(color: Colors.grey.shade600)),
+                            .copyWith(color: Colors.grey.shade600),),
                     const SizedBox(height: 4),
                     Text(form,
                         style: AppTypography.bodySmall
-                            .copyWith(fontFamily: 'monospace')),
+                            .copyWith(fontFamily: 'monospace'),),
                   ],
                 ),
               ),
@@ -126,7 +126,7 @@ class AnalysisInfoSheet extends StatelessWidget {
                   backgroundColor: AppColors.navy,
                   foregroundColor: AppColors.white,
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
+                      borderRadius: BorderRadius.circular(12),),
                 ),
                 child: const Text('Verstanden'),
               ),

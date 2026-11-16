@@ -5,7 +5,7 @@ import 'package:orbit/features/coach_link/models/coach_view_preference.dart';
 void main() {
   group('CoachDashboard Models Tests', () {
     test('CoachDashboardAthlete serialization and deserialization', () {
-      final athlete = CoachDashboardAthlete(
+      const athlete = CoachDashboardAthlete(
         athleteId: 'a123',
         coachId: 'c456',
         name: 'Max Mustermann',

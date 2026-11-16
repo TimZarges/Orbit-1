@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:orbit/features/settings/models/app_settings.dart';
-import 'package:orbit/core/metrics/term_resolver.dart';
+import '../models/app_settings.dart';
+import '../../../core/metrics/term_resolver.dart';
 import 'package:flutter/material.dart';
 
 class SettingsController extends Notifier<AppSettings> {

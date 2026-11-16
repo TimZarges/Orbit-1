@@ -44,7 +44,7 @@ class BatchAssignService {
           i,
           i + chunkSize > athleteIds.length
               ? athleteIds.length
-              : i + chunkSize);
+              : i + chunkSize,);
       final batch = _firestore.batch();
 
       for (final athleteId in chunk) {

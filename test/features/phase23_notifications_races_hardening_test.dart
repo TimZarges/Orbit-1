@@ -63,7 +63,7 @@ void main() {
 
   group('Phase 23.2: Wettkampf-Planung & Saison-Ziele (A-, B-, C-Rennen)', () {
     test('Race Model serializes and maps priorities correctly', () {
-      final raceA = Race(
+      const raceA = Race(
         id: 'race_1',
         userId: 'user_1',
         title: 'Ironman 70.3 Kraichgau',
@@ -172,14 +172,14 @@ void main() {
         (tester) async {
       final points = [
         const FitnessFatiguePoint(
-            date: '2026-05-20', ctl: 60, atl: 65, tsb: -5),
+            date: '2026-05-20', ctl: 60, atl: 65, tsb: -5,),
         const FitnessFatiguePoint(date: '2026-05-21', ctl: 60, atl: 55, tsb: 5),
         const FitnessFatiguePoint(
-            date: '2026-05-22', ctl: 60, atl: 48, tsb: 12),
+            date: '2026-05-22', ctl: 60, atl: 48, tsb: 12,),
         const FitnessFatiguePoint(
-            date: '2026-05-23', ctl: 60, atl: 42, tsb: 18),
+            date: '2026-05-23', ctl: 60, atl: 42, tsb: 18,),
         const FitnessFatiguePoint(
-            date: '2026-05-24', ctl: 60, atl: 38, tsb: 22, isProjection: true),
+            date: '2026-05-24', ctl: 60, atl: 38, tsb: 22, isProjection: true,),
       ];
 
       const race = RaceGoal(
@@ -244,7 +244,7 @@ void main() {
           overrides: [
             appConfigStreamProvider.overrideWith((ref) => Stream.value(
                   const AppConfig(minRequiredBuild: 1, latestBuild: 1),
-                )),
+                ),),
           ],
           child: const VersionGateWrapper(
             child: MaterialApp(
@@ -270,7 +270,7 @@ void main() {
                     minRequiredBuild: 99, // Höher als AppInfo.buildNumber (1)
                     latestBuild: 100,
                   ),
-                )),
+                ),),
           ],
           child: const VersionGateWrapper(
             child: MaterialApp(
@@ -299,7 +299,7 @@ void main() {
                   const AppConfig(
                     maintenanceMode: true,
                   ),
-                )),
+                ),),
           ],
           child: const VersionGateWrapper(
             child: MaterialApp(
@@ -323,7 +323,7 @@ void main() {
       // Test error sanitization
       CrashReporter.recordError(
         Exception(
-            'Network failure for user athlete@orbit.training with Bearer secret_123'),
+            'Network failure for user athlete@orbit.training with Bearer secret_123',),
         StackTrace.current,
         reason: 'Contacting coach coach@club.de',
       );

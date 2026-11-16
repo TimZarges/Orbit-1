@@ -58,7 +58,7 @@ class ChatBubble extends StatelessWidget {
             isMe && onDelete != null ? () => _showContextMenu(context) : null,
         child: Container(
           constraints: BoxConstraints(
-              maxWidth: MediaQuery.of(context).size.width * 0.78),
+              maxWidth: MediaQuery.of(context).size.width * 0.78,),
           margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           decoration: BoxDecoration(
@@ -116,14 +116,14 @@ class ChatBubble extends StatelessWidget {
                         child: CircularProgressIndicator(
                           strokeWidth: 1.5,
                           valueColor: AlwaysStoppedAnimation<Color>(
-                              AppColors.white.withValues(alpha: 0.7)),
+                              AppColors.white.withValues(alpha: 0.7),),
                         ),
                       )
                     else if (message.status == MessageStatus.failed)
                       const Icon(Icons.error_outline,
-                          size: 12, color: Color(0xFFEF4444))
+                          size: 12, color: Color(0xFFEF4444),)
                     else
-                      Icon(
+                      const Icon(
                         Icons.done_all,
                         size: 13,
                         color: AppColors.volt,
@@ -153,7 +153,7 @@ class ChatBubble extends StatelessWidget {
               height: 180,
               color: Colors.black12,
               child: const Center(
-                  child: CircularProgressIndicator(strokeWidth: 2)),
+                  child: CircularProgressIndicator(strokeWidth: 2),),
             );
           },
           errorBuilder: (ctx, err, _) => Container(
@@ -180,7 +180,7 @@ class ChatBubble extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(Icons.insert_drive_file_outlined,
-                size: 24, color: isMe ? AppColors.volt : AppColors.navy),
+                size: 24, color: isMe ? AppColors.volt : AppColors.navy,),
             const SizedBox(width: 10),
             Flexible(
               child: Column(
@@ -241,7 +241,7 @@ class ChatBubble extends StatelessWidget {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Icon(_getSportIcon(share.sport),
-                      size: 16, color: AppColors.navy),
+                      size: 16, color: AppColors.navy,),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
@@ -258,7 +258,7 @@ class ChatBubble extends StatelessWidget {
                       Text(
                         share.date,
                         style: AppTypography.label.copyWith(
-                            fontSize: 11, color: Colors.grey.shade600),
+                            fontSize: 11, color: Colors.grey.shade600,),
                       ),
                     ],
                   ),
@@ -274,10 +274,10 @@ class ChatBubble extends StatelessWidget {
                   _StatItem(label: 'Distanz', value: share.formattedDistance),
                 if (share.avgPowerW != null && share.avgPowerW! > 0)
                   _StatItem(
-                      label: 'Ø Watt', value: '${share.avgPowerW!.round()} W'),
+                      label: 'Ø Watt', value: '${share.avgPowerW!.round()} W',),
                 if (share.avgHr != null && share.avgHr! > 0)
                   _StatItem(
-                      label: 'Ø HF', value: '${share.avgHr!.round()} bpm'),
+                      label: 'Ø HF', value: '${share.avgHr!.round()} bpm',),
               ],
             ),
             const SizedBox(height: 8),
@@ -293,7 +293,7 @@ class ChatBubble extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 4),
-                Icon(Icons.arrow_forward_ios, size: 10, color: AppColors.navy),
+                const Icon(Icons.arrow_forward_ios, size: 10, color: AppColors.navy),
               ],
             ),
           ],
@@ -377,12 +377,12 @@ class _StatItem extends StatelessWidget {
       children: [
         Text(label,
             style: AppTypography.label
-                .copyWith(fontSize: 10, color: Colors.grey.shade500)),
+                .copyWith(fontSize: 10, color: Colors.grey.shade500),),
         Text(value,
             style: AppTypography.body.copyWith(
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
-                color: AppColors.navy)),
+                color: AppColors.navy,),),
       ],
     );
   }

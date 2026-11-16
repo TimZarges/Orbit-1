@@ -207,7 +207,7 @@ class AnalysisRepository {
         sportsBreakdownSec: sports,
         zoneBreakdownSec: zones,
         activityCount: activityCount,
-      ));
+      ),);
     }
 
     return list;

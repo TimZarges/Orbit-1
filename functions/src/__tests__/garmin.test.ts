@@ -437,7 +437,7 @@ describe("Garmin Webhook, 3x30d Backfill Chunking, Ping/Push & ActivityDetails S
         if (colName === "users") {
           return {
             doc: jest.fn(() => ({
-              collection: jest.fn((subCol: string) => ({
+              collection: jest.fn((_subCol: string) => ({
                 doc: jest.fn(() => ({
                   get: jest.fn().mockResolvedValue({
                     exists: true,

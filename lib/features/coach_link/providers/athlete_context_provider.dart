@@ -14,7 +14,7 @@ final currentAthleteIdProvider = Provider<String>((ref) {
   final id = ref.watch(viewedAthleteIdProvider);
   if (id == null) {
     throw Exception(
-        "currentAthleteIdProvider wurde aufgerufen, obwohl kein Athlet im Kontext ist (nicht eingeloggt oder Fehler).");
+        'currentAthleteIdProvider wurde aufgerufen, obwohl kein Athlet im Kontext ist (nicht eingeloggt oder Fehler).',);
   }
   return id;
 });

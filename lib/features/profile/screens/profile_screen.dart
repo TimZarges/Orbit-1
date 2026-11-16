@@ -161,7 +161,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           if (restingHr != null) 'restingHrBpm': restingHr,
           if (maxHr != null) 'maxHrBpm': maxHr,
         },
-      }, SetOptions(merge: true));
+      }, SetOptions(merge: true),);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -220,11 +220,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         backgroundImage: _photoBase64 != null &&
                                 _photoBase64!.startsWith('data:image')
                             ? MemoryImage(
-                                base64Decode(_photoBase64!.split(',').last))
+                                base64Decode(_photoBase64!.split(',').last),)
                             : null,
                         child: _photoBase64 == null
                             ? const Icon(Icons.person,
-                                size: 56, color: AppColors.volt)
+                                size: 56, color: AppColors.volt,)
                             : null,
                       ),
                       Positioned(
@@ -235,7 +235,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           backgroundColor: AppColors.volt,
                           child: IconButton(
                             icon: const Icon(Icons.camera_alt,
-                                size: 18, color: AppColors.navy),
+                                size: 18, color: AppColors.navy,),
                             onPressed: _pickImage,
                           ),
                         ),
@@ -275,7 +275,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         labelText: 'Geburtsjahr (z. B. 1992)',
                         labelStyle: TextStyle(color: Colors.white70),
                         prefixIcon: Icon(Icons.calendar_today_outlined,
-                            color: AppColors.volt),
+                            color: AppColors.volt,),
                         border: OutlineInputBorder(),
                       ),
                     ),
@@ -286,7 +286,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           child: TextFormField(
                             controller: _weightController,
                             keyboardType: const TextInputType.numberWithOptions(
-                                decimal: true),
+                                decimal: true,),
                             style: const TextStyle(color: AppColors.white),
                             decoration: const InputDecoration(
                               labelText: 'Gewicht (kg)',
@@ -361,9 +361,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         _sportChip('RUN', 'Laufen', Icons.directions_run),
                         _sportChip('SWIM', 'Schwimmen', Icons.pool),
                         _sportChip('TRIATHLON', 'Triathlon',
-                            Icons.emoji_events_outlined),
+                            Icons.emoji_events_outlined,),
                         _sportChip('STRENGTH', 'Kraft & Athletik',
-                            Icons.fitness_center),
+                            Icons.fitness_center,),
                       ],
                     ),
                   ],
@@ -384,12 +384,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           width: 22,
                           height: 22,
                           child: CircularProgressIndicator(
-                              strokeWidth: 2, color: AppColors.navy),
+                              strokeWidth: 2, color: AppColors.navy,),
                         )
                       : const Text(
                           'Profil speichern',
                           style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.bold),
+                              fontSize: 16, fontWeight: FontWeight.bold,),
                         ),
                 ),
                 const SizedBox(height: 32),
@@ -405,9 +405,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                       ),
                       const SizedBox(height: 4),
-                      Text(
+                      const Text(
                         'Server-Region: ${AppInfo.region}',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 11,
                           color: Colors.white38,
                         ),

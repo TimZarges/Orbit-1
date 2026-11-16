@@ -35,7 +35,7 @@ class WorkoutBlockEditorSheet extends ConsumerWidget {
               // Sheet Header mit Drag-Handle und Schließen-Button
               Padding(
                 padding: const EdgeInsets.symmetric(
-                    horizontal: 16.0, vertical: 12.0),
+                    horizontal: 16.0, vertical: 12.0,),
                 child: Row(
                   children: [
                     Container(
@@ -50,7 +50,7 @@ class WorkoutBlockEditorSheet extends ConsumerWidget {
                     Text(
                       'Block-Editor (${blocks.length} Blöcke)',
                       style: const TextStyle(
-                          fontWeight: FontWeight.bold, fontSize: 16),
+                          fontWeight: FontWeight.bold, fontSize: 16,),
                     ),
                     const Spacer(),
                     IconButton(
@@ -75,7 +75,7 @@ class WorkoutBlockEditorSheet extends ConsumerWidget {
                     : ListView.separated(
                         controller: scrollController,
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 16.0, vertical: 12.0),
+                            horizontal: 16.0, vertical: 12.0,),
                         itemCount: blocks.length,
                         separatorBuilder: (_, __) => const SizedBox(height: 10),
                         itemBuilder: (context, index) {
@@ -96,7 +96,7 @@ class WorkoutBlockEditorSheet extends ConsumerWidget {
               SafeArea(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 16.0, vertical: 12.0),
+                      horizontal: 16.0, vertical: 12.0,),
                   child: Row(
                     children: [
                       Expanded(
@@ -233,7 +233,7 @@ class WorkoutBlockEditorSheet extends ConsumerWidget {
                 Text(
                   '${step.target.formattedDisplay} ${step.intensity.formattedDisplay}',
                   style: const TextStyle(
-                      fontWeight: FontWeight.w600, fontSize: 14),
+                      fontWeight: FontWeight.w600, fontSize: 14,),
                 ),
                 const Spacer(),
 
@@ -262,7 +262,7 @@ class WorkoutBlockEditorSheet extends ConsumerWidget {
                 ),
                 IconButton(
                   icon: const Icon(Icons.delete_outline,
-                      size: 18, color: Colors.red),
+                      size: 18, color: Colors.red,),
                   tooltip: 'Löschen',
                   onPressed: () => notifier.deleteBlock(index),
                   visualDensity: VisualDensity.compact,
@@ -275,7 +275,7 @@ class WorkoutBlockEditorSheet extends ConsumerWidget {
             Row(
               children: [
                 const Text('Ziel: ',
-                    style: TextStyle(fontSize: 12, color: Colors.grey)),
+                    style: TextStyle(fontSize: 12, color: Colors.grey),),
                 if (step.target.isDuration) ...[
                   IconButton(
                     icon: const Icon(Icons.remove_circle_outline, size: 20),
@@ -293,7 +293,7 @@ class WorkoutBlockEditorSheet extends ConsumerWidget {
                   Text(
                     step.target.formattedDisplay,
                     style: const TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 13),
+                        fontWeight: FontWeight.bold, fontSize: 13,),
                   ),
                   IconButton(
                     icon: const Icon(Icons.add_circle_outline, size: 20),
@@ -321,7 +321,7 @@ class WorkoutBlockEditorSheet extends ConsumerWidget {
                   Text(
                     step.target.formattedDisplay,
                     style: const TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 13),
+                        fontWeight: FontWeight.bold, fontSize: 13,),
                   ),
                   IconButton(
                     icon: const Icon(Icons.add_circle_outline, size: 20),
@@ -341,7 +341,7 @@ class WorkoutBlockEditorSheet extends ConsumerWidget {
                 TextButton.icon(
                   icon: const Icon(Icons.repeat, size: 16),
                   label: const Text('Als 4x Serie',
-                      style: TextStyle(fontSize: 12)),
+                      style: TextStyle(fontSize: 12),),
                   onPressed: () =>
                       notifier.wrapBlockInRepeat(index, repeatCount: 4),
                 ),
@@ -366,7 +366,7 @@ class WorkoutBlockEditorSheet extends ConsumerWidget {
         color: AppColors.cockpit.withValues(alpha: 0.03),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-            color: AppColors.navy.withValues(alpha: 0.3), width: 1.5),
+            color: AppColors.navy.withValues(alpha: 0.3), width: 1.5,),
       ),
       padding: const EdgeInsets.all(12.0),
       child: Column(
@@ -432,7 +432,7 @@ class WorkoutBlockEditorSheet extends ConsumerWidget {
               ),
               IconButton(
                 icon: const Icon(Icons.delete_outline,
-                    size: 18, color: Colors.red),
+                    size: 18, color: Colors.red,),
                 tooltip: 'Löschen',
                 onPressed: () => notifier.deleteBlock(index),
                 visualDensity: VisualDensity.compact,
@@ -449,7 +449,7 @@ class WorkoutBlockEditorSheet extends ConsumerWidget {
                 child: Row(
                   children: [
                     const Icon(Icons.subdirectory_arrow_right,
-                        size: 16, color: Colors.grey),
+                        size: 16, color: Colors.grey,),
                     const SizedBox(width: 4),
                     Text(
                       '${child.role.displayNameDe}: ${child.target.formattedDisplay} ${child.intensity.formattedDisplay}',

@@ -16,7 +16,7 @@ class ActivitySharePickerSheet extends StatelessWidget {
   });
 
   static Future<ActivityShareSnapshot?> show(
-      BuildContext context, String athleteId) {
+      BuildContext context, String athleteId,) {
     return showModalBottomSheet<ActivityShareSnapshot>(
       context: context,
       isScrollControlled: true,
@@ -124,13 +124,13 @@ class ActivitySharePickerSheet extends StatelessWidget {
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: Icon(_getSportIcon(sport),
-                              color: AppColors.navy, size: 20),
+                              color: AppColors.navy, size: 20,),
                         ),
                         title: Text(
                           title,
                           style: AppTypography.body.copyWith(
                               fontWeight: FontWeight.bold,
-                              color: AppColors.navy),
+                              color: AppColors.navy,),
                         ),
                         subtitle: Text(
                           '$date · ${snapshotObj.formattedDuration}${distanceM > 0 ? " · ${snapshotObj.formattedDistance}" : ""}',
@@ -138,7 +138,7 @@ class ActivitySharePickerSheet extends StatelessWidget {
                               .copyWith(color: Colors.grey.shade600),
                         ),
                         trailing: const Icon(Icons.send,
-                            size: 18, color: AppColors.navy),
+                            size: 18, color: AppColors.navy,),
                         onTap: () => onSelect(snapshotObj),
                       );
                     },

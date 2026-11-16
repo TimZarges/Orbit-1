@@ -8,7 +8,7 @@ class TemplateSeedData {
   const TemplateSeedData._();
 
   static List<WorkoutTemplate> getInitialTemplates(
-      {required String currentUserId}) {
+      {required String currentUserId,}) {
     final rawList = <_RawSeed>[
       // 1-5: SCHWIMMEN
       const _RawSeed(

@@ -37,7 +37,7 @@ class KeyboardShortcutsDialog extends StatelessWidget {
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: const Icon(Icons.keyboard_outlined,
-                          size: 20, color: AppColors.navy),
+                          size: 20, color: AppColors.navy,),
                     ),
                     const SizedBox(width: 12),
                     Text(
@@ -59,11 +59,11 @@ class KeyboardShortcutsDialog extends StatelessWidget {
             const SizedBox(height: 16),
             _buildShortcutRow('?', 'Diese Übersicht öffnen'),
             _buildShortcutRow(
-                'Cmd + K  /  Strg + K', 'Athleten-Suche fokussieren'),
+                'Cmd + K  /  Strg + K', 'Athleten-Suche fokussieren',),
             _buildShortcutRow('/', 'Schnellsuche im Raster'),
             _buildShortcutRow('Alt + Ziehen', 'Einheit duplizieren / kopieren'),
             _buildShortcutRow(
-                'Pfeiltasten ↑ ↓', 'In der Athletenliste navigieren'),
+                'Pfeiltasten ↑ ↓', 'In der Athletenliste navigieren',),
             _buildShortcutRow('Enter', 'Ausgewählten Athleten öffnen'),
             _buildShortcutRow('Esc', 'Suche / Dialoge schließen'),
             const SizedBox(height: 20),
@@ -74,7 +74,7 @@ class KeyboardShortcutsDialog extends StatelessWidget {
                   backgroundColor: AppColors.navy,
                   foregroundColor: AppColors.white,
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10)),
+                      borderRadius: BorderRadius.circular(10),),
                 ),
                 child: const Text('Verstanden'),
               ),

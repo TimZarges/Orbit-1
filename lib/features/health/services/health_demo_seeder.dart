@@ -75,7 +75,7 @@ class HealthDemoSeeder {
         bodyBattery: 75 + (i % 15),
         source: 'DEMO',
         updatedAt: date,
-      ));
+      ),);
     }
 
     return list;

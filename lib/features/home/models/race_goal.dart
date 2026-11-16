@@ -133,7 +133,7 @@ class RaceGoal {
       final parts = date.split('-');
       if (parts.length != 3) return 0;
       final target = DateTime(
-          int.parse(parts[0]), int.parse(parts[1]), int.parse(parts[2]));
+          int.parse(parts[0]), int.parse(parts[1]), int.parse(parts[2]),);
       final now = DateTime.now();
       final today = DateTime(now.year, now.month, now.day);
       return target.difference(today).inDays;

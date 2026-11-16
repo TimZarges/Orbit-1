@@ -91,7 +91,7 @@ void main() {
     final unreadContainer = tester.firstWidget<Container>(find.descendant(
       of: unreadCardFinder,
       matching: find.byType(Container),
-    ));
+    ),);
     final unreadBox = unreadContainer.decoration as BoxDecoration;
     expect((unreadBox.border as Border).top.color, AppColors.volt);
     expect((unreadBox.border as Border).top.width, 1.5);
@@ -99,7 +99,7 @@ void main() {
     final readContainer = tester.firstWidget<Container>(find.descendant(
       of: readCardFinder,
       matching: find.byType(Container),
-    ));
+    ),);
     final readBox = readContainer.decoration as BoxDecoration;
     expect((readBox.border as Border).top.color, Colors.white38);
     expect((readBox.border as Border).top.width, 1.2);

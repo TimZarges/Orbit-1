@@ -24,9 +24,9 @@ void main() {
       final missingInDe = enKeys.difference(deKeys);
 
       expect(missingInEn, isEmpty,
-          reason: 'Keys in de, but missing in en: $missingInEn');
+          reason: 'Keys in de, but missing in en: $missingInEn',);
       expect(missingInDe, isEmpty,
-          reason: 'Keys in en, but missing in de: $missingInDe');
+          reason: 'Keys in en, but missing in de: $missingInDe',);
     });
 
     test('no empty translations in de or en', () {
@@ -41,14 +41,14 @@ void main() {
       for (final entry in deMap.entries) {
         if (!entry.key.startsWith('@')) {
           expect(entry.value.toString().trim(), isNotEmpty,
-              reason: 'Key ${entry.key} in app_de.arb is empty');
+              reason: 'Key ${entry.key} in app_de.arb is empty',);
         }
       }
 
       for (final entry in enMap.entries) {
         if (!entry.key.startsWith('@')) {
           expect(entry.value.toString().trim(), isNotEmpty,
-              reason: 'Key ${entry.key} in app_en.arb is empty');
+              reason: 'Key ${entry.key} in app_en.arb is empty',);
         }
       }
     });

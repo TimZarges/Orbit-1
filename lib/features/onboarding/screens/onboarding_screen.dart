@@ -213,7 +213,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         final hasCreds = isAuth ||
             (email.isNotEmpty &&
                 PasswordCriteriaChecklist.isPasswordValid(
-                    password, confirmPassword));
+                    password, confirmPassword,));
         return _gdprHealthConsent && hasCreds && !_isSubmitting;
       default:
         return false;
@@ -242,7 +242,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         final hasCreds = isAuth ||
             (email.isNotEmpty &&
                 PasswordCriteriaChecklist.isPasswordValid(
-                    password, confirmPassword));
+                    password, confirmPassword,));
         return hasCreds;
       default:
         return false;
@@ -257,7 +257,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           const SnackBar(
             backgroundColor: Color(0xFFEF4444),
             content: Text(
-                'Bitte bestätige zuerst die Datenschutz- und Gesundheitsdaten-Einwilligung.'),
+                'Bitte bestätige zuerst die Datenschutz- und Gesundheitsdaten-Einwilligung.',),
           ),
         );
         return;
@@ -476,7 +476,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               if (submission.swimCssSecPer100m != null)
                 'swimCssSecPer100m': submission.swimCssSecPer100m,
             },
-          }, SetOptions(merge: true)).catchError((_) {});
+          }, SetOptions(merge: true),).catchError((_) {});
         }
 
         // Trainer-Einladungscode einlösen falls vorhanden
@@ -696,7 +696,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   child: IconButton(
                     padding: EdgeInsets.zero,
                     icon: const Icon(Icons.camera_alt,
-                        size: 16, color: AppColors.navy),
+                        size: 16, color: AppColors.navy,),
                     onPressed: _pickImage,
                   ),
                 ),
@@ -709,7 +709,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           child: TextButton.icon(
             onPressed: _pickImage,
             icon: const Icon(Icons.add_photo_alternate_outlined,
-                size: 16, color: AppColors.volt),
+                size: 16, color: AppColors.volt,),
             label: const Text(
               'Profilbild hinzufügen (optional)',
               style: TextStyle(color: AppColors.volt, fontSize: 13),
@@ -895,7 +895,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               hintText: 'z. B. Performance Coaching Schmidt',
               hintStyle: const TextStyle(color: Colors.white38),
               prefixIcon: const Icon(Icons.business_center_outlined,
-                  color: AppColors.volt),
+                  color: AppColors.volt,),
               filled: true,
               fillColor: const Color(0xFF002A5C),
               enabledBorder: OutlineInputBorder(
@@ -923,7 +923,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 child: ChoiceChip(
                   key: const Key('onboarding_coach_mode_simple'),
                   label: const Text('Download & Analyse',
-                      textAlign: TextAlign.center),
+                      textAlign: TextAlign.center,),
                   selected: _coachMode == 'SIMPLE_DOWNLOAD',
                   showCheckmark: false,
                   selectedColor: AppColors.volt,
@@ -945,7 +945,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 child: ChoiceChip(
                   key: const Key('onboarding_coach_mode_full'),
                   label: const Text('Vollständiges Coaching',
-                      textAlign: TextAlign.center),
+                      textAlign: TextAlign.center,),
                   selected: _coachMode == 'FULL_ANALYSIS',
                   showCheckmark: false,
                   selectedColor: AppColors.volt,
@@ -1099,12 +1099,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   DropdownMenuItem(
                     value: 'metric',
                     child: Text('Metrisch (km, kg, °C)',
-                        style: TextStyle(color: AppColors.white)),
+                        style: TextStyle(color: AppColors.white),),
                   ),
                   DropdownMenuItem(
                     value: 'imperial',
                     child: Text('Imperial (mi, lbs, °F)',
-                        style: TextStyle(color: AppColors.white)),
+                        style: TextStyle(color: AppColors.white),),
                   ),
                 ],
                 onChanged: (val) {
@@ -1150,7 +1150,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 const Row(
                   children: [
                     Icon(Icons.workspace_premium_outlined,
-                        color: AppColors.volt, size: 28),
+                        color: AppColors.volt, size: 28,),
                     SizedBox(width: 12),
                     Expanded(
                       child: Text(
@@ -1420,12 +1420,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     DropdownMenuItem(
                       value: 'metric',
                       child: Text('Metrisch (km, kg, °C)',
-                          style: TextStyle(color: AppColors.white)),
+                          style: TextStyle(color: AppColors.white),),
                     ),
                     DropdownMenuItem(
                       value: 'imperial',
                       child: Text('Imperial (mi, lbs, °F)',
-                          style: TextStyle(color: AppColors.white)),
+                          style: TextStyle(color: AppColors.white),),
                     ),
                   ],
                   onChanged: (val) {
@@ -1684,7 +1684,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
-                            color: AppColors.white),
+                            color: AppColors.white,),
                       ),
                       onChanged: (v) =>
                           setState(() => _garminBackfill90Days = v ?? true),
@@ -1696,9 +1696,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         backgroundColor: AppColors.volt,
                         foregroundColor: AppColors.navy,
                         padding: const EdgeInsets.symmetric(
-                            vertical: 12, horizontal: 16),
+                            vertical: 12, horizontal: 16,),
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10)),
+                            borderRadius: BorderRadius.circular(10),),
                       ),
                       onPressed: () async {
                         try {
@@ -1713,15 +1713,17 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                               const SnackBar(
                                 backgroundColor: Color(0xFF003D82),
                                 content: Text(
-                                    'Garmin Connect ist vorgemerkt und wird direkt nach Kontoerstellung verknüpft!'),
+                                    'Garmin Connect ist vorgemerkt und wird direkt nach Kontoerstellung verknüpft!',),
                               ),
                             );
                           }
                         } catch (e) {
+                          if (!mounted) return;
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                                content:
-                                    Text('Garmin-Verbindung: ${e.toString()}')),
+                              content:
+                                  Text('Garmin-Verbindung: ${e.toString()}'),
+                            ),
                           );
                         }
                       },
@@ -1756,9 +1758,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                           backgroundColor: AppColors.volt,
                           foregroundColor: AppColors.navy,
                           padding: const EdgeInsets.symmetric(
-                              vertical: 12, horizontal: 16),
+                              vertical: 12, horizontal: 16,),
                           shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10)),
+                              borderRadius: BorderRadius.circular(10),),
                         ),
                         onPressed: () async {
                           final files = await FilePicker.pickFiles(
@@ -1808,7 +1810,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                               SnackBar(
                                 backgroundColor: const Color(0xFF10B981),
                                 content: Text(
-                                    '${validFiles.length} Datei(en) erfolgreich ausgewählt!'),
+                                    '${validFiles.length} Datei(en) erfolgreich ausgewählt!',),
                               ),
                             );
                           }
@@ -1831,7 +1833,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                                 (f) => Chip(
                                   label: Text(f.name,
                                       style: const TextStyle(
-                                          fontSize: 11, color: Colors.white)),
+                                          fontSize: 11, color: Colors.white,),),
                                   backgroundColor: const Color(0xFF003D82),
                                   padding: EdgeInsets.zero,
                                 ),
@@ -2032,7 +2034,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   textCapitalization: TextCapitalization.characters,
                   maxLength: 6,
                   style: const TextStyle(
-                      color: AppColors.white, fontWeight: FontWeight.bold),
+                      color: AppColors.white, fontWeight: FontWeight.bold,),
                   decoration: InputDecoration(
                     labelText: '6-stelliger Code (z. B. 4A8F2C)',
                     labelStyle: const TextStyle(color: Colors.white70),
@@ -2073,7 +2075,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               Row(
                 children: [
                   const Icon(Icons.verified_user_outlined,
-                      color: AppColors.volt),
+                      color: AppColors.volt,),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
@@ -2109,7 +2111,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   style: TextStyle(
                       fontWeight: FontWeight.w600,
                       fontSize: 13,
-                      color: AppColors.white),
+                      color: AppColors.white,),
                 ),
                 onChanged: (val) {
                   setState(() {
@@ -2125,7 +2127,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 Row(
                   children: [
                     const Icon(Icons.warning_amber_rounded,
-                        color: AppColors.coral, size: 16),
+                        color: AppColors.coral, size: 16,),
                     const SizedBox(width: 6),
                     Expanded(
                       child: Text(
@@ -2183,7 +2185,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       width: 22,
                       height: 22,
                       child: CircularProgressIndicator(
-                          strokeWidth: 2, color: AppColors.navy),
+                          strokeWidth: 2, color: AppColors.navy,),
                     )
                   : Text(
                       isLastStep ? 'Konto erstellen & ORBIT starten' : 'Weiter',

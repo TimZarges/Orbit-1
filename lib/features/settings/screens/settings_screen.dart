@@ -3,14 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:orbit/features/settings/providers/settings_provider.dart';
-import 'package:orbit/features/settings/models/app_settings.dart';
-import 'package:orbit/features/settings/widgets/privacy_settings_sheet.dart';
-import 'package:orbit/features/auth/providers/auth_provider.dart';
-import 'package:orbit/features/beta_feedback/widgets/beta_bug_reporter_sheet.dart';
-import 'package:orbit/core/metrics/term_resolver.dart';
-import 'package:orbit/core/design/app_colors.dart';
-import 'package:orbit/core/localization/app_strings.dart';
+import '../providers/settings_provider.dart';
+import '../models/app_settings.dart';
+import '../widgets/privacy_settings_sheet.dart';
+import '../../auth/providers/auth_provider.dart';
+import '../../beta_feedback/widgets/beta_bug_reporter_sheet.dart';
+import '../../../core/metrics/term_resolver.dart';
+import '../../../core/design/app_colors.dart';
+import '../../../core/localization/app_strings.dart';
 
 /// Einstellungs- und Präferenz-Bildschirm der ORBIT-Applikation.
 ///
@@ -61,18 +61,18 @@ class SettingsScreen extends ConsumerWidget {
             leading: const Icon(Icons.straighten),
             title: const Text('Einheiten'),
             subtitle: Text(
-                AppStrings.measurementSystemLabel(settings.measurementSystem)),
+                AppStrings.measurementSystemLabel(settings.measurementSystem),),
             trailing: DropdownButton<MeasurementSystem>(
               value: settings.measurementSystem,
               items: [
                 DropdownMenuItem(
                     value: MeasurementSystem.metric,
                     child: Text(AppStrings.measurementSystemLabel(
-                        MeasurementSystem.metric))),
+                        MeasurementSystem.metric,),),),
                 DropdownMenuItem(
                     value: MeasurementSystem.imperial,
                     child: Text(AppStrings.measurementSystemLabel(
-                        MeasurementSystem.imperial))),
+                        MeasurementSystem.imperial,),),),
               ],
               onChanged: (val) {
                 if (val != null) {
@@ -94,13 +94,13 @@ class SettingsScreen extends ConsumerWidget {
               items: [
                 DropdownMenuItem(
                     value: ThemeMode.system,
-                    child: Text(AppStrings.themeModeLabel(ThemeMode.system))),
+                    child: Text(AppStrings.themeModeLabel(ThemeMode.system)),),
                 DropdownMenuItem(
                     value: ThemeMode.light,
-                    child: Text(AppStrings.themeModeLabel(ThemeMode.light))),
+                    child: Text(AppStrings.themeModeLabel(ThemeMode.light)),),
                 DropdownMenuItem(
                     value: ThemeMode.dark,
-                    child: Text(AppStrings.themeModeLabel(ThemeMode.dark))),
+                    child: Text(AppStrings.themeModeLabel(ThemeMode.dark)),),
               ],
               onChanged: (val) {
                 if (val != null) {
@@ -124,15 +124,15 @@ class SettingsScreen extends ConsumerWidget {
                 DropdownMenuItem(
                     value: ExperienceLevel.beginner,
                     child: Text(AppStrings.experienceLevelLabel(
-                        ExperienceLevel.beginner))),
+                        ExperienceLevel.beginner,),),),
                 DropdownMenuItem(
                     value: ExperienceLevel.advanced,
                     child: Text(AppStrings.experienceLevelLabel(
-                        ExperienceLevel.advanced))),
+                        ExperienceLevel.advanced,),),),
                 DropdownMenuItem(
                     value: ExperienceLevel.expert,
                     child: Text(AppStrings.experienceLevelLabel(
-                        ExperienceLevel.expert))),
+                        ExperienceLevel.expert,),),),
               ],
               onChanged: (val) {
                 if (val != null) {
@@ -147,7 +147,7 @@ class SettingsScreen extends ConsumerWidget {
                         .set({
                       'settings': {'experienceLevel': val.name},
                       'profile': {'experienceLevel': val.name.toUpperCase()},
-                    }, SetOptions(merge: true)).catchError((_) {});
+                    }, SetOptions(merge: true),).catchError((_) {});
                   }
                 }
               },
@@ -245,7 +245,7 @@ class SettingsScreen extends ConsumerWidget {
                 builder: (ctx) => AlertDialog(
                   title: const Text('Abmelden?'),
                   content: const Text(
-                      'Möchtest du dich wirklich von ORBIT abmelden?'),
+                      'Möchtest du dich wirklich von ORBIT abmelden?',),
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.of(ctx).pop(false),
@@ -277,7 +277,7 @@ class SettingsScreen extends ConsumerWidget {
 
   /// Öffnet den Dialog zur Änderung des Passworts mit Live-Validierungs-Checkliste.
   Future<void> _showChangePasswordDialog(
-      BuildContext context, WidgetRef ref) async {
+      BuildContext context, WidgetRef ref,) async {
     final oldPwController = TextEditingController();
     final newPwController = TextEditingController();
     final confirmPwController = TextEditingController();
@@ -374,13 +374,13 @@ class SettingsScreen extends ConsumerWidget {
                     const SizedBox(height: 14),
                     _buildCriterion(hasMinLength, 'Mindestens 8 Zeichen'),
                     _buildCriterion(
-                        hasUpper, 'Mindestens 1 Großbuchstabe (A-Z)'),
+                        hasUpper, 'Mindestens 1 Großbuchstabe (A-Z)',),
                     _buildCriterion(
-                        hasLower, 'Mindestens 1 Kleinbuchstabe (a-z)'),
+                        hasLower, 'Mindestens 1 Kleinbuchstabe (a-z)',),
                     _buildCriterion(hasDigitOrSpecial,
-                        'Mindestens 1 Zahl oder Sonderzeichen'),
+                        'Mindestens 1 Zahl oder Sonderzeichen',),
                     _buildCriterion(
-                        matchesConfirm, 'Passwörter stimmen überein'),
+                        matchesConfirm, 'Passwörter stimmen überein',),
                   ],
                 ),
               ),
@@ -389,7 +389,7 @@ class SettingsScreen extends ConsumerWidget {
               TextButton(
                 onPressed: () => Navigator.of(ctx).pop(),
                 child: const Text('Abbrechen',
-                    style: TextStyle(color: Colors.white54)),
+                    style: TextStyle(color: Colors.white54),),
               ),
               ElevatedButton(
                 key: const Key('change_password_save_button'),
@@ -411,7 +411,7 @@ class SettingsScreen extends ConsumerWidget {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
                                   content: Text(
-                                      'Passwort erfolgreich aktualisiert.'),
+                                      'Passwort erfolgreich aktualisiert.',),
                                   backgroundColor: AppColors.emerald,
                                 ),
                               );
@@ -421,7 +421,7 @@ class SettingsScreen extends ConsumerWidget {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
                                   content: Text(
-                                      'Fehler beim Ändern des Passworts: $e'),
+                                      'Fehler beim Ändern des Passworts: $e',),
                                   backgroundColor: AppColors.coral,
                                 ),
                               );
@@ -431,7 +431,7 @@ class SettingsScreen extends ConsumerWidget {
                       }
                     : null,
                 child: const Text('Speichern',
-                    style: TextStyle(fontWeight: FontWeight.bold)),
+                    style: TextStyle(fontWeight: FontWeight.bold),),
               ),
             ],
           );

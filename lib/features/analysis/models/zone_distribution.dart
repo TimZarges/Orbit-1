@@ -110,7 +110,7 @@ class ZoneDistributionSummary {
         zoneIndex: i + 1,
         durationSec: sec,
         percent: pct,
-      ));
+      ),);
     }
 
     return ZoneDistributionSummary(

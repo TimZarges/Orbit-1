@@ -108,7 +108,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(Icons.chat_bubble_outline,
-                            size: 48, color: Colors.grey.shade300),
+                            size: 48, color: Colors.grey.shade300,),
                         const SizedBox(height: 12),
                         Text(
                           'Noch keine Nachrichten.',
@@ -142,7 +142,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     } else {
                       final prevMessage = messages[index + 1];
                       if (!_isSameDay(
-                          message.createdAt, prevMessage.createdAt)) {
+                          message.createdAt, prevMessage.createdAt,)) {
                         showDateHeader = true;
                       }
                     }

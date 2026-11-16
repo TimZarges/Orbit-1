@@ -347,7 +347,7 @@ class WorkoutParser {
     var role = defaultRole;
     final roleMatch = RegExp(
             r'^(WU|CD|WARMUP|COOLDOWN|WORK|REST|PAUSE|MAIN)\s*:\s*',
-            caseSensitive: false)
+            caseSensitive: false,)
         .firstMatch(text);
     if (roleMatch != null) {
       final rolePrefix = roleMatch.group(1)!;
@@ -379,7 +379,7 @@ class WorkoutParser {
     if (targetMatch != null) {
       final targetStr = targetMatch.group(1)!.trim();
       target = _parseTarget(
-          targetStr, startIndex, startIndex + targetStr.length, errors);
+          targetStr, startIndex, startIndex + targetStr.length, errors,);
       text = text.substring(targetMatch.end).trim();
     } else {
       errors.add(
@@ -417,7 +417,7 @@ class WorkoutParser {
 
   /// Parst eine Zielvorgabe (Dauer oder Distanz).
   WorkoutTarget? _parseTarget(
-      String s, int start, int end, List<WorkoutParseError> errors) {
+      String s, int start, int end, List<WorkoutParseError> errors,) {
     final lower = s.toLowerCase();
 
     // 1. Distanz in km
@@ -715,7 +715,7 @@ class WorkoutParser {
         final isPaceUnit = char == '/' &&
             s.substring(i).startsWith(
                   RegExp(r'^/(?:km|100m|mi|100y)(?:\s|[,\)/]|$)',
-                      caseSensitive: false),
+                      caseSensitive: false,),
                 );
         if (!isPaceUnit) {
           segments.add(

@@ -25,7 +25,7 @@ class AuthService {
 
   Future<void> signUpWithEmail(String email, String password) async {
     final cred = await _auth.createUserWithEmailAndPassword(
-        email: email, password: password);
+        email: email, password: password,);
     // Verifizierungs-E-Mail sicher anstoßen, ohne bei Fehlern abzubrechen
     if (cred.user != null) {
       await AuthGuardService.triggerVerificationEmailSafely(cred.user!);
@@ -42,7 +42,7 @@ class AuthService {
     final user = _auth.currentUser;
     if (user == null || user.email == null) {
       throw FirebaseAuthException(
-          code: 'no-user', message: 'Kein aktiver Benutzer angemeldet.');
+          code: 'no-user', message: 'Kein aktiver Benutzer angemeldet.',);
     }
     final cred =
         EmailAuthProvider.credential(email: user.email!, password: oldPassword);

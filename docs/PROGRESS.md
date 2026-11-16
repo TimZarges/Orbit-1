@@ -83,11 +83,28 @@ Diese 9 Punkte müssen vor dem Beta-Start zwingend auf `[x]` gebracht und in `CH
 | **Phase 38** | **Global greifbarer Bug-Käfer, Metrisches 24h-Datumsformat (`DD.MM.YYYY`), Mitteilungs-Routing, Nutzer-Beta-Inbox, App-Icon-Präzision & Cleanup**<br>Top-Level Bug-Käfer im `MaterialApp.builder` (über Modal-Sheets bedienbar), `OrbitDateFormatter` (DD.MM.YYYY & 24h), gerahmte Mitteilungen mit Deep-Link-Routing, Beta-Inbox für Tester, Widget-Galerie-Entfernung, DSGVO-Löschung mit Logout & App-Icon-Zentrierung. | **MITTEL** | `v0.38.0` | `[x] Abgeschlossen` |
 | **Phase 39** | **Rückwirkende 100 % deutsche Code-Kommentierung über das gesamte Projekt & Finaler Hardware-Audit**<br>Lückenlose deutsche Dokumentation (`///` & `/** ... */`) in `functions/src/`, Security Rules, `lib/core/`, `lib/shared/` und allen `lib/features/` Modulen, finaler E2E-Hardware-Audit auf Pixel 10 Pro & Tag `v0.39.0`. | **HOCH** | `v0.39.0` | `[x] Abgeschlossen` |
 | **Hotfix & Verifikation** | **E2E-Hardware-Verifikation (.fit-Upload & Garmin-Sync auf Android 16)**<br>Android 16 SAF FilePicker Fix (`FileType.any`), Binäre Magic Byte Validierung, Garmin REST-Pull 24h-Windowing, Entkopplung von Backfill-Sturm, 429-Resilienz & vollständiger Live-Hardware-Beweis auf Google Pixel 10 Pro (`docs/CHECKPOINTS.md`). | **KRITISCH** | `v0.39.1` | `[x] Abgeschlossen` |
+| **Garmin Live-Sync** | **Garmin Developer Portal (5 API-Säulen, 20 Webhooks) & Echte `.FIT`-Aktivitäten**<br>Alle 20 Garmin-Webhooks aktiv, binärer `.fit`-Download (`activityFiles`), 6 echte Garmin-Einheiten & 1Hz-Streams im Cockpit verifiziert. | **HOCH** | `v0.39.2` | `[x] Abgeschlossen` |
+| **Auth-Guard Fix** | **Beta-Login-Entblockung (`AuthGuardService` & `verifyBetaUserEmail`)**<br>Unblock für Beta-Tester bei E-Mail-Verifikation und Onboarding-Übergang. | **HOCH** | `v0.39.3` | `[x] Abgeschlossen` |
 
 ---
 
-## 4. Post-Beta Roadmap (Geparkt für nach dem Beta-Launch)
-- [ ] **Phase 40:** Mehrwochen-Trainingspläne, Plan-Bibliothek & Strukturierter Workout-Export direkt auf die Garmin-Uhr.
-- [ ] **Phase 41:** Vereins- & Team-Funktionen (Gruppen-Boards, gemeinsame Trainingslager, Vereins-Rankings) & Equipment-Tracking.
-- [ ] **Phase 42:** Erweiterte Integrationen (Android Health Connect, Strava-Sync, Apple Health).
-- [ ] **Phase 43:** ORBIT KI-Assistent & Intelligenter Co-Coach.
+## 4. Verbindlicher Fahrplan bis V1.0.0 Release (Phasen 40–46) & Langfrist-Roadmap (V1.0.0 bis V4.0.0)
+
+> Siehe vollständige Spezifikation in [`docs/ROADMAP_V1_TO_V4.md`](ROADMAP_V1_TO_V4.md) sowie die Benchmark-Analyse in [`docs/research/BENCHMARK_MATS_TRAININGPEAKS_GARMIN.md`](research/BENCHMARK_MATS_TRAININGPEAKS_GARMIN.md).
+
+| Phase | Titel & Kern-Deliverables | Risiko | Ziel-Tag | Status |
+| :--- | :--- | :---: | :---: | :---: |
+| **Phase 40** | **Verankerung Projekt-Roadmap (V1.0.0–V4.0.0), Phasenplan (40–46) & Verschärfte Code-Qualitäts-Gesetze**<br>`AGENTS.md` Regel 9 & 10 (Effizienz-Gebot, Clean-Code-Gebot, 100 % deutsche Kommentierung), erweitertes Pre-Merge-Gate (`check_phase_ready.sh` mit 0 Errors/Warnings/Infos, TS-Build & Lint, 100 % Kommentar-Check & Tests), `docs/ROADMAP_V1_TO_V4.md` & `docs/CHECKPOINTS.md`. | **HOCH** | `v0.40.0` | `[x] Abgeschlossen` |
+| **Phase 41** | **Onboarding & Profil „Einfach“ (Athlet & Coach), Wohnland-Format (`dd.mm.yy` / 24h), DE/EN & Theme**<br>Fokussiertes V1.0.0-Onboarding & Profil für Athlet und Coach inkl. Triathlon als wählbare Sportart, Hell-/Dunkel-Modus, Sprache DE & EN sowie Datum `dd.mm.yy` und 24h-Format nach Wohnland. | **MITTEL** | `v0.41.0` | `[ ] Offen` |
+| **Phase 42** | **Trainings-Vorschaukarte im COROS-Stil & Direkter `.FIT`-Download-Button**<br>Trainings-Vorschaukarte im COROS-Stil (in V1.0.0 nicht klickbar, kein GPX-Minigraph, rechts direkter `.FIT`-Download-Button) & plattformübergreifender `.FIT`-Export-Service. | **HOCH** | `v0.42.0` | `[ ] Offen` |
+| **Phase 43** | **Heute-Ansicht (Nur absolviertes Training + Sync/Upload) & Kalender (Woche, Monat, Liste)**<br>Heute-Ansicht in V1.0.0 ausschließlich mit absolviertem Training + Schnellzugriff Garmin Sync & Datei-Upload; Kalender mit Trainingsanzeige in Woche, Monat und Liste. | **HOCH** | `v0.43.0` | `[ ] Offen` |
+| **Phase 44** | **Coach-Funktionen V1.0.0: Verbindung mit Athleten, Eigene Coach-Navigation & `.FIT`-Download**<br>Verbindung mit Athleten (Einladungscode), dedizierte 3-Tab-Coach-Navigation (*Athleten*, *Kalender*, *Profil/Einstellungen*) und direkter `.FIT`-Datei-Download für Coaches. | **HOCH** | `v0.44.0` | `[ ] Offen` |
+| **Phase 45** | **Gesetzliche Anforderungen DE/EU für V1.0.0 (DSGVO Art. 9, Art. 17, Art. 13/14 & DDG § 5 Impressum)**<br>DSGVO Art. 9 Opt-In für Gesundheitsdaten, DSGVO Art. 17 vollständige Konto- und Datenlöschung (In-App & Web `/delete-account`), DSGVO Art. 13/14 Datenschutzerklärung & DDG § 5 Impressum mit offiziellen Marken-/Firmendaten. | **HOCH** | `v0.45.0` | `[ ] Offen` |
+| **Phase 46** | **Finaler Effizienz- & Kommentar-Audit, Pixel 10 Pro E2E-Abnahme & V1.0.0 Release**<br>100 % Prüfung gegen Effizienz-, Clean-Code- und Kommentar-Gebot, Hardware-Abnahme auf Google Pixel 10 Pro und Gold-Release `v1.0.0`. | **KRITISCH** | `v1.0.0` | `[ ] Offen` |
+
+---
+
+## 5. Ausblick: Meilensteine V2.0.0 bis V4.0.0
+- [ ] **V2.0.0:** Profi-Coaching, Visueller Block-Workout-Builder (`#lit`/`#mit`/`#hit` + Ernährung), MATS 2D Post-Workout-Puck, Athleten-Verfügbarkeitsprofile, Soll/Ist-Ampel & klickbare Basis-Aktivitätsdetails.
+- [ ] **V3.0.0:** Wissenschaftliches Telemetrie- & Health-Cockpit (1Hz Multi-Stream-Scrubber, NP/IF/Load/VI/EF/Pw:Hr/W'bal, Banister PMC CTL/ATL/TSB mit Ramp-Rates, 3-Ringe Health & Recovery Cockpit, Leistungsdiagnostik & 2 Coach-Modi).
+- [ ] **V3.1.0 / V4.0.0:** Vereins- & Team-Ökosystem, erweiterte Hardware-Connectoren (Wahoo, Polar, Coros, Apple Health, Health Connect), strukturierter Workout-Export auf Garmin-Geräte & ORBIT KI-Co-Coach.

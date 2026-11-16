@@ -124,7 +124,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
             child: const Text('Abbrechen',
-                style: TextStyle(color: Colors.white54)),
+                style: TextStyle(color: Colors.white54),),
           ),
           ElevatedButton(
             key: const Key('forgot_password_submit_button'),
@@ -132,7 +132,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               backgroundColor: AppColors.volt,
               foregroundColor: AppColors.navy,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8)),
+                  borderRadius: BorderRadius.circular(8),),
             ),
             onPressed: () {
               if (formKey.currentState?.validate() ?? false) {
@@ -140,7 +140,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               }
             },
             child: const Text('Link senden',
-                style: TextStyle(fontWeight: FontWeight.bold)),
+                style: TextStyle(fontWeight: FontWeight.bold),),
           ),
         ],
       ),
@@ -253,7 +253,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       labelText: 'E-Mail-Adresse',
                       labelStyle: const TextStyle(color: Colors.white70),
                       prefixIcon: const Icon(Icons.email_outlined,
-                          color: AppColors.volt),
+                          color: AppColors.volt,),
                       filled: true,
                       fillColor: const Color(0xFF002A5C),
                       enabledBorder: OutlineInputBorder(

@@ -150,7 +150,7 @@ class _DiagnosticsScreenState extends ConsumerState<DiagnosticsScreen>
               style: AppTypography.title.copyWith(
                   fontSize: 16,
                   color: Colors.white,
-                  fontWeight: FontWeight.bold),
+                  fontWeight: FontWeight.bold,),
             ),
             if (proposals.isNotEmpty)
               Container(
@@ -183,7 +183,7 @@ class _DiagnosticsScreenState extends ConsumerState<DiagnosticsScreen>
             child: Row(
               children: [
                 const Icon(Icons.check_circle_outline,
-                    color: AppColors.volt, size: 20),
+                    color: AppColors.volt, size: 20,),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
@@ -203,7 +203,7 @@ class _DiagnosticsScreenState extends ConsumerState<DiagnosticsScreen>
                   onAccept: () => _handleAcceptProposal(proposal),
                   onReject: () => _handleRejectProposal(proposal),
                 ),
-              )),
+              ),),
         const SizedBox(height: 16),
 
         // 3. Schwellenwert-Verlauf
@@ -217,7 +217,7 @@ class _DiagnosticsScreenState extends ConsumerState<DiagnosticsScreen>
         Text(
           'Geführte Feldtests',
           style: AppTypography.title.copyWith(
-              fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold),
+              fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold,),
         ),
         const SizedBox(height: 4),
         Text(
@@ -231,13 +231,13 @@ class _DiagnosticsScreenState extends ConsumerState<DiagnosticsScreen>
                 testInfo: test,
                 onSchedule: () => _scheduleGuidedTest(test),
               ),
-            )),
+            ),),
       ],
     );
   }
 
   Widget _buildCurrentThresholdCard(
-      ThresholdEntry? latest, ThresholdType type) {
+      ThresholdEntry? latest, ThresholdType type,) {
     String valueStr = 'Nicht hinterlegt';
     String effectiveStr = '–';
     String sourceStr = '–';
@@ -401,7 +401,7 @@ class _DiagnosticsScreenState extends ConsumerState<DiagnosticsScreen>
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: ColorScheme.light(
+            colorScheme: const ColorScheme.light(
               primary: AppColors.navy,
               onPrimary: AppColors.white,
               surface: AppColors.white,
@@ -445,7 +445,7 @@ class _DiagnosticsScreenState extends ConsumerState<DiagnosticsScreen>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-                'Test "${test.titleDe}" erfolgreich für $localDateStr eingeplant.'),
+                'Test "${test.titleDe}" erfolgreich für $localDateStr eingeplant.',),
             backgroundColor: AppColors.navy,
           ),
         );

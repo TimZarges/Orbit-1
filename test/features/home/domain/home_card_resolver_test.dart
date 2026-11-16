@@ -71,12 +71,12 @@ void main() {
     });
 
     test('Past race goal is omitted from cards', () {
-      final goal = RaceGoal(
+      const goal = RaceGoal(
         title: 'Marathon 2020',
         date: '2020-04-12',
       );
 
-      final context = HomeCardContext(
+      const context = HomeCardContext(
         isBrandNewUser: false,
         raceGoal: goal,
       );

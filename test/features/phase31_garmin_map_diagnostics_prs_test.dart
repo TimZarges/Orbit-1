@@ -9,7 +9,7 @@ import 'package:orbit/features/diagnostics/models/guided_test_info.dart';
 void main() {
   group('Phase 31.2 - GPS-Aktivitätskarte (Volt-Spur & Hell/Dunkel)', () {
     final sampleGpsPoints = [
-      ActivityStreamPoint(
+      const ActivityStreamPoint(
         timeSec: 0,
         lat: 50.1109,
         lng: 8.6821,
@@ -17,7 +17,7 @@ void main() {
         hr: 140,
         speedMps: 7.5,
       ),
-      ActivityStreamPoint(
+      const ActivityStreamPoint(
         timeSec: 60,
         lat: 50.1120,
         lng: 8.6840,
@@ -25,7 +25,7 @@ void main() {
         hr: 155,
         speedMps: 8.2,
       ),
-      ActivityStreamPoint(
+      const ActivityStreamPoint(
         timeSec: 120,
         lat: 50.1135,
         lng: 8.6865,
@@ -51,7 +51,7 @@ void main() {
 
       expect(find.byKey(const Key('telemetry_map_container')), findsOneWidget);
       expect(find.byKey(const Key('telemetry_map_mode_voltStandard')),
-          findsOneWidget);
+          findsOneWidget,);
       expect(find.text('Volt-Spur'), findsOneWidget);
     });
 

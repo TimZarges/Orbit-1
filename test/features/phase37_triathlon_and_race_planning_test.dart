@@ -133,7 +133,7 @@ void main() {
 
       expect(fakeWorkoutRepo.savedWorkout, isNotNull);
       expect(fakeWorkoutRepo.savedWorkout!.title,
-          contains('A-WETTKAMPF: Saison-Wettkampf'));
+          contains('A-WETTKAMPF: Saison-Wettkampf'),);
     });
   });
 }

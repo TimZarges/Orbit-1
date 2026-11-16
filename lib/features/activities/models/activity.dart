@@ -131,7 +131,7 @@ class ActivityLapData {
   });
 
   factory ActivityLapData.fromMap(Map<String, dynamic> map,
-      {int index = 1, bool isAuto = false}) {
+      {int index = 1, bool isAuto = false,}) {
     final dur = (map['durationSec'] as num?)?.toInt() ?? 0;
     final dist = (map['distanceM'] as num?)?.toDouble() ?? 0.0;
     final w = (map['avgWatts'] as num?)?.toDouble() ??
@@ -282,7 +282,7 @@ class Activity {
       autoIntervals: autoIntervals,
       processing: data['processing'] != null
           ? ActivityProcessing.fromMap(
-              data['processing'] as Map<String, dynamic>)
+              data['processing'] as Map<String, dynamic>,)
           : null,
       segments: (data['segments'] as List<dynamic>?)
           ?.map((e) => ActivitySegment.fromMap(e as Map<String, dynamic>))

@@ -58,7 +58,7 @@ class ThresholdExplanationSheet extends StatelessWidget {
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(Icons.help_outline,
-                      color: AppColors.volt, size: 24),
+                      color: AppColors.volt, size: 24,),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -68,7 +68,7 @@ class ThresholdExplanationSheet extends StatelessWidget {
                       Text(
                         'Wie entsteht dieser Vorschlag?',
                         style: AppTypography.title.copyWith(
-                            color: Colors.white, fontWeight: FontWeight.bold),
+                            color: Colors.white, fontWeight: FontWeight.bold,),
                       ),
                       Text(
                         '${proposal.typeLabelDe} – Transparente Datenbasis',
@@ -89,12 +89,12 @@ class ThresholdExplanationSheet extends StatelessWidget {
                 color: proposal.confidenceColor.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                    color: proposal.confidenceColor.withValues(alpha: 0.4)),
+                    color: proposal.confidenceColor.withValues(alpha: 0.4),),
               ),
               child: Row(
                 children: [
                   Icon(Icons.shield_outlined,
-                      color: proposal.confidenceColor, size: 20),
+                      color: proposal.confidenceColor, size: 20,),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Column(
@@ -126,7 +126,7 @@ class ThresholdExplanationSheet extends StatelessWidget {
               style: AppTypography.title.copyWith(
                   fontSize: 15,
                   color: Colors.white,
-                  fontWeight: FontWeight.bold),
+                  fontWeight: FontWeight.bold,),
             ),
             const SizedBox(height: 8),
             ...proposal.basis.map((item) => Padding(
@@ -148,7 +148,7 @@ class ThresholdExplanationSheet extends StatelessWidget {
                       ),
                     ],
                   ),
-                )),
+                ),),
             const SizedBox(height: 16),
 
             // Grenzen & Transparenzhinweis
@@ -163,7 +163,7 @@ class ThresholdExplanationSheet extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Icon(Icons.info_outline,
-                      size: 18, color: Colors.white60),
+                      size: 18, color: Colors.white60,),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
@@ -187,7 +187,7 @@ class ThresholdExplanationSheet extends StatelessWidget {
                   foregroundColor: AppColors.navy,
                   elevation: 0,
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
+                      borderRadius: BorderRadius.circular(12),),
                   padding: const EdgeInsets.symmetric(vertical: 14),
                 ),
                 child: Text(

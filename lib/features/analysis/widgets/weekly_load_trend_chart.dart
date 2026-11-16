@@ -52,7 +52,7 @@ class WeeklyLoadTrendChart extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Icon(Icons.show_chart, size: 20, color: AppColors.navy),
+                    const Icon(Icons.show_chart, size: 20, color: AppColors.navy),
                     const SizedBox(width: 8),
                     Text(
                       '8-Wochen-Trend',
@@ -99,7 +99,7 @@ class WeeklyLoadTrendChart extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  Icon(Icons.trending_up, size: 16, color: AppColors.navy),
+                  const Icon(Icons.trending_up, size: 16, color: AppColors.navy),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
@@ -160,7 +160,7 @@ class _WeeklyTrendPainter extends CustomPainter {
       double x = 0;
       while (x < size.width) {
         canvas.drawLine(
-            Offset(x, avgY), Offset(min(x + 4, size.width), avgY), linePaint);
+            Offset(x, avgY), Offset(min(x + 4, size.width), avgY), linePaint,);
         x += 8;
       }
     }
@@ -201,7 +201,7 @@ class _WeeklyTrendPainter extends CustomPainter {
         textPainter.paint(
           canvas,
           Offset(
-              xCenter - (textPainter.width / 2), topY - textPainter.height - 2),
+              xCenter - (textPainter.width / 2), topY - textPainter.height - 2,),
         );
       }
 

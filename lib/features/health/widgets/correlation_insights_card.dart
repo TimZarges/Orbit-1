@@ -21,7 +21,7 @@ class CorrelationInsightsCard extends StatelessWidget {
         .where((m) =>
             m.journal != null &&
             (m.journal!.tags != null && m.journal!.tags!.isNotEmpty ||
-                m.journal!.hasAnyTag))
+                m.journal!.hasAnyTag),)
         .toList();
     final count = journalEntries.length;
     final isUnlocked = count >= 14;
@@ -254,7 +254,7 @@ class CorrelationInsightsCard extends StatelessWidget {
             deltaLabel: '$pct % HRV',
             isNegative: pct < 0,
             icon: Icons.local_bar,
-          ));
+          ),);
         }
       }
     }
@@ -282,7 +282,7 @@ class CorrelationInsightsCard extends StatelessWidget {
             deltaLabel: '$pct % Schlaf',
             isNegative: pct < 0,
             icon: Icons.coffee,
-          ));
+          ),);
         }
       }
     }
@@ -311,7 +311,7 @@ class CorrelationInsightsCard extends StatelessWidget {
             deltaLabel: '+$pct % Erholung',
             isNegative: false,
             icon: Icons.water_drop,
-          ));
+          ),);
         }
       }
     }
@@ -339,7 +339,7 @@ class CorrelationInsightsCard extends StatelessWidget {
             deltaLabel: '+${deltaRhr.round()} bpm Ruhepuls',
             isNegative: true,
             icon: Icons.sentiment_dissatisfied,
-          ));
+          ),);
         }
       }
     }

@@ -206,17 +206,17 @@ class BetaFeedbackTicketCard extends StatelessWidget {
                     PopupMenuItem(
                       value: 'OPEN',
                       child: Text('🟢 Auf Offen setzen',
-                          style: TextStyle(color: Colors.white)),
+                          style: TextStyle(color: Colors.white),),
                     ),
                     PopupMenuItem(
                       value: 'IN_PROGRESS',
                       child: Text('🟡 Auf In Arbeit setzen',
-                          style: TextStyle(color: Colors.white)),
+                          style: TextStyle(color: Colors.white),),
                     ),
                     PopupMenuItem(
                       value: 'RESOLVED',
                       child: Text('✅ Auf Gelöst setzen',
-                          style: TextStyle(color: Colors.white)),
+                          style: TextStyle(color: Colors.white),),
                     ),
                   ],
                 ),

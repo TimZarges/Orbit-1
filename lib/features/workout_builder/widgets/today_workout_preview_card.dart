@@ -80,7 +80,7 @@ class TodayWorkoutPreviewCard extends StatelessWidget {
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Icon(_getSportIcon(workout.sport),
-                          color: sportColor, size: 20),
+                          color: sportColor, size: 20,),
                     ),
                     const SizedBox(width: 10),
                     Expanded(
@@ -114,12 +114,12 @@ class TodayWorkoutPreviewCard extends StatelessWidget {
                     else
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4),
+                            horizontal: 8, vertical: 4,),
                         decoration: BoxDecoration(
                           color: AppColors.volt.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(
-                              color: AppColors.volt.withValues(alpha: 0.5)),
+                              color: AppColors.volt.withValues(alpha: 0.5),),
                         ),
                         child: const Text(
                           'GEPLANT',
@@ -148,7 +148,7 @@ class TodayWorkoutPreviewCard extends StatelessWidget {
                     child: Row(
                       children: [
                         const Icon(Icons.speed,
-                            size: 14, color: AppColors.volt),
+                            size: 14, color: AppColors.volt,),
                         const SizedBox(width: 6),
                         Expanded(
                           child: Text(
@@ -329,7 +329,7 @@ class TodayWorkoutPreviewCard extends StatelessWidget {
               durationSec: s.durationSec,
               zone: s.zone,
               color: s.color,
-            ))
+            ),)
         .toList();
   }
 

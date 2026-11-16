@@ -137,7 +137,7 @@ class _ZoneDetailWidgetState extends State<ZoneDetailWidget> {
                         style: TextStyle(
                             color: zone.color,
                             fontSize: 10,
-                            fontWeight: FontWeight.bold),
+                            fontWeight: FontWeight.bold,),
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -145,7 +145,7 @@ class _ZoneDetailWidgetState extends State<ZoneDetailWidget> {
                       child: Text(
                         zone.nameDe,
                         style: TextStyle(
-                            color: Colors.grey.shade300, fontSize: 12),
+                            color: Colors.grey.shade300, fontSize: 12,),
                       ),
                     ),
                     Text(
@@ -153,7 +153,7 @@ class _ZoneDetailWidgetState extends State<ZoneDetailWidget> {
                       style: TextStyle(
                           color: Colors.grey.shade400,
                           fontSize: 11,
-                          fontWeight: FontWeight.bold),
+                          fontWeight: FontWeight.bold,),
                     ),
                   ],
                 ),

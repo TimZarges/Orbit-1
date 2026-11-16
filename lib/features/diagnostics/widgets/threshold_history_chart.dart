@@ -89,7 +89,7 @@ class ThresholdHistoryChart extends StatelessWidget {
                 style: AppTypography.title.copyWith(
                     fontSize: 15,
                     color: Colors.white,
-                    fontWeight: FontWeight.bold),
+                    fontWeight: FontWeight.bold,),
               ),
               Text(
                 '${validPoints.length} Einträge',

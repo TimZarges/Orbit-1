@@ -162,7 +162,7 @@ class ActivityStream {
         temperature: tempList,
         coreTemperature: coreTempList,
         cumulativeDistance: cumulativeDist,
-      ));
+      ),);
     }
 
     return ActivityStream(

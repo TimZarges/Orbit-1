@@ -102,13 +102,13 @@ class WorkoutTemplate {
 
   /// Erstellt eine Vorlage aus einem Firestore-Dokument.
   factory WorkoutTemplate.fromFirestore(
-      DocumentSnapshot<Map<String, dynamic>> doc) {
+      DocumentSnapshot<Map<String, dynamic>> doc,) {
     final data = doc.data() ?? {};
     final rawStructure = data['structure'] as Map<String, dynamic>? ?? {};
     final struct = rawStructure.isNotEmpty
         ? WorkoutStructure.migrateStructure(rawStructure)
         : WorkoutStructure(
-            sport: data['sport'] as String? ?? 'BIKE', blocks: const []);
+            sport: data['sport'] as String? ?? 'BIKE', blocks: const [],);
 
     final tagsList =
         (data['tags'] as List<dynamic>?)?.map((e) => e.toString()).toList() ??

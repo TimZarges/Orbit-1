@@ -135,7 +135,7 @@ class WorkoutDetailSheet extends ConsumerWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(_getSportIcon(workout.sport),
-                            size: 14, color: sportColor),
+                            size: 14, color: sportColor,),
                         const SizedBox(width: 6),
                         Text(
                           workout.sport,
@@ -159,7 +159,7 @@ class WorkoutDetailSheet extends ConsumerWidget {
                   const Spacer(),
                   IconButton(
                     icon: const Icon(Icons.delete_outline,
-                        color: AppColors.coral),
+                        color: AppColors.coral,),
                     tooltip: 'Einheit löschen',
                     onPressed: () async {
                       final confirm = await showDialog<bool>(
@@ -167,7 +167,7 @@ class WorkoutDetailSheet extends ConsumerWidget {
                         builder: (ctx) => AlertDialog(
                           backgroundColor: const Color(0xFF002A5C),
                           title: const Text('Einheit löschen?',
-                              style: TextStyle(color: Colors.white)),
+                              style: TextStyle(color: Colors.white),),
                           content: const Text(
                             'Möchtest du diese geplante Einheit wirklich aus deinem Trainingsplan entfernen?',
                             style: TextStyle(color: Color(0xFFCBD5E1)),
@@ -176,11 +176,11 @@ class WorkoutDetailSheet extends ConsumerWidget {
                             TextButton(
                               onPressed: () => Navigator.pop(ctx, false),
                               child: const Text('Abbrechen',
-                                  style: TextStyle(color: Color(0xFF94A3B8))),
+                                  style: TextStyle(color: Color(0xFF94A3B8)),),
                             ),
                             ElevatedButton(
                               style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppColors.coral),
+                                  backgroundColor: AppColors.coral,),
                               onPressed: () => Navigator.pop(ctx, true),
                               child: const Text('Löschen'),
                             ),
@@ -239,18 +239,18 @@ class WorkoutDetailSheet extends ConsumerWidget {
                 child: Row(
                   children: [
                     _buildInfoColumn(
-                        'Geplante Dauer', workout.formattedDuration, theme),
+                        'Geplante Dauer', workout.formattedDuration, theme,),
                     if (workout.formattedDistance != null) ...[
                       const SizedBox(width: 24),
                       _buildInfoColumn(
-                          'Distanz', workout.formattedDistance!, theme),
+                          'Distanz', workout.formattedDistance!, theme,),
                     ],
                     if (workout.plannedLoad != null) ...[
                       const SizedBox(width: 24),
                       _buildInfoColumn(
                           'Belastung',
                           '${workout.plannedLoad!.toStringAsFixed(0)} Load',
-                          theme),
+                          theme,),
                     ],
                   ],
                 ),
@@ -291,7 +291,7 @@ class WorkoutDetailSheet extends ConsumerWidget {
                     color: const Color(0xFF10B981).withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(
-                        color: const Color(0xFF10B981).withValues(alpha: 0.4)),
+                        color: const Color(0xFF10B981).withValues(alpha: 0.4),),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -299,14 +299,14 @@ class WorkoutDetailSheet extends ConsumerWidget {
                       Row(
                         children: [
                           const Icon(Icons.check_circle,
-                              size: 18, color: Color(0xFF10B981)),
+                              size: 18, color: Color(0xFF10B981),),
                           const SizedBox(width: 6),
                           Expanded(
                             child: Text(
                               'Absolviert: ${linkedActivity.title}',
                               style: const TextStyle(
                                   fontWeight: FontWeight.bold,
-                                  color: Color(0xFF10B981)),
+                                  color: Color(0xFF10B981),),
                             ),
                           ),
                         ],
@@ -322,14 +322,14 @@ class WorkoutDetailSheet extends ConsumerWidget {
                         onPressed: () async {
                           await repo.unlinkActivity(
                               workoutId: workout.id,
-                              activityId: linkedActivity!.id);
+                              activityId: linkedActivity!.id,);
                           invalidateWorkouts();
                           if (context.mounted) Navigator.pop(context);
                         },
                         icon: const Icon(Icons.link_off, size: 16),
                         label: const Text('Zuordnung aufheben'),
                         style: TextButton.styleFrom(
-                            foregroundColor: const Color(0xFF10B981)),
+                            foregroundColor: const Color(0xFF10B981),),
                       ),
                     ],
                   ),
@@ -360,7 +360,7 @@ class WorkoutDetailSheet extends ConsumerWidget {
                     child: Row(
                       children: [
                         Icon(_getSportIcon(act.sport),
-                            color: _getSportColor(act.sport), size: 18),
+                            color: _getSportColor(act.sport), size: 18,),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Column(
@@ -370,11 +370,11 @@ class WorkoutDetailSheet extends ConsumerWidget {
                                   style: const TextStyle(
                                       color: Colors.white,
                                       fontWeight: FontWeight.bold,
-                                      fontSize: 13)),
+                                      fontSize: 13,),),
                               Text(
                                 '${(act.durationSec / 60).toStringAsFixed(0)} min · ${act.sport}',
                                 style: const TextStyle(
-                                    color: Color(0xFF94A3B8), fontSize: 11),
+                                    color: Color(0xFF94A3B8), fontSize: 11,),
                               ),
                             ],
                           ),
@@ -384,18 +384,18 @@ class WorkoutDetailSheet extends ConsumerWidget {
                             backgroundColor: AppColors.volt,
                             foregroundColor: AppColors.navy,
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 4),
+                                horizontal: 10, vertical: 4,),
                           ),
                           onPressed: () async {
                             await repo.linkActivity(
                                 workoutId: workout.id,
                                 activityId: act.id,
-                                matchStatus: 'MANUAL');
+                                matchStatus: 'MANUAL',);
                             invalidateWorkouts();
                             if (context.mounted) Navigator.pop(context);
                           },
                           child: const Text('Zuordnen',
-                              style: TextStyle(fontWeight: FontWeight.bold)),
+                              style: TextStyle(fontWeight: FontWeight.bold),),
                         ),
                       ],
                     ),
@@ -422,16 +422,16 @@ class WorkoutDetailSheet extends ConsumerWidget {
                     key: const Key('workout_action_postpone_tomorrow'),
                     backgroundColor: const Color(0xFF002A5C),
                     avatar: const Icon(Icons.calendar_today,
-                        size: 16, color: AppColors.volt),
+                        size: 16, color: AppColors.volt,),
                     label: const Text('Auf morgen verschieben',
-                        style: TextStyle(color: Colors.white)),
+                        style: TextStyle(color: Colors.white),),
                     onPressed: () async {
                       final current = DateTime.tryParse(workout.localDate) ??
                           DateTime.now();
                       final tomorrow = current.add(const Duration(days: 1));
                       final dateStr = DateFormat('yyyy-MM-dd').format(tomorrow);
                       await repo.reschedule(
-                          workoutId: workout.id, newLocalDate: dateStr);
+                          workoutId: workout.id, newLocalDate: dateStr,);
                       invalidateWorkouts();
                       if (context.mounted) Navigator.pop(context);
                     },
@@ -440,9 +440,9 @@ class WorkoutDetailSheet extends ConsumerWidget {
                     key: const Key('workout_action_pick_date'),
                     backgroundColor: const Color(0xFF002A5C),
                     avatar: const Icon(Icons.date_range,
-                        size: 16, color: AppColors.volt),
+                        size: 16, color: AppColors.volt,),
                     label: const Text('Datum wählen...',
-                        style: TextStyle(color: Colors.white)),
+                        style: TextStyle(color: Colors.white),),
                     onPressed: () async {
                       final initial = DateTime.tryParse(workout.localDate) ??
                           DateTime.now();
@@ -468,7 +468,7 @@ class WorkoutDetailSheet extends ConsumerWidget {
                       if (picked != null) {
                         final dateStr = DateFormat('yyyy-MM-dd').format(picked);
                         await repo.reschedule(
-                            workoutId: workout.id, newLocalDate: dateStr);
+                            workoutId: workout.id, newLocalDate: dateStr,);
                         invalidateWorkouts();
                         if (context.mounted) Navigator.pop(context);
                       }
@@ -479,9 +479,9 @@ class WorkoutDetailSheet extends ConsumerWidget {
                       key: const Key('workout_action_mark_skipped'),
                       backgroundColor: const Color(0xFF002A5C),
                       avatar: const Icon(Icons.cancel_outlined,
-                          size: 16, color: AppColors.coral),
+                          size: 16, color: AppColors.coral,),
                       label: const Text('Als übersprungen markieren',
-                          style: TextStyle(color: Colors.white)),
+                          style: TextStyle(color: Colors.white),),
                       onPressed: () async {
                         await repo.markSkipped(workout.id);
                         invalidateWorkouts();
@@ -493,9 +493,9 @@ class WorkoutDetailSheet extends ConsumerWidget {
                       key: const Key('workout_action_reopen'),
                       backgroundColor: const Color(0xFF002A5C),
                       avatar: const Icon(Icons.refresh,
-                          size: 16, color: AppColors.volt),
+                          size: 16, color: AppColors.volt,),
                       label: const Text('Wieder öffnen',
-                          style: TextStyle(color: Colors.white)),
+                          style: TextStyle(color: Colors.white),),
                       onPressed: () async {
                         await repo.markPlanned(workout.id);
                         invalidateWorkouts();
@@ -615,12 +615,12 @@ class WorkoutDetailSheet extends ConsumerWidget {
                     // Zone & % Intensität
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 6, vertical: 2),
+                          horizontal: 6, vertical: 2,),
                       decoration: BoxDecoration(
                         color: step.color.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(4),
                         border: Border.all(
-                            color: step.color.withValues(alpha: 0.5)),
+                            color: step.color.withValues(alpha: 0.5),),
                       ),
                       child: Text(
                         'Z${step.zone} (${step.intensityPercentLabel})',
@@ -684,13 +684,13 @@ class WorkoutDetailSheet extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label,
-            style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 11)),
+            style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 11),),
         const SizedBox(height: 2),
         Text(value,
             style: const TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
-                fontSize: 14)),
+                fontSize: 14,),),
       ],
     );
   }

@@ -71,7 +71,7 @@ class _CreateThresholdProposalDialogState
     if (value == null || value <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-            content: Text('Bitte einen gültigen Zahlenwert eingeben.')),
+            content: Text('Bitte einen gültigen Zahlenwert eingeben.'),),
       );
       return;
     }
@@ -105,7 +105,7 @@ class _CreateThresholdProposalDialogState
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
               content: Text(
-                  'Vorschlag für ${widget.athleteName} erfolgreich eingereicht.')),
+                  'Vorschlag für ${widget.athleteName} erfolgreich eingereicht.',),),
         );
       }
     } catch (e) {
@@ -152,14 +152,14 @@ class _CreateThresholdProposalDialogState
 
             // Sportart Dropdown
             DropdownButtonFormField<String>(
-              value: _selectedSport,
+              initialValue: _selectedSport,
               decoration: const InputDecoration(
-                  labelText: 'Sportart', border: OutlineInputBorder()),
+                  labelText: 'Sportart', border: OutlineInputBorder(),),
               items: const [
                 DropdownMenuItem(value: 'BIKE', child: Text('Rad (Bike)')),
                 DropdownMenuItem(value: 'RUN', child: Text('Lauf (Run)')),
                 DropdownMenuItem(
-                    value: 'SWIM', child: Text('Schwimmen (Swim)')),
+                    value: 'SWIM', child: Text('Schwimmen (Swim)'),),
               ],
               onChanged: _onSportChanged,
             ),
@@ -168,7 +168,7 @@ class _CreateThresholdProposalDialogState
             // Schwellentyp
             Text('Schwellenparameter: $_selectedType',
                 style:
-                    AppTypography.body.copyWith(fontWeight: FontWeight.bold)),
+                    AppTypography.body.copyWith(fontWeight: FontWeight.bold),),
             const SizedBox(height: 14),
 
             // Neuer Wert
@@ -214,15 +214,15 @@ class _CreateThresholdProposalDialogState
                     backgroundColor: AppColors.volt,
                     foregroundColor: AppColors.navy,
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10)),
+                        borderRadius: BorderRadius.circular(10),),
                   ),
                   child: _isSubmitting
                       ? const SizedBox(
                           width: 18,
                           height: 18,
-                          child: CircularProgressIndicator(strokeWidth: 2))
+                          child: CircularProgressIndicator(strokeWidth: 2),)
                       : const Text('Vorschlag senden',
-                          style: TextStyle(fontWeight: FontWeight.bold)),
+                          style: TextStyle(fontWeight: FontWeight.bold),),
                 ),
               ],
             ),

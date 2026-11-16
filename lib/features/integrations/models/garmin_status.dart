@@ -1,5 +1,6 @@
 /// @file garmin_status.dart
 /// @description Datenmodell für den Verbindungs- und Synchronisationsstatus von Garmin Connect.
+library;
 
 enum GarminConnectionState {
   disconnected,

@@ -111,7 +111,7 @@ class PlannedWorkout {
 
   /// Erstellt ein [PlannedWorkout] aus einem Firestore DocumentSnapshot.
   factory PlannedWorkout.fromFirestore(
-      DocumentSnapshot<Map<String, dynamic>> doc) {
+      DocumentSnapshot<Map<String, dynamic>> doc,) {
     final data = doc.data() ?? {};
     return PlannedWorkout.fromMap(doc.id, data);
   }

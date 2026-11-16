@@ -78,7 +78,7 @@ class OrbitDateFormatter {
       'September',
       'Oktober',
       'November',
-      'Dezember'
+      'Dezember',
     ];
     final month = months[(local.month - 1).clamp(0, 11)];
     return '$month ${local.year}';

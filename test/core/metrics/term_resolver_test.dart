@@ -5,26 +5,26 @@ void main() {
   group('TermResolver', () {
     test('resolves DE correctly for beginner', () {
       expect(TermResolver.resolve(MetricTerm.ctl, ExperienceLevel.beginner),
-          'Fitness');
+          'Fitness',);
       expect(TermResolver.resolve(MetricTerm.atl, ExperienceLevel.beginner),
-          'Ermüdung');
+          'Ermüdung',);
     });
 
     test('resolves DE correctly for advanced', () {
       expect(TermResolver.resolve(MetricTerm.ctl, ExperienceLevel.advanced),
-          'Fitness (CTL)');
+          'Fitness (CTL)',);
     });
 
     test('resolves DE correctly for expert', () {
       expect(
-          TermResolver.resolve(MetricTerm.ctl, ExperienceLevel.expert), 'CTL');
+          TermResolver.resolve(MetricTerm.ctl, ExperienceLevel.expert), 'CTL',);
     });
 
     test('resolves EN correctly', () {
       expect(TermResolver.resolveEn(MetricTerm.tsb, ExperienceLevel.beginner),
-          'Form');
+          'Form',);
       expect(TermResolver.resolveEn(MetricTerm.tss, ExperienceLevel.advanced),
-          'ORBIT Load');
+          'ORBIT Load',);
     });
   });
 }

@@ -37,7 +37,7 @@ class _PrivacySettingsSheetState extends ConsumerState<PrivacySettingsSheet> {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text(
-            'Dein vollständiger Datenexport wird vorbereitet und per E-Mail bereitgestellt.'),
+            'Dein vollständiger Datenexport wird vorbereitet und per E-Mail bereitgestellt.',),
         backgroundColor: Color(0xFF10B981),
       ),
     );
@@ -68,6 +68,7 @@ class _PrivacySettingsSheetState extends ConsumerState<PrivacySettingsSheet> {
       final rootCtx = rootNavigatorKey.currentContext ?? context;
       Navigator.of(context, rootNavigator: true)
           .popUntil((route) => route.isFirst);
+      if (!rootCtx.mounted) return;
       rootCtx.go('/login');
 
       // 4. Bestätigungs-Snackbar anzeigen
@@ -168,7 +169,7 @@ class _PrivacySettingsSheetState extends ConsumerState<PrivacySettingsSheet> {
                     Row(
                       children: [
                         const Icon(Icons.privacy_tip_outlined,
-                            color: AppColors.volt, size: 28),
+                            color: AppColors.volt, size: 28,),
                         const SizedBox(width: 12),
                         Text(
                           'Datenschutz & Rechte',
@@ -204,12 +205,12 @@ class _PrivacySettingsSheetState extends ConsumerState<PrivacySettingsSheet> {
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: const Icon(Icons.download_outlined,
-                            color: AppColors.volt),
+                            color: AppColors.volt,),
                       ),
                       title: const Text('Alle Daten exportieren',
                           style: TextStyle(
                               color: Colors.white,
-                              fontWeight: FontWeight.w600)),
+                              fontWeight: FontWeight.w600,),),
                       subtitle: const Text(
                         'Vollständiger Export all deiner Profildaten, Trainings- und Messwerte auf Knopfdruck.',
                         style:
@@ -222,7 +223,7 @@ class _PrivacySettingsSheetState extends ConsumerState<PrivacySettingsSheet> {
                               child: CircularProgressIndicator(strokeWidth: 2),
                             )
                           : const Icon(Icons.chevron_right,
-                              color: Color(0xFF64748B)),
+                              color: Color(0xFF64748B),),
                       onTap: _exporting ? null : _triggerExport,
                     ),
 
@@ -240,12 +241,12 @@ class _PrivacySettingsSheetState extends ConsumerState<PrivacySettingsSheet> {
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: const Icon(Icons.shield_outlined,
-                            color: Color(0xFF0EA5E9)),
+                            color: Color(0xFF0EA5E9),),
                       ),
                       title: const Text('Speicherort & Sicherheit',
                           style: TextStyle(
                               color: Colors.white,
-                              fontWeight: FontWeight.w600)),
+                              fontWeight: FontWeight.w600,),),
                       subtitle: const Text(
                         'Sicherer Serverstandort Frankfurt am Main. Deine Zugangs- und Verknüpfungsdaten '
                         'werden mit modernen kryptografischen Standards geschützt.',
@@ -269,20 +270,20 @@ class _PrivacySettingsSheetState extends ConsumerState<PrivacySettingsSheet> {
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: const Icon(Icons.delete_forever_outlined,
-                            color: Color(0xFFEF4444)),
+                            color: Color(0xFFEF4444),),
                       ),
                       title: const Text(
                           'Konto und alle Daten unwiderruflich löschen',
                           style: TextStyle(
                               color: Color(0xFFEF4444),
-                              fontWeight: FontWeight.w600)),
+                              fontWeight: FontWeight.w600,),),
                       subtitle: const Text(
                         'Vollständige und sofortige Löschung deines Profils und aller Trainingsdaten auf Knopfdruck.',
                         style:
                             TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
                       ),
                       trailing: const Icon(Icons.chevron_right,
-                          color: Color(0xFFEF4444)),
+                          color: Color(0xFFEF4444),),
                       onTap: _confirmDeleteAccount,
                     ),
 
@@ -293,7 +294,7 @@ class _PrivacySettingsSheetState extends ConsumerState<PrivacySettingsSheet> {
                         foregroundColor: Colors.white,
                         side: const BorderSide(color: Color(0xFF1E293B)),
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12)),
+                            borderRadius: BorderRadius.circular(12),),
                         padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
                       child: const Text('Schließen'),

@@ -77,7 +77,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(Icons.forum_outlined,
-                            size: 48, color: Colors.grey.shade300),
+                            size: 48, color: Colors.grey.shade300,),
                         const SizedBox(height: 12),
                         Text(
                           'Keine Chats vorhanden.',
@@ -100,7 +100,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
 
                     return ListTile(
                       contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 6),
+                          horizontal: 16, vertical: 6,),
                       leading: Stack(
                         children: [
                           CircleAvatar(
@@ -111,7 +111,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                                   ? displayName[0].toUpperCase()
                                   : 'A',
                               style: AppTypography.title.copyWith(
-                                  fontSize: 18, color: AppColors.navy),
+                                  fontSize: 18, color: AppColors.navy,),
                             ),
                           ),
                           if (unread > 0)
@@ -124,10 +124,10 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                                   color: AppColors.volt,
                                   shape: BoxShape.circle,
                                   border: Border.all(
-                                      color: AppColors.white, width: 1.5),
+                                      color: AppColors.white, width: 1.5,),
                                 ),
                                 constraints: const BoxConstraints(
-                                    minWidth: 16, minHeight: 16),
+                                    minWidth: 16, minHeight: 16,),
                                 child: Text(
                                   unread > 9 ? '9+' : '$unread',
                                   textAlign: TextAlign.center,

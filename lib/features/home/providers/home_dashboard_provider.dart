@@ -77,7 +77,7 @@ final homeDashboardProvider =
     RaceGoal? raceGoal;
     if (userData['profile']?['raceGoal'] != null) {
       raceGoal = RaceGoal.fromMap(
-          Map<String, dynamic>.from(userData['profile']['raceGoal'] as Map));
+          Map<String, dynamic>.from(userData['profile']['raceGoal'] as Map),);
     }
 
     // Form-Ampel berechnen, falls Aggregate vorliegen

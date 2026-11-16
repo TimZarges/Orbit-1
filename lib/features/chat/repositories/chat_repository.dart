@@ -124,7 +124,7 @@ class ChatRepository {
           .doc(uid)
           .set({
         'lastReadAt': FieldValue.serverTimestamp(),
-      }, SetOptions(merge: true));
+      }, SetOptions(merge: true),);
     } catch (_) {
       // Offline- oder Berechtigungsfehler tolerant fangen
     }

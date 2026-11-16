@@ -72,7 +72,7 @@ class RaceRepository {
               'targetPowerWatts': race.targetPowerWatts,
           },
         },
-      }, SetOptions(merge: true));
+      }, SetOptions(merge: true),);
     }
   }
 

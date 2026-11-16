@@ -75,7 +75,7 @@ class MmpCalculator {
         activityWatts: actWatts,
         seasonBestWatts: seasonWatts,
         allTimeBestWatts: allTimeWatts,
-      ));
+      ),);
     }
 
     return PowerDurationCurve(points: points);

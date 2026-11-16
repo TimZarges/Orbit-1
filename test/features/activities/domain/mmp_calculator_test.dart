@@ -20,7 +20,7 @@ void main() {
     test('erkennt maximale Sprintspitze über 5 Sekunden', () {
       // 100 Sekunden mit 200 W, aber 5 Sekunden mit 600 W (von Sekunde 40 bis 44)
       final powerList = List<double>.generate(
-          100, (i) => (i >= 40 && i < 45) ? 600.0 : 200.0);
+          100, (i) => (i >= 40 && i < 45) ? 600.0 : 200.0,);
       final mmp = MmpCalculator.calculateMmp(powerList, durations: [1, 5, 10]);
 
       expect(mmp[1], equals(600.0));
@@ -32,7 +32,7 @@ void main() {
     test('erkennt neue persönliche Rekorde (PRs) im Vergleich zu Bestwerten',
         () {
       final streamPoints = List.generate(
-          60, (i) => ActivityStreamPoint(timeSec: i, power: 450.0));
+          60, (i) => ActivityStreamPoint(timeSec: i, power: 450.0),);
       final stream = ActivityStream(lengthSec: 60, points: streamPoints);
 
       const bests = ActivityBests(

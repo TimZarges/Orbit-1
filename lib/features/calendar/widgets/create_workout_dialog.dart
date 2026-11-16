@@ -210,15 +210,15 @@ class _CreateWorkoutDialogState extends ConsumerState<CreateWorkoutDialog> {
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   leading: const Icon(Icons.calendar_today,
-                      color: AppColors.volt, size: 20),
+                      color: AppColors.volt, size: 20,),
                   title: const Text('Datum',
-                      style: TextStyle(color: Colors.white70, fontSize: 13)),
+                      style: TextStyle(color: Colors.white70, fontSize: 13),),
                   subtitle: Text(
                     DateFormat('dd.MM.yyyy').format(_selectedDate),
                     style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
-                        fontSize: 15),
+                        fontSize: 15,),
                   ),
                   trailing: TextButton(
                     key: const Key('plan_date_picker_button'),
@@ -247,7 +247,7 @@ class _CreateWorkoutDialogState extends ConsumerState<CreateWorkoutDialog> {
                       }
                     },
                     child: const Text('Ändern',
-                        style: TextStyle(color: AppColors.volt)),
+                        style: TextStyle(color: AppColors.volt),),
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -266,17 +266,17 @@ class _CreateWorkoutDialogState extends ConsumerState<CreateWorkoutDialog> {
                   runSpacing: 8,
                   children: [
                     _sportChip('TRIATHLON', 'Triathlon / Koppel', null,
-                        AppColors.volt),
+                        AppColors.volt,),
                     _sportChip('BIKE', 'Rad', Icons.directions_bike,
-                        AppColors.sportBike),
+                        AppColors.sportBike,),
                     _sportChip('RUN', 'Laufen', Icons.directions_run,
-                        AppColors.sportRun),
+                        AppColors.sportRun,),
                     _sportChip(
-                        'SWIM', 'Schwimmen', Icons.pool, AppColors.sportSwim),
+                        'SWIM', 'Schwimmen', Icons.pool, AppColors.sportSwim,),
                     _sportChip('STRENGTH', 'Kraft', Icons.fitness_center,
-                        AppColors.sportStrength),
+                        AppColors.sportStrength,),
                     _sportChip('OTHER', 'Sonstiges', Icons.sports,
-                        AppColors.navyLight),
+                        AppColors.navyLight,),
                   ],
                 ),
                 const SizedBox(height: 16),
@@ -416,7 +416,7 @@ class _CreateWorkoutDialogState extends ConsumerState<CreateWorkoutDialog> {
                           ? 'Speichere...'
                           : '${_racePriority.name.toUpperCase()}-Wettkampf planen',
                       style: const TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.bold),
+                          fontSize: 16, fontWeight: FontWeight.bold,),
                     ),
                   ),
                 ] else ...[
@@ -463,7 +463,7 @@ class _CreateWorkoutDialogState extends ConsumerState<CreateWorkoutDialog> {
                         child: TextFormField(
                           controller: _distanceKmController,
                           keyboardType: const TextInputType.numberWithOptions(
-                              decimal: true),
+                              decimal: true,),
                           style: const TextStyle(color: Colors.white),
                           decoration: const InputDecoration(
                             labelText: 'Distanz (km, opt.)',
@@ -489,16 +489,16 @@ class _CreateWorkoutDialogState extends ConsumerState<CreateWorkoutDialog> {
                     items: const [
                       DropdownMenuItem(
                           value: 'EASY',
-                          child: Text('Locker / Erholung (Z1-Z2)')),
+                          child: Text('Locker / Erholung (Z1-Z2)'),),
                       DropdownMenuItem(
                           value: 'MODERATE',
-                          child: Text('Moderat / GA1 (Z2-Z3)')),
+                          child: Text('Moderat / GA1 (Z2-Z3)'),),
                       DropdownMenuItem(
                           value: 'HARD',
-                          child: Text('Hart / Tempo / Schwelle (Z4)')),
+                          child: Text('Hart / Tempo / Schwelle (Z4)'),),
                       DropdownMenuItem(
                           value: 'INTERVALS',
-                          child: Text('Intervalle / HIIT (Z5+)')),
+                          child: Text('Intervalle / HIIT (Z5+)'),),
                     ],
                     onChanged: (val) =>
                         setState(() => _intensity = val ?? 'MODERATE'),
@@ -524,9 +524,9 @@ class _CreateWorkoutDialogState extends ConsumerState<CreateWorkoutDialog> {
                       Expanded(
                         child: OutlinedButton.icon(
                           icon: const Icon(Icons.library_books_outlined,
-                              size: 16),
+                              size: 16,),
                           label: const Text('Aus Vorlage',
-                              style: TextStyle(fontSize: 12)),
+                              style: TextStyle(fontSize: 12),),
                           onPressed: () {
                             Navigator.pop(context);
                             Navigator.push(
@@ -548,7 +548,7 @@ class _CreateWorkoutDialogState extends ConsumerState<CreateWorkoutDialog> {
                           icon:
                               const Icon(Icons.construction_outlined, size: 16),
                           label: const Text('Im Builder bauen',
-                              style: TextStyle(fontSize: 12)),
+                              style: TextStyle(fontSize: 12),),
                           onPressed: () {
                             Navigator.pop(context);
                             Navigator.push(
@@ -589,7 +589,7 @@ class _CreateWorkoutDialogState extends ConsumerState<CreateWorkoutDialog> {
                         : const Text(
                             'Einheit speichern',
                             style: TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.bold),
+                                fontSize: 16, fontWeight: FontWeight.bold,),
                           ),
                   ),
                 ],
@@ -739,7 +739,7 @@ class _CreateWorkoutDialogState extends ConsumerState<CreateWorkoutDialog> {
           widget.athleteId;
       final durationMin = int.parse(_durationMinutesController.text.trim());
       final distanceKm = double.tryParse(
-          _distanceKmController.text.trim().replaceAll(',', '.'));
+          _distanceKmController.text.trim().replaceAll(',', '.'),);
       final dateStr = DateFormat('yyyy-MM-dd').format(_selectedDate);
 
       // Grobe TSS-Schätzung für die Planung (z. B. 50 TSS/h bei Moderat)
@@ -779,7 +779,7 @@ class _CreateWorkoutDialogState extends ConsumerState<CreateWorkoutDialog> {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-              content: Text('Trainingseinheit erfolgreich geplant!')),
+              content: Text('Trainingseinheit erfolgreich geplant!'),),
         );
       }
     } catch (e) {

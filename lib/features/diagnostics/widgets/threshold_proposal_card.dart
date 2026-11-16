@@ -49,7 +49,7 @@ class ThresholdProposalCard extends StatelessWidget {
                       border: Border.all(color: const Color(0xFF003875)),
                     ),
                     child: Icon(_getSportIcon(proposal.sport),
-                        size: 16, color: AppColors.volt),
+                        size: 16, color: AppColors.volt,),
                   ),
                   const SizedBox(width: 8),
                   Text(
@@ -57,7 +57,7 @@ class ThresholdProposalCard extends StatelessWidget {
                     style: AppTypography.title.copyWith(
                         fontSize: 15,
                         color: Colors.white,
-                        fontWeight: FontWeight.bold),
+                        fontWeight: FontWeight.bold,),
                   ),
                 ],
               ),
@@ -67,7 +67,7 @@ class ThresholdProposalCard extends StatelessWidget {
                   color: proposal.confidenceColor.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                      color: proposal.confidenceColor.withValues(alpha: 0.4)),
+                      color: proposal.confidenceColor.withValues(alpha: 0.4),),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -157,7 +157,7 @@ class ThresholdProposalCard extends StatelessWidget {
               child: Row(
                 children: [
                   const Icon(Icons.lock_outline,
-                      size: 14, color: Colors.white54),
+                      size: 14, color: Colors.white54,),
                   const SizedBox(width: 6),
                   Expanded(
                     child: Text(
@@ -192,7 +192,7 @@ class ThresholdProposalCard extends StatelessWidget {
                     foregroundColor: Colors.white70,
                     side: const BorderSide(color: Color(0xFF003875)),
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10)),
+                        borderRadius: BorderRadius.circular(10),),
                     padding:
                         const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                   ),
@@ -208,7 +208,7 @@ class ThresholdProposalCard extends StatelessWidget {
                     foregroundColor: AppColors.navy,
                     elevation: 0,
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10)),
+                        borderRadius: BorderRadius.circular(10),),
                     padding:
                         const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   ),

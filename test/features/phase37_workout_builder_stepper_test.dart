@@ -101,7 +101,7 @@ void main() {
 
     test('RepeatBlock Stepper begrenzt Werte zwischen 2x und 30x', () {
       final notifier = WorkoutBuilderNotifier(initialSport: 'BIKE');
-      final repeat = const RepeatBlock(
+      const repeat = RepeatBlock(
         count: 2,
         blocks: [
           StepBlock(

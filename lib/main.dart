@@ -5,7 +5,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_functions/cloud_functions.dart';
-import 'package:flutter/foundation.dart';
 import 'firebase_options_dev.dart';
 
 import 'core/design/app_theme.dart';
@@ -13,7 +12,7 @@ import 'core/routing/app_router.dart';
 import 'core/config/app_config.dart';
 import 'core/config/app_check_service.dart';
 import 'core/utils/crash_reporter.dart';
-import 'package:orbit/l10n/app_localizations.dart';
+import 'l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 import 'features/beta_feedback/widgets/beta_bug_reporter_sheet.dart';
@@ -40,7 +39,8 @@ void main() async {
         const localHostString = 'localhost';
         FirebaseFirestore.instance.useFirestoreEmulator(localHostString, 8081);
         await FirebaseAuth.instance.useAuthEmulator(localHostString, 9099);
-        FirebaseStorage.instance.useStorageEmulator(localHostString, 9199);
+        await FirebaseStorage.instance
+            .useStorageEmulator(localHostString, 9199);
         FirebaseFunctions.instanceFor(region: 'europe-west3')
             .useFunctionsEmulator(localHostString, 5001);
       }

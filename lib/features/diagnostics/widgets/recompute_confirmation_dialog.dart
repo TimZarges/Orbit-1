@@ -36,12 +36,12 @@ class _RecomputeConfirmationDialogState
         children: [
           Container(
             padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               color: AppColors.techGrey,
               shape: BoxShape.circle,
             ),
-            child: Icon(Icons.check_circle_outline,
-                color: AppColors.navy, size: 24),
+            child: const Icon(Icons.check_circle_outline,
+                color: AppColors.navy, size: 24,),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -72,7 +72,7 @@ class _RecomputeConfirmationDialogState
               child: Row(
                 children: [
                   Icon(Icons.calendar_today_outlined,
-                      size: 18, color: Colors.grey.shade600),
+                      size: 18, color: Colors.grey.shade600,),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(

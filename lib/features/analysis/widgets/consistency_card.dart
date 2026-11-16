@@ -41,8 +41,8 @@ class ConsistencyCard extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Icon(Icons.calendar_today_outlined,
-                        size: 20, color: AppColors.navy),
+                    const Icon(Icons.calendar_today_outlined,
+                        size: 20, color: AppColors.navy,),
                     const SizedBox(width: 8),
                     Text(
                       'Konsistenz',
@@ -64,7 +64,7 @@ class ConsistencyCard extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         const Icon(Icons.local_fire_department,
-                            size: 14, color: AppColors.navy),
+                            size: 14, color: AppColors.navy,),
                         const SizedBox(width: 4),
                         Text(
                           '${consistency.streakWeeks} Wochen Serie',

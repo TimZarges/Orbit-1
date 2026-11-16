@@ -24,7 +24,7 @@ class PowerDurationCurveWidget extends StatelessWidget {
 
     final maxWatt = curve.points
         .map((p) =>
-            [p.activityWatts, p.seasonBestWatts ?? 0, p.allTimeBestWatts ?? 0])
+            [p.activityWatts, p.seasonBestWatts ?? 0, p.allTimeBestWatts ?? 0],)
         .expand((e) => e)
         .fold(0.0, max);
 
@@ -46,7 +46,7 @@ class PowerDurationCurveWidget extends StatelessWidget {
                 child: Row(
                   children: [
                     const Icon(Icons.show_chart,
-                        color: Color(0xFFF6C453), size: 20),
+                        color: Color(0xFFF6C453), size: 20,),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
@@ -73,7 +73,7 @@ class PowerDurationCurveWidget extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       const Icon(Icons.emoji_events,
-                          size: 14, color: AppColors.navy),
+                          size: 14, color: AppColors.navy,),
                       const SizedBox(width: 4),
                       Text(
                         '${curve.prCount}x PR',
@@ -144,7 +144,7 @@ class PowerDurationCurveWidget extends StatelessWidget {
                     Container(
                       margin: const EdgeInsets.only(top: 2),
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 4, vertical: 1),
+                          horizontal: 4, vertical: 1,),
                       decoration: BoxDecoration(
                         color: AppColors.accentVolt,
                         borderRadius: BorderRadius.circular(4),
@@ -174,10 +174,10 @@ class PowerDurationCurveWidget extends StatelessWidget {
         Container(
             width: 8,
             height: 8,
-            decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),),
         const SizedBox(width: 6),
         Text(label,
-            style: TextStyle(color: Colors.grey.shade400, fontSize: 11)),
+            style: TextStyle(color: Colors.grey.shade400, fontSize: 11),),
       ],
     );
   }
@@ -213,15 +213,15 @@ class _PowerDurationPainter extends CustomPainter {
     // 1. Allzeit-Linie
     _drawPath(canvas, points, toX, toY, (p) => p.allTimeBestWatts,
         const Color(0xFF94A3B8), 1.0,
-        isDashed: true);
+        isDashed: true,);
 
     // 2. Saison-Linie
     _drawPath(canvas, points, toX, toY, (p) => p.seasonBestWatts,
-        const Color(0xFF22D3EE), 1.5);
+        const Color(0xFF22D3EE), 1.5,);
 
     // 3. Aktivitäts-Linie
     _drawPath(canvas, points, toX, toY, (p) => p.activityWatts,
-        const Color(0xFFF6C453), 2.5);
+        const Color(0xFFF6C453), 2.5,);
 
     // X-Achsen-Labels
     final labelPainter = TextPainter(textDirection: TextDirection.ltr);

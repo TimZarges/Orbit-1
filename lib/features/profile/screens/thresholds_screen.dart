@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:orbit/l10n/app_localizations.dart';
-import 'package:orbit/core/widgets/info_term.dart';
-import 'package:orbit/core/metrics/training_zones_model.dart';
-import 'package:orbit/core/design/app_colors.dart';
+import '../../../l10n/app_localizations.dart';
+import '../../../core/widgets/info_term.dart';
+import '../../../core/metrics/training_zones_model.dart';
+import '../../../core/design/app_colors.dart';
 
 /// Einstellungs- und Übersichtsbildschirm für die physiologischen Schwellenwerte des Athleten.
 ///
@@ -100,7 +100,7 @@ class ThresholdsScreen extends StatelessWidget {
             Text(currentValue, style: Theme.of(context).textTheme.displaySmall),
             const SizedBox(height: 16),
             const Text('Zonen-Vorschau',
-                style: TextStyle(fontWeight: FontWeight.bold)),
+                style: TextStyle(fontWeight: FontWeight.bold),),
             const SizedBox(height: 8),
             SizedBox(
               height: 40,
@@ -115,7 +115,7 @@ class ThresholdsScreen extends StatelessWidget {
                           style: const TextStyle(
                               color: Colors.white,
                               fontSize: 10,
-                              fontWeight: FontWeight.bold),
+                              fontWeight: FontWeight.bold,),
                         ),
                       ),
                     ),
@@ -129,7 +129,7 @@ class ThresholdsScreen extends StatelessWidget {
                 Navigator.of(context).pushNamed('/diagnostics');
               },
               child: const Text('Wert schätzen lassen (Diagnostik)'),
-            )
+            ),
           ],
         ),
       ),
@@ -137,9 +137,9 @@ class ThresholdsScreen extends StatelessWidget {
   }
 
   void _showEditDialog(
-      BuildContext context, String title, String currentValue) {
+      BuildContext context, String title, String currentValue,) {
     final controller = TextEditingController(
-        text: currentValue.replaceAll(RegExp(r'[^0-9.:]'), ''));
+        text: currentValue.replaceAll(RegExp(r'[^0-9.:]'), ''),);
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(

@@ -66,7 +66,7 @@ sealed class WorkoutIntensity {
         return const FreeIntensity();
       default:
         throw FormatException(
-            'Unbekannter Intensitätstyp (kind): $kind ($json)');
+            'Unbekannter Intensitätstyp (kind): $kind ($json)',);
     }
   }
 }
@@ -81,7 +81,7 @@ class ZoneIntensity extends WorkoutIntensity {
     required this.high,
   })  : assert(low >= 1 && low <= 7, 'low Zone muss zwischen 1 und 7 liegen'),
         assert(
-            high >= 1 && high <= 7, 'high Zone muss zwischen 1 und 7 liegen'),
+            high >= 1 && high <= 7, 'high Zone muss zwischen 1 und 7 liegen',),
         assert(low <= high, 'low Zone muss <= high Zone sein');
 
   /// Convenience-Konstruktor für Ein-Zonen-Vorgabe (z. B. nur Z2).

@@ -27,26 +27,26 @@ void main() {
       expect(BetaFeedbackCategory.bugCrash.wireValue, 'BUG_CRASH');
       expect(BetaFeedbackCategory.featureIdea.wireValue, 'FEATURE_IDEA');
       expect(
-          BetaFeedbackCategory.supportQuestion.wireValue, 'SUPPORT_QUESTION');
+          BetaFeedbackCategory.supportQuestion.wireValue, 'SUPPORT_QUESTION',);
       expect(
-          BetaFeedbackCategory.wrongCalculation.wireValue, 'WRONG_CALCULATION');
+          BetaFeedbackCategory.wrongCalculation.wireValue, 'WRONG_CALCULATION',);
       expect(BetaFeedbackCategory.garminUpload.wireValue, 'GARMIN_UPLOAD');
       expect(
-          BetaFeedbackCategory.designSuggestion.wireValue, 'DESIGN_SUGGESTION');
+          BetaFeedbackCategory.designSuggestion.wireValue, 'DESIGN_SUGGESTION',);
 
       // Labels DE/EN
       expect(BetaFeedbackCategory.featureIdea.label(languageCode: 'de'),
-          'Verbesserung / Idee');
+          'Verbesserung / Idee',);
       expect(BetaFeedbackCategory.featureIdea.label(languageCode: 'en'),
-          'Feature / Idea');
+          'Feature / Idea',);
       expect(BetaFeedbackCategory.supportQuestion.label(languageCode: 'de'),
-          'Frage / Support');
+          'Frage / Support',);
 
       // fromWire Fallback
       expect(BetaFeedbackCategory.fromWire('FEATURE_IDEA'),
-          BetaFeedbackCategory.featureIdea);
+          BetaFeedbackCategory.featureIdea,);
       expect(BetaFeedbackCategory.fromWire('UNKNOWN'),
-          BetaFeedbackCategory.bugCrash);
+          BetaFeedbackCategory.bugCrash,);
     });
 
     test(
@@ -83,7 +83,7 @@ void main() {
     testWidgets('AdminFeedbackScreen rendert Header und Filter-Chips für Admin',
         (tester) async {
       await tester.pumpWidget(
-        ProviderScope(
+        const ProviderScope(
           child: MaterialApp(
             home: AdminFeedbackScreen(
               streamOverride: Stream.empty(),
@@ -113,7 +113,7 @@ void main() {
         'AdminFeedbackScreen rendert Titel Meine Feedback-Tickets für normale Tester',
         (tester) async {
       await tester.pumpWidget(
-        ProviderScope(
+        const ProviderScope(
           child: MaterialApp(
             home: AdminFeedbackScreen(
               streamOverride: Stream.empty(),

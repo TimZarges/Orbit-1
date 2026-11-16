@@ -79,7 +79,7 @@ class WorkoutStructure {
       if (block is RepeatBlock) {
         if (block.count < 2 || block.count > 99) {
           errors.add(
-              'Wiederholungsanzahl muss zwischen 2 und 99 liegen (ist: ${block.count}).');
+              'Wiederholungsanzahl muss zwischen 2 und 99 liegen (ist: ${block.count}).',);
         }
         if (block.blocks.isEmpty) {
           errors.add('Wiederholungsblock darf nicht leer sein.');
@@ -169,7 +169,7 @@ class WorkoutStructure {
     final version = raw['schemaVersion'];
     if (version == null) {
       throw const FormatException(
-          'Fehlendes Feld "schemaVersion" im Workout-Dokument.');
+          'Fehlendes Feld "schemaVersion" im Workout-Dokument.',);
     }
     if (version is! num || version.toInt() != 1) {
       throw FormatException(

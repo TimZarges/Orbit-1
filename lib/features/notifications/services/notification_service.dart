@@ -22,12 +22,12 @@ class NotificationService {
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Row(
+        title: const Row(
           children: [
-            const Icon(Icons.notifications_active_outlined,
-                color: Color(0xFF0F172A), size: 24),
-            const SizedBox(width: 10),
-            const Expanded(
+            Icon(Icons.notifications_active_outlined,
+                color: Color(0xFF0F172A), size: 24,),
+            SizedBox(width: 10),
+            Expanded(
               child: Text(
                 'Benachrichtigungen',
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
@@ -78,12 +78,12 @@ class NotificationService {
               foregroundColor: const Color(0xFF0F172A), // Navy
               elevation: 0,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10)),
+                  borderRadius: BorderRadius.circular(10),),
             ),
             child: const Text(
               'Aktivieren',
               style: TextStyle(
-                  fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
+                  fontWeight: FontWeight.bold, color: Color(0xFF0F172A),),
             ),
           ),
         ],
@@ -95,7 +95,7 @@ class NotificationService {
 
   /// Verarbeitet eingehende Deep Links aus Notification Clicks.
   static void handleNotificationClick(
-      BuildContext context, Map<String, dynamic> data) {
+      BuildContext context, Map<String, dynamic> data,) {
     // 1. Explizite Route prüfen (z. B. '/activities/act_123', '/health', '/thresholds')
     final explicitRoute = data['route'] as String?;
     if (explicitRoute != null && explicitRoute.isNotEmpty) {

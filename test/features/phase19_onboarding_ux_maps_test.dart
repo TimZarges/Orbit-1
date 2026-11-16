@@ -109,9 +109,13 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.textContaining('Bitte willige'), findsOneWidget);
 
-      // DSGVO Checkbox anhaken
-      await tester
-          .tap(find.byKey(const Key('onboarding_gdpr_consent_checkbox')));
+      // DSGVO Checkbox anhaken (ggf. zuerst in den sichtbaren Bereich scrollen)
+      final gdprCheckbox =
+          find.byKey(const Key('onboarding_gdpr_consent_checkbox'));
+      await tester.ensureVisible(gdprCheckbox);
+      await tester.pumpAndSettle();
+      await tester.tap(gdprCheckbox);
+      await tester.pump(const Duration(seconds: 5));
       await tester.pumpAndSettle();
 
       // Jetzt wird das Onboarding erfolgreich abgeschlossen
@@ -289,7 +293,7 @@ void main() {
 
   group('Phase 19.3 - Real Map Tiles (TelemetryMapWidget) & GDPR Opt-In', () {
     final samplePoints = [
-      ActivityStreamPoint(
+      const ActivityStreamPoint(
         timeSec: 0,
         lat: 50.1109,
         lng: 8.6821,
@@ -297,7 +301,7 @@ void main() {
         hr: 135,
         speedMps: 7.5,
       ),
-      ActivityStreamPoint(
+      const ActivityStreamPoint(
         timeSec: 60,
         lat: 50.1120,
         lng: 8.6840,
@@ -305,7 +309,7 @@ void main() {
         hr: 155,
         speedMps: 8.2,
       ),
-      ActivityStreamPoint(
+      const ActivityStreamPoint(
         timeSec: 120,
         lat: 50.1135,
         lng: 8.6865,

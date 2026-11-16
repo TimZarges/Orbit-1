@@ -84,7 +84,7 @@ class SportDistributionSummary {
   });
 
   factory SportDistributionSummary.fromDurations(
-      Map<String, double> durations) {
+      Map<String, double> durations,) {
     final total = durations.values.fold(0.0, (sum, d) => sum + d);
     if (total <= 0) {
       return const SportDistributionSummary(items: [], totalDurationSec: 0);
@@ -101,7 +101,7 @@ class SportDistributionSummary {
           sport: entry.key,
           durationSec: entry.value,
           percent: (entry.value / total) * 100,
-        ));
+        ),);
       }
     }
 

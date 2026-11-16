@@ -134,7 +134,7 @@ final analysisStateProvider =
   final latest = aggregates.last;
 
   // Form-Ampel berechnen
-  final formCalc = const FormCalculator();
+  const formCalc = FormCalculator();
   final historyCount = isDemo ? 56 : totalRecordedDays;
   final formTrafficLight = formCalc.calculate(
     ctl: latest.ctl,
@@ -217,7 +217,7 @@ AnalysisViewState _buildEmptyState(AnalysisTimeframe timeframe) {
     weeklyLoad:
         const WeeklyLoadSummary(actualLoad: 0, plannedLoad: 0, hasPlan: false),
     consistency: const ConsistencySummary(
-        activeDays: 0, totalDays: 7, plannedDays: 0, streakWeeks: 0),
+        activeDays: 0, totalDays: 7, plannedDays: 0, streakWeeks: 0,),
     sportDistribution:
         const SportDistributionSummary(items: [], totalDurationSec: 0),
     zoneDistribution:

@@ -282,7 +282,7 @@ class CalendarScreen extends ConsumerWidget {
                   ),
                   child: const Text('Heute',
                       style:
-                          TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+                          TextStyle(fontSize: 10, fontWeight: FontWeight.bold),),
                 ),
               ],
             ],
@@ -291,7 +291,7 @@ class CalendarScreen extends ConsumerWidget {
           if (workouts.isEmpty && activities.isEmpty)
             InkWell(
               onTap: () => showCreateWorkoutDialog(context,
-                  athleteId: athleteId, initialDate: date),
+                  athleteId: athleteId, initialDate: date,),
               borderRadius: BorderRadius.circular(8),
               child: Container(
                 width: double.infinity,
@@ -466,7 +466,7 @@ class CalendarScreen extends ConsumerWidget {
                                     width: 6,
                                     height: 6,
                                     margin: const EdgeInsets.symmetric(
-                                        horizontal: 1),
+                                        horizontal: 1,),
                                     decoration: BoxDecoration(
                                       color: isDone
                                           ? (isToday ? AppColors.navy : sColor)
@@ -630,7 +630,7 @@ class CalendarScreen extends ConsumerWidget {
                         Row(
                           children: [
                             Icon(_getSportIcon(activity.sport),
-                                size: 16, color: sportColor),
+                                size: 16, color: sportColor,),
                             const SizedBox(width: 6),
                             Text(
                               activity.sport,
@@ -643,7 +643,7 @@ class CalendarScreen extends ConsumerWidget {
                               const SizedBox(width: 8),
                               Text(
                                 OrbitDateFormatter.formatDateString(
-                                    activity.localDate),
+                                    activity.localDate,),
                                 style: theme.textTheme.labelSmall?.copyWith(
                                   color: isDark
                                       ? const Color(0xFF94A3B8)
@@ -654,7 +654,7 @@ class CalendarScreen extends ConsumerWidget {
                             const Spacer(),
                             Container(
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 6, vertical: 2),
+                                  horizontal: 6, vertical: 2,),
                               decoration: BoxDecoration(
                                 color: doneColor.withValues(alpha: 0.15),
                                 borderRadius: BorderRadius.circular(6),
@@ -663,7 +663,7 @@ class CalendarScreen extends ConsumerWidget {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Icon(Icons.check_circle,
-                                      size: 12, color: doneColor),
+                                      size: 12, color: doneColor,),
                                   SizedBox(width: 4),
                                   Text(
                                     'Absolviert',

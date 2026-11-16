@@ -46,7 +46,7 @@ class _GuidedTestCardState extends State<GuidedTestCard> {
                   border: Border.all(color: const Color(0xFF003875)),
                 ),
                 child: Icon(_getSportIcon(info.sport),
-                    color: AppColors.volt, size: 20),
+                    color: AppColors.volt, size: 20,),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -58,7 +58,7 @@ class _GuidedTestCardState extends State<GuidedTestCard> {
                       style: AppTypography.title.copyWith(
                           fontSize: 15,
                           color: Colors.white,
-                          fontWeight: FontWeight.bold),
+                          fontWeight: FontWeight.bold,),
                     ),
                     Text(
                       'Dauer: ca. ${info.durationMinutes} Min.',
@@ -100,7 +100,7 @@ class _GuidedTestCardState extends State<GuidedTestCard> {
               style: AppTypography.title.copyWith(
                   fontSize: 14,
                   color: AppColors.volt,
-                  fontWeight: FontWeight.bold),
+                  fontWeight: FontWeight.bold,),
             ),
             const SizedBox(height: 6),
             Text(
@@ -125,7 +125,7 @@ class _GuidedTestCardState extends State<GuidedTestCard> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Icon(Icons.warning_amber_rounded,
-                      color: Color(0xFFFBBF24), size: 18),
+                      color: Color(0xFFFBBF24), size: 18,),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
@@ -154,7 +154,7 @@ class _GuidedTestCardState extends State<GuidedTestCard> {
                 foregroundColor: AppColors.volt,
                 side: const BorderSide(color: AppColors.volt),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10)),
+                    borderRadius: BorderRadius.circular(10),),
                 padding: const EdgeInsets.symmetric(vertical: 12),
               ),
             ),

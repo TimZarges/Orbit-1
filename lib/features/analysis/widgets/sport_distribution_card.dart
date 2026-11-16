@@ -42,7 +42,7 @@ class SportDistributionCard extends StatelessWidget {
             // Kopfzeile
             Row(
               children: [
-                Icon(Icons.pie_chart_outline, size: 20, color: AppColors.navy),
+                const Icon(Icons.pie_chart_outline, size: 20, color: AppColors.navy),
                 const SizedBox(width: 8),
                 Text(
                   'Sportverteilung',

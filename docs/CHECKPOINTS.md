@@ -26,6 +26,43 @@
 
 ## Einträge
 
+### [Phase 40] Verankerung Projekt-Roadmap (V1.0.0–V4.0.0), Phasenplan (Phase 40–46) & Verschärfte Code-Qualitäts-Gesetze · RISIKO-HOCH
+- **STOPP-Punkt/Anlass:** Abschluss von Phase 40 (`docs/phases/phase_40.md`): Verbindliche Verankerung der gesamten Produkt-Roadmap (`V1.0.0` bis `V4.0.0`), des detaillierten Phasenplans (`Phase 40` bis `Phase 46` bis zum V1.0.0 Release), der Benchmark-Analyse (`MATS.coach`, `TrainingPeaks`, `Garmin Connect`) sowie der verschärften Regeln für Effizienz, Clean Code und 100 % deutsche Code-Kommentierung im Repository und auf GitHub (`origin/main`).
+- **Entscheidung & Umgesetzte Maßnahmen:**
+  1. **Verschärfung von `AGENTS.md` (Regel 6, 9 & 10) und `.cursorrules`:**
+     - **EFFIZIENZ-GEBOT:** Konsequenter Einsatz von `const`-Konstruktoren, `RepaintBoundary` bei Grafiken, `ListView.builder` für Listen und granularen Riverpod-Selektoren (`ref.watch(provider.select(...))`). Keine Berechnungen oder Objekt-Instanziierungen innerhalb von `build()`-Methoden. Sparsame Firestore-Abfragen mit Limits, Streaming bei `.FIT`-Downloads und saubere Speicherfreigabe.
+     - **CLEAN-CODE-GEBOT:** Strikte Trennung in Präsentation (Widgets/Screens), Geschäftslogik (Provider/Controllers) und Datenhaltung (Repositories/Services). Selbsterklärende Bezeichner, Verbot von ungenutztem/auskommentiertem Code und Verbot hartcodierter UI-Strings (Lokalisierung DE/EN).
+     - **100 % DEUTSCHE KOMMENTIERUNG AM GESAMTEN CODE:** Deutscher Datei-Header-Kommentar in jeder Datei, deutsche Dokumentations-Kommentare (`///` in Dart, `/** ... */` in TypeScript) an jeder Klasse, jedem Interface, Enum, Provider, Widget und jeder Methode (öffentlich wie privat, Was/Warum/Parameter/Rückgabewert) sowie deutsche Inline-Kommentare (`//`) für jeden logischen Abschnitt.
+  2. **Härtung des Pre-Merge-Gates (`scripts/check_phase_ready.sh`):**
+     - **a) `flutter analyze` mit 0 Errors, 0 Warnings, 0 Infos:** Vollständige Bereinigung aller 989 Info-Lints über 152 Dart-Dateien im gesamten Repository (`No issues found!`).
+     - **b) TypeScript-Build & Linting in `functions/`:** Konfiguration von `functions/.eslintrc.js` und Bereinigung aller ungenutzten Parameter (`0 errors, 0 warnings`).
+     - **c) 100 % Kommentar-Prüfung:** Automatisierte Prüfung aller 204 bestehenden `.dart`- und 44 `.ts`-Produktionsdateien sowie aller geänderten Dateien auf deutsche Dokumentations-Kommentare (inkl. Nachdokumentation von `lib/firebase_options_prod.dart` und `functions/src/scripts/resolveFeedback.ts`).
+     - **d) Automatisierter Test-Durchlauf:** Ausführung aller 216 Unit- und Widget-Tests direkt im Pre-Merge-Gate.
+  3. **Verbindliche Roadmap (`docs/ROADMAP_V1_TO_V4.md`) & Kompletter Fahrplan bis `v1.0.0`:**
+     - **Versions-Matrix:** Vollständige Spezifikation für `V1.0.0`, `V2.0.0`, `V3.0.0` und `V3.1.0 / V4.0.0` (Allgemein, Athleten, Coach, Design von Key-Features).
+     - **Die 6 Detail-Entscheidungen für `V1.0.0`:**
+       1. *Trainings-Vorschaukarte (COROS-Stil):* Nicht klickbar in V1.0.0, rechts direkter `.FIT`-Download-Button statt GPX-Grafik.
+       2. *Heute-Ansicht:* Zeigt in V1.0.0 ausschließlich absolviertes Training (+ Schnellzugriff Garmin Sync & Datei-Upload).
+       3. *Kalender:* Zeigt Training in Woche, Monat und Liste.
+       4. *Onboarding & Profil Einfach:* Für Athlet & Coach inkl. Triathlon als wählbare Sportart, Hell-/Dunkel-Modus, Sprache DE & EN, Datum `dd.mm.yy` und 24h-Format nach Wohnland.
+       5. *Coach-Funktionen in V1.0.0:* Verbindung mit Athleten, eigene Coach-Navigation (*Athleten*, *Kalender*, *Profil/Einstellungen*) und direkter `.FIT`-Datei-Download.
+       6. *Gesetzliche Anforderungen DE/EU für V1.0.0:* DSGVO Art. 9 Opt-In für Gesundheitsdaten, DSGVO Art. 17 vollständige Konto- und Datenlöschung (In-App & Web `/delete-account`), DSGVO Art. 13/14 Datenschutzerklärung & DDG § 5 Impressum mit offiziellen Kontaktdaten der Marke/Firma.
+     - **Kompletter Phasen-Fahrplan bis `v1.0.0`:**
+       - **Phase 40 (`v0.40.0`):** Verankerung Roadmap V1–V4, Phasenplan 40–46, Benchmark-Studie & verschärfte Code-Qualitäts-Gesetze (`[x] Abgeschlossen`).
+       - **Phase 41 (`v0.41.0`):** Onboarding & Profil „Einfach“ (Athlet & Coach), Triathlon-Wahl, Hell/Dunkel, Sprache DE/EN sowie Datum `dd.mm.yy` & 24h-Format nach Wohnland.
+       - **Phase 42 (`v0.42.0`):** Trainings-Vorschaukarte im COROS-Stil (nicht klickbar in V1.0.0, kein GPX-Minigraph, rechts direkter `.FIT`-Download-Button) & `.FIT`-Export-Service.
+       - **Phase 43 (`v0.43.0`):** Heute-Ansicht (nur absolviertes Training + Schnellzugriff Garmin Sync & Datei-Upload) & Kalender (Woche, Monat, Liste).
+       - **Phase 44 (`v0.44.0`):** Coach-Funktionen V1.0.0 (Athleten-Verbindung, eigene 3-Tab-Coach-Navigation & direkter `.FIT`-Datei-Download).
+       - **Phase 45 (`v0.45.0`):** Gesetzliche Anforderungen DE/EU für V1.0.0 (DSGVO Art. 9 Opt-In, Art. 17 Kontolöschung In-App & Web, Art. 13/14 Datenschutzerklärung & DDG § 5 Impressum).
+       - **Phase 46 (`v1.0.0`):** 100 % Effizienz-/Kommentar-Audit, Pixel 10 Pro Hardware-Abnahme & Gold-Release `v1.0.0`.
+- **Nachweise (Evidence-Only gemäß Regel 2, 4 & 9):**
+  - Pre-Merge-Gate (`bash scripts/check_phase_ready.sh`):
+    - `1/5 Prüfe Flutter Analyze`: `[OK] Flutter Analyze: 0 Errors, 0 Warnings, 0 Infos.`
+    - `2/5 Prüfe TypeScript-Build & ESLint in functions/`: `[OK] TypeScript-Build & Linting in functions/: 0 Errors.`
+    - `3/5 Prüfe deutsche Dokumentations-Kommentare`: `[OK] 100 % aller bestehenden und geänderten .dart- und .ts-Produktionsdateien besitzen deutsche Dokumentations-Kommentare.`
+    - `4/5 Führe alle Flutter Unit- und Widget-Tests aus`: `[OK] Alle 216 Unit- und Widget-Tests erfolgreich bestanden.`
+    - `5/5 Prüfe Dokumentations-Status`: `[OK] PROGRESS.md ist vorhanden und gepflegt.`
+
 ### [Garmin Developer Portal & E2E Live-Sync Reparatur] Alle 5 API-Säulen, 20 Webhooks & Echte `.FIT`-Aktivitäten auf Pixel 10 Pro · RISIKO-HOCH
 - **STOPP-Punkt/Anlass:** Benutzerauftrag: Konfiguration des Garmin Developer Portals (`https://apis.garmin.com/tools`) zur Aktivierung aller Daten-Endpunkte und vollständiger End-to-End-Beweis des echten Garmin-Syncs auf dem Pixel 10 Pro (`AGENTS.md` Regel 0).
 - **Entscheidung & Umgesetzte Maßnahmen:**

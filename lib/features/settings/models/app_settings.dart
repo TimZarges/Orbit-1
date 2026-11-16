@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:orbit/core/metrics/term_resolver.dart';
+import '../../../core/metrics/term_resolver.dart';
 
 /// Das Maßsystem für Einheiten (Metrisch vs. Imperial).
 enum MeasurementSystem {

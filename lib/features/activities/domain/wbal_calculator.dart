@@ -61,7 +61,7 @@ class WBalCalculator {
         distanceM: p.distanceM,
         wBalJoules: currentWBal,
         wBalPercent: wBalPercent,
-      ));
+      ),);
     }
 
     return updated;

@@ -55,7 +55,7 @@ class _EditRaceGoalSheetState extends State<EditRaceGoalSheet> {
     _targetPowerController = TextEditingController(
         text: widget.initialGoal?.targetPowerWatts != null
             ? widget.initialGoal!.targetPowerWatts.toString()
-            : '');
+            : '',);
     _notesController =
         TextEditingController(text: widget.initialGoal?.notes ?? '');
     _selectedDate = widget.initialGoal?.date ??
@@ -157,7 +157,7 @@ class _EditRaceGoalSheetState extends State<EditRaceGoalSheet> {
               // Prioritäts-Auswahl (A / B / C)
               Text('Priorität des Wettkampfs',
                   style: AppTypography.label.copyWith(
-                      fontWeight: FontWeight.bold, color: AppColors.navy)),
+                      fontWeight: FontWeight.bold, color: AppColors.navy,),),
               const SizedBox(height: 8),
               Row(
                 children: [
@@ -201,7 +201,7 @@ class _EditRaceGoalSheetState extends State<EditRaceGoalSheet> {
                   fillColor: AppColors.lightBackground,
                   border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none),
+                      borderSide: BorderSide.none,),
                 ),
               ),
               const SizedBox(height: 14),
@@ -236,9 +236,9 @@ class _EditRaceGoalSheetState extends State<EditRaceGoalSheet> {
                     children: [
                       Text('Datum: $_selectedDate',
                           style: AppTypography.body
-                              .copyWith(color: AppColors.navy)),
+                              .copyWith(color: AppColors.navy),),
                       const Icon(Icons.calendar_month,
-                          size: 20, color: AppColors.navy),
+                          size: 20, color: AppColors.navy,),
                     ],
                   ),
                 ),
@@ -250,25 +250,25 @@ class _EditRaceGoalSheetState extends State<EditRaceGoalSheet> {
                 children: [
                   Expanded(
                     child: DropdownButtonFormField<String>(
-                      value: _selectedSport,
+                      initialValue: _selectedSport,
                       decoration: InputDecoration(
                         labelText: 'Sportart',
                         filled: true,
                         fillColor: AppColors.lightBackground,
                         border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none),
+                            borderSide: BorderSide.none,),
                       ),
                       items: const [
                         DropdownMenuItem(
-                            value: 'TRIATHLON', child: Text('Triathlon')),
+                            value: 'TRIATHLON', child: Text('Triathlon'),),
                         DropdownMenuItem(
-                            value: 'BIKE', child: Text('Radsport')),
+                            value: 'BIKE', child: Text('Radsport'),),
                         DropdownMenuItem(value: 'RUN', child: Text('Laufen')),
                         DropdownMenuItem(
-                            value: 'SWIM', child: Text('Schwimmen')),
+                            value: 'SWIM', child: Text('Schwimmen'),),
                         DropdownMenuItem(
-                            value: 'OTHER', child: Text('Sonstige')),
+                            value: 'OTHER', child: Text('Sonstige'),),
                       ],
                       onChanged: (val) =>
                           setState(() => _selectedSport = val ?? 'TRIATHLON'),
@@ -277,32 +277,32 @@ class _EditRaceGoalSheetState extends State<EditRaceGoalSheet> {
                   const SizedBox(width: 10),
                   Expanded(
                     child: DropdownButtonFormField<String>(
-                      value: _selectedDistance,
+                      initialValue: _selectedDistance,
                       decoration: InputDecoration(
                         labelText: 'Distanz',
                         filled: true,
                         fillColor: AppColors.lightBackground,
                         border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none),
+                            borderSide: BorderSide.none,),
                       ),
                       items: const [
                         DropdownMenuItem(
-                            value: 'Sprint', child: Text('Sprint')),
+                            value: 'Sprint', child: Text('Sprint'),),
                         DropdownMenuItem(
-                            value: 'Olympisch', child: Text('Olympisch')),
+                            value: 'Olympisch', child: Text('Olympisch'),),
                         DropdownMenuItem(
                             value: 'Mitteldistanz',
-                            child: Text('Mitteldistanz')),
+                            child: Text('Mitteldistanz'),),
                         DropdownMenuItem(
-                            value: 'Langdistanz', child: Text('Langdistanz')),
+                            value: 'Langdistanz', child: Text('Langdistanz'),),
                         DropdownMenuItem(
-                            value: 'Marathon', child: Text('Marathon')),
+                            value: 'Marathon', child: Text('Marathon'),),
                         DropdownMenuItem(
-                            value: 'Halbmarathon', child: Text('Halbmarathon')),
+                            value: 'Halbmarathon', child: Text('Halbmarathon'),),
                         DropdownMenuItem(value: '10 km', child: Text('10 km')),
                         DropdownMenuItem(
-                            value: 'Sonstige', child: Text('Sonstige')),
+                            value: 'Sonstige', child: Text('Sonstige'),),
                       ],
                       onChanged: (val) =>
                           setState(() => _selectedDistance = val),
@@ -325,7 +325,7 @@ class _EditRaceGoalSheetState extends State<EditRaceGoalSheet> {
                         fillColor: AppColors.lightBackground,
                         border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none),
+                            borderSide: BorderSide.none,),
                       ),
                     ),
                   ),
@@ -341,7 +341,7 @@ class _EditRaceGoalSheetState extends State<EditRaceGoalSheet> {
                         fillColor: AppColors.lightBackground,
                         border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none),
+                            borderSide: BorderSide.none,),
                       ),
                     ),
                   ),
@@ -359,19 +359,19 @@ class _EditRaceGoalSheetState extends State<EditRaceGoalSheet> {
                     foregroundColor: AppColors.navy,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
+                        borderRadius: BorderRadius.circular(12),),
                     elevation: 0,
                   ),
                   child: _isSaving
                       ? const SizedBox(
                           width: 20,
                           height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2))
+                          child: CircularProgressIndicator(strokeWidth: 2),)
                       : Text(
                           'Wettkampf speichern',
                           style: AppTypography.body.copyWith(
                               fontWeight: FontWeight.bold,
-                              color: AppColors.navy),
+                              color: AppColors.navy,),
                         ),
                 ),
               ),

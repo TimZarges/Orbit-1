@@ -21,7 +21,7 @@ void main() {
       expect(status.garminUserId, 'garmin_user_test_123');
       expect(status.lastSyncCount, 5);
       expect(
-          status.lastSyncMessage, '5 Aktivitäten erfolgreich synchronisiert');
+          status.lastSyncMessage, '5 Aktivitäten erfolgreich synchronisiert',);
       expect(status.lastSyncAt, isNotNull);
     });
 
@@ -52,7 +52,7 @@ void main() {
       expect(find.byKey(const Key('garmin_sync_now_button')), findsOneWidget);
       expect(find.text('Jetzt synchronisieren (REST-Pull)'), findsOneWidget);
       expect(find.text('Historische Daten anfordern (Garmin Queue)'),
-          findsOneWidget);
+          findsOneWidget,);
     });
   });
 }

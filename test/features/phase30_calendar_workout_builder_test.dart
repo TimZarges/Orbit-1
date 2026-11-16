@@ -162,7 +162,7 @@ void main() {
             homeDashboardProvider('test_athlete')
                 .overrideWith((ref) => Future.value(
                       const HomeDashboardData(todayLocalDate: '2026-10-18'),
-                    )),
+                    ),),
             athleteCurrentWeekWorkoutsProvider('test_athlete')
                 .overrideWith((ref) => Stream.value([])),
             athleteCurrentMonthWorkoutsProvider('test_athlete')

@@ -121,7 +121,7 @@ class _ActivityCockpitScreenState extends ConsumerState<ActivityCockpitScreen> {
         }
       } catch (e) {
         debugPrint(
-            'Hinweis: Konnte Telemetrie-Stream nicht aus Storage laden: $e');
+            'Hinweis: Konnte Telemetrie-Stream nicht aus Storage laden: $e',);
       }
     }
 
@@ -237,7 +237,7 @@ class _ActivityCockpitScreenState extends ConsumerState<ActivityCockpitScreen> {
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
             child: const Text('Abbrechen',
-                style: TextStyle(color: Colors.white54)),
+                style: TextStyle(color: Colors.white54),),
           ),
           ElevatedButton(
             key: const Key('activity_title_save_button'),
@@ -245,7 +245,7 @@ class _ActivityCockpitScreenState extends ConsumerState<ActivityCockpitScreen> {
               backgroundColor: AppColors.volt,
               foregroundColor: AppColors.navy,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8)),
+                  borderRadius: BorderRadius.circular(8),),
             ),
             onPressed: () {
               if (formKey.currentState?.validate() ?? false) {
@@ -253,7 +253,7 @@ class _ActivityCockpitScreenState extends ConsumerState<ActivityCockpitScreen> {
               }
             },
             child: const Text('Speichern',
-                style: TextStyle(fontWeight: FontWeight.bold)),
+                style: TextStyle(fontWeight: FontWeight.bold),),
           ),
         ],
       ),
@@ -261,7 +261,7 @@ class _ActivityCockpitScreenState extends ConsumerState<ActivityCockpitScreen> {
 
     if (newTitle != null && newTitle.isNotEmpty && newTitle != _currentTitle) {
       setState(() => _currentTitle = newTitle);
-      _persistTitleChange(newTitle);
+      await _persistTitleChange(newTitle);
     }
   }
 
@@ -299,7 +299,7 @@ class _ActivityCockpitScreenState extends ConsumerState<ActivityCockpitScreen> {
         appBar: AppBar(
           backgroundColor: const Color(0xFF001F47),
           title: Text('$_currentTitle (Vollbild)',
-              style: const TextStyle(color: Colors.white)),
+              style: const TextStyle(color: Colors.white),),
           leading: IconButton(
             icon: const Icon(Icons.close, color: Colors.white),
             onPressed: () => Navigator.of(context).pop(),
@@ -346,7 +346,7 @@ class _ActivityCockpitScreenState extends ConsumerState<ActivityCockpitScreen> {
             const BetaBugReportIconButton(),
             IconButton(
               icon: const Icon(Icons.screen_rotation_outlined,
-                  color: Colors.white70),
+                  color: Colors.white70,),
               tooltip: 'Vollbild',
               onPressed: _openFullscreen,
             ),
@@ -354,7 +354,7 @@ class _ActivityCockpitScreenState extends ConsumerState<ActivityCockpitScreen> {
         ),
         body: _isLoading
             ? const Center(
-                child: CircularProgressIndicator(color: AppColors.volt))
+                child: CircularProgressIndicator(color: AppColors.volt),)
             : SingleChildScrollView(
                 padding: const EdgeInsets.all(16),
                 child: Column(
@@ -364,7 +364,7 @@ class _ActivityCockpitScreenState extends ConsumerState<ActivityCockpitScreen> {
                     if (widget.athleteName != null) ...[
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 8),
+                            horizontal: 12, vertical: 8,),
                         decoration: BoxDecoration(
                           color: const Color(0xFF0F172A),
                           borderRadius: BorderRadius.circular(8),
@@ -373,7 +373,7 @@ class _ActivityCockpitScreenState extends ConsumerState<ActivityCockpitScreen> {
                           'Aktivität von ${widget.athleteName}',
                           style: const TextStyle(
                               color: AppColors.volt,
-                              fontWeight: FontWeight.bold),
+                              fontWeight: FontWeight.bold,),
                         ),
                       ),
                       const SizedBox(height: 12),
@@ -422,10 +422,10 @@ class _ActivityCockpitScreenState extends ConsumerState<ActivityCockpitScreen> {
                       children: [
                         InkWell(
                           onTap: () => setState(
-                              () => _useDistanceAxis = !_useDistanceAxis),
+                              () => _useDistanceAxis = !_useDistanceAxis,),
                           child: Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 4),
+                                horizontal: 10, vertical: 4,),
                             decoration: BoxDecoration(
                               color: const Color(0xFF0F172A),
                               borderRadius: BorderRadius.circular(8),
@@ -435,14 +435,14 @@ class _ActivityCockpitScreenState extends ConsumerState<ActivityCockpitScreen> {
                             child: Row(
                               children: [
                                 const Icon(Icons.swap_horiz,
-                                    size: 14, color: Colors.white70),
+                                    size: 14, color: Colors.white70,),
                                 const SizedBox(width: 4),
                                 Text(
                                   _useDistanceAxis
                                       ? 'Achse: Distanz (km)'
                                       : 'Achse: Zeit (h:mm)',
                                   style: const TextStyle(
-                                      color: Colors.white70, fontSize: 11),
+                                      color: Colors.white70, fontSize: 11,),
                                 ),
                               ],
                             ),
@@ -481,13 +481,13 @@ class _ActivityCockpitScreenState extends ConsumerState<ActivityCockpitScreen> {
                               5: 680,
                               60: 420,
                               300: 310,
-                              1200: 275
+                              1200: 275,
                             },
                             seasonMmp: const {
                               5: 650,
                               60: 400,
                               300: 295,
-                              1200: 260
+                              1200: 260,
                             },
                           );
                           final curve = MmpCalculator.buildCurve(
@@ -559,9 +559,9 @@ class _ActivityCockpitScreenState extends ConsumerState<ActivityCockpitScreen> {
               key: const Key('activity_sport_badge'),
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
-                color: sportAccent.withOpacity(0.15),
+                color: sportAccent.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: sportAccent.withOpacity(0.4)),
+                border: Border.all(color: sportAccent.withValues(alpha: 0.4)),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -617,7 +617,7 @@ class _ActivityCockpitScreenState extends ConsumerState<ActivityCockpitScreen> {
             IconButton(
               key: const Key('activity_title_edit_button'),
               icon: const Icon(Icons.edit_outlined,
-                  size: 20, color: AppColors.volt),
+                  size: 20, color: AppColors.volt,),
               tooltip: 'Titel bearbeiten',
               onPressed: _showEditTitleDialog,
             ),
@@ -673,7 +673,7 @@ class _ActivityCockpitScreenState extends ConsumerState<ActivityCockpitScreen> {
         child: Row(
           children: [
             const Icon(Icons.event_available_outlined,
-                color: Colors.white60, size: 20),
+                color: Colors.white60, size: 20,),
             const SizedBox(width: 10),
             const Expanded(
               child: Text(
@@ -705,9 +705,9 @@ class _ActivityCockpitScreenState extends ConsumerState<ActivityCockpitScreen> {
       key: const Key('activity_compliance_banner'),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: statusColor.withOpacity(0.12),
+        color: statusColor.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: statusColor.withOpacity(0.4)),
+        border: Border.all(color: statusColor.withValues(alpha: 0.4)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -893,7 +893,7 @@ class _ActivityCockpitScreenState extends ConsumerState<ActivityCockpitScreen> {
         children: [
           Row(
             children: [
-              Icon(icon, size: 14, color: accentColor.withOpacity(0.85)),
+              Icon(icon, size: 14, color: accentColor.withValues(alpha: 0.85)),
               const SizedBox(width: 6),
               Text(
                 label,

@@ -11,7 +11,7 @@ class MultiAthleteWeekGrid extends StatefulWidget {
   final List<CoachDashboardAthlete> athletes;
   final String coachId;
   final Function(PlannedWorkout workout, String targetAthleteId,
-      String targetDate, bool isCopy) onDrop;
+      String targetDate, bool isCopy,) onDrop;
   final Function(String athleteId, String name) onAthleteClick;
 
   const MultiAthleteWeekGrid({
@@ -70,7 +70,7 @@ class _MultiAthleteWeekGridState extends State<MultiAthleteWeekGrid> {
             plannedLoad: 55.0 + (d * 10),
             status: 'PLANNED',
             createdAt: DateTime.now(),
-          ));
+          ),);
         }
       }
     }
@@ -132,14 +132,14 @@ class _MultiAthleteWeekGridState extends State<MultiAthleteWeekGrid> {
                 onPressed: _currentWeek,
                 style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 6)),
+                        horizontal: 10, vertical: 6,),),
                 child: const Text('Heute', style: TextStyle(fontSize: 12)),
               ),
               const Spacer(),
               IconButton(
                 icon: Icon(_isCompactDensity
                     ? Icons.density_small
-                    : Icons.density_medium),
+                    : Icons.density_medium,),
                 tooltip: 'Dichte umschalten',
                 onPressed: () =>
                     setState(() => _isCompactDensity = !_isCompactDensity),
@@ -173,7 +173,7 @@ class _MultiAthleteWeekGridState extends State<MultiAthleteWeekGrid> {
                           padding: EdgeInsets.all(10),
                           child: Text('Athlet',
                               style: TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 13)),
+                                  fontWeight: FontWeight.bold, fontSize: 13,),),
                         ),
                         ...days.map((d) => Padding(
                               padding: const EdgeInsets.all(10),
@@ -189,7 +189,7 @@ class _MultiAthleteWeekGridState extends State<MultiAthleteWeekGrid> {
                                       : Colors.grey.shade700,
                                 ),
                               ),
-                            )),
+                            ),),
                       ],
                     ),
 
@@ -203,7 +203,7 @@ class _MultiAthleteWeekGridState extends State<MultiAthleteWeekGrid> {
                           // Athleten-Zelle
                           InkWell(
                             onTap: () => widget.onAthleteClick(
-                                athlete.athleteId, athlete.name),
+                                athlete.athleteId, athlete.name,),
                             child: Padding(
                               padding: const EdgeInsets.all(10),
                               child: Column(
@@ -216,14 +216,14 @@ class _MultiAthleteWeekGridState extends State<MultiAthleteWeekGrid> {
                                     style: const TextStyle(
                                         fontWeight: FontWeight.bold,
                                         fontSize: 13,
-                                        color: AppColors.navy),
+                                        color: AppColors.navy,),
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
                                     '${athlete.sport} · ${athlete.ctl} CTL',
                                     style: TextStyle(
                                         fontSize: 11,
-                                        color: Colors.grey.shade600),
+                                        color: Colors.grey.shade600,),
                                   ),
                                 ],
                               ),
@@ -243,14 +243,14 @@ class _MultiAthleteWeekGridState extends State<MultiAthleteWeekGrid> {
                                 final isAltPressed =
                                     HardwareKeyboard.instance.isAltPressed;
                                 widget.onDrop(details.data, athlete.athleteId,
-                                    dateStr, isAltPressed);
+                                    dateStr, isAltPressed,);
 
                                 setState(() {
                                   if (!isAltPressed) {
                                     // Altes entfernen
                                     _gridWorkouts[details.data.athleteId]
                                         ?.removeWhere(
-                                            (w) => w.id == details.data.id);
+                                            (w) => w.id == details.data.id,);
                                   }
                                   // Neues hinzufügen
                                   final newW = details.data.copyWith(
@@ -281,7 +281,7 @@ class _MultiAthleteWeekGridState extends State<MultiAthleteWeekGrid> {
 
                                 return Container(
                                   constraints: BoxConstraints(
-                                      minHeight: _isCompactDensity ? 54 : 76),
+                                      minHeight: _isCompactDensity ? 54 : 76,),
                                   color: isHovered
                                       ? AppColors.volt.withValues(alpha: 0.15)
                                       : Colors.transparent,
@@ -301,10 +301,10 @@ class _MultiAthleteWeekGridState extends State<MultiAthleteWeekGrid> {
                                               padding:
                                                   const EdgeInsets.symmetric(
                                                       horizontal: 10,
-                                                      vertical: 6),
+                                                      vertical: 6,),
                                               decoration: BoxDecoration(
                                                 color: _getSportColor(
-                                                    workout.sport),
+                                                    workout.sport,),
                                                 borderRadius:
                                                     BorderRadius.circular(8),
                                               ),
@@ -314,7 +314,7 @@ class _MultiAthleteWeekGridState extends State<MultiAthleteWeekGrid> {
                                                     color: Colors.white,
                                                     fontSize: 12,
                                                     fontWeight:
-                                                        FontWeight.bold),
+                                                        FontWeight.bold,),
                                               ),
                                             ),
                                           ),
@@ -351,7 +351,7 @@ class _MultiAthleteWeekGridState extends State<MultiAthleteWeekGrid> {
       decoration: BoxDecoration(
         color: _getSportColor(workout.sport).withValues(alpha: 0.16),
         border: Border.all(
-            color: _getSportColor(workout.sport).withValues(alpha: 0.5)),
+            color: _getSportColor(workout.sport).withValues(alpha: 0.5),),
         borderRadius: BorderRadius.circular(6),
       ),
       child: Column(
@@ -360,14 +360,14 @@ class _MultiAthleteWeekGridState extends State<MultiAthleteWeekGrid> {
           Row(
             children: [
               Icon(_getSportIcon(workout.sport),
-                  size: 12, color: _getSportColor(workout.sport)),
+                  size: 12, color: _getSportColor(workout.sport),),
               const SizedBox(width: 4),
               Expanded(
                 child: Text(
                   workout.title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
                     color: AppColors.navy,

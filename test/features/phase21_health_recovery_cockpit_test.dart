@@ -18,12 +18,12 @@ void main() {
   group('Phase 21: ThreeRingsHeroCard & Graceful Degradation', () {
     testWidgets('Rendert die 3 Ringe, ORBIT Gesamt-Score Badge und Empfehlung',
         (tester) async {
-      final metrics = DailyMetrics(
+      const metrics = DailyMetrics(
         localDate: '2026-10-16',
         restingHrBpm: 50,
         hrvMs: 68,
         sleepSeconds: 27000,
-        recoveryData: const RecoveryData(
+        recoveryData: RecoveryData(
           score: 82,
           classification: 'GREEN',
           recommendationDe:
@@ -33,10 +33,10 @@ void main() {
             'hrv': 0.45,
             'rhr': 0.25,
             'sleep': 0.2,
-            'respiration': 0.1
+            'respiration': 0.1,
           },
         ),
-        strainData: const StrainData(
+        strainData: StrainData(
           score: 64,
           trainingTss: 50.0,
           alltagLoad: 14.0,
@@ -44,7 +44,7 @@ void main() {
           targetMin: 55,
           targetMax: 78,
         ),
-        sleepScoreData: const SleepScoreData(
+        sleepScoreData: SleepScoreData(
           score: 85,
           needHours: 8.0,
           actualHours: 7.75,
@@ -53,7 +53,7 @@ void main() {
           efficiencyScore: 88,
           stagesScore: 82,
         ),
-        orbitScoreData: const OrbitScoreData(
+        orbitScoreData: OrbitScoreData(
           score: 80,
           consistencyScore: 85,
           tsbScore: 80,
@@ -63,7 +63,7 @@ void main() {
       );
 
       await tester.pumpWidget(
-        MaterialApp(
+        const MaterialApp(
           home: Scaffold(
             body: ThreeRingsHeroCard(
               dailyMetrics: metrics,
@@ -91,24 +91,24 @@ void main() {
 
     testWidgets('Zeigt bei Graceful Degradation einen dezenten Sensor-Hinweis',
         (tester) async {
-      final metrics = DailyMetrics(
+      const metrics = DailyMetrics(
         localDate: '2026-10-16',
         restingHrBpm: 52,
         sleepSeconds: 25000,
-        recoveryData: const RecoveryData(
+        recoveryData: RecoveryData(
           score: 68,
           classification: 'YELLOW',
           recommendationDe: 'Moderate Erholung.',
           recommendationEn: 'Moderate recovery.',
           weightsUsed: {
             'rhr': 0.5,
-            'sleep': 0.5
+            'sleep': 0.5,
           }, // hrv fehlt -> isGracefulDegradation is true!
         ),
       );
 
       await tester.pumpWidget(
-        MaterialApp(
+        const MaterialApp(
           home: Scaffold(
             body: ThreeRingsHeroCard(
               dailyMetrics: metrics,
@@ -184,7 +184,7 @@ void main() {
 
       expect(find.text('8 / 14 Tage'), findsOneWidget);
       expect(
-          find.textContaining('Noch 6 Morgen-Check-ins nötig'), findsOneWidget);
+          find.textContaining('Noch 6 Morgen-Check-ins nötig'), findsOneWidget,);
     });
 
     testWidgets('Zeigt Korrelationen bei N >= 14 Einträgen', (tester) async {
@@ -195,14 +195,14 @@ void main() {
           localDate: '2026-09-${10 + i}',
           hrvMs: 50,
           journal: const JournalData(alcohol: true),
-        ));
+        ),);
       }
       for (int i = 0; i < 10; i++) {
         history.add(DailyMetrics(
           localDate: '2026-09-${20 + i}',
           hrvMs: 70,
           journal: const JournalData(alcohol: false, goodHydration: true),
-        ));
+        ),);
       }
 
       await tester.pumpWidget(
@@ -227,7 +227,7 @@ void main() {
         VitalDataPoint(date: DateTime(2026, 10, 1), value: 65),
         VitalDataPoint(date: DateTime(2026, 10, 2), value: 66),
         VitalDataPoint(
-            date: DateTime(2026, 10, 3), value: 48), // Ausreißer nach unten
+            date: DateTime(2026, 10, 3), value: 48,), // Ausreißer nach unten
       ];
 
       await tester.pumpWidget(
@@ -248,17 +248,17 @@ void main() {
       expect(find.text('48 ms'), findsOneWidget);
       // Neutrales Wording gemäß Regelwerk
       expect(
-          find.text('Außerhalb deines 30-Tage-Normbereichs'), findsOneWidget);
+          find.text('Außerhalb deines 30-Tage-Normbereichs'), findsOneWidget,);
     });
 
     testWidgets('SleepBreakdownCard visualisiert Phasen und Schlafschuld',
         (tester) async {
-      final metrics = DailyMetrics(
+      const metrics = DailyMetrics(
         localDate: '2026-10-16',
         deepSleepSeconds: 6000,
         remSleepSeconds: 6500,
         awakeSleepSeconds: 1500,
-        sleepScoreData: const SleepScoreData(
+        sleepScoreData: SleepScoreData(
           score: 82,
           needHours: 8.0,
           actualHours: 7.5,
@@ -270,7 +270,7 @@ void main() {
       );
 
       await tester.pumpWidget(
-        MaterialApp(
+        const MaterialApp(
           home: Scaffold(
             body: SleepBreakdownCard(todayMetrics: metrics),
           ),
@@ -337,7 +337,7 @@ void main() {
   group('Phase 21: CoachAthletesTable (Art. 9 DSGVO Gate)', () {
     testWidgets('Sperrt Gesundheitsdaten bei fehlender Berechtigung',
         (tester) async {
-      final athleteWithoutConsent = CoachDashboardAthlete(
+      const athleteWithoutConsent = CoachDashboardAthlete(
         athleteId: 'ath_1',
         coachId: 'coach_1',
         name: 'Max Mustermann',
@@ -358,7 +358,7 @@ void main() {
           child: MaterialApp(
             home: Scaffold(
               body: CoachAthletesTable(
-                athletes: [athleteWithoutConsent],
+                athletes: const [athleteWithoutConsent],
                 onAthleteOpen: (_, __) {},
                 onCreateProposal: (_) {},
               ),
@@ -378,7 +378,7 @@ void main() {
     testWidgets(
         'Zeigt Erholungsscore nur bei aktiver Freigabe (hasHealthPermission: true)',
         (tester) async {
-      final athleteWithConsent = CoachDashboardAthlete(
+      const athleteWithConsent = CoachDashboardAthlete(
         athleteId: 'ath_2',
         coachId: 'coach_1',
         name: 'Anna Ausdauer',
@@ -402,7 +402,7 @@ void main() {
           child: MaterialApp(
             home: Scaffold(
               body: CoachAthletesTable(
-                athletes: [athleteWithConsent],
+                athletes: const [athleteWithConsent],
                 onAthleteOpen: (_, __) {},
                 onCreateProposal: (_) {},
               ),

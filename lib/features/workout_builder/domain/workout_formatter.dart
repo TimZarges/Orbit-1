@@ -90,7 +90,7 @@ class WorkoutFormatter {
         if (remainderMin == 0) {
           return '${hours}h';
         }
-        return '${hours}h${remainderMin}\'';
+        return '${hours}h$remainderMin\'';
       } else if (sec % 60 == 0) {
         final min = sec ~/ 60;
         return '$min\'';

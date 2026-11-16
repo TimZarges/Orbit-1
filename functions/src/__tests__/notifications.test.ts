@@ -14,10 +14,10 @@ jest.mock("firebase-admin", () => {
 
   return {
     firestore: jest.fn(() => ({
-      collection: jest.fn((colName: string) => ({
-        doc: jest.fn((docId: string) => ({
+      collection: jest.fn((_colName: string) => ({
+        doc: jest.fn((_docId: string) => ({
           get: mockGetDoc,
-          collection: jest.fn((subCol: string) => ({
+          collection: jest.fn((_subCol: string) => ({
             get: mockGetCollection,
           })),
         })),

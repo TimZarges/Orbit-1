@@ -336,7 +336,7 @@ class WorkoutBuilderNotifier extends StateNotifier<WorkoutBuilderState> {
 
     final calc = parseResult.structure != null
         ? WorkoutCalculator.calculate(parseResult.structure!,
-            thresholds: thresholds)
+            thresholds: thresholds,)
         : state.calculation;
 
     state = state.copyWith(
@@ -360,7 +360,7 @@ class WorkoutBuilderNotifier extends StateNotifier<WorkoutBuilderState> {
 
     final calc = parseResult.structure != null
         ? WorkoutCalculator.calculate(parseResult.structure!,
-            thresholds: thresholds)
+            thresholds: thresholds,)
         : state.calculation;
 
     state = state.copyWith(

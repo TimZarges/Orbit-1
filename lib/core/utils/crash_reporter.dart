@@ -57,7 +57,7 @@ class CrashReporter {
 
     if (kDebugMode) {
       debugPrint(
-          '[CrashReporter - Consent Granted] Error: $sanitizedError\nReason: $sanitizedReason');
+          '[CrashReporter - Consent Granted] Error: $sanitizedError\nReason: $sanitizedReason',);
     }
   }
 
@@ -66,8 +66,8 @@ class CrashReporter {
     if (text == null) return null;
     return text
         .replaceAll(RegExp(r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'),
-            '[REDACTED_EMAIL]')
+            '[REDACTED_EMAIL]',)
         .replaceAll(
-            RegExp(r'Bearer\s+[a-zA-Z0-9\-._~+/]+=*'), '[REDACTED_TOKEN]');
+            RegExp(r'Bearer\s+[a-zA-Z0-9\-._~+/]+=*'), '[REDACTED_TOKEN]',);
   }
 }

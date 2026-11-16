@@ -303,26 +303,26 @@ class _AdminFeedbackScreenState extends ConsumerState<AdminFeedbackScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text('Kategorie: ${report.category.label()}',
-                    style: const TextStyle(color: Colors.white70)),
+                    style: const TextStyle(color: Colors.white70),),
                 const SizedBox(height: 6),
                 Text('Status: ${report.status}',
-                    style: const TextStyle(color: Colors.white70)),
+                    style: const TextStyle(color: Colors.white70),),
                 const SizedBox(height: 6),
                 Text('User-ID: ${report.userId}',
                     style:
-                        const TextStyle(color: Colors.white54, fontSize: 11)),
+                        const TextStyle(color: Colors.white54, fontSize: 11),),
                 const SizedBox(height: 12),
                 const Text('Beschreibung:',
                     style: TextStyle(
-                        color: Colors.white, fontWeight: FontWeight.bold)),
+                        color: Colors.white, fontWeight: FontWeight.bold,),),
                 const SizedBox(height: 4),
                 Text(report.description,
-                    style: const TextStyle(color: Colors.white)),
+                    style: const TextStyle(color: Colors.white),),
                 if (report.diagnostics != null) ...[
                   const SizedBox(height: 14),
                   const Text('Diagnose-Metadaten:',
                       style: TextStyle(
-                          color: Colors.white, fontWeight: FontWeight.bold)),
+                          color: Colors.white, fontWeight: FontWeight.bold,),),
                   const SizedBox(height: 4),
                   Container(
                     padding: const EdgeInsets.all(8),
@@ -336,24 +336,24 @@ class _AdminFeedbackScreenState extends ConsumerState<AdminFeedbackScreen> {
                       children: [
                         Text('Screen: ${report.diagnostics!.route}',
                             style: const TextStyle(
-                                color: Colors.white70, fontSize: 11)),
+                                color: Colors.white70, fontSize: 11,),),
                         Text('Version: ${report.diagnostics!.appVersion}',
                             style: const TextStyle(
-                                color: Colors.white70, fontSize: 11)),
+                                color: Colors.white70, fontSize: 11,),),
                         Text('Gerät: ${report.diagnostics!.deviceInfo}',
                             style: const TextStyle(
-                                color: Colors.white70, fontSize: 11)),
+                                color: Colors.white70, fontSize: 11,),),
                         if (report.diagnostics!.recentLogs.isNotEmpty) ...[
                           const SizedBox(height: 6),
                           const Text('Logs:',
                               style: TextStyle(
-                                  color: Colors.white54, fontSize: 10)),
+                                  color: Colors.white54, fontSize: 10,),),
                           ...report.diagnostics!.recentLogs.take(5).map(
                                 (l) => Text(l,
                                     style: const TextStyle(
                                         color: Colors.white54,
                                         fontSize: 9,
-                                        fontFamily: 'monospace')),
+                                        fontFamily: 'monospace',),),
                               ),
                         ],
                       ],
@@ -367,7 +367,7 @@ class _AdminFeedbackScreenState extends ConsumerState<AdminFeedbackScreen> {
             TextButton(
               onPressed: () => Navigator.of(dialogCtx).pop(),
               child: const Text('Schließen',
-                  style: TextStyle(color: AppColors.volt)),
+                  style: TextStyle(color: AppColors.volt),),
             ),
           ],
         );

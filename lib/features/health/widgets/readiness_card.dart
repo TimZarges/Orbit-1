@@ -83,7 +83,7 @@ class ReadinessCard extends ConsumerWidget {
     final statusColor = _getStatusColor(evaluation.status, isDark);
     final statusTitle = _getStatusTitle(evaluation.status, l10n);
     final statusDescription = _getStatusDescription(
-        evaluation.status, l10n, baseline.dataPointsCount);
+        evaluation.status, l10n, baseline.dataPointsCount,);
 
     final cardBg = isDark ? const Color(0xFF1E293B) : Colors.white;
     final cardBorder =
@@ -401,7 +401,7 @@ class ReadinessCard extends ConsumerWidget {
         color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-            color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
+            color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),),
       ),
       child: Row(
         children: [
@@ -412,7 +412,7 @@ class ReadinessCard extends ConsumerWidget {
               shape: BoxShape.circle,
             ),
             child: const Icon(Icons.lock_outline,
-                size: 22, color: Color(0xFF64748B)),
+                size: 22, color: Color(0xFF64748B),),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -458,7 +458,7 @@ class ReadinessCard extends ConsumerWidget {
         color: isDark ? const Color(0xFF1E293B) : Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-            color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
+            color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -466,7 +466,7 @@ class ReadinessCard extends ConsumerWidget {
           Row(
             children: [
               const Icon(Icons.favorite_outline,
-                  size: 20, color: Color(0xFF94A3B8)),
+                  size: 20, color: Color(0xFF94A3B8),),
               const SizedBox(width: 8),
               Text(
                 l10n?.readiness_title ?? 'Tagesform',
@@ -495,9 +495,11 @@ class ReadinessCard extends ConsumerWidget {
               OutlinedButton(
                 onPressed: () async {
                   await HealthDemoSeeder.seedDemoMetricsForAthlete(athleteId);
+                  if (!context.mounted) return;
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                        content: Text('30 Tage Demo-Health-Daten geladen!')),
+                      content: Text('30 Tage Demo-Health-Daten geladen!'),
+                    ),
                   );
                 },
                 child: const Text('Demo laden'),
@@ -510,7 +512,7 @@ class ReadinessCard extends ConsumerWidget {
   }
 
   Widget _buildLoadingSkeleton(
-      BuildContext context, ThemeData theme, bool isDark) {
+      BuildContext context, ThemeData theme, bool isDark,) {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8),
       height: 130,
@@ -582,7 +584,7 @@ class ReadinessCard extends ConsumerWidget {
   }
 
   String _getStatusDescription(
-      ReadinessStatus status, AppLocalizations? l10n, int count) {
+      ReadinessStatus status, AppLocalizations? l10n, int count,) {
     switch (status) {
       case ReadinessStatus.normal:
         return l10n?.readiness_normal_desc ??

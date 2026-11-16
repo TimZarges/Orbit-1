@@ -65,7 +65,7 @@ class AerobicEfficiencyBadge extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const Icon(Icons.speed,
-                      color: AppColors.accentVolt, size: 20),
+                      color: AppColors.accentVolt, size: 20,),
                   const SizedBox(width: 8),
                   Text(
                     'Aerobe Effizienz & Belastung',
@@ -161,7 +161,7 @@ class AerobicEfficiencyBadge extends StatelessWidget {
               child: Row(
                 children: [
                   const Icon(Icons.directions_run,
-                      color: Color(0xFF22D3EE), size: 18),
+                      color: Color(0xFF22D3EE), size: 18,),
                   const SizedBox(width: 8),
                   Text(
                     'Brick-Analyse (Koppellauf):',

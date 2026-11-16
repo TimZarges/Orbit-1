@@ -73,7 +73,7 @@ class _IntervalTableWidgetState extends State<IntervalTableWidget> {
               Row(
                 children: [
                   const Icon(Icons.timer_outlined,
-                      color: AppColors.accentVolt, size: 20),
+                      color: AppColors.accentVolt, size: 20,),
                   const SizedBox(width: 8),
                   Text(
                     'Intervalle & Runden',
@@ -171,24 +171,24 @@ class _IntervalTableWidgetState extends State<IntervalTableWidget> {
                     ),
                     DataCell(Text(durationStr,
                         style: const TextStyle(
-                            color: Colors.white, fontSize: 12))),
+                            color: Colors.white, fontSize: 12,),),),
                     DataCell(Text(distKm,
                         style: const TextStyle(
-                            color: Colors.white70, fontSize: 12))),
+                            color: Colors.white70, fontSize: 12,),),),
                     DataCell(Text(avgValStr,
                         style: const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.w600,
-                            fontSize: 12))),
+                            fontSize: 12,),),),
                     DataCell(Text(npValStr,
                         style: const TextStyle(
-                            color: Colors.white70, fontSize: 12))),
+                            color: Colors.white70, fontSize: 12,),),),
                     DataCell(Text(hrStr,
                         style: const TextStyle(
-                            color: Color(0xFFFF6B6B), fontSize: 12))),
+                            color: Color(0xFFFF6B6B), fontSize: 12,),),),
                     DataCell(Text(efStr,
                         style: const TextStyle(
-                            color: Color(0xFF22D3EE), fontSize: 12))),
+                            color: Color(0xFF22D3EE), fontSize: 12,),),),
                   ],
                 );
               }).toList(),

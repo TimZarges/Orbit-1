@@ -61,7 +61,7 @@ class MultiAthleteGridController {
         type: GridActionType.copy,
         previousState: workout,
         newState: copied,
-      ));
+      ),);
 
       return copied;
     } else {
@@ -88,7 +88,7 @@ class MultiAthleteGridController {
         type: GridActionType.move,
         previousState: workout,
         newState: moved,
-      ));
+      ),);
 
       return moved;
     }

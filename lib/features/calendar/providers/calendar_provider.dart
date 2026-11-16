@@ -46,6 +46,7 @@ final athleteWorkoutsRangeProvider = StreamProvider.family<List<PlannedWorkout>,
 final athleteCurrentWeekWorkoutsProvider =
     StreamProvider.family<List<PlannedWorkout>, String>((ref, athleteId) {
   final selectedDate = ref.watch(selectedCalendarDateProvider);
+  final repo = ref.watch(plannedWorkoutRepositoryProvider);
 
   // Montag der Woche ermitteln (DateTime: Montag = 1, Sonntag = 7)
   final monday =
@@ -55,17 +56,18 @@ final athleteCurrentWeekWorkoutsProvider =
   final startStr = _formatDate(monday);
   final endStr = _formatDate(sunday);
 
-  return ref.watch(athleteWorkoutsRangeProvider((
+  return repo.watchWorkoutsForAthlete(
     athleteId: athleteId,
     startDate: startStr,
     endDate: endStr,
-  )).stream);
+  );
 });
 
 /// Liefert die geplanten Workouts für den aktuell ausgewählten Monat (inkl. Puffer für Randtage).
 final athleteCurrentMonthWorkoutsProvider =
     StreamProvider.family<List<PlannedWorkout>, String>((ref, athleteId) {
   final selectedDate = ref.watch(selectedCalendarDateProvider);
+  final repo = ref.watch(plannedWorkoutRepositoryProvider);
 
   final firstDayOfMonth = DateTime(selectedDate.year, selectedDate.month, 1);
   final lastDayOfMonth = DateTime(selectedDate.year, selectedDate.month + 1, 0);
@@ -75,11 +77,11 @@ final athleteCurrentMonthWorkoutsProvider =
       firstDayOfMonth.subtract(Duration(days: firstDayOfMonth.weekday - 1));
   final end = lastDayOfMonth.add(Duration(days: 7 - lastDayOfMonth.weekday));
 
-  return ref.watch(athleteWorkoutsRangeProvider((
+  return repo.watchWorkoutsForAthlete(
     athleteId: athleteId,
     startDate: _formatDate(start),
     endDate: _formatDate(end),
-  )).stream);
+  );
 });
 
 /// Berechnet die Wochensummen (Soll vs. Ist) für die ausgewählte Woche.
