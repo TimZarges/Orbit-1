@@ -41,8 +41,16 @@ class CalendarScreen extends ConsumerWidget {
   /// Optionale ID des Athleten. Falls `null`, wird der aktive Kontext verwendet.
   final String? athleteId;
 
+  /// Blendet die obere Statusbar-Einrückung der AppBar aus, falls übergeordnet
+  /// bereits eine Leiste (z. B. Coach-Athleten-Auswahl) mit `SafeArea` sitzt.
+  final bool hideSafeAreaTop;
+
   /// Erstellt den [CalendarScreen].
-  const CalendarScreen({super.key, this.athleteId});
+  const CalendarScreen({
+    super.key,
+    this.athleteId,
+    this.hideSafeAreaTop = false,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -66,6 +74,7 @@ class CalendarScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
+        primary: !hideSafeAreaTop,
         title: Text(
           AppStrings.formatMonthYear(selectedDate, lang: lang),
           style: const TextStyle(fontWeight: FontWeight.bold),

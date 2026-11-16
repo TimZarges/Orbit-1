@@ -15,7 +15,7 @@
     "feedback:pull": "tsc && node lib/scripts/pullFeedback.js"
   },
   "engines": {
-    "node": "20"
+    "node": "22"
   },
   "main": "lib/index.js",
   "dependencies": {

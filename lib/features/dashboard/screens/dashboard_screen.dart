@@ -16,8 +16,10 @@ import '../../auth/providers/auth_provider.dart';
 import '../../auth/providers/user_provider.dart';
 import '../../beta_feedback/widgets/beta_bug_reporter_sheet.dart';
 import '../../calendar/screens/calendar_screen.dart';
+import '../../coach_link/providers/v1_coach_connection_provider.dart';
 import '../../coach_link/screens/athlete_coach_tab_screen.dart';
 import '../../coach_link/screens/trainer_athletes_tab_screen.dart';
+import '../../coach_link/screens/v1_coach_calendar_tab.dart';
 import '../../notifications/widgets/notification_bell_icon_button.dart';
 import '../../profile/screens/profile_screen.dart';
 import '../../settings/providers/settings_provider.dart';
@@ -68,7 +70,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     final List<Widget> pages = isTrainer
         ? [
             const TrainerAthletesTabScreen(),
-            const CalendarScreen(),
+            if (isV2Enabled)
+              const CalendarScreen()
+            else
+              const V1CoachCalendarTab(),
             if (isV2Enabled || isV3Enabled) const AnalysisTabScreen(),
             if (isV2Enabled)
               const WorkoutTemplateLibraryScreen()
@@ -101,7 +106,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           ];
 
     // Sicherstellen, dass der Index bei Scope-Umschaltung im gültigen Bereich bleibt
-    final safeIndex = _currentIndex.clamp(0, pages.length - 1);
+    final int activeCoachTab =
+        (isTrainer && !isV2Enabled) ? ref.watch(v1CoachTabIndexProvider) : _currentIndex;
+    final safeIndex = activeCoachTab.clamp(0, pages.length - 1);
 
     // BottomNavigationBar-Items passend zu Rolle, Sprache und Release-Scope
     final List<BottomNavigationBarItem> navItems = isTrainer
@@ -160,7 +167,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           ];
 
     return Scaffold(
-      appBar: safeIndex == 1
+      appBar: (safeIndex == 1 || (isTrainer && !isV2Enabled && safeIndex == 2))
           ? null
           : AppBar(
               title: Text(titles[safeIndex]),
@@ -188,7 +195,13 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         currentIndex: safeIndex,
-        onTap: (index) => setState(() => _currentIndex = index),
+        onTap: (index) {
+          if (isTrainer && !isV2Enabled) {
+            ref.read(v1CoachTabIndexProvider.notifier).state = index;
+          } else {
+            setState(() => _currentIndex = index);
+          }
+        },
         items: navItems,
       ),
     );

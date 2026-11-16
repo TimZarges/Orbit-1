@@ -21,10 +21,12 @@ import '../../../core/utils/country_date_time_formatter.dart';
 import '../../activities/providers/activity_upload_provider.dart';
 import '../../auth/providers/user_provider.dart';
 import '../../beta_feedback/widgets/beta_bug_reporter_sheet.dart';
+import '../../coach_link/models/v1_coach_athlete_link.dart';
 import '../../integrations/models/garmin_status.dart';
 import '../../integrations/providers/garmin_provider.dart';
 import '../../onboarding/widgets/triathlon_combined_icon.dart';
 import '../../settings/providers/settings_provider.dart';
+import 'v1_athlete_coach_connection_card.dart';
 
 /// Modulares V1.0.0-Profil („Profil Einfach“) für Athleten und Coaches.
 ///
@@ -42,8 +44,19 @@ class V1SimpleProfileView extends ConsumerStatefulWidget {
   /// Optionale Testdaten (z. B. für isolierte Widget-Tests ohne Firestore).
   final Map<String, dynamic>? initialUserDocOverride;
 
+  /// Optionaler Test-Callback beim Speichern des Profils (ohne Firestore).
+  final Future<void> Function(Map<String, dynamic> savedPayload)? onSaveOverride;
+
+  /// Optionale Test-Links für die Coach-Verbindungskarte des Athleten.
+  final List<V1CoachAthleteLink>? coachLinksOverride;
+
   /// Erstellt das [V1SimpleProfileView].
-  const V1SimpleProfileView({super.key, this.initialUserDocOverride});
+  const V1SimpleProfileView({
+    super.key,
+    this.initialUserDocOverride,
+    this.onSaveOverride,
+    this.coachLinksOverride,
+  });
 
   @override
   ConsumerState<V1SimpleProfileView> createState() =>
@@ -103,7 +116,7 @@ class _V1SimpleProfileViewState extends ConsumerState<V1SimpleProfileView> {
   Future<void> _loadFromFirestore() async {
     try {
       final uid = FirebaseAuth.instance.currentUser?.uid;
-      if (uid == null) return;
+      if (uid == null && widget.onSaveOverride == null) return;
       final doc =
           await FirebaseFirestore.instance.collection('users').doc(uid).get();
       if (doc.exists && mounted) {
@@ -182,7 +195,7 @@ class _V1SimpleProfileViewState extends ConsumerState<V1SimpleProfileView> {
     try {
       uid = FirebaseAuth.instance.currentUser?.uid;
     } catch (_) {}
-    if (uid == null) return;
+    if (uid == null && widget.onSaveOverride == null) return;
 
     setState(() => _isSaving = true);
     try {
@@ -192,7 +205,7 @@ class _V1SimpleProfileViewState extends ConsumerState<V1SimpleProfileView> {
       final heightCm = int.tryParse(_heightCtrl.text.trim());
       final weightKg = double.tryParse(_weightCtrl.text.trim());
 
-      await FirebaseFirestore.instance.collection('users').doc(uid).set({
+      final payload = <String, dynamic>{
         'profile': {
           'displayName': displayName,
           'firstName': firstName,
@@ -215,9 +228,17 @@ class _V1SimpleProfileViewState extends ConsumerState<V1SimpleProfileView> {
         'settings': {
           'countryCode': countryCode,
         },
-      }, SetOptions(merge: true),);
+      };
 
-      ref.invalidate(userDocumentProvider);
+      if (widget.onSaveOverride != null) {
+        await widget.onSaveOverride!(payload);
+      } else {
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(uid)
+            .set(payload, SetOptions(merge: true));
+        ref.invalidate(userDocumentProvider);
+      }
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -648,7 +669,27 @@ class _V1SimpleProfileViewState extends ConsumerState<V1SimpleProfileView> {
                         ),
                       ],
                     ),
+                    const SizedBox(height: 16),
+
+                    // 4. Coach-Verbindungs-Sektion für Athleten (Einladungscode / Anfrage / Trennen)
+                    V1AthleteCoachConnectionCard(
+                      lang: lang,
+                      linksOverride: widget.coachLinksOverride,
+                    ),
                     const SizedBox(height: 20),
+                  ] else ...[
+                    // Direkter Einstellungs-Zugang für Coaches in Tab 3 (Profil)
+                    OutlinedButton.icon(
+                      key: const Key('v1_coach_profile_settings_button'),
+                      onPressed: () => context.push('/settings'),
+                      icon: const Icon(Icons.settings_outlined),
+                      label: Text(
+                        isEn
+                            ? 'Settings (Language, Theme, Password, Logout)'
+                            : 'Einstellungen (Sprache, Design, Passwort, Logout)',
+                      ),
+                    ),
+                    const SizedBox(height: 16),
                   ],
 
                   // Speichern-Button

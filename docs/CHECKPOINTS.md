@@ -26,6 +26,26 @@
 
 ## Einträge
 
+### [Phase 44] V1.0.0 Coach-3-Tab-Ansicht, Coach-Athleten-Verbindung, `.FIT`-Download & Security-Rules-Deploy · RISIKO-HOCH
+- **Branch / Tag:** `feature/phase-44-coach-view-connection-download` · `v0.44.0`
+- **Umgesetzte Module & Backend-Deployment:**
+  - `lib/features/profile/widgets/v1_simple_profile_view.dart` & `lib/features/profile/widgets/v1_athlete_coach_connection_card.dart`: Editierbares „Profil Einfach“ (inkl. `onSaveOverride` & direktem Einstellungs-Button für Coaches) sowie Sektion **„Mein Coach / Verbindung mit Coach“** (Code einlösen, eingehende Anfrage prüfen, nicht vorangekreuzte DSGVO-Checkbox, 1-Klick-Trennen).
+  - `lib/features/coach_link/models/v1_coach_athlete_link.dart` & `lib/features/coach_link/providers/v1_coach_connection_provider.dart`: Modularer Service & Echtzeit-Streams (`v1CoachAthletesStreamProvider`, `v1AthleteCoachLinksStreamProvider`, `v1CoachTabIndexProvider`, `v1SelectedCoachAthleteIdProvider`).
+  - `lib/features/coach_link/screens/v1_coach_athletes_tab.dart`, `lib/features/coach_link/screens/v1_coach_calendar_tab.dart`, `lib/features/coach_link/screens/trainer_athletes_tab_screen.dart`, `lib/features/dashboard/screens/dashboard_screen.dart` & `lib/features/calendar/screens/calendar_screen.dart`: Aufgeräumte 3-Tab-Coach-Navigation (**Athleten**, **Kalender**, **Profil**), Athleten-Auswahlleiste, `ProviderScope`-Override auf `viewedAthleteIdProvider` für `FitDownloadService` (`users/{athleteId}/rawActivities/{activityId}.fit`).
+  - `firestore.rules` (über `firestore-rules-author`): `users/{userId}` `allow read` für aktiv verbundene Coaches/Athleten erweitert; `activities/{activityId}` `allow read` auf `isCoachForActivities(resource.data.athleteId)` umgestellt.
+  - `functions/src/coach.ts`, `functions/src/index.ts`, `functions/package.json` (Node.js 22): `requestAthleteLinkByEmail` & `respondToCoachLinkRequest` ergänzt und zusammen mit `firestore:rules` & `storage` nach `orbit-app-mvp` (`europe-west3`) deployed.
+  - Neue Testsuite: `test/phase44_coach_view_connection_and_download_v1_test.dart` (8/8 Tests bestanden).
+- **Pre-Merge-Gate (`bash scripts/check_phase_ready.sh`):**
+  - `flutter analyze`: `No issues found!` (`0 Errors, 0 Warnings, 0 Infos`)
+  - `npm --prefix functions run build && npm --prefix functions run lint`: `0 Errors`
+  - Deutsche Doku-Kommentar-Prüfung: `100 %` bestanden
+  - `flutter test`: **`247/247` Tests bestanden** (`All tests passed!`)
+- **Hardware-Verifikation Google Pixel 10 Pro (`58251FDCR00EQ2`):**
+  - Release-APK gebaut (`build/app/outputs/flutter-apk/app-release.apk`, `66.7MB`) und per `adb install -r` installiert (`Success`).
+  - Live-Screenshot erstellt & visuell geprüft:
+    - `docs/beta/screenshots/phase44_pixel10_athlete_coach_connection.png` („Profil Einfach“ mit „Mein Coach / Verbindung mit Coach“, Einladungscode-Eingabe & deaktiviertem Button bis zur DSGVO-Bestätigung).
+  - Hinweis gemäß `AGENTS.md` Regel 2: Live-UI-Screenshots der Coach-3-Tab-Ansicht (`Athleten` / `Kalender`) im Produktiv-Login auf dem Gerät `[ERFORDERT COACH-ACCOUNT-LOGIN AUF TESTGERÄT]` (da auf `58251FDCR00EQ2` die aktive Garmin-Athletensitzung angemeldet bleibt); funktional durch 8 Widget-Tests und Live-Rules/Functions-Deploy nach `europe-west3` verifiziert.
+
 ### [Phase 43] Schlankes V1.0.0 Onboarding (`V1SimpleOnboardingWizard`), „Profil Einfach“ (`V1SimpleProfileView`), Auth-Flows (Passwort-Reset & E-Mail-Verifikation) · RISIKO-HOCH
 - **Branch / Tag:** `feature/phase-43-onboarding-simple-profile-auth` · `v0.43.0`
 - **Umgesetzte Module & Konsistenz:**

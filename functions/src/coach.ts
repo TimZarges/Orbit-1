@@ -354,3 +354,187 @@ export const revokeLink = onCall(async (request) => {
   return { success: true };
 });
 
+/**
+ * Sendet eine Verbindungsanfrage eines Coaches an einen Athleten per E-Mail-Adresse.
+ *
+ * @param request - Enthält `email` des gewünschten Athleten.
+ * @returns Objekt mit `success`, `linkId`, `athleteId`, `athleteName` und `status: 'PENDING'`.
+ */
+export const requestAthleteLinkByEmail = onCall(async (request) => {
+  const coachUid = request.auth?.uid;
+  if (!coachUid) {
+    throw new HttpsError("unauthenticated", "Must be logged in.");
+  }
+
+  const db = admin.firestore();
+  const coachDoc = await db.collection("users").doc(coachUid).get();
+  const coachData = coachDoc.data();
+  if (coachData?.role !== "TRAINER") {
+    throw new HttpsError("permission-denied", "Only trainers can send athlete link requests.");
+  }
+
+  const rawEmail = request.data?.email;
+  const normalizedEmail = typeof rawEmail === "string" ? rawEmail.trim().toLowerCase() : "";
+  if (!normalizedEmail || !normalizedEmail.includes("@")) {
+    throw new HttpsError("invalid-argument", "A valid athlete email is required.");
+  }
+
+  // Athleten-Dokument anhand der E-Mail-Adresse suchen
+  const athleteSnap = await db.collection("users")
+    .where("email", "==", normalizedEmail)
+    .limit(1)
+    .get();
+
+  if (athleteSnap.empty) {
+    throw new HttpsError("not-found", "No athlete found with this email address.");
+  }
+
+  const athleteDoc = athleteSnap.docs[0];
+  const athleteId = athleteDoc.id;
+  const athleteData = athleteDoc.data();
+
+  if (athleteId === coachUid) {
+    throw new HttpsError("invalid-argument", "Cannot link with yourself.");
+  }
+  if (athleteData.role !== "ATHLETE") {
+    throw new HttpsError("failed-precondition", "Target user is not an athlete.");
+  }
+
+  const linkId = `${athleteId}_${coachUid}`;
+  const linkRef = db.collection("coachLinks").doc(linkId);
+  const existingLink = await linkRef.get();
+  if (existingLink.exists && existingLink.data()?.status === "ACTIVE") {
+    throw new HttpsError("already-exists", "Athlete is already connected with this coach.");
+  }
+
+  const coachName =
+    coachData?.profile?.displayName ||
+    [coachData?.profile?.firstName, coachData?.profile?.lastName].filter(Boolean).join(" ").trim() ||
+    coachData?.email ||
+    "Coach";
+  const athleteName =
+    athleteData?.profile?.displayName ||
+    [athleteData?.profile?.firstName, athleteData?.profile?.lastName].filter(Boolean).join(" ").trim() ||
+    athleteData?.email ||
+    "Athlet";
+
+  // Verbindungsanfrage im Status PENDING speichern (ohne Datenfreigabe bis zur DSGVO-Zustimmung)
+  await linkRef.set({
+    athleteId,
+    coachId: coachUid,
+    status: "PENDING",
+    requestedBy: coachUid,
+    coachName,
+    coachEmail: coachData?.email ?? "",
+    athleteName,
+    athleteEmail: athleteData?.email ?? normalizedEmail,
+    permissions: {
+      activities: false,
+      calendar: false,
+      health: false,
+      bodyWeightAndNotes: false,
+    },
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+  }, { merge: true });
+
+  return {
+    success: true,
+    linkId,
+    athleteId,
+    athleteName,
+    status: "PENDING",
+  };
+});
+
+/**
+ * Beantwortet eine eingehende Coach-Verbindungsanfrage durch den Athleten.
+ * Erfordert beim Akzeptieren zwingend die ausdrückliche DSGVO-Datenfreigabe (`gdprConsent === true`).
+ *
+ * @param request - Enthält `linkId`, `accept` (boolean) und bei Annahme `gdprConsent` (boolean).
+ * @returns Objekt mit `success` und neuem `status`.
+ */
+export const respondToCoachLinkRequest = onCall(async (request) => {
+  const uid = request.auth?.uid;
+  if (!uid) {
+    throw new HttpsError("unauthenticated", "Must be logged in.");
+  }
+
+  const { linkId, accept, gdprConsent } = request.data || {};
+  if (typeof linkId !== "string" || !linkId.trim() || typeof accept !== "boolean") {
+    throw new HttpsError("invalid-argument", "linkId and accept are required.");
+  }
+
+  const db = admin.firestore();
+  const linkRef = db.collection("coachLinks").doc(linkId.trim());
+  const linkDoc = await linkRef.get();
+  if (!linkDoc.exists) {
+    throw new HttpsError("not-found", "Link request not found.");
+  }
+
+  const linkData = linkDoc.data()!;
+  if (linkData.athleteId !== uid) {
+    throw new HttpsError("permission-denied", "Only the athlete can respond to this request.");
+  }
+
+  const coachId = linkData.coachId as string;
+  if (!accept) {
+    await linkRef.update({
+      status: "REVOKED",
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+    return { success: true, status: "REVOKED" };
+  }
+
+  if (gdprConsent !== true) {
+    throw new HttpsError("invalid-argument", "Explicit GDPR consent is required to accept.");
+  }
+
+  const initialPermissions = {
+    calendar: true,
+    activities: true,
+    health: false,
+    bodyWeightAndNotes: false,
+  };
+
+  await linkRef.update({
+    status: "ACTIVE",
+    permissions: initialPermissions,
+    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  // DSGVO-Einwilligung und Coach-Zuordnung am Athletenprofil dokumentieren
+  const userRef = db.collection("users").doc(uid);
+  await userRef.set({
+    coachId,
+    consents: {
+      coachSharing: {
+        at: admin.firestore.FieldValue.serverTimestamp(),
+        version: "v1",
+        coachId,
+        permissions: initialPermissions,
+      },
+    },
+  }, { merge: true });
+
+  await userRef.collection("consents").add({
+    type: "COACH_LINK_ACCEPTED",
+    coachId,
+    permissions: initialPermissions,
+    version: "v1",
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  // Bestehende Aktivitäten und Trainingspläne für den neuen Coach freischalten
+  await setCoachIdOnQuery(
+    db.collection("activities").where("athleteId", "==", uid),
+    coachId
+  );
+  await setCoachIdOnQuery(
+    db.collection("plannedWorkouts").where("athleteId", "==", uid),
+    coachId
+  );
+
+  return { success: true, status: "ACTIVE", coachId };
+});
+

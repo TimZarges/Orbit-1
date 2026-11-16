@@ -298,8 +298,23 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // Benutzerprofile: Besitzer hat Vollzugriff; verbundene Coaches (ACTIVE) dürfen Athletenprofile
+    // für die Athletenliste lesen, und Athleten dürfen Profile verbundener/anfragender Coaches (ACTIVE/PENDING) sehen.
     match /users/{userId} {
-      allow read: if isOwner(userId);
+      allow read: if isOwner(userId) || (
+        isAuthenticated() && (
+          // Coach mit aktiver Verknüpfung darf das Profil seines verbundenen Athleten lesen (Name, E-Mail, Sportarten)
+          (
+            exists(/databases/$(database)/documents/coachLinks/$(userId + '_' + request.auth.uid)) &&
+            get(/databases/$(database)/documents/coachLinks/$(userId + '_' + request.auth.uid)).data.status == 'ACTIVE'
+          ) ||
+          // Athlet darf das Profil seines verbundenen oder anfragenden Coaches lesen (Name/E-Mail im „Profil Einfach“)
+          (
+            exists(/databases/$(database)/documents/coachLinks/$(request.auth.uid + '_' + userId)) &&
+            get(/databases/$(database)/documents/coachLinks/$(request.auth.uid + '_' + userId)).data.status in ['ACTIVE', 'PENDING']
+          )
+        )
+      );
       allow create: if isOwner(userId) && isValidUserCreate(request.resource.data);
       allow update: if isOwner(userId) && isValidUserUpdate();
       
@@ -398,10 +413,12 @@ service cloud.firestore {
       allow write: if false; // Only backend can write
     }
 
+    // Aktivitäten: Zugriff für den Athleten selbst sowie für autorisierte Coaches über coachLinks (auch bei älteren Aktivitäten ohne coachId-Feld).
+    // Nach Widerruf der Verknüpfung (status == 'REVOKED') sperrt isCoachForActivities den Zugriff sofort.
     match /activities/{activityId} {
       allow read: if isAuthenticated() && (
         resource.data.athleteId == request.auth.uid ||
-        (resource.data.coachId == request.auth.uid && isCoachForActivities(resource.data.athleteId))
+        isCoachForActivities(resource.data.athleteId)
       );
       allow create: if isAuthenticated() && request.resource.data.athleteId == request.auth.uid; // Prototype
       allow update: if isAuthenticated() && resource.data.athleteId == request.auth.uid && request.resource.data.athleteId == resource.data.athleteId; // Prototype, immutable athleteId

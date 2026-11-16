@@ -3,9 +3,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../../../core/config/release_config.dart';
 import '../../../core/design/app_colors.dart';
 import '../../../core/design/app_typography.dart';
 import '../../../core/design/app_spacing.dart';
+import 'v1_coach_athletes_tab.dart';
 import '../models/coach_dashboard_athlete.dart';
 import '../models/coach_view_preference.dart';
 import '../providers/coach_dashboard_provider.dart';
@@ -109,6 +111,14 @@ class _TrainerAthletesTabScreenState
 
   @override
   Widget build(BuildContext context) {
+    // Im V1.0.0-Standardbetrieb ausschließlich die aufgeräumte V1-Coach-Ansicht rendern
+    final isV2Enabled = ref.watch(
+      releaseConfigProvider.select((cfg) => cfg.isV2Enabled),
+    );
+    if (!isV2Enabled) {
+      return const V1CoachAthletesTab();
+    }
+
     final coachId = FirebaseAuth.instance.currentUser?.uid ?? 'coach_demo';
     final athletes = ref.watch(coachFilteredAthletesProvider(coachId));
     final selectedIds = ref.watch(coachSelectedAthleteIdsProvider);

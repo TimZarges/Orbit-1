@@ -24,6 +24,8 @@ export {
   redeemInvite,
   updatePermissions,
   revokeLink,
+  requestAthleteLinkByEmail,
+  respondToCoachLinkRequest,
 } from "./coach";
 export {
   onCoachLinkChanged,
