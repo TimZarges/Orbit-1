@@ -22,6 +22,7 @@ import '../../activities/providers/activity_upload_provider.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../auth/widgets/password_criteria_checklist.dart';
 import '../../integrations/providers/garmin_provider.dart';
+import '../../legal/widgets/legal_documents_sheet.dart';
 import '../../settings/providers/settings_provider.dart';
 import 'triathlon_combined_icon.dart';
 
@@ -223,7 +224,9 @@ class _V1SimpleOnboardingWizardState
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(
-          isEn ? 'ORBIT Setup (Step ${_step + 1}/3)' : 'ORBIT Einrichtung (${_step + 1}/3)',
+          isEn
+              ? 'ORBIT Setup (Step ${_step + 1}/3)'
+              : 'ORBIT Einrichtung (${_step + 1}/3)',
         ),
         actions: [
           TextButton(
@@ -425,11 +428,15 @@ class _V1SimpleOnboardingWizardState
                 segments: [
                   ButtonSegment(
                     value: ThemeMode.light,
-                    label: Text(AppStrings.themeModeLabel(ThemeMode.light, lang: lang)),
+                    label: Text(
+                      AppStrings.themeModeLabel(ThemeMode.light, lang: lang),
+                    ),
                   ),
                   ButtonSegment(
                     value: ThemeMode.dark,
-                    label: Text(AppStrings.themeModeLabel(ThemeMode.dark, lang: lang)),
+                    label: Text(
+                      AppStrings.themeModeLabel(ThemeMode.dark, lang: lang),
+                    ),
                   ),
                   ButtonSegment(
                     value: ThemeMode.system,
@@ -469,13 +476,17 @@ class _V1SimpleOnboardingWizardState
                   ),
                   DropdownButton<String>(
                     key: const Key('v1_onboarding_country_dropdown'),
-                    value: _countries.contains(countryCode) ? countryCode : 'DE',
+                    value:
+                        _countries.contains(countryCode) ? countryCode : 'DE',
                     items: _countries
                         .map(
                           (c) => DropdownMenuItem<String>(
                             value: c,
                             child: Text(
-                              CountryDateTimeFormatter.countryLabel(c, lang: lang),
+                              CountryDateTimeFormatter.countryLabel(
+                                c,
+                                lang: lang,
+                              ),
                             ),
                           ),
                         )
@@ -587,7 +598,9 @@ class _V1SimpleOnboardingWizardState
                               _birthDate!,
                               countryCode: countryCode,
                             )
-                          : (isEn ? 'Select date (dd.mm.yy)' : 'Datum wählen (dd.mm.yy)'),
+                          : (isEn
+                              ? 'Select date (dd.mm.yy)'
+                              : 'Datum wählen (dd.mm.yy)'),
                       style: TextStyle(
                         color: _birthDate != null ? primaryText : secondaryText,
                       ),
@@ -641,8 +654,9 @@ class _V1SimpleOnboardingWizardState
                       child: TextField(
                         key: const Key('v1_onboarding_weight_field'),
                         controller: _weightCtrl,
-                        keyboardType:
-                            const TextInputType.numberWithOptions(decimal: true),
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
                         decoration: InputDecoration(
                           labelText: isEn ? 'Weight (kg)' : 'Gewicht (kg)',
                         ),
@@ -754,7 +768,9 @@ class _V1SimpleOnboardingWizardState
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Text(
-                  isEn ? 'Training Data (optional)' : 'Trainingsdaten (optional)',
+                  isEn
+                      ? 'Training Data (optional)'
+                      : 'Trainingsdaten (optional)',
                   style: AppTypography.title.copyWith(
                     fontSize: 16,
                     color: primaryText,
@@ -780,14 +796,17 @@ class _V1SimpleOnboardingWizardState
                   },
                   icon: const Icon(Icons.sync_rounded),
                   label: Text(
-                    isEn ? 'Connect Garmin Connect' : 'Mit Garmin Connect verbinden',
+                    isEn
+                        ? 'Connect Garmin Connect'
+                        : 'Mit Garmin Connect verbinden',
                   ),
                 ),
                 const SizedBox(height: 10),
                 ElevatedButton.icon(
                   key: const Key('v1_onboarding_fit_upload_button'),
                   onPressed: () async {
-                    final files = await FilePicker.pickFiles(type: FileType.any);
+                    final files =
+                        await FilePicker.pickFiles(type: FileType.any);
                     if (files.isEmpty) return;
                     final valid = files.where((f) {
                       final n = f.name.toLowerCase();
@@ -857,7 +876,8 @@ class _V1SimpleOnboardingWizardState
                   obscureText: true,
                   onChanged: (_) => setState(() {}),
                   decoration: InputDecoration(
-                    labelText: isEn ? 'Confirm Password' : 'Passwort wiederholen',
+                    labelText:
+                        isEn ? 'Confirm Password' : 'Passwort wiederholen',
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -927,6 +947,37 @@ class _V1SimpleOnboardingWizardState
                   });
                 },
               ),
+              Wrap(
+                spacing: 8,
+                children: [
+                  TextButton.icon(
+                    key: const Key('v1_onboarding_privacy_link'),
+                    onPressed: () => LegalDocumentsSheet.show(
+                      context,
+                      initialTab: LegalDocumentTab.privacy,
+                      lang: lang,
+                    ),
+                    icon: const Icon(Icons.privacy_tip_outlined, size: 16),
+                    label: Text(
+                      isEn ? 'Privacy Policy (GDPR)' : 'Datenschutzerklärung',
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                  ),
+                  TextButton.icon(
+                    key: const Key('v1_onboarding_imprint_link'),
+                    onPressed: () => LegalDocumentsSheet.show(
+                      context,
+                      initialTab: LegalDocumentTab.imprint,
+                      lang: lang,
+                    ),
+                    icon: const Icon(Icons.business_outlined, size: 16),
+                    label: Text(
+                      isEn ? 'Legal Notice' : 'Impressum',
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                  ),
+                ],
+              ),
               if (_showGdprWarning && !_gdprConsent)
                 Padding(
                   padding: const EdgeInsets.only(top: 6),
@@ -968,9 +1019,7 @@ class _V1SimpleOnboardingWizardState
             Expanded(
               child: OutlinedButton(
                 key: const Key('v1_onboarding_back_button'),
-                onPressed: _isSubmitting
-                    ? null
-                    : () => setState(() => _step--),
+                onPressed: _isSubmitting ? null : () => setState(() => _step--),
                 child: Text(isEn ? 'Back' : 'Zurück'),
               ),
             ),
@@ -1005,7 +1054,9 @@ class _V1SimpleOnboardingWizardState
                     )
                   : Text(
                       isLast
-                          ? (isEn ? 'Complete Setup' : 'Einrichtung abschließen')
+                          ? (isEn
+                              ? 'Complete Setup'
+                              : 'Einrichtung abschließen')
                           : (isEn ? 'Continue' : 'Weiter'),
                     ),
             ),
@@ -1144,18 +1195,19 @@ class _V1SimpleOnboardingWizardState
 
       // Direkte Firestore-Persistenz für sofortige UI-Verfügbarkeit
       if (uid != null) {
-        await FirebaseFirestore.instance.collection('users').doc(uid).set({
-          'role': result.role,
-          'onboardingCompleted': true,
-          'profile': profilePayload,
-          'settings': {
-            'language': settings.languageCode,
-            'countryCode': result.countryCode,
-            'themeMode': settings.themeMode.name,
+        await FirebaseFirestore.instance.collection('users').doc(uid).set(
+          {
+            'role': result.role,
+            'onboardingCompleted': true,
+            'profile': profilePayload,
+            'settings': {
+              'language': settings.languageCode,
+              'countryCode': result.countryCode,
+              'themeMode': settings.themeMode.name,
+            },
           },
-        },
-        SetOptions(merge: true),
-      );
+          SetOptions(merge: true),
+        );
 
         // Optionale .FIT-Dateien direkt hochladen
         if (_stagedFiles.isNotEmpty) {

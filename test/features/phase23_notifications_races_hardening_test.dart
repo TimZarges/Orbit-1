@@ -172,14 +172,31 @@ void main() {
         (tester) async {
       final points = [
         const FitnessFatiguePoint(
-            date: '2026-05-20', ctl: 60, atl: 65, tsb: -5,),
+          date: '2026-05-20',
+          ctl: 60,
+          atl: 65,
+          tsb: -5,
+        ),
         const FitnessFatiguePoint(date: '2026-05-21', ctl: 60, atl: 55, tsb: 5),
         const FitnessFatiguePoint(
-            date: '2026-05-22', ctl: 60, atl: 48, tsb: 12,),
+          date: '2026-05-22',
+          ctl: 60,
+          atl: 48,
+          tsb: 12,
+        ),
         const FitnessFatiguePoint(
-            date: '2026-05-23', ctl: 60, atl: 42, tsb: 18,),
+          date: '2026-05-23',
+          ctl: 60,
+          atl: 42,
+          tsb: 18,
+        ),
         const FitnessFatiguePoint(
-            date: '2026-05-24', ctl: 60, atl: 38, tsb: 22, isProjection: true,),
+          date: '2026-05-24',
+          ctl: 60,
+          atl: 38,
+          tsb: 22,
+          isProjection: true,
+        ),
       ];
 
       const race = RaceGoal(
@@ -242,9 +259,11 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            appConfigStreamProvider.overrideWith((ref) => Stream.value(
-                  const AppConfig(minRequiredBuild: 1, latestBuild: 1),
-                ),),
+            appConfigStreamProvider.overrideWith(
+              (ref) => Stream.value(
+                const AppConfig(minRequiredBuild: 1, latestBuild: 1),
+              ),
+            ),
           ],
           child: const VersionGateWrapper(
             child: MaterialApp(
@@ -265,12 +284,14 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            appConfigStreamProvider.overrideWith((ref) => Stream.value(
-                  const AppConfig(
-                    minRequiredBuild: 99, // Höher als AppInfo.buildNumber (1)
-                    latestBuild: 100,
-                  ),
-                ),),
+            appConfigStreamProvider.overrideWith(
+              (ref) => Stream.value(
+                const AppConfig(
+                  minRequiredBuild: 99, // Höher als AppInfo.buildNumber (1)
+                  latestBuild: 100,
+                ),
+              ),
+            ),
           ],
           child: const VersionGateWrapper(
             child: MaterialApp(
@@ -295,11 +316,13 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            appConfigStreamProvider.overrideWith((ref) => Stream.value(
-                  const AppConfig(
-                    maintenanceMode: true,
-                  ),
-                ),),
+            appConfigStreamProvider.overrideWith(
+              (ref) => Stream.value(
+                const AppConfig(
+                  maintenanceMode: true,
+                ),
+              ),
+            ),
           ],
           child: const VersionGateWrapper(
             child: MaterialApp(
@@ -323,7 +346,8 @@ void main() {
       // Test error sanitization
       CrashReporter.recordError(
         Exception(
-            'Network failure for user athlete@orbit.training with Bearer secret_123',),
+          'Network failure for user athlete@orbit.training with Bearer secret_123',
+        ),
         StackTrace.current,
         reason: 'Contacting coach coach@club.de',
       );
@@ -344,13 +368,13 @@ void main() {
       await tester.pumpAndSettle();
 
       await tester.scrollUntilVisible(
-        find.text('ORBIT v1.0.0 (Build 1) • Closed Beta'),
+        find.text('ORBIT v1.0.0 (Build 1)'),
         200,
         scrollable: find.byType(Scrollable).first,
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('ORBIT v1.0.0 (Build 1) • Closed Beta'), findsOneWidget);
+      expect(find.text('ORBIT v1.0.0 (Build 1)'), findsOneWidget);
       expect(find.text('Server-Region: ${AppInfo.region}'), findsOneWidget);
     });
   });

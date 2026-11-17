@@ -26,6 +26,22 @@
 
 ## Einträge
 
+### [Phase 46] Gesetzliche Anforderungen DE/EU, Öffentliche Webseite + Web-App, DSGVO Art. 17 Kontolöschung & V1.0.0 Gold-Release · RISIKO-HOCH
+- **Branch / Tag / Release-Branch:** `feature/phase-46-legal-gdpr-release-v1` · `v1.0.0` · `release/v1.0.0`
+- **Öffentliche Webseite (`/`) & HTML-Rechtstexte:**
+  - `public/index.html` bleibt standalone unter `/`; Closed-Beta-Texte durch `ORBIT V1.0.0 · RELEASE` und DE/EN-Header-/Hero-Buttons (**Login** -> `/app/#/login`, **Registrieren** -> `/app/#/register`) ersetzt; Flutter Web strikt unter `public/app/` (`--base-href /app/`).
+  - `public/imprint.html` (`public/impressum/index.html`), `public/privacy.html` (`public/privacy/index.html`) & `public/delete-account.html` vollständig auf `ORBIT Performance / ORBIT Training` (`ORBIT Endurance Technologies`), `Tim Zarges`, `support@orbit-training.app`, `privacy@orbit-training.app`, Art. 9/13/14/17 DSGVO, § 5 DDG, Frankfurt am Main (`europe-west3`), Garmin OAuth & Coach-`.FIT`-Freigabe in DE/EN + Light/Dark aktualisiert.
+- **Unwiderrufliche Kontolöschung (Art. 17 DSGVO) & 1-Klick-Rechtsdokumente in App & Web:**
+  - `functions/src/auth.ts`: `deleteAccount` (`europe-west3`, live deployed) entfernt gebündelt `coachLinks` (`athleteId` & `coachId`), bereinigt `authorizedCoachIds` & `coachId` verbundener Athleten, löscht `coachDashboard`, `invites`, `activities`, `plannedWorkouts`, `garminUsers`, `betaFeedback`, `chats` (`recursiveDelete`), `users/{uid}` (`recursiveDelete`), Cloud Storage `users/{uid}/` (`deleteFiles({ prefix, force: true })`) und `admin.auth().deleteUser(uid)`.
+  - `lib/features/auth/services/account_deletion_service.dart`, `lib/features/auth/widgets/two_step_account_deletion_dialog.dart`, `lib/features/legal/widgets/legal_documents_sheet.dart`: Zweistufiger Löschdialog (Schritt 1 Datenliste -> Schritt 2 Checkbox + endgültig löschen), 1-Klick-Rechtsansicht in DE & EN (Light & Dark), angebunden in `LoginScreen`, `V1SimpleOnboardingWizard`, `V1SimpleProfileView`, `SettingsScreen` & `PrivacySettingsSheet`; `AppInfo` auf `v1.0.0 (Build 1)` (`Release`) bereinigt.
+- **Live-E2E-Verifikation (Safari + Pixel 10 Pro `58251FDCR00EQ2`):**
+  - Hosting-Pfade `""`, `/privacy`, `/imprint`, `/delete-account`, `/app/` liefern HTTP `200`; Klick auf Header-`Login` in Safari navigiert in `/app/` (`phase46_safari_website_hero.png`), `LegalDocumentsSheet` öffnet per 1 Klick (`phase46_safari_legal_docs.png`, `phase46_pixel10_legal_sheet.png`).
+  - Test-Coach-Konto `coach.p45.e2e@orbit.training` (mit realer Verbindung zu `ORBIT Athlet` auf Pixel 10 Pro) über den 2-Stufen-Dialog in Safari unwiderruflich gelöscht (`phase46_safari_delete_account_dialog.png` -> Weiterleitung `/app/#/login`, erneuter Login mit `OrbitCoach45!` fehlgeschlagen: *„E-Mail-Adresse oder Passwort ist ungültig.“*). Auf dem Pixel 10 Pro (`phase46_pixel10_v1_profile_legal.png` -> `phase46_pixel10_after_coach_deletion.png`) verschwand die Verbindung `Tim Coach`; das echte Athletenkonto mit Garmin-Daten blieb vollständig geschützt.
+- **Qualitäts-Gate & Testergebnisse:**
+  - `bash scripts/check_phase_ready.sh`: `flutter analyze` `0 Errors / 0 Warnings / 0 Infos`; `npm --prefix functions run build && lint`: `0 Errors`; `100 %` deutsche Doku-Kommentare; `flutter test`: **`264/264` Tests bestanden**.
+  - Emulator-Backend/Rules-Suite (`npx firebase-tools emulators:exec --only firestore,storage "npm --prefix functions test"`): **`12/12` Suites (`110/110` Tests) bestanden**.
+  - `node -e "console.log(Object.keys(require('./functions/lib/index.js')))"`: Alle 35 Cloud Functions inkl. `deleteAccount`, `downloadActivityFit` & `revokeLink` sauber exportiert.
+
 ### [Phase 45] Web-Anwendung (Flutter Web), Responsive `NavigationRail`, Web-`.FIT`-Upload/Download & Echter E2E Coach-Athlet-Beweis · RISIKO-HOCH
 - **Branch / Tag:** `feature/phase-45-web-app-responsive-and-e2e-coach-verify` · `v0.45.0`
 - **Teil A – Audit & Nachbesserungen Coach-Verbindung / Security / Queries:**

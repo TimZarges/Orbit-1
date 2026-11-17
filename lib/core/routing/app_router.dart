@@ -55,8 +55,11 @@ final goRouterProvider = Provider<GoRouter>((ref) {
 
       final isAuth = authState.valueOrNull != null;
       final isLoggingIn = state.matchedLocation == '/login';
+      final isRegisterPath = state.matchedLocation == '/register' ||
+          (isLoggingIn && state.uri.queryParameters['mode'] == 'register');
 
       if (!isAuth) {
+        if (isRegisterPath) return '/onboarding';
         final isOnboarding = state.matchedLocation == '/onboarding';
         return (isLoggingIn || isOnboarding) ? null : '/login';
       }
@@ -115,6 +118,10 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/login',
         builder: (context, state) => const LoginScreen(),
+      ),
+      GoRoute(
+        path: '/register',
+        builder: (context, state) => const OnboardingScreen(),
       ),
       GoRoute(
         path: '/onboarding',

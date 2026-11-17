@@ -5,15 +5,22 @@ import 'package:url_launcher/url_launcher_string.dart';
 import '../design/app_colors.dart';
 import '../design/app_typography.dart';
 
-/// Statische Metadaten über den aktuellen Client-Build.
+/// Statische Metadaten über den aktuellen V1.0.0-Release-Build.
 class AppInfo {
+  /// Offizielle semantische Versionsnummer (`1.0.0`).
   static const String version = '1.0.0';
+
+  /// Aktuelle Build-Nummer (`1`).
   static const int buildNumber = 1;
-  static const String environment = 'Closed Beta';
+
+  /// Freigabekanal für Produktions-Releases (`Release`).
+  static const String environment = 'Release';
+
+  /// Garantierte EU-Serverregion (`europe-west3`).
   static const String region = 'Deutschland (Frankfurt am Main)';
 
-  static String get fullVersionString =>
-      'v$version (Build $buildNumber) • $environment';
+  /// Formatierte Versionsanzeige für Profil- und Einstellungs-Footer (`v1.0.0 (Build 1)`).
+  static String get fullVersionString => 'v$version (Build $buildNumber)';
 }
 
 /// Remote-Konfiguration für Force-Updates, Wartungsmodus und Feature-Flags.
@@ -115,8 +122,11 @@ class VersionGateWrapper extends ConsumerWidget {
                         color: AppColors.volt,
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.build_outlined,
-                          size: 32, color: AppColors.navy,),
+                      child: const Icon(
+                        Icons.build_outlined,
+                        size: 32,
+                        color: AppColors.navy,
+                      ),
                     ),
                     const SizedBox(height: 24),
                     Text(
@@ -171,8 +181,11 @@ class VersionGateWrapper extends ConsumerWidget {
                         border: Border.all(color: AppColors.volt, width: 2),
                       ),
                       child: const Center(
-                        child: Icon(Icons.system_update_alt_rounded,
-                            size: 36, color: AppColors.volt,),
+                        child: Icon(
+                          Icons.system_update_alt_rounded,
+                          size: 36,
+                          color: AppColors.volt,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 24),
@@ -205,8 +218,10 @@ class VersionGateWrapper extends ConsumerWidget {
                       child: ElevatedButton(
                         onPressed: () async {
                           if (await canLaunchUrlString(config.updateUrl)) {
-                            await launchUrlString(config.updateUrl,
-                                mode: LaunchMode.externalApplication,);
+                            await launchUrlString(
+                              config.updateUrl,
+                              mode: LaunchMode.externalApplication,
+                            );
                           }
                         },
                         style: ElevatedButton.styleFrom(

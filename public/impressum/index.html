@@ -3,17 +3,24 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Impressum — ORBIT</title>
+  <title>Impressum / Legal Notice — ORBIT Performance / ORBIT Training</title>
   <link rel="icon" type="image/png" href="/logo.png">
   <style>
     :root {
       --navy: #001F47;
       --volt: #CDFB17;
-      --bg: #F8FAFC;
+      --bg: #F4F6F9;
       --card: #FFFFFF;
-      --text: #001F47;
+      --text: #0F172A;
       --muted: #475569;
       --border: #E2E8F0;
+    }
+    [data-theme="dark"] {
+      --bg: #0D0F12;
+      --card: #16181D;
+      --text: #F8FAFC;
+      --muted: #94A3B8;
+      --border: rgba(255, 255, 255, 0.10);
     }
     body {
       background: var(--bg);
@@ -21,23 +28,26 @@
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Inter", sans-serif;
       line-height: 1.6;
       margin: 0;
-      padding: 40px 20px;
+      padding: 36px 20px;
+      transition: background 0.2s, color 0.2s;
     }
     .container {
-      max-width: 820px;
+      max-width: 840px;
       margin: 0 auto;
       background: var(--card);
       border: 1px solid var(--border);
       border-radius: 20px;
-      padding: 40px;
-      box-shadow: 0 10px 30px rgba(0, 31, 71, 0.06);
+      padding: 36px;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
     }
     .header-nav {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 32px;
-      padding-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 28px;
+      padding-bottom: 18px;
       border-bottom: 1px solid var(--border);
     }
     .brand-link {
@@ -45,30 +55,54 @@
       align-items: center;
       gap: 12px;
       text-decoration: none;
-      color: var(--navy);
+      color: var(--text);
       font-weight: 900;
       font-size: 18px;
     }
-    .brand-link img {
-      width: 36px;
-      height: 36px;
-      border-radius: 9px;
+    .brand-link img { width: 36px; height: 36px; border-radius: 9px; }
+    .nav-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .pill-btn {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
     }
     .back-btn {
-      background: #001F47;
-      color: var(--volt);
+      background: var(--volt);
+      color: #001F47;
       text-decoration: none;
-      padding: 6px 14px;
+      padding: 7px 14px;
       border-radius: 999px;
       font-size: 12px;
       font-weight: 800;
     }
     h1 { font-size: 28px; font-weight: 900; margin-bottom: 8px; }
-    h2 { font-size: 20px; font-weight: 800; margin-top: 32px; margin-bottom: 12px; color: var(--navy); border-left: 4px solid var(--volt); padding-left: 12px; }
+    h2 {
+      font-size: 19px;
+      font-weight: 800;
+      margin-top: 28px;
+      margin-bottom: 10px;
+      border-left: 4px solid var(--volt);
+      padding-left: 12px;
+    }
     p { color: var(--muted); font-size: 15px; margin-bottom: 12px; }
-    strong { color: var(--navy); }
-    .footer { margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--border); font-size: 13px; color: var(--muted); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
-    .footer a { color: var(--navy); text-decoration: none; font-weight: 700; }
+    a { color: inherit; font-weight: 600; }
+    .footer {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+      font-size: 13px;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
   </style>
 </head>
 <body>
@@ -76,47 +110,100 @@
     <div class="header-nav">
       <a href="/" class="brand-link">
         <img src="/logo.png" alt="ORBIT Logo">
-        <span>ORBIT</span>
+        <span>ORBIT Performance / ORBIT Training</span>
       </a>
-      <a href="/" class="back-btn">← Zurück zur Startseite</a>
+      <div class="nav-actions">
+        <button class="pill-btn" onclick="toggleTheme()">☀️ / 🌙</button>
+        <button class="pill-btn" onclick="toggleLang()" id="lang-btn">EN</button>
+        <a href="/app/#/login" class="pill-btn">ORBIT Web →</a>
+        <a href="/" class="back-btn" id="back-link">← Startseite</a>
+      </div>
     </div>
 
-    <h1>Impressum</h1>
-    <p>Angaben gemäß § 5 DDG (Digitale-Dienste-Gesetz)</p>
+    <div id="content-de">
+      <h1>Impressum</h1>
+      <p>Angaben gemäß § 5 DDG (Digitale-Dienste-Gesetz) und § 18 Abs. 2 MStV</p>
 
-    <h2>Betreiber der Plattform</h2>
-    <p>
-      <strong>ORBIT Endurance Technologies</strong><br>
-      Vertreten durch das Entwicklungs- & Projektteam.<br>
-      E-Mail: <a href="mailto:support@orbit-app.com">support@orbit-app.com</a><br>
-      Web: <a href="https://app.orbit.training">https://app.orbit.training</a>
-    </p>
+      <h2>Marke &amp; Betreiber der Plattform</h2>
+      <p>
+        <strong>ORBIT Performance / ORBIT Training</strong><br>
+        Betreiber: <strong>ORBIT Endurance Technologies</strong><br>
+        Projektleitung &amp; Verantwortlicher: <strong>Tim Zarges</strong><br>
+        Standort: Deutschland (EU)<br>
+        E-Mail Support: <a href="mailto:support@orbit-training.app">support@orbit-training.app</a><br>
+        E-Mail Datenschutz: <a href="mailto:privacy@orbit-training.app">privacy@orbit-training.app</a><br>
+        Web: <a href="https://orbit-app-mvp.web.app/">https://orbit-app-mvp.web.app</a> &middot; <a href="https://app.orbit.training">https://app.orbit.training</a>
+      </p>
 
-    <h2>Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV</h2>
-    <p>
-      ORBIT Projektleitung<br>
-      Kontakt: <a href="mailto:support@orbit-app.com">support@orbit-app.com</a>
-    </p>
+      <h2>Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV</h2>
+      <p>
+        Tim Zarges — ORBIT Performance / ORBIT Training<br>
+        Kontakt: <a href="mailto:support@orbit-training.app">support@orbit-training.app</a>
+      </p>
 
-    <h2>Haftung für Inhalte & Links</h2>
-    <p>
-      Als Diensteanbieter sind wir gemäß § 7 DDG für eigene Inhalte auf diesen Seiten nach den allgemeinen Gesetzen verantwortlich. Nach §§ 8 bis 10 DDG sind wir als Diensteanbieter jedoch nicht verpflichtet, übermittelte oder gespeicherte fremde Informationen zu überwachen.
-    </p>
+      <h2>Haftung für Inhalte &amp; Links</h2>
+      <p>
+        Als Diensteanbieter sind wir gemäß § 7 DDG für eigene Inhalte auf diesen Seiten nach den allgemeinen Gesetzen verantwortlich. Nach §§ 8 bis 10 DDG sind wir als Diensteanbieter jedoch nicht verpflichtet, übermittelte oder gespeicherte fremde Informationen zu überwachen.
+      </p>
 
-    <h2>Wissenschaftlicher & Medizinischer Hinweis</h2>
-    <p>
-      Die auf der ORBIT Plattform bereitgestellten Kennzahlen (wie Critical Power, W'bal, ORBIT Erholungs-Score, Trainingsstress-Scores) dienen ausschließlich sportwissenschaftlichen Trainings- und Informationszwecken von gesunden Ausdauersportlern. 
-      <strong>ORBIT ist kein Medizinprodukt und ersetzt keine ärztliche oder sportmedizinische Untersuchung oder Diagnose.</strong>
-    </p>
+      <h2>Sportwissenschaftlicher &amp; Medizinischer Hinweis</h2>
+      <p>
+        Die in ORBIT (Web &amp; Mobile App) dargestellten Trainingsdaten, Herzfrequenz-, Leistungs- und Distanzmetriken dienen ausschließlich der sportwissenschaftlichen Trainingsdokumentation und Zusammenarbeit zwischen Athleten und Trainern.
+        <strong>ORBIT ist kein Medizinprodukt und ersetzt keine ärztliche oder sportmedizinische Untersuchung oder Diagnose.</strong>
+      </p>
+    </div>
+
+    <div id="content-en" style="display:none;">
+      <h1>Legal Notice (Impressum)</h1>
+      <p>Information pursuant to Section 5 DDG (German Digital Services Act) and Section 18 (2) MStV</p>
+
+      <h2>Brand &amp; Platform Operator</h2>
+      <p>
+        <strong>ORBIT Performance / ORBIT Training</strong><br>
+        Operated by: <strong>ORBIT Endurance Technologies</strong><br>
+        Responsible Representative: <strong>Tim Zarges</strong><br>
+        Location: Germany (European Union)<br>
+        Support Email: <a href="mailto:support@orbit-training.app">support@orbit-training.app</a><br>
+        Privacy Email: <a href="mailto:privacy@orbit-training.app">privacy@orbit-training.app</a><br>
+        Web: <a href="https://orbit-app-mvp.web.app/">https://orbit-app-mvp.web.app</a> &middot; <a href="https://app.orbit.training">https://app.orbit.training</a>
+      </p>
+
+      <h2>Content Responsibility (Section 18 (2) MStV)</h2>
+      <p>
+        Tim Zarges — ORBIT Performance / ORBIT Training<br>
+        Contact: <a href="mailto:support@orbit-training.app">support@orbit-training.app</a>
+      </p>
+
+      <h2>Liability &amp; Medical Disclaimer</h2>
+      <p>
+        Telemetry, heart-rate, power, and workout summaries displayed in ORBIT (Web &amp; Mobile App) are strictly intended for endurance training documentation and athlete-coach collaboration.
+        <strong>ORBIT is not a medical device and does not replace medical or sports-medical diagnosis.</strong>
+      </p>
+    </div>
 
     <div class="footer">
-      <div>&copy; 2026 ORBIT Endurance Technologies. Alle Rechte vorbehalten.</div>
+      <div>&copy; 2026 ORBIT Performance / ORBIT Training (ORBIT Endurance Technologies) · Version 1.0.0</div>
       <div>
-        <a href="/privacy">Datenschutz</a> · 
-        <a href="/help">Hilfe & Lexikon</a> · 
-        <a href="/delete-account">Konto löschen</a>
+        <a href="/privacy.html">Datenschutz / Privacy</a> &middot;
+        <a href="/delete-account.html">Konto löschen / Delete Account</a> &middot;
+        <a href="/app/#/login">ORBIT Web</a>
       </div>
     </div>
   </div>
+
+  <script>
+    function toggleTheme() {
+      const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+    }
+    let isEn = false;
+    function toggleLang() {
+      isEn = !isEn;
+      document.getElementById('content-de').style.display = isEn ? 'none' : 'block';
+      document.getElementById('content-en').style.display = isEn ? 'block' : 'none';
+      document.getElementById('lang-btn').innerText = isEn ? 'DE' : 'EN';
+      document.getElementById('back-link').innerText = isEn ? '← Home' : '← Startseite';
+    }
+  </script>
 </body>
 </html>

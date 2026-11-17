@@ -15,7 +15,9 @@ import '../../../core/localization/app_strings.dart';
 import '../../../core/metrics/term_resolver.dart';
 import '../../../core/utils/country_date_time_formatter.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../auth/widgets/two_step_account_deletion_dialog.dart';
 import '../../beta_feedback/widgets/beta_bug_reporter_sheet.dart';
+import '../../legal/widgets/legal_documents_sheet.dart';
 import '../models/app_settings.dart';
 import '../providers/settings_provider.dart';
 import '../widgets/privacy_settings_sheet.dart';
@@ -280,12 +282,36 @@ class SettingsScreen extends ConsumerWidget {
 
           // 7. Datenschutz (DSGVO Art. 9, 13/14, 17)
           ListTile(
+            key: const Key('settings_privacy_tile'),
             leading: const Icon(Icons.privacy_tip),
             title: Text(AppStrings.settingsPrivacyTitle(lang: lang)),
             subtitle: Text(AppStrings.settingsPrivacySubtitle(lang: lang)),
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
               PrivacySettingsSheet.show(context);
+            },
+          ),
+
+          // 7b. Impressum & Rechtliche Hinweise (1-Klick-Zugang DE/EN)
+          ListTile(
+            key: const Key('settings_legal_imprint_tile'),
+            leading: const Icon(Icons.gavel_outlined),
+            title: Text(
+              isEn
+                  ? 'Legal Notice & Privacy Policy'
+                  : 'Impressum & Datenschutzerklärung',
+            ),
+            subtitle: Text(
+              isEn
+                  ? 'Operator info (§ 5 DDG) & full GDPR transparency'
+                  : 'Anbieterkennzeichnung (§ 5 DDG) & DSGVO-Hinweise',
+            ),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () {
+              LegalDocumentsSheet.show(
+                context,
+                initialTab: LegalDocumentTab.imprint,
+              );
             },
           ),
 
@@ -333,8 +359,10 @@ class SettingsScreen extends ConsumerWidget {
           ),
           ListTile(
             key: const Key('settings_reset_password_email_tile'),
-            leading: const Icon(Icons.mark_email_read_outlined,
-                color: AppColors.volt,),
+            leading: const Icon(
+              Icons.mark_email_read_outlined,
+              color: AppColors.volt,
+            ),
             title: Text(
               isEn
                   ? 'Reset Password (Email Link)'
@@ -346,7 +374,8 @@ class SettingsScreen extends ConsumerWidget {
                   : 'Sicherer Link zum Zurücksetzen an deine E-Mail senden',
             ),
             trailing: const Icon(Icons.chevron_right),
-            onTap: () => _showResetPasswordEmailDialog(context, ref, isEn: isEn),
+            onTap: () =>
+                _showResetPasswordEmailDialog(context, ref, isEn: isEn),
           ),
 
           const Divider(),
@@ -395,6 +424,33 @@ class SettingsScreen extends ConsumerWidget {
               if (confirm == true) {
                 await ref.read(authServiceProvider).signOut();
               }
+            },
+          ),
+
+          const Divider(),
+
+          // 12. Konto & alle Daten unwiderruflich löschen (2-Stufen Art. 17 DSGVO)
+          ListTile(
+            key: const Key('settings_delete_account_tile'),
+            leading: const Icon(
+              Icons.delete_forever_outlined,
+              color: Colors.redAccent,
+            ),
+            title: Text(
+              isEn ? 'Delete Data & Account' : 'Daten & Konto löschen',
+              style: const TextStyle(
+                color: Colors.redAccent,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            subtitle: Text(
+              isEn
+                  ? 'Permanently delete profile, workouts and health data (Art. 17 GDPR)'
+                  : 'Profil, Trainings & Gesundheitsdaten unwiderruflich löschen (Art. 17 DSGVO)',
+            ),
+            trailing: const Icon(Icons.chevron_right, color: Colors.redAccent),
+            onTap: () {
+              TwoStepAccountDeletionDialog.show(context);
             },
           ),
         ],
@@ -450,7 +506,9 @@ class SettingsScreen extends ConsumerWidget {
                       final target = emailCtrl.text.trim();
                       setDialogState(() => isSending = true);
                       try {
-                        await ref.read(authServiceProvider).resetPassword(target);
+                        await ref
+                            .read(authServiceProvider)
+                            .resetPassword(target);
                         if (!context.mounted) return;
                         if (ctx.mounted) Navigator.of(ctx).pop();
                         ScaffoldMessenger.of(context).showSnackBar(

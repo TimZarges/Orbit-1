@@ -36,6 +36,8 @@ void main() {
     // Scroll down to find Abmelden
     final logoutFinder = find.widgetWithText(ListTile, 'Abmelden');
     await tester.scrollUntilVisible(logoutFinder, 200);
+    await tester.ensureVisible(logoutFinder);
+    await tester.pumpAndSettle();
     expect(logoutFinder, findsOneWidget);
 
     // Tap Abmelden
@@ -44,8 +46,10 @@ void main() {
 
     // Verify confirmation dialog
     expect(find.text('Abmelden?'), findsOneWidget);
-    expect(find.text('Möchtest du dich wirklich von ORBIT abmelden?'),
-        findsOneWidget,);
+    expect(
+      find.text('Möchtest du dich wirklich von ORBIT abmelden?'),
+      findsOneWidget,
+    );
 
     // Tap Abbrechen
     await tester.tap(find.text('Abbrechen'));

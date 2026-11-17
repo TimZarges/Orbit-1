@@ -589,24 +589,24 @@
     <div class="header-actions">
       <button class="toggle-pill-btn" onclick="toggleGlobalTheme()">☀️ / 🌙</button>
       <button class="toggle-pill-btn" onclick="toggleGlobalLang()">DE / EN</button>
-      <a href="/app" class="web-login-btn">Web-Login →</a>
+      <a href="/app/#/login" class="toggle-pill-btn" id="nav-login-btn" style="text-decoration:none;">Login</a>
+      <a href="/app/#/register" class="web-login-btn" id="nav-register-btn">Registrieren →</a>
     </div>
   </header>
 
   <!-- Hero Section -->
   <section class="hero-sec">
     <div class="hero-content">
-      <div class="hero-badge">GOOGLE PLAY CLOSED BETA · 31. OKTOBER</div>
+      <div class="hero-badge" id="hero-badge">ORBIT V1.0.0 · RELEASE</div>
       <h1 class="hero-headline" id="hero-title">
         High-End Ausdauertraining & Erholung. <span class="volt-text">Auf Augenhöhe</span> mit deinem Trainer.
       </h1>
       <p class="hero-sub" id="hero-sub">
-        ORBIT vereint Profi-Telemetrie (CP, W′bal, Banister PMC) nach GoldenCheetah-Vorbild mit Whoop-inspirierter 
-        Tagessteuerung und dem partnerschaftlichen Coaching-Erlebnis von MATS.coach.
+        ORBIT vereint Garmin Connect Synchronisation, .FIT-Dateiverwaltung und partnerschaftliches Coaching für Athleten &amp; Trainer — sicher gehostet in Frankfurt am Main.
       </p>
       <div class="hero-cta-group">
-        <a href="#waitlist" class="btn-primary-volt" id="btn-hero-cta">Für geschlossene Beta bewerben →</a>
-        <a href="/help" class="btn-secondary-link">Formeln & Metriken ansehen ↗</a>
+        <a href="/app/#/register" class="btn-primary-volt" id="btn-hero-register">Jetzt kostenlos registrieren →</a>
+        <a href="/app/#/login" class="btn-secondary-link" id="btn-hero-login">Login in ORBIT Web ↗</a>
       </div>
     </div>
 
@@ -832,18 +832,18 @@
       <div class="footer-links-col">
         <h5>Plattform</h5>
         <ul>
-          <li><a href="/app">Web-Cockpit (Login)</a></li>
+          <li><a href="/app/#/login">ORBIT Web – Login</a></li>
+          <li><a href="/app/#/register">ORBIT Web – Registrieren</a></li>
           <li><a href="/help">Kennzahlen-Lexikon</a></li>
           <li><a href="/brand-showcase.html">Design Showcase</a></li>
         </ul>
       </div>
 
       <div class="footer-links-col">
-        <h5>Kontakt & Support</h5>
+        <h5>Kontakt &amp; Support</h5>
         <ul>
           <li><a href="mailto:support@orbit-training.app">support@orbit-training.app</a></li>
-          <li><a href="mailto:bugs@orbit-training.app">bugs@orbit-training.app</a></li>
-          <li><a href="mailto:feedback@orbit-training.app">feedback@orbit-training.app</a></li>
+          <li><a href="mailto:privacy@orbit-training.app">privacy@orbit-training.app</a></li>
           <li><a href="#contact">Direktkontakt-Formular</a></li>
         </ul>
       </div>
@@ -851,16 +851,16 @@
       <div class="footer-links-col">
         <h5>Rechtliches</h5>
         <ul>
-          <li><a href="/privacy">Datenschutz (Art. 9)</a></li>
-          <li><a href="/imprint">Impressum</a></li>
-          <li><a href="/delete-account">Konto & Daten löschen</a></li>
+          <li><a href="/privacy.html">Datenschutz (DSGVO Art. 9)</a></li>
+          <li><a href="/imprint.html">Impressum (§ 5 DDG)</a></li>
+          <li><a href="/delete-account.html">Konto &amp; Daten löschen (Art. 17)</a></li>
         </ul>
       </div>
     </div>
 
     <div class="footer-bottom">
-      <div>&copy; 2026 ORBIT Endurance Technologies. Serverstandort: Frankfurt am Main (europe-west3).</div>
-      <div>Google Play Closed Beta Launch · 31. Oktober 2026</div>
+      <div>&copy; 2026 ORBIT Performance / ORBIT Training (ORBIT Endurance Technologies). Serverstandort: Frankfurt am Main (europe-west3).</div>
+      <div>ORBIT Version 1.0.0 · Web &amp; Android</div>
     </div>
   </footer>
 
@@ -872,21 +872,27 @@
       document.documentElement.setAttribute('data-theme', next);
     }
 
-    // Language Switcher
+    // Language Switcher (DE & EN)
     let isEn = false;
     function toggleGlobalLang() {
       isEn = !isEn;
       if (isEn) {
+        document.getElementById('nav-login-btn').innerText = 'Sign In';
+        document.getElementById('nav-register-btn').innerText = 'Register →';
         document.getElementById('hero-title').innerHTML = 'High-End Endurance Training & Recovery. <span class="volt-text">Eye-to-Eye</span> with your Coach.';
-        document.getElementById('hero-sub').innerText = 'ORBIT combines pro telemetry (CP, W′bal, Banister PMC) inspired by GoldenCheetah with daily Whoop-style recovery guidance and the human coaching experience of MATS.coach.';
-        document.getElementById('btn-hero-cta').innerText = 'Apply for Closed Beta →';
+        document.getElementById('hero-sub').innerText = 'ORBIT combines Garmin Connect sync, .FIT file management, and athlete-coach collaboration — hosted securely in Frankfurt am Main.';
+        document.getElementById('btn-hero-register').innerText = 'Create Free Account →';
+        document.getElementById('btn-hero-login').innerText = 'Sign In to ORBIT Web ↗';
         document.getElementById('features-title').innerText = 'Four Pillars for Peak Endurance Performance';
-        document.getElementById('waitlist-title').innerText = 'Apply for Closed Beta Access';
-        document.getElementById('btn-submit-text').innerText = 'Reserve Closed Beta Spot →';
+        document.getElementById('waitlist-title').innerText = 'Request Access / Beta Updates';
+        document.getElementById('btn-submit-text').innerText = 'Submit Request →';
       } else {
+        document.getElementById('nav-login-btn').innerText = 'Login';
+        document.getElementById('nav-register-btn').innerText = 'Registrieren →';
         document.getElementById('hero-title').innerHTML = 'High-End Ausdauertraining & Erholung. <span class="volt-text">Auf Augenhöhe</span> mit deinem Trainer.';
-        document.getElementById('hero-sub').innerText = 'ORBIT vereint Profi-Telemetrie (CP, W′bal, Banister PMC) nach GoldenCheetah-Vorbild mit Whoop-inspirierter Tagessteuerung und dem partnerschaftlichen Coaching-Erlebnis von MATS.coach.';
-        document.getElementById('btn-hero-cta').innerText = 'Für geschlossene Beta bewerben →';
+        document.getElementById('hero-sub').innerText = 'ORBIT vereint Garmin Connect Synchronisation, .FIT-Dateiverwaltung und partnerschaftliches Coaching für Athleten & Trainer — sicher gehostet in Frankfurt am Main.';
+        document.getElementById('btn-hero-register').innerText = 'Jetzt kostenlos registrieren →';
+        document.getElementById('btn-hero-login').innerText = 'Login in ORBIT Web ↗';
         document.getElementById('features-title').innerText = 'Vier Säulen für maximale Ausdauerleistung';
         document.getElementById('waitlist-title').innerText = 'Jetzt für die geschlossene Beta bewerben';
         document.getElementById('btn-submit-text').innerText = 'Kostenlos für Closed Beta vormerken →';

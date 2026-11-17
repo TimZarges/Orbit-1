@@ -20,10 +20,12 @@ import '../../../core/localization/app_strings.dart';
 import '../../../core/utils/country_date_time_formatter.dart';
 import '../../activities/providers/activity_upload_provider.dart';
 import '../../auth/providers/user_provider.dart';
+import '../../auth/widgets/two_step_account_deletion_dialog.dart';
 import '../../beta_feedback/widgets/beta_bug_reporter_sheet.dart';
 import '../../coach_link/models/v1_coach_athlete_link.dart';
 import '../../integrations/models/garmin_status.dart';
 import '../../integrations/providers/garmin_provider.dart';
+import '../../legal/widgets/legal_documents_sheet.dart';
 import '../../onboarding/widgets/triathlon_combined_icon.dart';
 import '../../settings/providers/settings_provider.dart';
 import 'v1_athlete_coach_connection_card.dart';
@@ -45,7 +47,8 @@ class V1SimpleProfileView extends ConsumerStatefulWidget {
   final Map<String, dynamic>? initialUserDocOverride;
 
   /// Optionaler Test-Callback beim Speichern des Profils (ohne Firestore).
-  final Future<void> Function(Map<String, dynamic> savedPayload)? onSaveOverride;
+  final Future<void> Function(Map<String, dynamic> savedPayload)?
+      onSaveOverride;
 
   /// Optionale Test-Links für die Coach-Verbindungskarte des Athleten.
   final List<V1CoachAthleteLink>? coachLinksOverride;
@@ -335,7 +338,8 @@ class _V1SimpleProfileViewState extends ConsumerState<V1SimpleProfileView> {
                               ? Icon(
                                   Icons.person,
                                   size: 48,
-                                  color: isDark ? AppColors.volt : AppColors.navy,
+                                  color:
+                                      isDark ? AppColors.volt : AppColors.navy,
                                 )
                               : null,
                         ),
@@ -351,7 +355,8 @@ class _V1SimpleProfileViewState extends ConsumerState<V1SimpleProfileView> {
                               icon: Icon(
                                 Icons.camera_alt,
                                 size: 16,
-                                color: isDark ? AppColors.navy : AppColors.white,
+                                color:
+                                    isDark ? AppColors.navy : AppColors.white,
                               ),
                               onPressed: _pickImage,
                             ),
@@ -480,9 +485,8 @@ class _V1SimpleProfileViewState extends ConsumerState<V1SimpleProfileView> {
                                 },
                                 child: InputDecorator(
                                   decoration: InputDecoration(
-                                    labelText: isEn
-                                        ? 'Date of Birth'
-                                        : 'Geburtsdatum',
+                                    labelText:
+                                        isEn ? 'Date of Birth' : 'Geburtsdatum',
                                   ),
                                   child: Text(
                                     _birthDate != null
@@ -523,7 +527,9 @@ class _V1SimpleProfileViewState extends ConsumerState<V1SimpleProfileView> {
                                   ),
                                 ],
                                 onChanged: (val) {
-                                  if (val != null) setState(() => _gender = val);
+                                  if (val != null) {
+                                    setState(() => _gender = val);
+                                  }
                                 },
                               ),
                             ),
@@ -708,7 +714,86 @@ class _V1SimpleProfileViewState extends ConsumerState<V1SimpleProfileView> {
                             isEn ? 'Save Profile' : 'Profil speichern',
                           ),
                   ),
-                  const SizedBox(height: 28),
+                  const SizedBox(height: 20),
+
+                  // Sektion: Rechtliches (Datenschutz & Impressum) + Daten & Konto löschen (Art. 17 DSGVO)
+                  _buildSectionCard(
+                    key: const Key('v1_profile_legal_and_deletion_section'),
+                    title: isEn
+                        ? 'Privacy, Legal & Account'
+                        : 'Datenschutz, Impressum & Konto',
+                    cardBg: cardBg,
+                    borderColor: borderColor,
+                    primaryText: primaryText,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              key: const Key('v1_profile_privacy_button'),
+                              onPressed: () => LegalDocumentsSheet.show(
+                                context,
+                                initialTab: LegalDocumentTab.privacy,
+                                lang: lang,
+                              ),
+                              icon: const Icon(
+                                Icons.privacy_tip_outlined,
+                                size: 18,
+                              ),
+                              label: Text(
+                                isEn ? 'Privacy' : 'Datenschutz',
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              key: const Key('v1_profile_imprint_button'),
+                              onPressed: () => LegalDocumentsSheet.show(
+                                context,
+                                initialTab: LegalDocumentTab.imprint,
+                                lang: lang,
+                              ),
+                              icon: const Icon(
+                                Icons.business_outlined,
+                                size: 18,
+                              ),
+                              label: Text(
+                                isEn ? 'Legal Notice' : 'Impressum',
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton.icon(
+                          key: const Key('v1_profile_delete_account_button'),
+                          onPressed: () =>
+                              TwoStepAccountDeletionDialog.show(context),
+                          icon: const Icon(
+                            Icons.delete_forever_outlined,
+                            color: Colors.redAccent,
+                            size: 18,
+                          ),
+                          label: Text(
+                            isEn
+                                ? 'Delete Data & Account'
+                                : 'Daten & Konto löschen',
+                            style: const TextStyle(
+                              color: Colors.redAccent,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            side: const BorderSide(color: Colors.redAccent),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
 
                   // Offizieller Versions- & Server-Region-Footer
                   Center(
@@ -761,16 +846,22 @@ class _V1SimpleProfileViewState extends ConsumerState<V1SimpleProfileView> {
     return Row(
       children: [
         Icon(
-          isConnected ? Icons.check_circle_rounded : Icons.sync_disabled_rounded,
+          isConnected
+              ? Icons.check_circle_rounded
+              : Icons.sync_disabled_rounded,
           color: isConnected
               ? AppColors.emerald
-              : (isDark ? AppColors.textSecondaryDark : const Color(0xFF64748B)),
+              : (isDark
+                  ? AppColors.textSecondaryDark
+                  : const Color(0xFF64748B)),
         ),
         const SizedBox(width: 10),
         Expanded(
           child: Text(
             isConnected
-                ? (isEn ? 'Garmin Connect: Connected' : 'Garmin Connect: Verbunden')
+                ? (isEn
+                    ? 'Garmin Connect: Connected'
+                    : 'Garmin Connect: Verbunden')
                 : (isEn
                     ? 'Garmin Connect: Not connected'
                     : 'Garmin Connect: Nicht verbunden'),

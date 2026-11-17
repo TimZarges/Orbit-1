@@ -10,9 +10,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../../../core/config/contact_config.dart';
 import '../../../core/design/app_colors.dart';
 import '../../../core/design/app_typography.dart';
 import '../../beta_feedback/widgets/beta_bug_reporter_sheet.dart';
+import '../../legal/widgets/legal_documents_sheet.dart';
 import '../../settings/providers/settings_provider.dart';
 import '../providers/auth_provider.dart';
 
@@ -55,7 +58,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ? 'Invalid email or password.'
               : 'E-Mail-Adresse oder Passwort ist ungültig.';
         case 'wrong-password':
-          return isEn ? 'Incorrect password.' : 'Das Passwort ist nicht korrekt.';
+          return isEn
+              ? 'Incorrect password.'
+              : 'Das Passwort ist nicht korrekt.';
         case 'invalid-email':
           return isEn
               ? 'Please enter a valid email address.'
@@ -131,7 +136,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
               side: BorderSide(
-                color: isDark ? AppColors.darkSubtleBorder : AppColors.cardBorder,
+                color:
+                    isDark ? AppColors.darkSubtleBorder : AppColors.cardBorder,
               ),
             ),
             title: Text(
@@ -194,8 +200,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             ),
             actions: [
               TextButton(
-                onPressed:
-                    isSending ? null : () => Navigator.of(ctx).pop(),
+                onPressed: isSending ? null : () => Navigator.of(ctx).pop(),
                 child: Text(isEn ? 'Cancel' : 'Abbrechen'),
               ),
               ElevatedButton(
@@ -272,8 +277,24 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(isEn ? 'Sign In' : 'Anmelden'),
-        actions: const [
-          BetaBugReportIconButton(),
+        actions: [
+          // Schnellumschaltung DE / EN direkt auf dem Login-Screen
+          TextButton(
+            key: const Key('login_lang_toggle_button'),
+            onPressed: () {
+              ref
+                  .read(settingsControllerProvider.notifier)
+                  .setLanguage(isEn ? 'de' : 'en');
+            },
+            child: Text(
+              isEn ? 'DE' : 'EN',
+              style: TextStyle(
+                color: accentColor,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          const BetaBugReportIconButton(),
         ],
       ),
       body: SafeArea(
@@ -293,9 +314,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       width: 88,
                       height: 88,
                       decoration: BoxDecoration(
-                        color: isDark
-                            ? AppColors.anthraciteCard
-                            : AppColors.navy,
+                        color:
+                            isDark ? AppColors.anthraciteCard : AppColors.navy,
                         borderRadius: BorderRadius.circular(24),
                         border: Border.all(color: AppColors.volt, width: 2),
                       ),
@@ -407,6 +427,55 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
+                  ),
+                  const SizedBox(height: 22),
+                  // Direkter 1-Klick-Zugang zu Datenschutz, Impressum & Haupt-Webseite
+                  Wrap(
+                    alignment: WrapAlignment.center,
+                    spacing: 12,
+                    runSpacing: 4,
+                    children: [
+                      TextButton(
+                        key: const Key('login_privacy_button'),
+                        onPressed: () => LegalDocumentsSheet.show(
+                          context,
+                          initialTab: LegalDocumentTab.privacy,
+                          lang: lang,
+                        ),
+                        child: Text(
+                          isEn ? 'Privacy Policy' : 'Datenschutz',
+                          style: TextStyle(color: secondaryText, fontSize: 12),
+                        ),
+                      ),
+                      TextButton(
+                        key: const Key('login_imprint_button'),
+                        onPressed: () => LegalDocumentsSheet.show(
+                          context,
+                          initialTab: LegalDocumentTab.imprint,
+                          lang: lang,
+                        ),
+                        child: Text(
+                          isEn ? 'Legal Notice' : 'Impressum',
+                          style: TextStyle(color: secondaryText, fontSize: 12),
+                        ),
+                      ),
+                      TextButton(
+                        key: const Key('login_website_button'),
+                        onPressed: () async {
+                          final uri = Uri.tryParse(ContactConfig.websiteUrl);
+                          if (uri != null) {
+                            await launchUrl(
+                              uri,
+                              mode: LaunchMode.externalApplication,
+                            );
+                          }
+                        },
+                        child: Text(
+                          isEn ? 'Website' : 'Webseite',
+                          style: TextStyle(color: secondaryText, fontSize: 12),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
