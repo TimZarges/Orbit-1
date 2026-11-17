@@ -17,6 +17,7 @@ import '../../activities/screens/today_tab_screen.dart';
 import '../../analysis/screens/analysis_tab_screen.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../auth/providers/user_provider.dart';
+import '../../auth/widgets/email_verification_banner.dart';
 import '../../beta_feedback/widgets/beta_bug_reporter_sheet.dart';
 import '../../calendar/screens/calendar_screen.dart';
 import '../../coach_link/providers/v1_coach_connection_provider.dart';
@@ -119,8 +120,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           ];
 
     // Sicherstellen, dass der Index bei Scope- oder Breakpoint-Wechsel gültig bleibt
-    final int activeCoachTab =
-        (isTrainer && !isV2Enabled) ? ref.watch(v1CoachTabIndexProvider) : _currentIndex;
+    final int activeCoachTab = (isTrainer && !isV2Enabled)
+        ? ref.watch(v1CoachTabIndexProvider)
+        : _currentIndex;
     final safeIndex = activeCoachTab.clamp(0, pages.length - 1);
 
     // BottomNavigationBar-Items (auf Mobilgeräten < 900px)
@@ -253,7 +255,12 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     // Aktiver Inhaltsbereich mit zentrierter Maximalbreite für Web/Desktop
     final Widget contentArea = ResponsiveContentFrame(
       maxWidth: 1080.0,
-      child: pages[safeIndex],
+      child: Column(
+        children: [
+          const EmailVerificationBanner(),
+          Expanded(child: pages[safeIndex]),
+        ],
+      ),
     );
 
     final bool hideAppBar = safeIndex == 1 ||
@@ -389,7 +396,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         if (isV2Enabled) ...[
           PopupMenuItem(
             value: '/templates',
-            child: Text(lang == 'en' ? 'Workout Templates' : 'Workout-Vorlagen'),
+            child:
+                Text(lang == 'en' ? 'Workout Templates' : 'Workout-Vorlagen'),
           ),
           const PopupMenuItem(
             value: '/workout-builder',

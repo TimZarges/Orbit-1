@@ -82,7 +82,9 @@ final goRouterProvider = Provider<GoRouter>((ref) {
 
         if (!hasCompletedOnboarding) {
           return isOnboarding ? null : '/onboarding';
-        } else if (isLoggingIn || isOnboarding || isVerifyEmail) {
+        } else if (isLoggingIn ||
+            isOnboarding ||
+            (isVerifyEmail && (currentUser?.emailVerified ?? false))) {
           return '/';
         }
       } else if (isAuth &&

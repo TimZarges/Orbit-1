@@ -225,9 +225,8 @@ class _EmailVerificationWaitingScreenState
                       width: 96,
                       height: 96,
                       decoration: BoxDecoration(
-                        color: isDark
-                            ? AppColors.anthraciteCard
-                            : AppColors.white,
+                        color:
+                            isDark ? AppColors.anthraciteCard : AppColors.white,
                         shape: BoxShape.circle,
                         border: Border.all(color: accentColor, width: 2),
                       ),
@@ -316,9 +315,7 @@ class _EmailVerificationWaitingScreenState
                       key: const Key('verify_email_skip_beta_button'),
                       icon: const Icon(Icons.arrow_forward, size: 18),
                       label: Text(
-                        isEn
-                            ? 'Beta: Skip for now'
-                            : 'Beta: Vorerst überspringen',
+                        isEn ? 'Skip for now' : 'Vorerst überspringen',
                       ),
                       onPressed: () {
                         _pollingTimer?.cancel();

@@ -15,6 +15,7 @@
 /// 7. Einstellungen (`SettingsScreen`: 1-Klick Impressum/Datenschutz & Kontolöschung).
 library;
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -25,6 +26,7 @@ import 'package:orbit/core/design/app_theme.dart';
 import 'package:orbit/features/auth/providers/auth_provider.dart';
 import 'package:orbit/features/auth/screens/login_screen.dart';
 import 'package:orbit/features/auth/services/account_deletion_service.dart';
+import 'package:orbit/features/auth/widgets/email_verification_banner.dart';
 import 'package:orbit/features/auth/widgets/two_step_account_deletion_dialog.dart';
 import 'package:orbit/features/integrations/models/garmin_status.dart';
 import 'package:orbit/features/integrations/providers/garmin_provider.dart';
@@ -44,6 +46,20 @@ class _MockAuthService implements AuthService {
   Future<void> signOut() async {
     signOutCalled = true;
   }
+}
+
+/// Minimaler Mock für einen Firebase-[User] zur Prüfung des Verifikations-Banners.
+class _FakeVerifyUser implements User {
+  @override
+  final bool emailVerified;
+
+  @override
+  final String? email;
+
+  _FakeVerifyUser({required this.emailVerified, this.email});
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => null;
 }
 
 void main() {
@@ -367,6 +383,66 @@ void main() {
 
       expect(remoteCalled, isTrue);
       expect(mockAuth.signOutCalled, isTrue);
+    });
+  });
+
+  group('5. V1.0.0 E-Mail-Verifikations-Banner', () {
+    testWidgets(
+        'zeigt Verifikations-Banner bei emailVerified == false und blendet es bei true aus',
+        (tester) async {
+      var resendCalls = 0;
+      var openVerifyCalls = 0;
+
+      // 1. Unbestätigtes Konto -> Banner sichtbar (DE)
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            theme: AppTheme.lightTheme,
+            home: Scaffold(
+              body: EmailVerificationBanner(
+                userOverride: _FakeVerifyUser(
+                  emailVerified: false,
+                  email: 'neu@orbit.training',
+                ),
+                onResendOverride: (_) async => resendCalls++,
+                onTapVerifyOverride: () => openVerifyCalls++,
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const Key('unverified_email_banner')), findsOneWidget);
+      expect(find.text('neu@orbit.training'), findsOneWidget);
+
+      await tester.tap(find.byKey(const Key('unverified_email_resend_button')));
+      await tester.pumpAndSettle();
+      expect(resendCalls, equals(1));
+
+      await tester.tap(find.byKey(const Key('unverified_email_open_button')));
+      await tester.pumpAndSettle();
+      expect(openVerifyCalls, equals(1));
+
+      // 2. Bestätigtes Konto (wie Athletenkonto) -> Banner unsichtbar
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            theme: AppTheme.darkTheme,
+            home: Scaffold(
+              body: EmailVerificationBanner(
+                userOverride: _FakeVerifyUser(
+                  emailVerified: true,
+                  email: 'tim@orbit.training',
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const Key('unverified_email_banner')), findsNothing);
     });
   });
 }

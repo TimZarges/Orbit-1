@@ -20,6 +20,7 @@ import '../../../core/localization/app_strings.dart';
 import '../../../core/utils/country_date_time_formatter.dart';
 import '../../activities/providers/activity_upload_provider.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../auth/services/auth_guard_service.dart';
 import '../../auth/widgets/password_criteria_checklist.dart';
 import '../../integrations/providers/garmin_provider.dart';
 import '../../legal/widgets/legal_documents_sheet.dart';
@@ -1142,17 +1143,24 @@ class _V1SimpleOnboardingWizardState
         return;
       }
 
-      // Konto in Firebase Auth erstellen und Bestätigungs-E-Mail senden
+      // Konto in Firebase Auth erstellen (signUpWithEmail stößt die Bestätigungs-E-Mail
+      // bereits sicher über AuthGuardService.triggerVerificationEmailSafely an).
+      var verificationTriggeredOnSignup = false;
       if (FirebaseAuth.instance.currentUser == null) {
         await ref
             .read(authServiceProvider)
             .signUpWithEmail(_emailCtrl.text.trim(), _passwordCtrl.text.trim());
-        try {
-          await ref.read(authServiceProvider).sendEmailVerification();
-        } catch (_) {}
+        verificationTriggeredOnSignup = true;
       }
 
-      final uid = FirebaseAuth.instance.currentUser?.uid;
+      final activeAuthUser = FirebaseAuth.instance.currentUser;
+      if (activeAuthUser != null &&
+          !verificationTriggeredOnSignup &&
+          !activeAuthUser.emailVerified) {
+        await AuthGuardService.triggerVerificationEmailSafely(activeAuthUser);
+      }
+
+      final uid = activeAuthUser?.uid;
       final profilePayload = <String, dynamic>{
         'displayName': displayName,
         'firstName': result.firstName,

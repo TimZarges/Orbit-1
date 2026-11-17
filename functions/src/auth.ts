@@ -7,6 +7,12 @@
 
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import * as admin from "firebase-admin";
+import axios from "axios";
+import {
+  garminConsumerKey,
+  garminConsumerSecret,
+  getOAuthClient,
+} from "./import/garmin/backfill";
 
 if (!admin.apps.length) {
   admin.initializeApp();
@@ -129,26 +135,138 @@ async function deleteQueryInBatches(query: admin.firestore.Query): Promise<numbe
 }
 
 /**
+ * Führt bei bestehender Garmin-Connect-Verknüpfung die offizielle API-Deregistrierung
+ * durch und bereinigt alle zugehörigen Token- und Index-Dokumente vor der Kontolöschung.
+ * Externe API-Fehler werden protokolliert, blockieren aber niemals die DSGVO-Löschung.
+ *
+ * @param db - Firestore-Instanz.
+ * @param uid - Firebase-UID des zu löschenden Nutzers.
+ * @param consumerCreds - Optionaler Test-Override für Consumer Key/Secret.
+ */
+export async function deregisterGarminUserIfConnected(
+  db: admin.firestore.Firestore,
+  uid: string,
+  consumerCreds?: { key?: string; secret?: string }
+): Promise<{ attemptedApiDeregister: boolean; deletedGarminIds: string[] }> {
+  const userRef = db.collection("users").doc(uid);
+  const privateIntegrationsRef = userRef.collection("private").doc("integrations");
+  const statusRef = userRef.collection("integrationStatus").doc("garmin");
+  const legacyIntegrationRef = userRef.collection("integrations").doc("garmin");
+
+  const [privateSnap, statusSnap, legacySnap] = await Promise.all([
+    privateIntegrationsRef.get(),
+    statusRef.get(),
+    legacyIntegrationRef.get(),
+  ]);
+
+  const privateGarmin = privateSnap.data()?.garmin;
+  const legacyData = legacySnap.data();
+  const statusData = statusSnap.data();
+
+  const oauthToken: string | undefined =
+    privateGarmin?.oauthToken || legacyData?.oauthToken;
+  const oauthTokenSecret: string | undefined =
+    privateGarmin?.oauthTokenSecret || legacyData?.oauthTokenSecret;
+
+  const garminIds = new Set<string>();
+  for (const candidate of [
+    privateGarmin?.garminUserId,
+    statusData?.garminUserId,
+    legacyData?.garminUserId,
+  ]) {
+    if (typeof candidate === "string" && candidate.trim().length > 0) {
+      garminIds.add(candidate.trim());
+    }
+  }
+
+  let attemptedApiDeregister = false;
+  if (oauthToken && oauthTokenSecret) {
+    attemptedApiDeregister = true;
+    try {
+      const key = consumerCreds?.key ?? garminConsumerKey.value();
+      const secret = consumerCreds?.secret ?? garminConsumerSecret.value();
+      if (key && secret) {
+        const oauth = getOAuthClient(key, secret);
+        const deregisterReq = {
+          url: "https://apis.garmin.com/wellness-api/rest/user/registration",
+          method: "DELETE",
+        };
+        const authHeader = oauth.toHeader(
+          oauth.authorize(deregisterReq, {
+            key: oauthToken,
+            secret: oauthTokenSecret,
+          })
+        );
+        await axios.delete(deregisterReq.url, {
+          headers: authHeader,
+          timeout: 5000,
+        });
+      }
+    } catch (garminErr) {
+      // Externer Garmin-Fehler darf das Recht auf Löschung (Art. 17 DSGVO) nie blockieren
+      console.warn(
+        `Garmin deregistration warning for uid ${uid}:`,
+        garminErr
+      );
+    }
+  }
+
+  // Alle gefundenen garminUsers-Mappings sowie Token-/Integrations-Dokumente löschen
+  const cleanupOps: Array<Promise<unknown>> = [
+    deleteQueryInBatches(db.collection("garminUsers").where("uid", "==", uid)),
+  ];
+  for (const gId of garminIds) {
+    cleanupOps.push(db.collection("garminUsers").doc(gId).delete());
+  }
+  if (legacySnap.exists) {
+    cleanupOps.push(legacyIntegrationRef.delete());
+  }
+  if (statusSnap.exists) {
+    cleanupOps.push(statusRef.delete());
+  }
+  if (privateSnap.exists) {
+    cleanupOps.push(
+      privateIntegrationsRef.update({
+        garmin: admin.firestore.FieldValue.delete(),
+      })
+    );
+  }
+  await Promise.allSettled(cleanupOps);
+
+  return {
+    attemptedApiDeregister,
+    deletedGarminIds: Array.from(garminIds),
+  };
+}
+
+/**
  * Führt die vollständige und DSGVO-konforme Löschung des Nutzerkontos durch (Art. 17 DSGVO).
  * Bereinigt rückstandslos:
- * 1. Alle `coachLinks` (als Athlet und als Coach) inkl. `authorizedCoachIds` & `coachId`
+ * 1. Aktive Garmin-Connect-Verknüpfung (offizielle Garmin-Deregistrierung im `try/catch`,
+ *    `garminUsers`, `users/{uid}/integrations/garmin`, `integrationStatus/garmin` & Tokens).
+ * 2. Alle `coachLinks` (als Athlet und als Coach) inkl. `authorizedCoachIds` & `coachId`
  *    auf ehemals verbundenen Athletenprofilen sowie `coachDashboard`-Einträge.
- * 2. Alle Einladungscodes (`invites`) des Coaches.
- * 3. Top-Level-Collections (`activities`, `plannedWorkouts`, `chats`, `garminUsers`).
- * 4. Das Nutzerdokument `users/{uid}` inkl. aller Subcollections (`db.recursiveDelete`).
- * 5. Alle Cloud-Storage-Dateien unter `users/{uid}/` (`rawActivities/`, `fit/`, `streams/`, `avatars/`).
- * 6. Den Firebase-Authentication-Account (`admin.auth().deleteUser(uid)`).
+ * 3. Alle Einladungscodes (`invites`) des Coaches.
+ * 4. Top-Level-Collections (`activities`, `plannedWorkouts`, `chats`, `garminUsers`).
+ * 5. Das Nutzerdokument `users/{uid}` inkl. aller Subcollections (`db.recursiveDelete`).
+ * 6. Alle Cloud-Storage-Dateien unter `users/{uid}/` (`rawActivities/`, `fit/`, `streams/`, `avatars/`).
+ * 7. Den Firebase-Authentication-Account (`admin.auth().deleteUser(uid)`).
  *
  * @throws {HttpsError} unauthenticated - Wenn die Anfrage nicht authentifiziert ist.
  */
-export const deleteAccount = onCall(async (request) => {
-  const uid = request.auth?.uid;
-  if (!uid) {
-    throw new HttpsError("unauthenticated", "User must be logged in.");
-  }
+export const deleteAccount = onCall(
+  { secrets: [garminConsumerKey, garminConsumerSecret] },
+  async (request) => {
+    const uid = request.auth?.uid;
+    if (!uid) {
+      throw new HttpsError("unauthenticated", "User must be logged in.");
+    }
 
-  const db = admin.firestore();
-  const userRef = db.collection("users").doc(uid);
+    const db = admin.firestore();
+    const userRef = db.collection("users").doc(uid);
+
+    // 0. Garmin Connect deregistrieren & Token-/Index-Dokumente bereinigen
+    await deregisterGarminUserIfConnected(db, uid);
 
   // 1. Alle Coach-Athleten-Verknüpfungen bereinigen (Nutzer als Athlet oder Coach)
   const [athleteLinksSnap, coachLinksSnap] = await Promise.all([
@@ -227,7 +345,8 @@ export const deleteAccount = onCall(async (request) => {
   await admin.auth().deleteUser(uid);
 
   return { success: true };
-});
+  }
+);
 
 /**
  * Erstellt einen vollständigen maschinenlesbaren Datenexport des Nutzers
