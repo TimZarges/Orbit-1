@@ -1,8 +1,16 @@
 [
   {
     "origin": ["*"],
-    "method": ["GET", "PUT", "POST", "HEAD", "DELETE"],
-    "responseHeader": ["Content-Type", "Authorization", "Content-Length", "User-Agent", "x-goog-resumable"],
+    "method": ["GET", "HEAD", "PUT", "POST", "OPTIONS"],
+    "responseHeader": [
+      "Content-Type",
+      "Authorization",
+      "Content-Length",
+      "User-Agent",
+      "x-goog-resumable",
+      "X-Firebase-Storage-Version",
+      "X-Firebase-Storage-XSRF"
+    ],
     "maxAgeSeconds": 3600
   }
 ]

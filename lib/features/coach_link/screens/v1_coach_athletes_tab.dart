@@ -17,6 +17,7 @@ import '../../../core/utils/country_date_time_formatter.dart';
 import '../../onboarding/widgets/triathlon_combined_icon.dart';
 import '../../settings/providers/settings_provider.dart';
 import '../models/v1_coach_athlete_link.dart';
+import '../providers/athlete_context_provider.dart';
 import '../providers/v1_coach_connection_provider.dart';
 
 /// V1.0.0 Coach-Tab 1: „Athleten“ (ohne V2/V3-Analyse- oder Planungs-Elemente).
@@ -207,9 +208,11 @@ class _V1CoachAthletesTabState extends ConsumerState<V1CoachAthletesTab> {
     controller.dispose();
   }
 
-  /// Wählt den Athleten für Tab 2 (`Kalender`) aus und wechselt dorthin.
+  /// Wählt den Athleten für Tab 2 (`Kalender`) aus, synchronisiert den globalen
+  /// Athleten-Kontext ([viewedAthleteIdProvider]) und wechselt direkt dorthin.
   void _openAthleteCalendar(V1CoachAthleteLink link) {
     ref.read(v1SelectedCoachAthleteIdProvider.notifier).state = link.athleteId;
+    ref.read(viewedAthleteIdProvider.notifier).state = link.athleteId;
     ref.read(v1CoachTabIndexProvider.notifier).state = 1;
   }
 

@@ -270,11 +270,21 @@ class Activity {
       }).toList();
     }
 
+    // Startzeit sicher aus Firestore-Timestamp oder ISO-8601-String parsen
+    final rawStartTime = data['startTimeUtc'];
+    final DateTime parsedStartTime;
+    if (rawStartTime is Timestamp) {
+      parsedStartTime = rawStartTime.toDate();
+    } else if (rawStartTime is String) {
+      parsedStartTime = DateTime.tryParse(rawStartTime) ?? DateTime.now();
+    } else {
+      parsedStartTime = DateTime.now();
+    }
+
     return Activity(
       id: doc.id,
       athleteId: data['athleteId'] as String? ?? '',
-      startTimeUtc:
-          (data['startTimeUtc'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      startTimeUtc: parsedStartTime,
       localDate: data['localDate'] as String? ?? '',
       sport: data['sport'] as String? ?? 'OTHER',
       title: data['title'] as String? ?? 'Activity',
@@ -295,7 +305,8 @@ class Activity {
           .toList(),
       plannedWorkoutId: data['plannedWorkoutId'] as String?,
       matchStatus: data['matchStatus'] as String?,
-      rawFilePath: data['rawFilePath'] as String?,
+      rawFilePath: (data['rawFilePath'] as String?) ??
+          (data['storagePath'] as String?),
     );
   }
 }

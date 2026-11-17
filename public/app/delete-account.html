@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Konto und Daten löschen – ORBIT Trainingsplattform</title>
+  <style>
+    :root {
+      --bg: #0A0F1D;
+      --card: #0F172A;
+      --text: #F8FAFC;
+      --muted: #94A3B8;
+      --volt: #CDFB17;
+      --navy: #0A0F1D;
+      --red: #EF4444;
+      --border: #1E293B;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      margin: 0;
+      padding: 40px 20px;
+      display: flex;
+      justify-content: center;
+    }
+    .container {
+      max-width: 680px;
+      width: 100%;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 36px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+    .logo {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--volt);
+      letter-spacing: 2px;
+      margin-bottom: 24px;
+    }
+    h1 {
+      font-size: 26px;
+      margin-top: 0;
+      margin-bottom: 16px;
+    }
+    p {
+      color: var(--muted);
+      margin-bottom: 16px;
+    }
+    .warning {
+      background: rgba(239, 68, 68, 0.1);
+      border-left: 4px solid var(--red);
+      padding: 16px;
+      border-radius: 0 8px 8px 0;
+      margin: 24px 0;
+      color: #FCA5A5;
+      font-size: 14px;
+    }
+    .section-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+      margin-top: 28px;
+      margin-bottom: 10px;
+    }
+    ul {
+      color: var(--muted);
+      padding-left: 20px;
+    }
+    li {
+      margin-bottom: 8px;
+    }
+    .btn {
+      display: inline-block;
+      background: var(--volt);
+      color: var(--navy);
+      font-weight: 700;
+      padding: 14px 28px;
+      border-radius: 10px;
+      text-decoration: none;
+      margin-top: 20px;
+      transition: opacity 0.2s;
+    }
+    .btn:hover {
+      opacity: 0.9;
+    }
+    .form-group {
+      margin-top: 20px;
+    }
+    label {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    input[type="email"] {
+      width: 100%;
+      padding: 12px;
+      background: #1E293B;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      color: var(--text);
+      box-sizing: border-box;
+      font-size: 15px;
+    }
+    .btn-submit {
+      margin-top: 14px;
+      background: var(--red);
+      color: #FFFFFF;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">ORBIT</div>
+    <h1>Konto- und Datenlöschung (Art. 17 DSGVO)</h1>
+    <p>
+      Bei ORBIT haben Sie die volle Kontrolle über Ihre personenbezogenen Daten. Gemäß Art. 17 der Datenschutz-Grundverordnung (DSGVO) können Sie jederzeit die vollständige und unwiderrufliche Löschung Ihres Kontos und aller damit verknüpften Daten anfordern.
+    </p>
+
+    <div class="warning">
+      <strong>Achtung:</strong> Die Löschung ist endgültig. Nach Durchführung können gelöschte Daten nicht wiederhergestellt werden. Alle Trainingshistorien, Auswertungen und Schwellenwerte gehen unwiderruflich verloren.
+    </div>
+
+    <div class="section-title">Welche Daten werden gelöscht?</div>
+    <ul>
+      <li><strong>Benutzerkonto & Authentifizierung:</strong> Ihre Anmeldedaten und E-Mail-Adresse.</li>
+      <li><strong>Profildaten:</strong> Name, persönliche Einstellungen, Saisongenerierungsziele.</li>
+      <li><strong>Trainings- & Aktivitätsdaten:</strong> Alle absolvierten Trainingseinheiten, GPS-Tracks, Telemetrie-Streams (.fit- und .json.gz-Dateien).</li>
+      <li><strong>Gesundheitsdaten (Art. 9 DSGVO):</strong> Ruhepuls, HRV-Messwerte, Schlafanalysen und Tagesform-Berechnungen.</li>
+      <li><strong>Kommunikation:</strong> 1:1-Chatverläufe mit Trainern und geteilte Einheiten.</li>
+      <li><strong>Schnittstellen:</strong> Verknüpfungen zu Drittanbietern (z. B. Garmin Connect) werden getrennt und OAuth-Tokens gelöscht.</li>
+    </ul>
+
+    <div class="section-title">Wie können Sie Ihr Konto löschen?</div>
+    <p>
+      <strong>Option 1: Direkt in der App (Empfohlen)</strong><br>
+      Öffnen Sie die ORBIT App &rarr; <em>Einstellungen</em> &rarr; <em>Datenschutz</em> &rarr; <em>Konto und Daten löschen</em>.
+    </p>
+    <p>
+      <strong>Option 2: Per Web-Anfrage (Google Play Erfordernis)</strong><br>
+      Falls Sie die App deinstalliert haben oder keinen Zugriff mehr auf Ihr Endgerät besitzen, geben Sie bitte Ihre registrierte E-Mail-Adresse ein. Wir senden Ihnen eine Bestätigungs-E-Mail zur Authentifizierung der Löschungsanfrage:
+    </p>
+
+    <form class="form-group" action="mailto:privacy@orbit-training.app?subject=Konto-Loeschungsanfrage" method="post" enctype="text/plain">
+      <label for="email">Ihre registrierte E-Mail-Adresse:</label>
+      <input type="email" id="email" name="email" placeholder="name@example.com" required>
+      <button type="submit" class="btn-submit">Löschungsanfrage einreichen</button>
+    </form>
+
+    <div class="section-title" style="margin-top: 36px;">Fristen & Aufbewahrung</div>
+    <p>
+      Die Löschung aus den produktiven Firestore- und Storage-Datenbanken erfolgt unverzüglich nach Bestätigung. Sicherheits-Backups werden rollierend innerhalb von maximal 30 Tagen automatisiert überschrieben.
+    </p>
+    <p style="font-size: 13px; color: #64748B;">
+      Verantwortlicher: ORBIT App Betreiber &bull; Hosting: Google Cloud (Region europe-west3, Frankfurt, Deutschland).
+    </p>
+  </div>
+</body>
+</html>

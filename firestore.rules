@@ -6,7 +6,7 @@ service cloud.firestore {
     // Assumed Data Model
     // ===============================================================
     // Collection: users/{uid}
-    // Fields: uid, email, createdAt, role, trainerVerified, coachId, profile, settings, consents, plan
+    // Fields: uid, email, createdAt, role, trainerVerified, coachId, authorizedCoachIds, profile, settings, consents, plan
     //
     // Collection: coachLinks/{linkId}
     // Fields: athleteId, coachId, status, permissions, createdAt, updatedAt
@@ -109,21 +109,31 @@ service cloud.firestore {
       return emailOk && roleOk;
     }
 
+    /**
+     * Validiert die Neuerstellung eines Benutzerdokuments users/{userId}.
+     * Verhindert Privilege Escalation durch Client-seitiges Setzen privilegierter Felder.
+     */
     function isValidUserCreate(data) {
-      // Must not escalate privileges on creation
+      // Bei der Erstellung dürfen keine privilegierten oder serverseitig verwalteten Felder eskaliert werden
       let roleOk = !('role' in data) || data.role == 'ATHLETE';
       let verifiedOk = !('trainerVerified' in data) || data.trainerVerified == false;
       let coachOk = !('coachId' in data) || data.coachId == null;
+      let authorizedCoachIdsOk = !('authorizedCoachIds' in data) || (data.authorizedCoachIds is list && data.authorizedCoachIds.size() == 0);
       let uidOk = !('uid' in data) || data.uid == request.auth.uid;
       let adminOk = !('isAdmin' in data) || data.isAdmin == false;
       
-      return isValidUserDoc(data) && roleOk && verifiedOk && coachOk && uidOk && adminOk;
+      return isValidUserDoc(data) && roleOk && verifiedOk && coachOk && authorizedCoachIdsOk && uidOk && adminOk;
     }
 
+    /**
+     * Validiert Aktualisierungen am Benutzerdokument users/{userId}.
+     * Schützt serverseitig gepflegte Rollen-, Verknüpfungs- und Berechtigungsfelder
+     * (inklusive authorizedCoachIds) vor Client-Manipulation (Privilege-Escalation-Schutz).
+     */
     function isValidUserUpdate() {
-      // Must not change critical server-side fields
+      // Kritische serverseitig gepflegte Felder dürfen vom Client nicht verändert werden
       let protectedFieldsUnchanged = areImmutableFieldsUnchanged([
-        'role', 'trainerVerified', 'coachId', 'uid', 'email', 'createdAt', 'metrics', 'metricsVersion', 'notificationState', 'isAdmin'
+        'role', 'trainerVerified', 'coachId', 'authorizedCoachIds', 'uid', 'email', 'createdAt', 'metrics', 'metricsVersion', 'notificationState', 'isAdmin'
       ]);
       return isValidUserDoc(request.resource.data) && protectedFieldsUnchanged;
     }

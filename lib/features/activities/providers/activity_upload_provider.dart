@@ -7,9 +7,9 @@
 /// sofort in Firestore ab.
 library;
 
-import 'dart:isolate';
 import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart' show compute;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -175,10 +175,24 @@ FileValidationResult _validateAndInspectBytes(
   }
 }
 
-/// Notifier für den robusten Multi-Format-Datei-Upload.
+/// Top-Level-Adapter für `compute(...)`, damit Header-Prüfungen sowohl auf Mobile/Desktop
+/// im Hintergrund-Isolate als auch im Web-Browser ohne `UnsupportedError` laufen.
+FileValidationResult _computeValidate((Uint8List, String) args) {
+  return _validateAndInspectBytes(args.$1, args.$2);
+}
+
+/// Notifier für den robusten Multi-Format-Datei-Upload (Android SAF, iOS, Desktop & Web).
 class ActivityUploadNotifier extends StateNotifier<ActivityUploadState> {
   final Ref ref;
   ActivityUploadNotifier(this.ref) : super(ActivityUploadState());
+
+  /// Prüft hochgeladene Rohbytes plattformunabhängig (nutzt `compute` für Web & Native).
+  Future<FileValidationResult> validateBytesForUpload(
+    Uint8List bytes,
+    String filename,
+  ) {
+    return compute(_computeValidate, (bytes, filename));
+  }
 
   /// Öffnet den Datei-Picker mit `FileType.any` (SAF-kompatibel für Android 16)
   /// und lädt ausgewählte `.fit`, `.tcx` und `.gpx` Dateien hoch.
@@ -245,18 +259,7 @@ class ActivityUploadNotifier extends StateNotifier<ActivityUploadState> {
               'Lade Datei ${i + 1} von $total hoch (${platformFile.name})...',
         );
 
-        // 25MB Größenprüfung
-        final fileSize =
-            platformFile.lengthSync() ?? await platformFile.length() ?? 0;
-        if (fileSize > 25 * 1024 * 1024) {
-          state = state.copyWith(
-            error:
-                'Datei ${platformFile.name} ist größer als 25 MB und wurde übersprungen.',
-          );
-          continue;
-        }
-
-        // Bytes sicher über PlatformFile.readAsBytes() beschaffen (SAF-kompatibel)
+        // Bytes sicher über PlatformFile.readAsBytes() beschaffen (Web- & SAF-kompatibel)
         Uint8List fileBytes;
         try {
           fileBytes = await platformFile.readAsBytes();
@@ -274,10 +277,18 @@ class ActivityUploadNotifier extends StateNotifier<ActivityUploadState> {
           continue;
         }
 
-        // Voranalyse im Isolate ausführen (120 Hz & UI-Schutz)
-        final validation = await Isolate.run(
-          () => _validateAndInspectBytes(fileBytes, platformFile.name),
-        );
+        // 25MB Größenprüfung anhand der gelesenen Bytes (ohne web-inkompatibles lengthSync)
+        if (fileBytes.length > 25 * 1024 * 1024) {
+          state = state.copyWith(
+            error:
+                'Datei ${platformFile.name} ist größer als 25 MB und wurde übersprungen.',
+          );
+          continue;
+        }
+
+        // Voranalyse plattformübergreifend via compute() ausführen (Web + Mobile 120 Hz)
+        final validation =
+            await validateBytesForUpload(fileBytes, platformFile.name);
 
         if (!validation.isValid) {
           state = state.copyWith(
@@ -441,16 +452,6 @@ class ActivityUploadNotifier extends StateNotifier<ActivityUploadState> {
               'Lade Datei ${i + 1} von $total hoch (${platformFile.name})...',
         );
 
-        final fileSize =
-            platformFile.lengthSync() ?? await platformFile.length() ?? 0;
-        if (fileSize > 25 * 1024 * 1024) {
-          state = state.copyWith(
-            error:
-                'Datei ${platformFile.name} ist größer als 25 MB und wurde übersprungen.',
-          );
-          continue;
-        }
-
         Uint8List fileBytes;
         try {
           fileBytes = await platformFile.readAsBytes();
@@ -468,9 +469,16 @@ class ActivityUploadNotifier extends StateNotifier<ActivityUploadState> {
           continue;
         }
 
-        final validation = await Isolate.run(
-          () => _validateAndInspectBytes(fileBytes, platformFile.name),
-        );
+        if (fileBytes.length > 25 * 1024 * 1024) {
+          state = state.copyWith(
+            error:
+                'Datei ${platformFile.name} ist größer als 25 MB und wurde übersprungen.',
+          );
+          continue;
+        }
+
+        final validation =
+            await validateBytesForUpload(fileBytes, platformFile.name);
 
         if (!validation.isValid) {
           state = state.copyWith(
@@ -519,13 +527,15 @@ class ActivityUploadNotifier extends StateNotifier<ActivityUploadState> {
           'title': platformFile.name.replaceAll(RegExp(r'\.[a-zA-Z0-9]+$'), ''),
           'sport': validation.sport,
           'type': validation.sport,
-          'startTimeUtc': DateTime.now().toUtc().toIso8601String(),
+          'startTimeUtc': Timestamp.fromDate(now),
           'localDate': localDate,
           'durationSec': validation.estimatedDurationSec,
           'distanceM': validation.estimatedDistanceM,
           'elevationGainM': 0.0,
           'source': ext.toUpperCase(),
           'externalId': activityId,
+          'rawFilePath':
+              'users/$targetAthleteId/rawActivities/$activityId.$ext',
           'storagePath':
               'users/$targetAthleteId/rawActivities/$activityId.$ext',
           'fitFilePath': 'users/$targetAthleteId/fit/$activityId.$ext',

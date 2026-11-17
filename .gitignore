@@ -91,3 +91,12 @@ functions/lib/
 .firebase/
 files/
 docs/research/screenshots/
+
+# Staged Flutter Web binaries under public/app/ (compiled via flutter build web)
+public/app/canvaskit/
+public/app/assets/
+public/app/icons/
+public/app/*.js
+public/app/*.wasm
+public/app/*.json
+public/app/*.png

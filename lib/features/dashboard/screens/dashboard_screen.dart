@@ -9,7 +9,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/config/release_config.dart';
+import '../../../core/design/app_colors.dart';
 import '../../../core/localization/app_strings.dart';
+import '../../../core/theme/orbit_professional_theme.dart';
+import '../../../core/widgets/responsive_content_frame.dart';
 import '../../activities/screens/today_tab_screen.dart';
 import '../../analysis/screens/analysis_tab_screen.dart';
 import '../../auth/providers/auth_provider.dart';
@@ -66,7 +69,14 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
     final isTrainer = role == 'TRAINER';
 
-    // Seiten-Liste abhängig von Rolle und aktivem Release-Scope (V1.0.0 vs. V2/V3)
+    final double screenWidth = MediaQuery.sizeOf(context).width;
+    final bool isWideScreen =
+        screenWidth >= ResponsiveContentFrame.desktopBreakpoint;
+    final bool isExtendedRail =
+        screenWidth >= ResponsiveContentFrame.extendedRailBreakpoint;
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+
+    // Seiten-Liste abhängig von Rolle, aktivem Release-Scope und Responsive-Modus
     final List<Widget> pages = isTrainer
         ? [
             const TrainerAthletesTabScreen(),
@@ -85,6 +95,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             const CalendarScreen(),
             if (isV2Enabled || isV3Enabled) const AnalysisTabScreen(),
             const AthleteCoachTabScreen(),
+            // Im breiten Web-/Desktop-Layout direkter Profil-Tab in der NavigationRail
+            if (isWideScreen && !isV2Enabled) const ProfileScreen(),
           ];
 
     // Lokalisierte Tab-Titel (DE / EN)
@@ -103,14 +115,15 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             AppStrings.navCalendar(lang: lang),
             if (isV2Enabled || isV3Enabled) AppStrings.navAnalysis(lang: lang),
             AppStrings.navCoach(lang: lang),
+            if (isWideScreen && !isV2Enabled) AppStrings.navProfile(lang: lang),
           ];
 
-    // Sicherstellen, dass der Index bei Scope-Umschaltung im gültigen Bereich bleibt
+    // Sicherstellen, dass der Index bei Scope- oder Breakpoint-Wechsel gültig bleibt
     final int activeCoachTab =
         (isTrainer && !isV2Enabled) ? ref.watch(v1CoachTabIndexProvider) : _currentIndex;
     final safeIndex = activeCoachTab.clamp(0, pages.length - 1);
 
-    // BottomNavigationBar-Items passend zu Rolle, Sprache und Release-Scope
+    // BottomNavigationBar-Items (auf Mobilgeräten < 900px)
     final List<BottomNavigationBarItem> navItems = isTrainer
         ? [
             BottomNavigationBarItem(
@@ -166,8 +179,89 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             ),
           ];
 
+    // NavigationRail-Ziele für Web / Desktop ab >= 900px Breite
+    final List<NavigationRailDestination> railDestinations = isTrainer
+        ? [
+            NavigationRailDestination(
+              icon: const Icon(Icons.group_outlined),
+              selectedIcon: const Icon(Icons.group),
+              label: Text(AppStrings.navAthletes(lang: lang)),
+            ),
+            NavigationRailDestination(
+              icon: const Icon(Icons.calendar_month_outlined),
+              selectedIcon: const Icon(Icons.calendar_month),
+              label: Text(AppStrings.navCalendar(lang: lang)),
+            ),
+            if (isV2Enabled || isV3Enabled)
+              NavigationRailDestination(
+                icon: const Icon(Icons.query_stats_outlined),
+                selectedIcon: const Icon(Icons.query_stats),
+                label: Text(AppStrings.navAnalysis(lang: lang)),
+              ),
+            if (isV2Enabled)
+              NavigationRailDestination(
+                icon: const Icon(Icons.collections_bookmark_outlined),
+                selectedIcon: const Icon(Icons.collections_bookmark),
+                label: Text(AppStrings.navLibrary(lang: lang)),
+              )
+            else
+              NavigationRailDestination(
+                icon: const Icon(Icons.person_outline),
+                selectedIcon: const Icon(Icons.person),
+                label: Text(AppStrings.navProfile(lang: lang)),
+              ),
+          ]
+        : [
+            NavigationRailDestination(
+              icon: const Icon(Icons.home_outlined),
+              selectedIcon: const Icon(Icons.home),
+              label: Text(AppStrings.navToday(lang: lang)),
+            ),
+            NavigationRailDestination(
+              icon: const Icon(Icons.calendar_month_outlined),
+              selectedIcon: const Icon(Icons.calendar_month),
+              label: Text(AppStrings.navCalendar(lang: lang)),
+            ),
+            if (isV2Enabled || isV3Enabled)
+              NavigationRailDestination(
+                icon: const Icon(Icons.query_stats_outlined),
+                selectedIcon: const Icon(Icons.query_stats),
+                label: Text(AppStrings.navAnalysis(lang: lang)),
+              ),
+            NavigationRailDestination(
+              icon: const Icon(Icons.people_outline),
+              selectedIcon: const Icon(Icons.people),
+              label: Text(AppStrings.navCoach(lang: lang)),
+            ),
+            if (!isV2Enabled)
+              NavigationRailDestination(
+                icon: const Icon(Icons.person_outline),
+                selectedIcon: const Icon(Icons.person),
+                label: Text(AppStrings.navProfile(lang: lang)),
+              ),
+          ];
+
+    // Gemeinsame Tab-Umschaltlogik für Rail & BottomNavigationBar
+    void onTabSelected(int index) {
+      if (isTrainer && !isV2Enabled) {
+        ref.read(v1CoachTabIndexProvider.notifier).state = index;
+      } else {
+        setState(() => _currentIndex = index);
+      }
+    }
+
+    // Aktiver Inhaltsbereich mit zentrierter Maximalbreite für Web/Desktop
+    final Widget contentArea = ResponsiveContentFrame(
+      maxWidth: 1080.0,
+      child: pages[safeIndex],
+    );
+
+    final bool hideAppBar = safeIndex == 1 ||
+        (isTrainer && !isV2Enabled && safeIndex == 2) ||
+        (!isTrainer && isWideScreen && !isV2Enabled && safeIndex == 3);
+
     return Scaffold(
-      appBar: (safeIndex == 1 || (isTrainer && !isV2Enabled && safeIndex == 2))
+      appBar: hideAppBar
           ? null
           : AppBar(
               title: Text(titles[safeIndex]),
@@ -191,19 +285,73 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 ),
               ],
             ),
-      body: pages[safeIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        currentIndex: safeIndex,
-        onTap: (index) {
-          if (isTrainer && !isV2Enabled) {
-            ref.read(v1CoachTabIndexProvider.notifier).state = index;
-          } else {
-            setState(() => _currentIndex = index);
-          }
-        },
-        items: navItems,
-      ),
+      body: isWideScreen
+          ? Row(
+              children: [
+                NavigationRail(
+                  key: const Key('dashboard_web_navigation_rail'),
+                  extended: isExtendedRail,
+                  minExtendedWidth: 210,
+                  backgroundColor: isDark
+                      ? OrbitProfessionalTheme.darkCardSurface
+                      : Colors.white,
+                  selectedIndex: safeIndex,
+                  onDestinationSelected: onTabSelected,
+                  indicatorColor: AppColors.volt.withValues(alpha: 0.22),
+                  selectedIconTheme: IconThemeData(
+                    color: isDark ? AppColors.volt : AppColors.navy,
+                  ),
+                  selectedLabelTextStyle: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    color: isDark ? AppColors.volt : AppColors.navy,
+                  ),
+                  leading: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    child: Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: AppColors.navy,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(
+                        Icons.bolt,
+                        color: AppColors.volt,
+                        size: 20,
+                      ),
+                    ),
+                  ),
+                  trailing: Padding(
+                    padding: const EdgeInsets.only(top: 12, bottom: 16),
+                    child: IconButton(
+                      key: const Key('rail_settings_button'),
+                      icon: const Icon(Icons.settings_outlined),
+                      tooltip: lang == 'en' ? 'Settings' : 'Einstellungen',
+                      onPressed: () => context.push('/settings'),
+                    ),
+                  ),
+                  destinations: railDestinations,
+                ),
+                VerticalDivider(
+                  width: 1,
+                  thickness: 1,
+                  color: isDark
+                      ? OrbitProfessionalTheme.darkSubtleBorder
+                      : const Color(0xFFE2E8F0),
+                ),
+                Expanded(child: contentArea),
+              ],
+            )
+          : contentArea,
+      bottomNavigationBar: isWideScreen
+          ? null
+          : BottomNavigationBar(
+              key: const Key('dashboard_mobile_bottom_nav'),
+              type: BottomNavigationBarType.fixed,
+              currentIndex: safeIndex,
+              onTap: onTabSelected,
+              items: navItems,
+            ),
     );
   }
 

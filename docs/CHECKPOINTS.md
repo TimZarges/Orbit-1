@@ -26,6 +26,28 @@
 
 ## Einträge
 
+### [Phase 45] Web-Anwendung (Flutter Web), Responsive `NavigationRail`, Web-`.FIT`-Upload/Download & Echter E2E Coach-Athlet-Beweis · RISIKO-HOCH
+- **Branch / Tag:** `feature/phase-45-web-app-responsive-and-e2e-coach-verify` · `v0.45.0`
+- **Teil A – Audit & Nachbesserungen Coach-Verbindung / Security / Queries:**
+  - `functions/src/coach.ts` & `functions/src/index.ts`: `redeemInvite` reichert Namen/E-Mail/Sportarten auf `coachLinks` an; `redeemInvite`, `updatePermissions`, `revokeLink` & `respondToCoachLinkRequest` pflegen `authorizedCoachIds` serverseitig; neue autorisierte HTTPS-Callable-Funktionen `downloadActivityFit` & `ensureStorageCors` (`europe-west3`, Node.js 22) live deployed.
+  - `firestore.rules` (über `firestore-rules-author`): `authorizedCoachIds` in `isValidUserCreate()` & `isValidUserUpdate()` strikt vor Client-Manipulation geschützt; Coach-Lesezugriffe per `coachLinks` (`ACTIVE`) verifiziert.
+  - `storage.rules`: `users/{athleteId}/rawActivities/{allPaths=**}` & `users/{athleteId}/fit/{allPaths=**}` sauber geschützt und nach `orbit-app-mvp` deployed; `cors.json` im Repo hinterlegt.
+  - `lib/features/activities/providers/activities_provider.dart` & `lib/features/activities/models/activity.dart`: Coach-Kontext (`role == 'TRAINER'`) fragt niemals die eigene Coach-UID ab, sondern strikt den über `v1SelectedCoachAthleteIdProvider` / `viewedAthleteIdProvider` gewählten Athleten; `Activity.fromDocument` unterstützt `Timestamp`/`String` sowie `rawFilePath`/`storagePath`.
+- **Teil B – Responsive Web & Plattform-`.FIT`-Handling:**
+  - `lib/core/widgets/responsive_content_frame.dart` & `lib/features/dashboard/screens/dashboard_screen.dart`: `NavigationRail` links ab `width >= 900px` (ausgeklappt ab `>= 1160px`), mobile `BottomNavigationBar` `< 900px`, zentrierte Inhaltsbreite (`maxWidth: 1080`).
+  - `lib/features/activities/services/fit_download_service.dart`, `fit_file_saver_stub.dart`, `fit_file_saver_web.dart`: Bedingte Plattform-Imports (`dart.library.js_interop` / `package:web`) für direkten Blob-Download (`<a download="...fit">`) sowie automatischer `downloadActivityFit`-Fallback bei Cross-User-Coach-Downloads; `.json`-Summary-Pfade im `.FIT`-Download übersprungen.
+  - `lib/features/activities/providers/activity_upload_provider.dart`: Web-inkompatibles `dart:isolate` / `lengthSync` durch plattformübergreifendes `compute(...)` ersetzt und `rawFilePath` konsistent geschrieben.
+  - `lib/core/config/app_check_service.dart`, `lib/main.dart`, `firebase.json`: `AppCheckService` Web-Skip (`kIsWeb`), Hash-Routing `/app/#/` und `no-cache`-Header für `/app/`-Bundles deployed (`https://orbit-app-mvp.web.app/app/`).
+- **Echter End-to-End Live-Beweis (Geöffneter Safari + Pixel 10 Pro `58251FDCR00EQ2`):**
+  - Coach-Account `coach.p45.e2e@orbit.training` im geöffneten Safari unter `https://orbit-app-mvp.web.app/app/` erstellt, Einladungscode `129879` über `createInvite` generiert und auf dem Pixel 10 Pro (`58251FDCR00EQ2`) mit dem aktiven Athletenkonto inkl. DSGVO-Opt-In bestätigt (`phase45_pixel10_coach_connected.png`).
+  - Coach-Dashboard in Safari zeigt verbundenen `ORBIT Athlet` mit Sport-Badges (`Radsport`, `Laufen`) und `Letztes Training: 14.11.26 • 11:39` (`phase45_safari_coach_athletes.png`) sowie echte Garmin-Aktivitäten im Kalender (`phase45_safari_coach_calendar.png`).
+  - Klick des Coaches auf `.FIT` bei `Lage Rennradfahren` lud real `20261114_Lage_Rennradfahren.fit` (`127 KB`, `.FIT` Magic Header `2e 46 49 54` am Offset 8 in `~/Downloads` per `xxd` bestätigt; `phase45_safari_coach_fit_download.png`).
+- **Pre-Merge-Gate (`bash scripts/check_phase_ready.sh`):**
+  - `flutter analyze`: `No issues found!` (`0 Errors, 0 Warnings, 0 Infos`)
+  - `npm --prefix functions run build && npm --prefix functions run lint`: `0 Errors`
+  - Deutsche Doku-Kommentar-Prüfung: `100 %` bestanden
+  - `flutter test`: **`255/255` Tests bestanden** (`All tests passed!`)
+
 ### [Phase 44] V1.0.0 Coach-3-Tab-Ansicht, Coach-Athleten-Verbindung, `.FIT`-Download & Security-Rules-Deploy · RISIKO-HOCH
 - **Branch / Tag:** `feature/phase-44-coach-view-connection-download` · `v0.44.0`
 - **Umgesetzte Module & Backend-Deployment:**

@@ -14,7 +14,6 @@ import 'core/config/app_check_service.dart';
 import 'core/utils/crash_reporter.dart';
 import 'l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:flutter_web_plugins/url_strategy.dart';
 import 'features/beta_feedback/widgets/beta_bug_reporter_sheet.dart';
 import 'features/beta_feedback/widgets/global_floating_bug_beetle.dart';
 import 'features/settings/providers/settings_provider.dart';
@@ -25,7 +24,6 @@ import 'features/settings/providers/settings_provider.dart';
 /// Play Integrity, den CrashReporter (DSGVO-Opt-in) und startet die [OrbitApp].
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  usePathUrlStrategy();
 
   try {
     if (Firebase.apps.isEmpty) {

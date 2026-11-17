@@ -148,9 +148,10 @@ export const redeemInvite = onCall(async (request) => {
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     });
 
-    // Update user
+    // Benutzerprofil aktualisieren und geschütztes Array für Storage-Rules-Zugriff pflegen
     transaction.set(userRef, {
       coachId: coachId,
+      authorizedCoachIds: admin.firestore.FieldValue.arrayUnion(coachId),
       consents: {
         coachSharing: {
           at: admin.firestore.FieldValue.serverTimestamp(),
@@ -173,6 +174,36 @@ export const redeemInvite = onCall(async (request) => {
 
     return { success: true, coachId };
   });
+
+  // Profil-Metadaten auf dem Verknüpfungsdokument nachpflegen (für sofortige UI-Anzeige)
+  try {
+    const [athleteSnap, coachSnap] = await Promise.all([
+      db.collection("users").doc(uid).get(),
+      db.collection("users").doc(txResult.coachId).get(),
+    ]);
+    const aData = athleteSnap.data() || {};
+    const cData = coachSnap.data() || {};
+    const athleteName =
+      aData?.profile?.displayName ||
+      [aData?.profile?.firstName, aData?.profile?.lastName].filter(Boolean).join(" ").trim() ||
+      aData?.email ||
+      "Athlet";
+    const coachName =
+      cData?.profile?.displayName ||
+      [cData?.profile?.firstName, cData?.profile?.lastName].filter(Boolean).join(" ").trim() ||
+      cData?.email ||
+      "Coach";
+    const rawSports = aData?.profile?.sports || aData?.profile?.sportTypes || [];
+    await db.collection("coachLinks").doc(`${uid}_${txResult.coachId}`).set({
+      athleteName,
+      athleteEmail: aData?.email ?? "",
+      coachName,
+      coachEmail: cData?.email ?? "",
+      athleteSports: Array.isArray(rawSports) ? rawSports : [],
+    }, { merge: true });
+  } catch (_) {
+    // Metadaten-Anreicherung optional (z. B. in Unit-Tests mit Mock-Firestore)
+  }
 
   // Bestehende Aktivitäten und Trainingspläne für den neuen Trainer freischalten
   await setCoachIdOnQuery(
@@ -234,6 +265,9 @@ export const updatePermissions = onCall(async (request) => {
   });
 
   await userRef.set({
+    authorizedCoachIds: normalizedPermissions.activities
+      ? admin.firestore.FieldValue.arrayUnion(coachId)
+      : admin.firestore.FieldValue.arrayRemove(coachId),
     consents: {
       coachSharing: {
         at: admin.firestore.FieldValue.serverTimestamp(),
@@ -304,10 +338,11 @@ export const revokeLink = onCall(async (request) => {
     updatedAt: admin.firestore.FieldValue.serverTimestamp(),
   });
 
-  // 2. coachId vom Athleten-Dokument entfernen & Art. 9 Consent-Widerruf dokumentieren
+  // 2. coachId und authorizedCoachIds vom Athleten-Dokument entfernen & Art. 9 Consent-Widerruf dokumentieren
   const userRef = db.collection("users").doc(athleteId);
   await userRef.update({
     coachId: admin.firestore.FieldValue.delete(),
+    authorizedCoachIds: admin.firestore.FieldValue.arrayRemove(coachId),
     "consents.coachSharingRevokedAt": admin.firestore.FieldValue.serverTimestamp(),
   });
 
@@ -503,10 +538,11 @@ export const respondToCoachLinkRequest = onCall(async (request) => {
     updatedAt: admin.firestore.FieldValue.serverTimestamp(),
   });
 
-  // DSGVO-Einwilligung und Coach-Zuordnung am Athletenprofil dokumentieren
+  // DSGVO-Einwilligung, Coach-Zuordnung und Storage-Zugriffsarray am Athletenprofil dokumentieren
   const userRef = db.collection("users").doc(uid);
   await userRef.set({
     coachId,
+    authorizedCoachIds: admin.firestore.FieldValue.arrayUnion(coachId),
     consents: {
       coachSharing: {
         at: admin.firestore.FieldValue.serverTimestamp(),
@@ -536,5 +572,134 @@ export const respondToCoachLinkRequest = onCall(async (request) => {
   );
 
   return { success: true, status: "ACTIVE", coachId };
+});
+
+/**
+ * Konfiguriert die CORS-Policy (GET, HEAD, PUT, POST, OPTIONS) auf dem
+ * ORBIT Firebase Cloud Storage Bucket (`orbit-app-mvp.firebasestorage.app`),
+ * sodass Flutter Web (Safari, Chrome) `.FIT`-Dateien ohne CORS-Blockade
+ * hoch- und herunterladen kann.
+ *
+ * @param request - Erfordert einen authentifizierten Aufrufer mit Rolle `TRAINER` oder Admin.
+ * @returns Statusobjekt mit dem konfigurierten Bucket-Namen.
+ */
+export const ensureStorageCors = onCall(async (request) => {
+  const uid = request.auth?.uid;
+  if (!uid) {
+    throw new HttpsError("unauthenticated", "Must be logged in.");
+  }
+
+  const db = admin.firestore();
+  const userSnap = await db.collection("users").doc(uid).get();
+  const userData = userSnap.data();
+  if (userData?.role !== "TRAINER" && userData?.isAdmin !== true) {
+    throw new HttpsError("permission-denied", "Only trainers or admins can sync storage CORS.");
+  }
+
+  // Feste, DSGVO- und Web-kompatible CORS-Policy gemäß cors.json anwenden
+  const bucket = admin.storage().bucket("orbit-app-mvp.firebasestorage.app");
+  await bucket.setCorsConfiguration([
+    {
+      origin: ["*"],
+      method: ["GET", "HEAD", "PUT", "POST", "OPTIONS"],
+      responseHeader: [
+        "Content-Type",
+        "Authorization",
+        "Content-Length",
+        "User-Agent",
+        "x-goog-resumable",
+        "X-Firebase-Storage-Version",
+        "X-Firebase-Storage-XSRF",
+      ],
+      maxAgeSeconds: 3600,
+    },
+  ]);
+
+  return { success: true, bucket: bucket.name };
+});
+
+/**
+ * Lädt die originale Trainingsdatei (`.fit` / `.fit.gz` / `.tcx` / `.gpx`) einer Aktivität
+ * sicher über das Admin SDK für den Athleten selbst oder einen aktiv per DSGVO
+ * autorisierten Coach herunter. Umgeht Cross-Service-IAM- oder CORS-Einschränkungen im Browser.
+ *
+ * @param request - Enthält `activityId` der gewünschten Aktivität.
+ * @returns Objekt mit `found` (boolean), `base64` (Dateibytes), `storagePath` und `extension`.
+ */
+export const downloadActivityFit = onCall(async (request) => {
+  const callerUid = request.auth?.uid;
+  if (!callerUid) {
+    throw new HttpsError("unauthenticated", "Must be logged in.");
+  }
+
+  const rawActivityId = request.data?.activityId;
+  const activityId = typeof rawActivityId === "string" ? rawActivityId.trim() : "";
+  if (!activityId) {
+    throw new HttpsError("invalid-argument", "activityId is required.");
+  }
+
+  const db = admin.firestore();
+  const actSnap = await db.collection("activities").doc(activityId).get();
+  if (!actSnap.exists) {
+    throw new HttpsError("not-found", "Activity not found.");
+  }
+
+  const actData = actSnap.data()!;
+  const athleteId = typeof actData.athleteId === "string" ? actData.athleteId : "";
+  if (!athleteId) {
+    throw new HttpsError("failed-precondition", "Activity has no athleteId.");
+  }
+
+  // Strenge Autorisierungsprüfung: Entweder Athlet selbst oder aktiv freigegebener Coach
+  if (callerUid !== athleteId) {
+    const linkSnap = await db.collection("coachLinks").doc(`${athleteId}_${callerUid}`).get();
+    const linkData = linkSnap.data();
+    const isAuthorizedCoach =
+      linkSnap.exists &&
+      linkData?.status === "ACTIVE" &&
+      linkData?.permissions?.activities === true;
+    if (!isAuthorizedCoach) {
+      throw new HttpsError("permission-denied", "No active coach permission for this athlete.");
+    }
+  }
+
+  // Kandidaten-Pfade in Storage priorisiert prüfen (.fit / .fit.gz vor evtl. rawFilePath)
+  const rawFilePath = typeof actData.rawFilePath === "string" ? actData.rawFilePath.trim() : "";
+  const candidates: string[] = [];
+  if (rawFilePath && /\.(fit|tcx|gpx)(\.gz)?$/i.test(rawFilePath)) {
+    candidates.push(rawFilePath);
+  }
+  const canonicalPaths = [
+    `users/${athleteId}/rawActivities/${activityId}.fit`,
+    `users/${athleteId}/rawActivities/${activityId}.fit.gz`,
+    `users/${athleteId}/fit/${activityId}.fit`,
+    `users/${athleteId}/fit/${activityId}.fit.gz`,
+  ];
+  for (const candidate of canonicalPaths) {
+    if (!candidates.includes(candidate)) {
+      candidates.push(candidate);
+    }
+  }
+
+  const bucket = admin.storage().bucket();
+  for (const path of candidates) {
+    try {
+      const file = bucket.file(path);
+      const [exists] = await file.exists();
+      if (!exists) continue;
+      const [buffer] = await file.download();
+      if (buffer && buffer.length > 0 && buffer.length <= 25 * 1024 * 1024) {
+        return {
+          found: true,
+          storagePath: path,
+          base64: buffer.toString("base64"),
+        };
+      }
+    } catch (_) {
+      // Nächsten Kandidaten-Pfad prüfen
+    }
+  }
+
+  return { found: false };
 });
 

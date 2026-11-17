@@ -2,8 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/config/release_config.dart';
 import '../../../core/design/app_colors.dart';
+import '../../../core/widgets/responsive_content_frame.dart';
 import '../../auth/providers/user_provider.dart';
+import '../../profile/widgets/v1_athlete_coach_connection_card.dart';
+import '../../settings/providers/settings_provider.dart';
 import '../providers/coach_link_provider.dart';
 
 /// Screen für die Trainer-Verknüpfung aus Athleten-Sicht.
@@ -22,6 +26,26 @@ class _AthleteCoachTabScreenState extends ConsumerState<AthleteCoachTabScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Im V1.0.0-Standardbetrieb ausschließlich die schlanke DSGVO-Coach-Verbindung zeigen
+    final isV2Enabled = ref.watch(
+      releaseConfigProvider.select((cfg) => cfg.isV2Enabled),
+    );
+    if (!isV2Enabled) {
+      final lang = ref.watch(
+        settingsControllerProvider.select((s) => s.languageCode),
+      );
+      return Scaffold(
+        body: SafeArea(
+          child: ResponsiveContentFrame(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: V1AthleteCoachConnectionCard(lang: lang),
+            ),
+          ),
+        ),
+      );
+    }
+
     final userDoc = ref.watch(userDocumentProvider).valueOrNull;
     final coachId = userDoc?['coachId'] as String?;
 

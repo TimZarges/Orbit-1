@@ -104,6 +104,19 @@ class V1CoachCalendarTab extends ConsumerWidget {
       orElse: () => activeAthletes.first,
     );
 
+    // Sicherstellen, dass v1SelectedCoachAthleteIdProvider und viewedAthleteIdProvider
+    // auch beim direkten Tab-Wechsel sofort auf den aktiven Athleten zeigen
+    if (selectedId != selectedAthlete.athleteId) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (context.mounted) {
+          ref.read(v1SelectedCoachAthleteIdProvider.notifier).state =
+              selectedAthlete.athleteId;
+          ref.read(viewedAthleteIdProvider.notifier).state =
+              selectedAthlete.athleteId;
+        }
+      });
+    }
+
     return Column(
       children: [
         // Kompakte Athleten-Auswahlleiste oben (mit SafeArea wegen appBar: null im Dashboard)
@@ -160,6 +173,8 @@ class V1CoachCalendarTab extends ConsumerWidget {
                       ref
                           .read(v1SelectedCoachAthleteIdProvider.notifier)
                           .state = athlete.athleteId;
+                      ref.read(viewedAthleteIdProvider.notifier).state =
+                          athlete.athleteId;
                     },
                   );
                 },
