@@ -7,6 +7,7 @@
 /// `CountryDateTimeFormatter` und `PasswordCriteriaChecklist` (`AGENTS.md` Regel 10).
 library;
 
+import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:file_picker/file_picker.dart';
@@ -20,10 +21,14 @@ import '../../../core/localization/app_strings.dart';
 import '../../../core/utils/country_date_time_formatter.dart';
 import '../../activities/providers/activity_upload_provider.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../auth/providers/user_provider.dart';
 import '../../auth/services/auth_guard_service.dart';
 import '../../auth/widgets/password_criteria_checklist.dart';
+import '../../beta_feedback/widgets/beta_bug_reporter_sheet.dart';
 import '../../integrations/providers/garmin_provider.dart';
 import '../../legal/widgets/legal_documents_sheet.dart';
+import '../../profile/services/profile_avatar_service.dart';
+import '../../profile/widgets/user_avatar_circle.dart';
 import '../../settings/providers/settings_provider.dart';
 import 'triathlon_combined_icon.dart';
 
@@ -132,6 +137,9 @@ class _V1SimpleOnboardingWizardState
   /// Ausgewählte `.fit`-Dateien in Schritt 3.
   List<PlatformFile> _stagedFiles = const [];
 
+  /// Optional im Onboarding ausgewähltes Profilbild (lokale Vorschau-Bytes).
+  Uint8List? _pendingAvatarBytes;
+
   final _firstNameCtrl = TextEditingController();
   final _lastNameCtrl = TextEditingController();
   final _heightCtrl = TextEditingController();
@@ -230,6 +238,7 @@ class _V1SimpleOnboardingWizardState
               : 'ORBIT Einrichtung (${_step + 1}/3)',
         ),
         actions: [
+          const BetaBugReportIconButton(),
           TextButton(
             key: const Key('v1_onboarding_login_shortcut'),
             onPressed: () => context.go('/login'),
@@ -543,7 +552,7 @@ class _V1SimpleOnboardingWizardState
         ),
         const SizedBox(height: 20),
 
-        // Vorname & Nachname
+        // Profilbild (optional) + Vorname & Nachname
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
@@ -554,6 +563,61 @@ class _V1SimpleOnboardingWizardState
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              Center(
+                child: Column(
+                  children: [
+                    GestureDetector(
+                      key: const Key('v1_onboarding_avatar_picker'),
+                      onTap: () async {
+                        final bytes = await ref
+                            .read(profileAvatarServiceProvider)
+                            .pickAndCompressAvatarBytes();
+                        if (bytes != null && bytes.isNotEmpty && mounted) {
+                          setState(() => _pendingAvatarBytes = bytes);
+                        }
+                      },
+                      child: Stack(
+                        children: [
+                          UserAvatarCircle(
+                            radius: 40,
+                            previewBytes: _pendingAvatarBytes,
+                            backgroundColor: isDark
+                                ? Theme.of(context).scaffoldBackgroundColor
+                                : const Color(0xFFF1F5F9),
+                            iconColor: isDark ? AppColors.volt : AppColors.navy,
+                          ),
+                          Positioned(
+                            bottom: 0,
+                            right: 0,
+                            child: CircleAvatar(
+                              radius: 14,
+                              backgroundColor:
+                                  isDark ? AppColors.volt : AppColors.navy,
+                              child: Icon(
+                                Icons.camera_alt,
+                                size: 14,
+                                color:
+                                    isDark ? AppColors.navy : AppColors.white,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      isEn
+                          ? 'Profile Photo (optional)'
+                          : 'Profilbild (optional)',
+                      style: AppTypography.bodySmall.copyWith(
+                        color: secondaryText,
+                        fontSize: 11,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 14),
               TextField(
                 key: const Key('v1_onboarding_first_name_field'),
                 controller: _firstNameCtrl,
@@ -1216,6 +1280,15 @@ class _V1SimpleOnboardingWizardState
           },
           SetOptions(merge: true),
         );
+
+        // Optionales Profilbild dauerhaft in Cloud Storage, Firestore & Auth speichern
+        if (_pendingAvatarBytes != null) {
+          await ref.read(profileAvatarServiceProvider).uploadAndPersistAvatar(
+                uid: uid,
+                bytes: _pendingAvatarBytes!,
+              );
+          ref.invalidate(userDocumentProvider);
+        }
 
         // Optionale .FIT-Dateien direkt hochladen
         if (_stagedFiles.isNotEmpty) {

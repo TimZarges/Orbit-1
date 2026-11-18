@@ -16,6 +16,7 @@ import '../../../core/utils/country_date_time_formatter.dart';
 import '../../activities/models/activity.dart';
 import '../../activities/providers/activities_provider.dart';
 import '../../activities/screens/activity_detail_screen.dart';
+import '../../beta_feedback/widgets/beta_bug_reporter_sheet.dart';
 import '../../coach_link/providers/athlete_context_provider.dart';
 import '../../home/widgets/home_recent_activity_card.dart';
 import '../../settings/providers/settings_provider.dart';
@@ -101,6 +102,8 @@ class CalendarScreen extends ConsumerWidget {
             icon: const Icon(Icons.chevron_right),
             onPressed: () => _navigateDate(ref, viewMode, 1),
           ),
+          // Topbar-Bugmeldung auch im Kalender-Tab (da Dashboard-AppBar hier ausgeblendet ist)
+          const BetaBugReportIconButton(),
         ],
       ),
       body: Column(
@@ -241,7 +244,8 @@ class CalendarScreen extends ConsumerWidget {
                   'Wochensoll: ${actualHours}h von ${plannedHours}h (${compliance.toStringAsFixed(0)} %)',
                   style: theme.textTheme.labelMedium?.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: isDark ? AppColors.white : AppColors.lightTextPrimary,
+                    color:
+                        isDark ? AppColors.white : AppColors.lightTextPrimary,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -289,12 +293,14 @@ class CalendarScreen extends ConsumerWidget {
     required bool isV2Enabled,
   }) {
     final workouts = isV2Enabled
-        ? (ref.watch(athleteCurrentWeekWorkoutsProvider(athleteId)).valueOrNull ??
+        ? (ref
+                .watch(athleteCurrentWeekWorkoutsProvider(athleteId))
+                .valueOrNull ??
             const <PlannedWorkout>[])
         : const <PlannedWorkout>[];
     final activities = ref.watch(
-          activitiesProvider.select((a) => a.valueOrNull ?? const <Activity>[]),
-        );
+      activitiesProvider.select((a) => a.valueOrNull ?? const <Activity>[]),
+    );
 
     final monday =
         selectedDate.subtract(Duration(days: selectedDate.weekday - 1));
@@ -417,8 +423,9 @@ class CalendarScreen extends ConsumerWidget {
                       width: double.infinity,
                       padding: const EdgeInsets.symmetric(vertical: 10),
                       decoration: BoxDecoration(
-                        border:
-                            Border.all(color: Colors.grey.withValues(alpha: 0.2)),
+                        border: Border.all(
+                          color: Colors.grey.withValues(alpha: 0.2),
+                        ),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Center(
@@ -476,12 +483,14 @@ class CalendarScreen extends ConsumerWidget {
     required bool isV2Enabled,
   }) {
     final workouts = isV2Enabled
-        ? (ref.watch(athleteCurrentMonthWorkoutsProvider(athleteId)).valueOrNull ??
+        ? (ref
+                .watch(athleteCurrentMonthWorkoutsProvider(athleteId))
+                .valueOrNull ??
             const <PlannedWorkout>[])
         : const <PlannedWorkout>[];
     final activities = ref.watch(
-          activitiesProvider.select((a) => a.valueOrNull ?? const <Activity>[]),
-        );
+      activitiesProvider.select((a) => a.valueOrNull ?? const <Activity>[]),
+    );
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final firstDayOfMonth = DateTime(selectedDate.year, selectedDate.month, 1);
@@ -556,14 +565,16 @@ class CalendarScreen extends ConsumerWidget {
                 cellBg = isDark
                     ? AppColors.anthraciteCard
                     : AppColors.navy.withValues(alpha: 0.08);
-                textColor = isDark ? AppColors.white : AppColors.lightTextPrimary;
+                textColor =
+                    isDark ? AppColors.white : AppColors.lightTextPrimary;
                 cellBorder = Border.all(
                   color: isDark ? AppColors.volt : AppColors.navy,
                   width: 1.5,
                 );
               } else {
                 cellBg = isDark ? AppColors.anthraciteCard : AppColors.white;
-                textColor = isDark ? AppColors.white : AppColors.lightTextPrimary;
+                textColor =
+                    isDark ? AppColors.white : AppColors.lightTextPrimary;
                 cellBorder = Border.all(
                   color: isDark
                       ? AppColors.darkSubtleBorder
@@ -662,11 +673,12 @@ class CalendarScreen extends ConsumerWidget {
                         )
                       : Text(
                           '${CountryDateTimeFormatter.formatDate(selectedDate, countryCode: countryCode)} • ${AppStrings.calendarNoSessionsOnDay(lang: lang)}',
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: isDark
-                                    ? AppColors.textSecondaryDark
-                                    : const Color(0xFF64748B),
-                              ),
+                          style:
+                              Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    color: isDark
+                                        ? AppColors.textSecondaryDark
+                                        : const Color(0xFF64748B),
+                                  ),
                         ),
                 )
               : ListView.builder(
@@ -689,8 +701,8 @@ class CalendarScreen extends ConsumerWidget {
                             : null,
                       );
                     }
-                    final w = selectedDayWorkouts[
-                        idx - selectedDayActivities.length];
+                    final w =
+                        selectedDayWorkouts[idx - selectedDayActivities.length];
                     return WorkoutCard(
                       workout: w,
                       onTap: () => showWorkoutDetailSheet(context, w),
@@ -711,12 +723,14 @@ class CalendarScreen extends ConsumerWidget {
     required bool isV2Enabled,
   }) {
     final workouts = isV2Enabled
-        ? (ref.watch(athleteCurrentMonthWorkoutsProvider(athleteId)).valueOrNull ??
+        ? (ref
+                .watch(athleteCurrentMonthWorkoutsProvider(athleteId))
+                .valueOrNull ??
             const <PlannedWorkout>[])
         : const <PlannedWorkout>[];
     final activities = ref.watch(
-          activitiesProvider.select((a) => a.valueOrNull ?? const <Activity>[]),
-        );
+      activitiesProvider.select((a) => a.valueOrNull ?? const <Activity>[]),
+    );
 
     if (workouts.isEmpty && activities.isEmpty) {
       return Center(

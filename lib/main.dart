@@ -11,6 +11,7 @@ import 'core/design/app_theme.dart';
 import 'core/routing/app_router.dart';
 import 'core/config/app_config.dart';
 import 'core/config/app_check_service.dart';
+import 'core/config/release_config.dart';
 import 'core/utils/crash_reporter.dart';
 import 'l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -75,6 +76,10 @@ class OrbitApp extends ConsumerWidget {
     final languageCode = ref.watch(
       settingsControllerProvider.select((s) => s.languageCode),
     );
+    // In V1.0.0 bleibt die Bugmeldung sauber in der Topbar; kein schwebender Overlay-Button.
+    final isV2Enabled = ref.watch(
+      releaseConfigProvider.select((cfg) => cfg.isV2Enabled),
+    );
 
     return VersionGateWrapper(
       child: RepaintBoundary(
@@ -100,7 +105,7 @@ class OrbitApp extends ConsumerWidget {
             return Stack(
               children: [
                 if (child != null) child,
-                const GlobalFloatingBugBeetle(),
+                if (isV2Enabled) const GlobalFloatingBugBeetle(),
               ],
             );
           },

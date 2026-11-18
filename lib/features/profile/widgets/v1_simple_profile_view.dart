@@ -6,10 +6,10 @@
 /// nutzt granulare Riverpod-Selektoren (`.select(...)`) (`AGENTS.md` Regel 10).
 library;
 
-import 'dart:convert';
+import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -28,6 +28,8 @@ import '../../integrations/providers/garmin_provider.dart';
 import '../../legal/widgets/legal_documents_sheet.dart';
 import '../../onboarding/widgets/triathlon_combined_icon.dart';
 import '../../settings/providers/settings_provider.dart';
+import '../services/profile_avatar_service.dart';
+import 'user_avatar_circle.dart';
 import 'v1_athlete_coach_connection_card.dart';
 
 /// Modulares V1.0.0-Profil („Profil Einfach“) für Athleten und Coaches.
@@ -77,7 +79,9 @@ class _V1SimpleProfileViewState extends ConsumerState<V1SimpleProfileView> {
   String _gender = 'male';
   DateTime? _birthDate;
   List<String> _selectedSports = ['BIKE', 'RUN'];
-  String? _photoBase64;
+  String? _avatarUrl;
+  Uint8List? _pendingAvatarBytes;
+  bool _isUploadingAvatar = false;
   bool _isSaving = false;
   bool _initialized = false;
 
@@ -152,8 +156,18 @@ class _V1SimpleProfileViewState extends ConsumerState<V1SimpleProfileView> {
     _heightCtrl.text = (profile['heightCm'] ?? '').toString();
     _weightCtrl.text = (profile['weightKg'] ?? '').toString();
     _coachBioCtrl.text = (profile['coachBio'] as String? ?? '').trim();
+    User? authUser;
+    try {
+      if (Firebase.apps.isNotEmpty) {
+        authUser = FirebaseAuth.instance.currentUser;
+      }
+    } catch (_) {}
+
     _gender = (profile['gender'] as String? ?? 'male');
-    _photoBase64 = profile['photoUrl'] as String?;
+    _avatarUrl = ProfileAvatarService.resolveAvatarUrl(
+      userDoc,
+      authUser: authUser,
+    );
 
     final birthDateRaw = profile['birthDate'] as String?;
     if (birthDateRaw != null && birthDateRaw.isNotEmpty) {
@@ -177,44 +191,111 @@ class _V1SimpleProfileViewState extends ConsumerState<V1SimpleProfileView> {
     }
   }
 
-  /// Wählt ein neues Profilbild (Base64) aus.
-  Future<void> _pickImage() async {
+  /// Wählt ein neues Profilbild aus, komprimiert es und lädt es direkt in Cloud Storage hoch.
+  Future<void> _pickImage(String lang) async {
     try {
-      final file = await FilePicker.pickFile(type: FileType.image);
-      if (file != null) {
-        final bytes = await file.readAsBytes();
-        if (bytes.isNotEmpty && mounted) {
+      final avatarService = ref.read(profileAvatarServiceProvider);
+      final bytes = await avatarService.pickAndCompressAvatarBytes();
+      if (bytes == null || bytes.isEmpty || !mounted) return;
+
+      setState(() {
+        _pendingAvatarBytes = bytes;
+        _isUploadingAvatar = true;
+      });
+
+      String? uid;
+      try {
+        if (Firebase.apps.isNotEmpty) {
+          uid = FirebaseAuth.instance.currentUser?.uid;
+        }
+      } catch (_) {}
+
+      if (uid != null && Firebase.apps.isNotEmpty) {
+        final downloadUrl = await avatarService.uploadAndPersistAvatar(
+          uid: uid,
+          bytes: bytes,
+        );
+        ref.invalidate(userDocumentProvider);
+        if (mounted) {
           setState(() {
-            _photoBase64 = 'data:image/jpeg;base64,${base64Encode(bytes)}';
+            _avatarUrl = downloadUrl;
+            _pendingAvatarBytes = null;
           });
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                lang == 'en'
+                    ? 'Profile photo saved!'
+                    : 'Profilbild dauerhaft gespeichert!',
+              ),
+            ),
+          );
         }
       }
-    } catch (_) {}
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              lang == 'en'
+                  ? 'Photo upload failed: $e'
+                  : 'Profilbild-Upload fehlgeschlagen: $e',
+            ),
+            backgroundColor: AppColors.coral,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isUploadingAvatar = false);
+    }
   }
 
-  /// Speichert alle Änderungen im „Profil Einfach“ persistent in Firestore.
+  /// Speichert alle Änderungen im „Profil Einfach“ persistent in Firestore,
+  /// ohne ein bestehendes Profilbild jemals mit null oder leerem String zu überschreiben.
   Future<void> _saveProfile(String lang, String countryCode) async {
     String? uid;
     try {
-      uid = FirebaseAuth.instance.currentUser?.uid;
+      if (Firebase.apps.isNotEmpty) {
+        uid = FirebaseAuth.instance.currentUser?.uid;
+      }
     } catch (_) {}
     if (uid == null && widget.onSaveOverride == null) return;
 
     setState(() => _isSaving = true);
     try {
+      // Falls noch lokale Vorschau-Bytes offen sind, zunächst in Cloud Storage sichern
+      if (_pendingAvatarBytes != null &&
+          uid != null &&
+          Firebase.apps.isNotEmpty) {
+        final uploadedUrl =
+            await ref.read(profileAvatarServiceProvider).uploadAndPersistAvatar(
+                  uid: uid,
+                  bytes: _pendingAvatarBytes!,
+                );
+        _avatarUrl = uploadedUrl;
+        _pendingAvatarBytes = null;
+      }
+
       final firstName = _firstNameCtrl.text.trim();
       final lastName = _lastNameCtrl.text.trim();
       final displayName = '$firstName $lastName'.trim();
       final heightCm = int.tryParse(_heightCtrl.text.trim());
       final weightKg = double.tryParse(_weightCtrl.text.trim());
+      final preservedAvatar =
+          (_avatarUrl != null && _avatarUrl!.trim().isNotEmpty)
+              ? _avatarUrl!.trim()
+              : null;
 
       final payload = <String, dynamic>{
+        if (preservedAvatar != null) 'photoUrl': preservedAvatar,
+        if (preservedAvatar != null) 'avatarUrl': preservedAvatar,
         'profile': {
           'displayName': displayName,
           'firstName': firstName,
           'lastName': lastName,
           'countryCode': countryCode,
-          if (_photoBase64 != null) 'photoUrl': _photoBase64,
+          if (preservedAvatar != null) 'photoUrl': preservedAvatar,
+          if (preservedAvatar != null) 'avatarUrl': preservedAvatar,
           if (_role == 'ATHLETE') ...{
             'sports': _selectedSports,
             'sportTypes': _selectedSports,
@@ -292,11 +373,27 @@ class _V1SimpleProfileViewState extends ConsumerState<V1SimpleProfileView> {
 
     String email = '';
     String? uid;
+    User? authUser;
     try {
-      final user = FirebaseAuth.instance.currentUser;
-      email = user?.email ?? '';
-      uid = user?.uid;
+      if (Firebase.apps.isNotEmpty) {
+        authUser = FirebaseAuth.instance.currentUser;
+        email = authUser?.email ?? '';
+        uid = authUser?.uid;
+      }
     } catch (_) {}
+
+    // Reaktiver Abgleich mit dem zentralen User-Stream, falls initState noch lädt
+    final String? effectiveAvatarUrl = widget.initialUserDocOverride != null
+        ? _avatarUrl
+        : (_avatarUrl ??
+            ref.watch(
+              userDocumentProvider.select(
+                (docAsync) => ProfileAvatarService.resolveAvatarUrl(
+                  docAsync.valueOrNull,
+                  authUser: authUser,
+                ),
+              ),
+            ));
 
     final isAthlete = _role != 'TRAINER';
     final formatPreview = CountryDateTimeFormatter.formatDateTime(
@@ -325,24 +422,33 @@ class _V1SimpleProfileViewState extends ConsumerState<V1SimpleProfileView> {
                   Center(
                     child: Stack(
                       children: [
-                        CircleAvatar(
+                        UserAvatarCircle(
+                          key: const Key('v1_profile_avatar_circle'),
                           radius: 48,
+                          photoUrlOverride: effectiveAvatarUrl,
+                          previewBytes: _pendingAvatarBytes,
                           backgroundColor: cardBg,
-                          backgroundImage: _photoBase64 != null &&
-                                  _photoBase64!.startsWith('data:image')
-                              ? MemoryImage(
-                                  base64Decode(_photoBase64!.split(',').last),
-                                )
-                              : null,
-                          child: _photoBase64 == null
-                              ? Icon(
-                                  Icons.person,
-                                  size: 48,
-                                  color:
-                                      isDark ? AppColors.volt : AppColors.navy,
-                                )
-                              : null,
+                          iconColor: isDark ? AppColors.volt : AppColors.navy,
                         ),
+                        if (_isUploadingAvatar)
+                          Positioned.fill(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.black.withValues(alpha: 0.45),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Center(
+                                child: SizedBox(
+                                  width: 24,
+                                  height: 24,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2.5,
+                                    color: AppColors.volt,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
                         Positioned(
                           bottom: 0,
                           right: 0,
@@ -351,6 +457,7 @@ class _V1SimpleProfileViewState extends ConsumerState<V1SimpleProfileView> {
                             backgroundColor:
                                 isDark ? AppColors.volt : AppColors.navy,
                             child: IconButton(
+                              key: const Key('v1_profile_pick_avatar_button'),
                               padding: EdgeInsets.zero,
                               icon: Icon(
                                 Icons.camera_alt,
@@ -358,7 +465,9 @@ class _V1SimpleProfileViewState extends ConsumerState<V1SimpleProfileView> {
                                 color:
                                     isDark ? AppColors.navy : AppColors.white,
                               ),
-                              onPressed: _pickImage,
+                              onPressed: _isUploadingAvatar
+                                  ? null
+                                  : () => _pickImage(lang),
                             ),
                           ),
                         ),

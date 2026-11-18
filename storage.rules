@@ -80,6 +80,26 @@ service firebase.storage {
       allow delete: if isChatParticipant(chatId);
     }
 
+    // Profilbilder (Avatare) unter users/{userId}/avatars/ und users/{userId}/profile/
+    // Maximal 5 MB, strikt image/*; Besitzer darf schreiben/löschen, authentifizierte Nutzer lesen.
+    match /users/{userId}/avatars/{allPaths=**} {
+      allow read: if request.auth != null;
+      allow create, update: if request.auth != null
+                           && request.auth.uid == userId
+                           && request.resource.size <= 5 * 1024 * 1024
+                           && request.resource.contentType.matches('image/.*');
+      allow delete: if request.auth != null && request.auth.uid == userId;
+    }
+
+    match /users/{userId}/profile/{allPaths=**} {
+      allow read: if request.auth != null;
+      allow create, update: if request.auth != null
+                           && request.auth.uid == userId
+                           && request.resource.size <= 5 * 1024 * 1024
+                           && request.resource.contentType.matches('image/.*');
+      allow delete: if request.auth != null && request.auth.uid == userId;
+    }
+
     // Beta-Bug-Reporter Screenshots (max 5 MB, nur eigene Uploads, image/*)
     match /betaFeedback/{userId}/{fileName} {
       allow read: if request.auth != null && request.auth.uid == userId;

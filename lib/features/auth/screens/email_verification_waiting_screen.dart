@@ -13,6 +13,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/design/app_colors.dart';
 import '../../../core/design/app_typography.dart';
+import '../../beta_feedback/widgets/beta_bug_reporter_sheet.dart';
 import '../../settings/providers/settings_provider.dart';
 import '../providers/auth_provider.dart';
 import '../services/auth_guard_service.dart';
@@ -202,6 +203,7 @@ class _EmailVerificationWaitingScreenState
       appBar: AppBar(
         title: Text(isEn ? 'Verify Email' : 'E-Mail bestätigen'),
         actions: [
+          const BetaBugReportIconButton(),
           IconButton(
             key: const Key('verify_email_signout_button'),
             icon: const Icon(Icons.logout),

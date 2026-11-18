@@ -6,7 +6,7 @@ service cloud.firestore {
     // Assumed Data Model
     // ===============================================================
     // Collection: users/{uid}
-    // Fields: uid, email, createdAt, role, trainerVerified, coachId, authorizedCoachIds, profile, settings, consents, plan
+    // Fields: uid, email, createdAt, role, trainerVerified, coachId, authorizedCoachIds, photoUrl, avatarUrl, profile (inkl. photoUrl, avatarUrl), settings, consents, plan
     //
     // Collection: coachLinks/{linkId}
     // Fields: athleteId, coachId, status, permissions, createdAt, updatedAt
@@ -98,20 +98,51 @@ service cloud.firestore {
       return val == null || checkStringSize(val, minLen, maxLen);
     }
 
+    /**
+     * Validiert einen optionalen Profilbild-Wert (`photoUrl` oder `avatarUrl`).
+     * Erlaubt `null` (zum Zurücksetzen), gültige HTTP(S)-URLs bis maximal 2048 Zeichen
+     * sowie optional abwärtskompatible Legacy-Base64-Bilddaten (`data:image/...;base64,...`)
+     * bis maximal 500 KB, um 1-MB-DoS-Payloads und ungültige Typen/Protokolle zu blockieren.
+     */
+    function isValidAvatarValue(val, allowLegacyBase64) {
+      return val == null || (
+        val is string && (
+          (val.size() >= 8 && val.size() <= 2048 && val.matches('^https?://[^\\s]+$')) ||
+          (allowLegacyBase64 && val.size() <= 500000 && val.matches('^data:image/(jpeg|jpg|png|webp|gif);base64,[A-Za-z0-9+/=]+$'))
+        )
+      );
+    }
+
     // ===============================================================
     // Domain Validators
     // ===============================================================
+
+    /**
+     * Validiert allgemeine Feldtypen und Längenbegrenzungen des Benutzerdokuments `users/{userId}`
+     * (sowohl bei `create` als auch bei `update`, um den Update-Bypass auszuschließen).
+     * Prüft die optionalen Profilbild-Felder `photoUrl` und `avatarUrl` auf Top-Level
+     * sowie innerhalb der optionalen `profile`-Map (`null` oder URL bis 2048 Zeichen;
+     * `profile.photoUrl` bleibt zudem abwärtskompatibel für bestehende Base64-Bilddaten).
+     */
     function isValidUserDoc(data) {
-      // Basic size checks to prevent 1MB DoS attacks
+      // Basis-Größenprüfungen zur Abwehr von 1-MB-DoS-Angriffen und Typ-Manipulationen
       let emailOk = !('email' in data) || checkStringSize(data.email, 3, 254);
       let roleOk = !('role' in data) || data.role in ["ATHLETE", "TRAINER"];
-      
-      return emailOk && roleOk;
+      let photoUrlOk = !('photoUrl' in data) || isValidAvatarValue(data.photoUrl, false);
+      let avatarUrlOk = !('avatarUrl' in data) || isValidAvatarValue(data.avatarUrl, false);
+      let profileOk = !('profile' in data) || (
+        data.profile is map &&
+        (!('photoUrl' in data.profile) || isValidAvatarValue(data.profile.photoUrl, true)) &&
+        (!('avatarUrl' in data.profile) || isValidAvatarValue(data.profile.avatarUrl, false))
+      );
+
+      return emailOk && roleOk && photoUrlOk && avatarUrlOk && profileOk;
     }
 
     /**
      * Validiert die Neuerstellung eines Benutzerdokuments users/{userId}.
-     * Verhindert Privilege Escalation durch Client-seitiges Setzen privilegierter Felder.
+     * Verhindert Privilege Escalation durch Client-seitiges Setzen privilegierter
+     * oder serverseitig verwalteter Felder (inklusive metrics/notificationState).
      */
     function isValidUserCreate(data) {
       // Bei der Erstellung dürfen keine privilegierten oder serverseitig verwalteten Felder eskaliert werden
@@ -121,14 +152,16 @@ service cloud.firestore {
       let authorizedCoachIdsOk = !('authorizedCoachIds' in data) || (data.authorizedCoachIds is list && data.authorizedCoachIds.size() == 0);
       let uidOk = !('uid' in data) || data.uid == request.auth.uid;
       let adminOk = !('isAdmin' in data) || data.isAdmin == false;
-      
-      return isValidUserDoc(data) && roleOk && verifiedOk && coachOk && authorizedCoachIdsOk && uidOk && adminOk;
+      let serverOnlyAbsent = !('metrics' in data) && !('metricsVersion' in data) && !('notificationState' in data);
+
+      return isValidUserDoc(data) && roleOk && verifiedOk && coachOk && authorizedCoachIdsOk && uidOk && adminOk && serverOnlyAbsent;
     }
 
     /**
      * Validiert Aktualisierungen am Benutzerdokument users/{userId}.
      * Schützt serverseitig gepflegte Rollen-, Verknüpfungs- und Berechtigungsfelder
-     * (inklusive authorizedCoachIds) vor Client-Manipulation (Privilege-Escalation-Schutz).
+     * (inklusive authorizedCoachIds) vor Client-Manipulation (Privilege-Escalation-Schutz)
+     * und wendet `isValidUserDoc()` auf das resultierende Dokument an (Schutz vor Update-Bypass).
      */
     function isValidUserUpdate() {
       // Kritische serverseitig gepflegte Felder dürfen vom Client nicht verändert werden

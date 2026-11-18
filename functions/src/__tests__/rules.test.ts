@@ -166,6 +166,111 @@ describe("Firestore Security Rules Tests (RULES_TESTPLAN.md)", () => {
       await assertFails(bobDb.collection("users").doc("alice").get());
       await assertFails(unauthDb.collection("users").doc("alice").get());
     });
+
+    it("erlaubt Create/Update von photoUrl & avatarUrl (Top-Level und in profile) durch den Besitzer und blockiert ungültige Typen/Längen sowie Fremdzugriff", async () => {
+      const aliceDb = testEnv.authenticatedContext("alice").firestore();
+      const eveDb = testEnv.authenticatedContext("eve").firestore();
+      const validUrl =
+        "https://firebasestorage.googleapis.com/v0/b/orbit-app.appspot.com/o/users%2Falice%2Favatars%2Fprofile.jpg?alt=media&token=abc123";
+      const updatedUrl = `${validUrl}&v=1700000001`;
+
+      // 1. Erstellen durch Besitzer mit gültigen URLs (Top-Level & profile)
+      await assertSucceeds(
+        aliceDb.collection("users").doc("alice").set({
+          uid: "alice",
+          email: "alice@example.com",
+          role: "ATHLETE",
+          photoUrl: validUrl,
+          avatarUrl: validUrl,
+          profile: {
+            displayName: "Alice",
+            photoUrl: validUrl,
+            avatarUrl: validUrl,
+          },
+        })
+      );
+
+      // 2. Merge-Update wie in ProfileAvatarService durch Besitzer erlaubt
+      await assertSucceeds(
+        aliceDb.collection("users").doc("alice").set(
+          {
+            photoUrl: updatedUrl,
+            avatarUrl: updatedUrl,
+            profile: {
+              photoUrl: updatedUrl,
+              avatarUrl: updatedUrl,
+            },
+          },
+          { merge: true }
+        )
+      );
+
+      // 3. Abwärtskompatibles Legacy-Base64 in profile.photoUrl sowie Zurücksetzen auf null erlaubt
+      await assertSucceeds(
+        aliceDb.collection("users").doc("alice").update({
+          "profile.photoUrl": "data:image/jpeg;base64,/9j/4AAQSkZJRg==",
+        })
+      );
+      await assertSucceeds(
+        aliceDb.collection("users").doc("alice").update({
+          photoUrl: null,
+          avatarUrl: null,
+          "profile.photoUrl": null,
+          "profile.avatarUrl": null,
+        })
+      );
+
+      // 4. Ablehnung bei ungültigen Typen, ungültigen Schemata oder Überlänge (> 2048 Zeichen)
+      await assertFails(
+        aliceDb.collection("users").doc("alice").update({
+          photoUrl: 12345,
+        })
+      );
+      await assertFails(
+        aliceDb.collection("users").doc("alice").update({
+          "profile.avatarUrl": { url: validUrl },
+        })
+      );
+      await assertFails(
+        aliceDb.collection("users").doc("alice").update({
+          avatarUrl: "javascript:alert(1)",
+        })
+      );
+      await assertFails(
+        aliceDb.collection("users").doc("alice").update({
+          photoUrl: `https://example.com/${"a".repeat(2040)}`,
+        })
+      );
+      await assertFails(
+        aliceDb.collection("users").doc("alice").update({
+          "profile.photoUrl": `https://example.com/${"a".repeat(2040)}`,
+        })
+      );
+
+      // 5. Protected-Fields-Bypass über gleichzeitiges Profilbild-Update bleibt blockiert
+      await assertFails(
+        aliceDb.collection("users").doc("alice").update({
+          photoUrl: updatedUrl,
+          role: "TRAINER",
+        })
+      );
+
+      // 6. Fremdzugriff (Eve darf Alices Profilbild nicht aktualisieren oder erstellen)
+      await assertFails(
+        eveDb.collection("users").doc("alice").update({
+          photoUrl: updatedUrl,
+          avatarUrl: updatedUrl,
+        })
+      );
+      await assertFails(
+        eveDb.collection("users").doc("alice").set(
+          {
+            profile: { photoUrl: updatedUrl },
+          },
+          { merge: true }
+        )
+      );
+    });
   });
 
   // ===============================================================

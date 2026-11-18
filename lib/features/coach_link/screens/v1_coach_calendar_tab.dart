@@ -12,6 +12,7 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/design/app_colors.dart';
+import '../../beta_feedback/widgets/beta_bug_reporter_sheet.dart';
 import '../../calendar/screens/calendar_screen.dart';
 import '../../settings/providers/settings_provider.dart';
 import '../models/v1_coach_athlete_link.dart';
@@ -51,47 +52,55 @@ class V1CoachCalendarTab extends ConsumerWidget {
     final activeAthletes = allLinks.where((l) => l.isActive).toList();
 
     if (activeAthletes.isEmpty) {
-      return SafeArea(
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.calendar_month_outlined,
-                  size: 56,
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  isEn
-                      ? 'No connected athletes yet'
-                      : 'Noch keine verbundenen Athleten',
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  isEn
-                      ? 'Connect with an athlete in the Athletes tab to view their workouts and download .FIT files.'
-                      : 'Verbinde dich im Tab „Athleten“ mit einem Athleten, um seine Einheiten und .FIT-Dateien zu sehen.',
-                  textAlign: TextAlign.center,
-                  style: theme.textTheme.bodySmall?.copyWith(
+      return Scaffold(
+        appBar: AppBar(
+          title: Text(isEn ? 'Calendar' : 'Kalender'),
+          actions: const [
+            BetaBugReportIconButton(),
+          ],
+        ),
+        body: SafeArea(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.calendar_month_outlined,
+                    size: 56,
                     color: theme.colorScheme.onSurfaceVariant,
                   ),
-                ),
-                const SizedBox(height: 16),
-                FilledButton.icon(
-                  key: const Key('coach_calendar_go_athletes_btn'),
-                  onPressed: () {
-                    ref.read(v1CoachTabIndexProvider.notifier).state = 0;
-                  },
-                  icon: const Icon(Icons.group_outlined),
-                  label: Text(isEn ? 'Go to Athletes' : 'Zu den Athleten'),
-                ),
-              ],
+                  const SizedBox(height: 12),
+                  Text(
+                    isEn
+                        ? 'No connected athletes yet'
+                        : 'Noch keine verbundenen Athleten',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    isEn
+                        ? 'Connect with an athlete in the Athletes tab to view their workouts and download .FIT files.'
+                        : 'Verbinde dich im Tab „Athleten“ mit einem Athleten, um seine Einheiten und .FIT-Dateien zu sehen.',
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  FilledButton.icon(
+                    key: const Key('coach_calendar_go_athletes_btn'),
+                    onPressed: () {
+                      ref.read(v1CoachTabIndexProvider.notifier).state = 0;
+                    },
+                    icon: const Icon(Icons.group_outlined),
+                    label: Text(isEn ? 'Go to Athletes' : 'Zu den Athleten'),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

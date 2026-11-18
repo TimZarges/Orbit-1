@@ -1,6 +1,5 @@
-import 'dart:convert';
+import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,6 +9,8 @@ import '../../../core/design/app_colors.dart';
 import '../../../core/design/app_typography.dart';
 import '../../beta_feedback/widgets/beta_bug_reporter_sheet.dart';
 import '../../onboarding/widgets/triathlon_combined_icon.dart';
+import '../services/profile_avatar_service.dart';
+import '../widgets/user_avatar_circle.dart';
 import '../widgets/v1_simple_profile_view.dart';
 
 /// Athleten- und Benutzerprofil-Bildschirm.
@@ -34,9 +35,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
   late TextEditingController _maxHrController;
 
   List<String> _selectedSports = ['BIKE', 'RUN'];
-  String? _photoBase64;
+  String? _avatarUrl;
+  Uint8List? _pendingAvatarBytes;
   bool _isSaving = false;
   bool _hasInitialized = false;
+  final ProfileAvatarService _avatarService = const ProfileAvatarService();
 
   @override
   void initState() {
@@ -98,22 +101,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
       _selectedSports = sports.map((e) => e.toString()).toList();
     }
 
-    _photoBase64 = profile['photoUrl'] as String?;
+    _avatarUrl = ProfileAvatarService.resolveAvatarUrl(
+      userDoc,
+      authUser: FirebaseAuth.instance.currentUser,
+    );
   }
 
   Future<void> _pickImage() async {
     try {
-      final file = await FilePicker.pickFile(
-        type: FileType.image,
-      );
-
-      if (file != null) {
-        final bytes = await file.readAsBytes();
-        if (bytes.isNotEmpty) {
-          final base64Image = 'data:image/jpeg;base64,${base64Encode(bytes)}';
-          setState(() {
-            _photoBase64 = base64Image;
-          });
+      final bytes = await _avatarService.pickAndCompressAvatarBytes();
+      if (bytes != null && bytes.isNotEmpty) {
+        setState(() => _pendingAvatarBytes = bytes);
+        final uid = FirebaseAuth.instance.currentUser?.uid;
+        if (uid != null) {
+          final url = await _avatarService.uploadAndPersistAvatar(
+            uid: uid,
+            bytes: bytes,
+          );
+          if (mounted) {
+            setState(() {
+              _avatarUrl = url;
+              _pendingAvatarBytes = null;
+            });
+          }
         }
       }
     } catch (e) {
@@ -134,6 +144,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     setState(() => _isSaving = true);
     try {
+      String? persistedAvatar = _avatarUrl;
+      if (_pendingAvatarBytes != null) {
+        persistedAvatar = await _avatarService.uploadAndPersistAvatar(
+          uid: uid,
+          bytes: _pendingAvatarBytes!,
+        );
+      }
+
       final name = _nameController.text.trim();
       final nameParts = name.split(RegExp(r'\s+'));
       final firstName = nameParts.first;
@@ -145,26 +163,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
       final heightCm = int.tryParse(_heightController.text.trim());
       final restingHr = int.tryParse(_restingHrController.text.trim());
       final maxHr = int.tryParse(_maxHrController.text.trim());
+      final hasAvatar =
+          persistedAvatar != null && persistedAvatar.trim().isNotEmpty;
 
-      await FirebaseFirestore.instance.collection('users').doc(uid).set({
-        'profile': {
-          'displayName': name,
-          'firstName': firstName,
-          'lastName': lastName,
-          if (birthYear != null) 'birthYear': birthYear,
-          if (weightKg != null) 'weightKg': weightKg,
-          if (heightCm != null) 'heightCm': heightCm,
-          if (restingHr != null) 'restingHrBpm': restingHr,
-          if (maxHr != null) 'maxHrBpm': maxHr,
-          if (_photoBase64 != null) 'photoUrl': _photoBase64,
-          'sports': _selectedSports,
-          'sportTypes': _selectedSports,
+      await FirebaseFirestore.instance.collection('users').doc(uid).set(
+        {
+          if (hasAvatar) 'photoUrl': persistedAvatar,
+          if (hasAvatar) 'avatarUrl': persistedAvatar,
+          'profile': {
+            'displayName': name,
+            'firstName': firstName,
+            'lastName': lastName,
+            if (birthYear != null) 'birthYear': birthYear,
+            if (weightKg != null) 'weightKg': weightKg,
+            if (heightCm != null) 'heightCm': heightCm,
+            if (restingHr != null) 'restingHrBpm': restingHr,
+            if (maxHr != null) 'maxHrBpm': maxHr,
+            if (hasAvatar) 'photoUrl': persistedAvatar,
+            if (hasAvatar) 'avatarUrl': persistedAvatar,
+            'sports': _selectedSports,
+            'sportTypes': _selectedSports,
+          },
+          'thresholds': {
+            if (restingHr != null) 'restingHrBpm': restingHr,
+            if (maxHr != null) 'maxHrBpm': maxHr,
+          },
         },
-        'thresholds': {
-          if (restingHr != null) 'restingHrBpm': restingHr,
-          if (maxHr != null) 'maxHrBpm': maxHr,
-        },
-      }, SetOptions(merge: true),);
+        SetOptions(merge: true),
+      );
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -233,14 +259,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       CircleAvatar(
                         radius: 54,
                         backgroundColor: const Color(0xFF002A5C),
-                        backgroundImage: _photoBase64 != null &&
-                                _photoBase64!.startsWith('data:image')
-                            ? MemoryImage(
-                                base64Decode(_photoBase64!.split(',').last),)
-                            : null,
-                        child: _photoBase64 == null
-                            ? const Icon(Icons.person,
-                                size: 56, color: AppColors.volt,)
+                        backgroundImage: UserAvatarCircle.buildImageProvider(
+                          url: _avatarUrl,
+                          previewBytes: _pendingAvatarBytes,
+                        ),
+                        child: UserAvatarCircle.buildImageProvider(
+                                  url: _avatarUrl,
+                                  previewBytes: _pendingAvatarBytes,
+                                ) ==
+                                null
+                            ? const Icon(
+                                Icons.person,
+                                size: 56,
+                                color: AppColors.volt,
+                              )
                             : null,
                       ),
                       Positioned(
@@ -250,8 +282,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           radius: 18,
                           backgroundColor: AppColors.volt,
                           child: IconButton(
-                            icon: const Icon(Icons.camera_alt,
-                                size: 18, color: AppColors.navy,),
+                            icon: const Icon(
+                              Icons.camera_alt,
+                              size: 18,
+                              color: AppColors.navy,
+                            ),
                             onPressed: _pickImage,
                           ),
                         ),
@@ -290,8 +325,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       decoration: const InputDecoration(
                         labelText: 'Geburtsjahr (z. B. 1992)',
                         labelStyle: TextStyle(color: Colors.white70),
-                        prefixIcon: Icon(Icons.calendar_today_outlined,
-                            color: AppColors.volt,),
+                        prefixIcon: Icon(
+                          Icons.calendar_today_outlined,
+                          color: AppColors.volt,
+                        ),
                         border: OutlineInputBorder(),
                       ),
                     ),
@@ -302,7 +339,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           child: TextFormField(
                             controller: _weightController,
                             keyboardType: const TextInputType.numberWithOptions(
-                                decimal: true,),
+                              decimal: true,
+                            ),
                             style: const TextStyle(color: AppColors.white),
                             decoration: const InputDecoration(
                               labelText: 'Gewicht (kg)',
@@ -376,10 +414,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         _sportChip('BIKE', 'Radfahren', Icons.directions_bike),
                         _sportChip('RUN', 'Laufen', Icons.directions_run),
                         _sportChip('SWIM', 'Schwimmen', Icons.pool),
-                        _sportChip('TRIATHLON', 'Triathlon',
-                            Icons.emoji_events_outlined,),
-                        _sportChip('STRENGTH', 'Kraft & Athletik',
-                            Icons.fitness_center,),
+                        _sportChip(
+                          'TRIATHLON',
+                          'Triathlon',
+                          Icons.emoji_events_outlined,
+                        ),
+                        _sportChip(
+                          'STRENGTH',
+                          'Kraft & Athletik',
+                          Icons.fitness_center,
+                        ),
                       ],
                     ),
                   ],
@@ -400,12 +444,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           width: 22,
                           height: 22,
                           child: CircularProgressIndicator(
-                              strokeWidth: 2, color: AppColors.navy,),
+                            strokeWidth: 2,
+                            color: AppColors.navy,
+                          ),
                         )
                       : const Text(
                           'Profil speichern',
                           style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.bold,),
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                 ),
                 const SizedBox(height: 32),

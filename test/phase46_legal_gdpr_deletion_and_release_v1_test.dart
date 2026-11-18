@@ -23,15 +23,24 @@ import 'package:orbit/core/config/app_config.dart';
 import 'package:orbit/core/config/contact_config.dart';
 import 'package:orbit/core/config/release_config.dart';
 import 'package:orbit/core/design/app_theme.dart';
+import 'package:orbit/features/activities/providers/activities_provider.dart';
 import 'package:orbit/features/auth/providers/auth_provider.dart';
+import 'package:orbit/features/auth/providers/user_provider.dart';
 import 'package:orbit/features/auth/screens/login_screen.dart';
 import 'package:orbit/features/auth/services/account_deletion_service.dart';
 import 'package:orbit/features/auth/widgets/email_verification_banner.dart';
 import 'package:orbit/features/auth/widgets/two_step_account_deletion_dialog.dart';
+import 'package:orbit/features/beta_feedback/widgets/beta_bug_reporter_sheet.dart';
+import 'package:orbit/features/beta_feedback/widgets/global_floating_bug_beetle.dart';
+import 'package:orbit/features/coach_link/models/v1_coach_athlete_link.dart';
+import 'package:orbit/features/coach_link/providers/athlete_context_provider.dart';
+import 'package:orbit/features/coach_link/providers/v1_coach_connection_provider.dart';
+import 'package:orbit/features/dashboard/screens/dashboard_screen.dart';
 import 'package:orbit/features/integrations/models/garmin_status.dart';
 import 'package:orbit/features/integrations/providers/garmin_provider.dart';
 import 'package:orbit/features/legal/widgets/legal_documents_sheet.dart';
 import 'package:orbit/features/onboarding/widgets/v1_simple_onboarding_wizard.dart';
+import 'package:orbit/features/profile/widgets/user_avatar_circle.dart';
 import 'package:orbit/features/profile/widgets/v1_simple_profile_view.dart';
 import 'package:orbit/features/settings/screens/settings_screen.dart';
 
@@ -443,6 +452,149 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byKey(const Key('unverified_email_banner')), findsNothing);
+    });
+  });
+
+  group('6. V1.0.0 Topbar-Bugmeldung & Dauerhaftes Profilbild', () {
+    testWidgets(
+        'V1.0.0 hat keinen schwebenden Bug-Overlay-Button, aber Topbar-Bugbutton öffnet Feedback-Sheet',
+        (tester) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            authStateChangesProvider.overrideWith((ref) => Stream.value(null)),
+            viewedAthleteIdProvider.overrideWith((ref) => 'ath_1'),
+            currentAthleteIdProvider.overrideWith((ref) => 'ath_1'),
+            activitiesProvider.overrideWith((ref) => Stream.value(const [])),
+            garminStatusStreamProvider.overrideWith(
+              (ref) => Stream.value(
+                const GarminStatus(state: GarminConnectionState.disconnected),
+              ),
+            ),
+            userDocumentProvider.overrideWith(
+              (ref) => Stream.value({
+                'role': 'TRAINER',
+                'photoUrl':
+                    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+                'profile': {'firstName': 'Tim', 'lastName': 'Coach'},
+              }),
+            ),
+            v1CoachAthletesStreamProvider.overrideWith(
+              (ref) => Stream.value(const <V1CoachAthleteLink>[]),
+            ),
+          ],
+          child: Consumer(
+            builder: (context, ref, _) {
+              final isV2 = ref.watch(
+                releaseConfigProvider.select((cfg) => cfg.isV2Enabled),
+              );
+              return MaterialApp(
+                theme: AppTheme.darkTheme,
+                builder: (ctx, child) => Stack(
+                  children: [
+                    if (child != null) child,
+                    if (isV2) const GlobalFloatingBugBeetle(),
+                  ],
+                ),
+                home: const DashboardScreen(),
+              );
+            },
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Topbar-Avatar ist im Dashboard vorhanden
+      expect(
+        find.byKey(const Key('dashboard_avatar_menu_button')),
+        findsOneWidget,
+      );
+      expect(find.byType(UserAvatarCircle), findsOneWidget);
+
+      expect(find.byKey(const Key('global_floating_bug_beetle')), findsNothing);
+      final topbarBug = find.byKey(const Key('beta_bug_report_icon_button'));
+      expect(topbarBug, findsOneWidget);
+
+      await tester.tap(topbarBug);
+      await tester.pumpAndSettle();
+
+      expect(find.byType(BetaBugReporterSheet), findsOneWidget);
+    });
+
+    testWidgets(
+        'V1SimpleProfileView zeigt gespeicherte photoUrl/avatarUrl und überschreibt sie beim Speichern anderer Felder nicht',
+        (tester) async {
+      const tinyPngDataUri =
+          'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+      Map<String, dynamic>? savedPayload;
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            garminStatusStreamProvider.overrideWith(
+              (ref) => Stream.value(
+                const GarminStatus(state: GarminConnectionState.disconnected),
+              ),
+            ),
+          ],
+          child: MaterialApp(
+            theme: AppTheme.lightTheme,
+            home: V1SimpleProfileView(
+              initialUserDocOverride: const {
+                'role': 'ATHLETE',
+                'photoUrl': tinyPngDataUri,
+                'avatarUrl': tinyPngDataUri,
+                'profile': {
+                  'firstName': 'Tim',
+                  'lastName': 'Zarges',
+                  'weightKg': 74.0,
+                  'countryCode': 'DE',
+                  'sports': ['TRIATHLON'],
+                },
+              },
+              onSaveOverride: (payload) async {
+                savedPayload = payload;
+              },
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Avatar-Widget nutzt das geladene Profilbild (kein Fallback-Icon)
+      final avatarWidget = tester.widget<UserAvatarCircle>(
+        find.byKey(const Key('v1_profile_avatar_circle')),
+      );
+      expect(avatarWidget.photoUrlOverride, equals(tinyPngDataUri));
+
+      // Andere Profilfelder ändern (Gewicht & Nachname) und speichern
+      await tester.enterText(
+        find.byKey(const Key('v1_profile_last_name_field')),
+        'Tester',
+      );
+      await tester.enterText(
+        find.byKey(const Key('v1_profile_weight_field')),
+        '73.5',
+      );
+      await tester.pumpAndSettle();
+
+      final saveBtn = find.byKey(const Key('v1_profile_save_button'));
+      await tester.scrollUntilVisible(
+        saveBtn,
+        300,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(saveBtn);
+      await tester.pumpAndSettle();
+
+      expect(savedPayload, isNotNull);
+      expect(savedPayload!['photoUrl'], equals(tinyPngDataUri));
+      expect(savedPayload!['avatarUrl'], equals(tinyPngDataUri));
+      expect(savedPayload!['profile']['photoUrl'], equals(tinyPngDataUri));
+      expect(savedPayload!['profile']['avatarUrl'], equals(tinyPngDataUri));
+      expect(savedPayload!['profile']['lastName'], equals('Tester'));
+      expect(savedPayload!['profile']['weightKg'], equals(73.5));
     });
   });
 }

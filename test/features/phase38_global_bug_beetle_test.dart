@@ -1,61 +1,68 @@
+/// Datei-Header: `test/features/phase38_global_bug_beetle_test.dart`
+/// Zweck: Widget-Tests zur Sicherstellung der V1.0.0-Vorgabe, dass kein schwebender
+/// Bug-Button den Bildschirminhalt verdeckt, während die Bugmeldung in der Topbar
+/// (`AppBar`) sauber erreichbar ist und den Bug-Report-Dialog öffnet.
+library;
+
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:orbit/core/config/release_config.dart';
+import 'package:orbit/features/beta_feedback/widgets/beta_bug_reporter_sheet.dart';
 import 'package:orbit/features/beta_feedback/widgets/global_floating_bug_beetle.dart';
 
 void main() {
+  tearDown(() {
+    ReleaseConfig.resetTestingOverrides();
+  });
+
   testWidgets(
-      'GlobalFloatingBugBeetle rendert, ist verschiebbar und bleibt über Sheets sichtbar',
+      'V1.0.0 zeigt keinen schwebenden Bug-Overlay-Button, aber funktionierende Topbar-Bugmeldung',
       (tester) async {
     await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(
-          body: Stack(
-            children: [
-              Center(
-                child: ElevatedButton(
-                  key: const Key('open_sheet_button'),
-                  onPressed: () {},
-                  child: const Text('Sheet öffnen'),
+      ProviderScope(
+        child: Consumer(
+          builder: (context, ref, _) {
+            final isV2Enabled = ref.watch(
+              releaseConfigProvider.select((cfg) => cfg.isV2Enabled),
+            );
+            return MaterialApp(
+              builder: (ctx, child) {
+                return Stack(
+                  children: [
+                    if (child != null) child,
+                    if (isV2Enabled) const GlobalFloatingBugBeetle(),
+                  ],
+                );
+              },
+              home: Scaffold(
+                appBar: AppBar(
+                  title: const Text('ORBIT V1.0.0'),
+                  actions: const [
+                    BetaBugReportIconButton(),
+                  ],
                 ),
+                body: const Center(child: Text('Hauptinhalt')),
               ),
-              const GlobalFloatingBugBeetle(),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );
 
     await tester.pumpAndSettle();
 
-    // 1. Käfer-Button ist sichtbar
-    final bugFinder = find.byKey(const Key('global_floating_bug_beetle'));
-    expect(bugFinder, findsOneWidget);
+    // 1. Kein schwebender Overlay-Bug-Button im V1.0.0-Standardbetrieb
+    expect(find.byKey(const Key('global_floating_bug_beetle')), findsNothing);
 
-    // Initial-Position erfassen
-    final initialTopLeft = tester.getTopLeft(bugFinder);
+    // 2. Topbar-Bugmeldung ist sichtbar und öffnet das Feedback-Sheet
+    final topbarBugFinder =
+        find.byKey(const Key('beta_bug_report_icon_button'));
+    expect(topbarBugFinder, findsOneWidget);
 
-    // 2. Draggen / Verschieben
-    await tester.drag(bugFinder, const Offset(-50, -50));
+    await tester.tap(topbarBugFinder);
     await tester.pumpAndSettle();
 
-    final draggedTopLeft = tester.getTopLeft(bugFinder);
-    expect(draggedTopLeft.dx, lessThan(initialTopLeft.dx));
-    expect(draggedTopLeft.dy, lessThan(initialTopLeft.dy));
-
-    // 3. Modales Bottom Sheet öffnen
-    final BuildContext context = tester.element(find.byType(Scaffold));
-    // ignore: unawaited_futures
-    showModalBottomSheet<void>(
-      context: context,
-      builder: (_) => const SizedBox(
-        height: 300,
-        child: Center(child: Text('Test Modal Sheet')),
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    expect(find.text('Test Modal Sheet'), findsOneWidget);
-    // Käfer existiert weiterhin im Widget-Baum
-    expect(bugFinder, findsOneWidget);
+    expect(find.byType(BetaBugReporterSheet), findsOneWidget);
   });
 }

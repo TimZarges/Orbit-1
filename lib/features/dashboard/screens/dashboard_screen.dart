@@ -26,6 +26,7 @@ import '../../coach_link/screens/trainer_athletes_tab_screen.dart';
 import '../../coach_link/screens/v1_coach_calendar_tab.dart';
 import '../../notifications/widgets/notification_bell_icon_button.dart';
 import '../../profile/screens/profile_screen.dart';
+import '../../profile/widgets/user_avatar_circle.dart';
 import '../../settings/providers/settings_provider.dart';
 import '../../workout_builder/screens/workout_template_library_screen.dart';
 
@@ -278,10 +279,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 Builder(
                   builder: (btnContext) => IconButton(
                     key: const Key('dashboard_avatar_menu_button'),
-                    icon: const CircleAvatar(
-                      radius: 16,
-                      child: Icon(Icons.person, size: 16),
-                    ),
+                    icon: const UserAvatarCircle(radius: 16),
                     onPressed: () => _openAvatarMenu(
                       btnContext,
                       lang: lang,
