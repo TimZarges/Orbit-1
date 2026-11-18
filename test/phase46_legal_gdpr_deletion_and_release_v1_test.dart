@@ -597,4 +597,109 @@ void main() {
       expect(savedPayload!['profile']['weightKg'], equals(73.5));
     });
   });
+
+  group(
+      '7. Dialog-Controller-Lifecycle (Keine used-after-disposed während Schließanimation)',
+      () {
+    testWidgets(
+        'LoginScreen Forgot-Password-Dialog öffnet, fokussiert/tippt und schließt ohne Controller-Exception',
+        (tester) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            theme: AppTheme.lightTheme,
+            home: const LoginScreen(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const Key('login_forgot_password_button')));
+      await tester.pumpAndSettle();
+
+      final emailField = find.byKey(const Key('forgot_password_email_field'));
+      expect(emailField, findsOneWidget);
+
+      await tester.tap(emailField);
+      await tester.enterText(emailField, 'test@orbit-training.app');
+      await tester.pump();
+
+      await tester.tap(find.text('Abbrechen'));
+      // Simuliert die 150ms DialogRoute-Reverse-Animation Frame für Frame (16ms)
+      for (var i = 0; i < 15; i++) {
+        await tester.pump(const Duration(milliseconds: 16));
+        expect(tester.takeException(), isNull);
+      }
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets(
+        'SettingsScreen Reset-Password- und Change-Password-Dialoge schließen ohne Controller-Exception',
+        (tester) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            theme: AppTheme.darkTheme,
+            home: const SettingsScreen(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // 1. Reset-Password-E-Mail-Dialog
+      final resetTile =
+          find.byKey(const Key('settings_reset_password_email_tile'));
+      await tester.scrollUntilVisible(
+        resetTile,
+        250,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(resetTile);
+      await tester.pumpAndSettle();
+
+      final resetEmailField =
+          find.byKey(const Key('settings_reset_password_email_field'));
+      expect(resetEmailField, findsOneWidget);
+      await tester.tap(resetEmailField);
+      await tester.enterText(resetEmailField, 'reset@orbit-training.app');
+      await tester.pump();
+
+      await tester.tap(find.text('Abbrechen'));
+      for (var i = 0; i < 15; i++) {
+        await tester.pump(const Duration(milliseconds: 16));
+        expect(tester.takeException(), isNull);
+      }
+      await tester.pumpAndSettle();
+
+      // 2. Change-Password-Dialog
+      final changePwTile =
+          find.byKey(const Key('settings_change_password_tile'));
+      await tester.tap(changePwTile);
+      await tester.pumpAndSettle();
+
+      await tester.enterText(
+        find.byKey(const Key('change_password_old_field')),
+        'OldSecret123!',
+      );
+      await tester.enterText(
+        find.byKey(const Key('change_password_new_field')),
+        'NewSecret123!',
+      );
+      await tester.enterText(
+        find.byKey(const Key('change_password_confirm_field')),
+        'NewSecret123!',
+      );
+      await tester.pump();
+
+      await tester.tap(find.text('Abbrechen'));
+      for (var i = 0; i < 15; i++) {
+        await tester.pump(const Duration(milliseconds: 16));
+        expect(tester.takeException(), isNull);
+      }
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+    });
+  });
 }

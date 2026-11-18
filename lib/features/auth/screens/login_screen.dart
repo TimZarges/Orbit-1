@@ -116,150 +116,23 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   /// Öffnet den lokalisierten „Passwort zurücksetzen“-Dialog mit Ladezustand & Fehlerbehandlung.
+  ///
+  /// Warum dediziertes [_ForgotPasswordDialog]-Widget statt lokalem Controller:
+  /// Ein `StatefulWidget` gibt seinen `TextEditingController` erst in `State.dispose()`
+  /// frei, nachdem die 150-ms-Schließanimation der `DialogRoute` vollständig beendet
+  /// und das `TextFormField` aus dem Widget-Baum entfernt wurde. Dadurch ist eine
+  /// `used after being disposed`-Exception während der Route-Transition ausgeschlossen.
   Future<void> _showForgotPasswordDialog({required bool isEn}) async {
-    final resetEmailController =
-        TextEditingController(text: _emailController.text.trim());
-    final formKey = GlobalKey<FormState>();
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
-    bool isSending = false;
-    String? dialogError;
-
+    final initialEmail = _emailController.text.trim();
     await showDialog<void>(
       context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (dialogContext, setDialogState) {
-          return AlertDialog(
-            backgroundColor:
-                isDark ? AppColors.anthraciteCard : AppColors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-              side: BorderSide(
-                color:
-                    isDark ? AppColors.darkSubtleBorder : AppColors.cardBorder,
-              ),
-            ),
-            title: Text(
-              isEn ? 'Reset Password' : 'Passwort zurücksetzen',
-              style: TextStyle(
-                color: isDark ? AppColors.white : AppColors.lightTextPrimary,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            content: Form(
-              key: formKey,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    isEn
-                        ? 'Enter your email address. We will send you a secure link to reset your password.'
-                        : 'Gib deine E-Mail-Adresse ein. Wir senden dir umgehend einen sicheren Link zum Zurücksetzen deines Passworts.',
-                    style: TextStyle(
-                      color: isDark
-                          ? AppColors.textSecondaryDark
-                          : const Color(0xFF475569),
-                      fontSize: 13,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    key: const Key('forgot_password_email_field'),
-                    controller: resetEmailController,
-                    keyboardType: TextInputType.emailAddress,
-                    decoration: InputDecoration(
-                      labelText: isEn ? 'Email Address' : 'E-Mail-Adresse',
-                      prefixIcon: const Icon(Icons.email_outlined),
-                    ),
-                    validator: (val) {
-                      if (val == null ||
-                          val.trim().isEmpty ||
-                          !val.contains('@')) {
-                        return isEn
-                            ? 'Please enter a valid email address'
-                            : 'Bitte gib eine gültige E-Mail-Adresse ein';
-                      }
-                      return null;
-                    },
-                  ),
-                  if (dialogError != null) ...[
-                    const SizedBox(height: 10),
-                    Text(
-                      dialogError!,
-                      style: const TextStyle(
-                        color: AppColors.coral,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: isSending ? null : () => Navigator.of(ctx).pop(),
-                child: Text(isEn ? 'Cancel' : 'Abbrechen'),
-              ),
-              ElevatedButton(
-                key: const Key('forgot_password_submit_button'),
-                onPressed: isSending
-                    ? null
-                    : () async {
-                        if (!(formKey.currentState?.validate() ?? false)) {
-                          return;
-                        }
-                        final targetEmail = resetEmailController.text.trim();
-                        setDialogState(() {
-                          isSending = true;
-                          dialogError = null;
-                        });
-                        try {
-                          await ref
-                              .read(authServiceProvider)
-                              .resetPassword(targetEmail);
-                          if (!mounted) return;
-                          if (ctx.mounted) Navigator.of(ctx).pop();
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                isEn
-                                    ? 'We sent a password reset link to $targetEmail.'
-                                    : 'Wir haben dir einen Link zum Zurücksetzen an $targetEmail gesendet.',
-                              ),
-                              backgroundColor: AppColors.emerald,
-                            ),
-                          );
-                        } catch (e) {
-                          if (ctx.mounted) {
-                            setDialogState(() {
-                              isSending = false;
-                              dialogError = _localizeAuthError(e, isEn: isEn);
-                            });
-                          }
-                        }
-                      },
-                child: isSending
-                    ? const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : Text(
-                        isEn ? 'Send Link' : 'Link senden',
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-              ),
-            ],
-          );
-        },
+      builder: (_) => _ForgotPasswordDialog(
+        initialEmail: initialEmail,
+        isEn: isEn,
+        parentContext: context,
+        localizeError: (err) => _localizeAuthError(err, isEn: isEn),
       ),
     );
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      resetEmailController.dispose();
-    });
   }
 
   @override
@@ -486,6 +359,188 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Eigenständiges Dialog-Widget für den „Passwort zurücksetzen“-Flow im [LoginScreen].
+///
+/// Was: Rendert das E-Mail-Formular zum Anfordern eines Passwort-Reset-Links.
+/// Warum: Durch die Kapselung als [ConsumerStatefulWidget] wird der interne
+/// [TextEditingController] exakt im `dispose()`-Lebenszyklus des Dialog-Subtrees
+/// freigegeben (erst nach Abschluss der Dialog-Schließanimation).
+class _ForgotPasswordDialog extends ConsumerStatefulWidget {
+  /// Vorausgefüllte E-Mail-Adresse aus dem Login-Feld.
+  final String initialEmail;
+
+  /// Gibt an, ob die Oberfläche auf Englisch (`true`) oder Deutsch (`false`) gerendert wird.
+  final bool isEn;
+
+  /// Übergeordneter Kontext für die Erfolgs-SnackBar nach dem Schließen.
+  final BuildContext parentContext;
+
+  /// Hilfsfunktion zur Übersetzung von Firebase-Auth-Fehlern.
+  final String Function(Object error) localizeError;
+
+  const _ForgotPasswordDialog({
+    required this.initialEmail,
+    required this.isEn,
+    required this.parentContext,
+    required this.localizeError,
+  });
+
+  @override
+  ConsumerState<_ForgotPasswordDialog> createState() =>
+      _ForgotPasswordDialogState();
+}
+
+class _ForgotPasswordDialogState extends ConsumerState<_ForgotPasswordDialog> {
+  late final TextEditingController _resetEmailController;
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  bool _isSending = false;
+  String? _dialogError;
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialisiert den E-Mail-Controller mit dem aktuellen Login-Feldwert
+    _resetEmailController = TextEditingController(text: widget.initialEmail);
+  }
+
+  @override
+  void dispose() {
+    // Gibt den Controller erst nach vollständigem Unmount des Dialogs frei
+    _resetEmailController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isEn = widget.isEn;
+
+    return AlertDialog(
+      backgroundColor: isDark ? AppColors.anthraciteCard : AppColors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          color: isDark ? AppColors.darkSubtleBorder : AppColors.cardBorder,
+        ),
+      ),
+      title: Text(
+        isEn ? 'Reset Password' : 'Passwort zurücksetzen',
+        style: TextStyle(
+          color: isDark ? AppColors.white : AppColors.lightTextPrimary,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      content: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              isEn
+                  ? 'Enter your email address. We will send you a secure link to reset your password.'
+                  : 'Gib deine E-Mail-Adresse ein. Wir senden dir umgehend einen sicheren Link zum Zurücksetzen deines Passworts.',
+              style: TextStyle(
+                color: isDark
+                    ? AppColors.textSecondaryDark
+                    : const Color(0xFF475569),
+                fontSize: 13,
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              key: const Key('forgot_password_email_field'),
+              controller: _resetEmailController,
+              keyboardType: TextInputType.emailAddress,
+              decoration: InputDecoration(
+                labelText: isEn ? 'Email Address' : 'E-Mail-Adresse',
+                prefixIcon: const Icon(Icons.email_outlined),
+              ),
+              validator: (val) {
+                if (val == null || val.trim().isEmpty || !val.contains('@')) {
+                  return isEn
+                      ? 'Please enter a valid email address'
+                      : 'Bitte gib eine gültige E-Mail-Adresse ein';
+                }
+                return null;
+              },
+            ),
+            if (_dialogError != null) ...[
+              const SizedBox(height: 10),
+              Text(
+                _dialogError!,
+                style: const TextStyle(
+                  color: AppColors.coral,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: _isSending ? null : () => Navigator.of(context).pop(),
+          child: Text(isEn ? 'Cancel' : 'Abbrechen'),
+        ),
+        ElevatedButton(
+          key: const Key('forgot_password_submit_button'),
+          onPressed: _isSending
+              ? null
+              : () async {
+                  if (!(_formKey.currentState?.validate() ?? false)) {
+                    return;
+                  }
+                  final targetEmail = _resetEmailController.text.trim();
+                  setState(() {
+                    _isSending = true;
+                    _dialogError = null;
+                  });
+                  try {
+                    await ref
+                        .read(authServiceProvider)
+                        .resetPassword(targetEmail);
+                    if (context.mounted) {
+                      Navigator.of(context).pop();
+                    }
+                    if (widget.parentContext.mounted) {
+                      ScaffoldMessenger.of(widget.parentContext).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            isEn
+                                ? 'We sent a password reset link to $targetEmail.'
+                                : 'Wir haben dir einen Link zum Zurücksetzen an $targetEmail gesendet.',
+                          ),
+                          backgroundColor: AppColors.emerald,
+                        ),
+                      );
+                    }
+                  } catch (e) {
+                    if (mounted) {
+                      setState(() {
+                        _isSending = false;
+                        _dialogError = widget.localizeError(e);
+                      });
+                    }
+                  }
+                },
+          child: _isSending
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : Text(
+                  isEn ? 'Send Link' : 'Link senden',
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+        ),
+      ],
     );
   }
 }

@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ORBIT — High-End Ausdauertraining & Erholung für Athleten & Trainer</title>
+  <title>ORBIT V1.0.0 — Ausdauertraining, Garmin Sync &amp; Coaching für Athleten &amp; Trainer</title>
   <link rel="icon" type="image/png" href="/logo.png">
-  <meta name="description" content="ORBIT ist die moderne Trainings- und Telemetrie-Plattform für Radsportler, Triathleten, Läufer und deren Vereinstrainer.">
+  <meta name="description" content="ORBIT V1.0.0 verbindet Garmin Sync, .FIT-Dateimanagement, Heute- &amp; Kalender-Ansichten im COROS-Stil sowie DSGVO-konformes Athlet-Coach-Zusammenspiel (Server Frankfurt am Main).">
   <style>
     :root {
       --brand-navy: #001F47;
@@ -15,10 +15,11 @@
       --brand-amber: #FF6B00;
       --brand-cyan: #00D2FF;
       --brand-emerald: #10B981;
+      --brand-purple: #8B5CF6;
       --font-stack: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Inter", sans-serif;
       --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
-      /* Light Theme (Default: Clean Alabaster / MATS Editorial) */
+      /* Light Theme (Default: Clean Professional / Alabaster) */
       --bg-page: #F8FAFC;
       --bg-card: #FFFFFF;
       --bg-card-subtle: #F1F5F9;
@@ -29,7 +30,7 @@
       --shadow-soft: 0 12px 32px rgba(0, 31, 71, 0.06);
       --hero-card-bg: #001F47;
       --hero-card-text: #FFFFFF;
-      --header-bg: rgba(255, 255, 255, 0.94);
+      --header-bg: rgba(255, 255, 255, 0.95);
     }
 
     [data-theme="dark"] {
@@ -39,24 +40,29 @@
       --text-main: #FFFFFF;
       --text-muted: #94A3B8;
       --text-dim: #64748B;
-      --border-card: rgba(255, 255, 255, 0.09);
+      --border-card: rgba(255, 255, 255, 0.10);
       --shadow-soft: 0 16px 40px rgba(0, 0, 0, 0.5);
-      --hero-card-bg: #001F47;
+      --hero-card-bg: #0A1324;
       --hero-card-text: #FFFFFF;
-      --header-bg: rgba(5, 11, 20, 0.94);
+      --header-bg: rgba(5, 11, 20, 0.95);
     }
 
+    /* Zweisprachige Steuerung (DE Standard, EN bei lang="en") */
+    html[lang="de"] .lang-en { display: none !important; }
+    html[lang="en"] .lang-de { display: none !important; }
+
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
     body {
       background-color: var(--bg-page);
       color: var(--text-main);
       font-family: var(--font-stack);
-      line-height: 1.5;
+      line-height: 1.55;
       -webkit-font-smoothing: antialiased;
       transition: background-color 0.25s, color 0.25s;
     }
 
-    /* Header Nav */
+    /* Header Navigation */
     header.site-header {
       position: sticky;
       top: 0;
@@ -75,7 +81,7 @@
     .brand-id {
       display: flex;
       align-items: center;
-      gap: 14px;
+      gap: 12px;
       text-decoration: none;
       color: var(--text-main);
     }
@@ -93,10 +99,20 @@
       letter-spacing: -0.5px;
     }
 
+    .brand-version-pill {
+      font-size: 11px;
+      font-weight: 800;
+      background: #001F47;
+      color: var(--brand-volt);
+      padding: 2px 8px;
+      border-radius: 999px;
+      letter-spacing: 0.4px;
+    }
+
     .nav-links {
       display: flex;
       align-items: center;
-      gap: 24px;
+      gap: 22px;
     }
 
     .nav-link {
@@ -113,17 +129,22 @@
       display: flex;
       align-items: center;
       gap: 10px;
+      flex-wrap: wrap;
     }
 
     .toggle-pill-btn {
       background: var(--bg-card-subtle);
       border: 1px solid var(--border-card);
       color: var(--text-main);
-      padding: 6px 14px;
+      padding: 7px 14px;
       border-radius: 999px;
       font-size: 12px;
       font-weight: 800;
       cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
     }
 
     .web-login-btn {
@@ -136,6 +157,8 @@
       font-size: 13px;
       font-weight: 800;
       transition: all 0.15s;
+      display: inline-flex;
+      align-items: center;
     }
 
     .web-login-btn:hover {
@@ -146,10 +169,10 @@
     /* Hero Section */
     section.hero-sec {
       max-width: 1280px;
-      margin: 48px auto 60px;
+      margin: 44px auto 64px;
       padding: 0 24px;
       display: grid;
-      grid-template-columns: 1.15fr 1fr;
+      grid-template-columns: 1.12fr 1fr;
       gap: 48px;
       align-items: center;
     }
@@ -157,7 +180,7 @@
     .hero-content {
       display: flex;
       flex-direction: column;
-      gap: 20px;
+      gap: 18px;
     }
 
     .hero-badge {
@@ -168,45 +191,41 @@
       color: var(--brand-volt);
       font-size: 12px;
       font-weight: 800;
-      padding: 4px 12px;
+      padding: 5px 14px;
       border-radius: 999px;
       width: fit-content;
       letter-spacing: 0.5px;
+      border: 1px solid rgba(205, 251, 23, 0.35);
     }
 
     .hero-headline {
-      font-size: 46px;
+      font-size: 44px;
       font-weight: 900;
-      letter-spacing: -1.2px;
+      letter-spacing: -1.1px;
       line-height: 1.12;
       color: var(--text-main);
     }
 
     .hero-headline span.volt-text {
-      color: var(--brand-navy);
+      color: #001F47;
       background: var(--brand-volt);
       padding: 0 8px;
       border-radius: 6px;
       display: inline-block;
     }
 
-    [data-theme="dark"] .hero-headline span.volt-text {
-      background: var(--brand-volt);
-      color: #001F47;
-    }
-
     .hero-sub {
-      font-size: 18px;
+      font-size: 17px;
       color: var(--text-muted);
-      line-height: 1.55;
-      max-width: 580px;
+      line-height: 1.6;
+      max-width: 600px;
     }
 
     .hero-cta-group {
       display: flex;
       align-items: center;
-      gap: 16px;
-      margin-top: 10px;
+      gap: 14px;
+      margin-top: 8px;
       flex-wrap: wrap;
     }
 
@@ -214,11 +233,11 @@
       background: var(--brand-volt);
       color: #001F47;
       text-decoration: none;
-      padding: 14px 28px;
+      padding: 14px 26px;
       border-radius: 999px;
       font-size: 15px;
       font-weight: 900;
-      letter-spacing: 0.3px;
+      letter-spacing: 0.2px;
       box-shadow: 0 6px 20px rgba(205, 251, 23, 0.45);
       transition: all 0.15s;
     }
@@ -228,40 +247,61 @@
       transform: translateY(-2px);
     }
 
-    .btn-secondary-link {
+    .btn-secondary-outline {
+      background: var(--bg-card);
       color: var(--text-main);
+      border: 1.5px solid var(--border-card);
       text-decoration: none;
+      padding: 13px 22px;
+      border-radius: 999px;
       font-size: 14px;
       font-weight: 800;
+      transition: all 0.15s;
+    }
+
+    .btn-secondary-outline:hover {
+      border-color: var(--brand-volt);
+    }
+
+    .hero-trust-strip {
       display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-top: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-dim);
+    }
+
+    .hero-trust-strip span {
+      display: inline-flex;
       align-items: center;
       gap: 6px;
     }
 
-    /* Live Hero Mockup: Konzept 01 + 10 Synthese */
+    /* Live V1.0.0 Hero Mockup (COROS Training Preview + Coach Connection) */
     .hero-mockup-wrapper {
       background: var(--hero-card-bg);
-      border-radius: 28px;
+      border-radius: 26px;
       padding: 24px;
-      box-shadow: 0 24px 60px rgba(0, 31, 71, 0.35);
+      box-shadow: 0 24px 60px rgba(0, 31, 71, 0.32);
       color: #FFFFFF;
       position: relative;
-      border: 1px solid rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.14);
     }
 
-    /* Coach Bubble Floating on Hero (Konzept 10) */
     .coach-bubble-floating {
       position: absolute;
-      top: -18px;
-      right: 24px;
+      top: -16px;
+      right: 22px;
       background: #FFFFFF;
       color: #001F47;
-      padding: 10px 16px;
+      padding: 9px 14px;
       border-radius: 14px;
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.25);
       border: 2px solid var(--brand-volt);
-      font-size: 12px;
-      font-weight: 700;
+      font-size: 11px;
+      font-weight: 800;
       display: flex;
       align-items: center;
       gap: 10px;
@@ -279,164 +319,384 @@
       justify-content: center;
       font-size: 11px;
       font-weight: 900;
+      flex-shrink: 0;
     }
 
-    /* Athlete Hero Card (Konzept 01) */
     .mockup-inner-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 20px;
+      margin-bottom: 18px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.10);
     }
 
-    .mockup-rings-center {
+    .mockup-user-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .mockup-avatar-circle {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: rgba(205, 251, 23, 0.18);
+      border: 2px solid var(--brand-volt);
+      color: var(--brand-volt);
+      font-weight: 900;
+      font-size: 13px;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 24px;
-      background: rgba(255, 255, 255, 0.04);
-      border-radius: 20px;
-      padding: 20px;
-      margin-bottom: 20px;
     }
 
-    .rings-svg-hero {
-      width: 120px;
-      height: 120px;
-      flex-shrink: 0;
+    /* COROS-inspired Training Preview Card inside Hero */
+    .coros-preview-card {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 12px;
+      display: grid;
+      grid-template-columns: 1.85fr 1fr;
+      gap: 14px;
+      align-items: center;
     }
 
-    .rings-hero-data {
+    .coros-left-col {
       display: flex;
       flex-direction: column;
       gap: 6px;
     }
 
-    .recovery-score-huge {
-      font-size: 38px;
-      font-weight: 900;
-      color: var(--brand-volt);
-      line-height: 1;
-    }
-
-    .recovery-status-pill {
-      background: rgba(205, 251, 23, 0.15);
-      color: var(--brand-volt);
-      font-size: 11px;
-      font-weight: 800;
-      padding: 3px 8px;
-      border-radius: 6px;
-      width: fit-content;
-    }
-
-    /* Today Workout Row */
-    .today-workout-preview {
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 14px;
-      padding: 14px 18px;
+    .coros-main-row {
       display: flex;
-      justify-content: space-between;
       align-items: center;
+      gap: 10px;
     }
 
-    .workout-badge-sport {
-      background: #FF6B00;
-      color: #FFFFFF;
+    .sport-dot-badge {
+      padding: 4px 8px;
+      border-radius: 6px;
       font-size: 10px;
       font-weight: 900;
-      padding: 3px 8px;
-      border-radius: 4px;
       text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
 
-    /* Features Grid */
-    section.features-sec {
+    .coros-primary-metric {
+      font-size: 24px;
+      font-weight: 900;
+      letter-spacing: -0.5px;
+      color: #FFFFFF;
+    }
+
+    .coros-secondary-metrics {
+      font-size: 12px;
+      color: #CBD5E1;
+      font-family: var(--font-mono);
+    }
+
+    .coros-right-col {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 8px;
+      text-align: right;
+    }
+
+    .coros-workout-title {
+      font-size: 12px;
+      font-weight: 800;
+      color: #F8FAFC;
+    }
+
+    .fit-download-pill {
+      background: rgba(205, 251, 23, 0.16);
+      border: 1px solid var(--brand-volt);
+      color: var(--brand-volt);
+      padding: 5px 11px;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.4px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* Section Containers */
+    section.content-sec {
       max-width: 1280px;
-      margin: 80px auto;
+      margin: 84px auto;
       padding: 0 24px;
+      scroll-margin-top: 88px;
     }
 
     .sec-headline-block {
       text-align: center;
-      margin-bottom: 48px;
+      margin-bottom: 44px;
     }
 
     .sec-tag {
       font-size: 11px;
-      font-weight: 800;
+      font-weight: 900;
       color: #001F47;
       background: var(--brand-volt);
-      padding: 3px 10px;
+      padding: 4px 12px;
       border-radius: 999px;
       text-transform: uppercase;
-      letter-spacing: 1px;
+      letter-spacing: 0.9px;
       display: inline-block;
-      margin-bottom: 8px;
+      margin-bottom: 10px;
+    }
+
+    .sec-tag-outline {
+      font-size: 11px;
+      font-weight: 900;
+      color: var(--text-main);
+      background: var(--bg-card-subtle);
+      border: 1px solid var(--border-card);
+      padding: 4px 12px;
+      border-radius: 999px;
+      text-transform: uppercase;
+      letter-spacing: 0.9px;
+      display: inline-block;
+      margin-bottom: 10px;
     }
 
     .sec-title {
-      font-size: 32px;
+      font-size: 34px;
       font-weight: 900;
-      letter-spacing: -0.6px;
+      letter-spacing: -0.7px;
+      color: var(--text-main);
+      margin-bottom: 10px;
+    }
+
+    .sec-subtitle {
+      font-size: 16px;
+      color: var(--text-muted);
+      max-width: 720px;
+      margin: 0 auto;
+    }
+
+    /* 3-Column V1.0.0 Live Grid */
+    .v1-columns-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 28px;
+    }
+
+    .v1-role-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: 22px;
+      padding: 32px;
+      box-shadow: var(--shadow-soft);
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .v1-role-card-top-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 5px;
+    }
+
+    .v1-role-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .v1-role-badge {
+      font-size: 11px;
+      font-weight: 900;
+      padding: 4px 10px;
+      border-radius: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+    }
+
+    .v1-role-card h3 {
+      font-size: 22px;
+      font-weight: 900;
+      letter-spacing: -0.4px;
+    }
+
+    .v1-feature-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .v1-feature-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.55;
+    }
+
+    .v1-feature-list li strong {
       color: var(--text-main);
     }
 
-    .features-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
-      gap: 32px;
+    .check-bullet {
+      width: 20px;
+      height: 20px;
+      border-radius: 6px;
+      background: #001F47;
+      color: var(--brand-volt);
+      font-size: 12px;
+      font-weight: 900;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 2px;
     }
 
-    .feature-card {
+    /* Athlete-Coach Collaboration Strip */
+    .coaching-flow-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    .flow-step-card {
       background: var(--bg-card);
       border: 1px solid var(--border-card);
-      border-radius: 20px;
-      padding: 32px;
+      border-radius: 18px;
+      padding: 26px;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .flow-step-num {
+      font-size: 12px;
+      font-weight: 900;
+      color: #001F47;
+      background: var(--brand-volt);
+      padding: 3px 10px;
+      border-radius: 6px;
+      display: inline-block;
+      margin-bottom: 12px;
+    }
+
+    .flow-step-card h4 {
+      font-size: 18px;
+      font-weight: 900;
+      margin-bottom: 8px;
+    }
+
+    .flow-step-card p {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.55;
+    }
+
+    /* Roadmap Section (V2.0.0 - V4.0.0) */
+    .roadmap-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 28px;
+    }
+
+    .roadmap-card {
+      background: var(--bg-card);
+      border: 1px dashed var(--border-card);
+      border-radius: 22px;
+      padding: 30px;
       box-shadow: var(--shadow-soft);
       display: flex;
       flex-direction: column;
       gap: 16px;
     }
 
-    .feature-icon-badge {
-      width: 48px;
-      height: 48px;
-      border-radius: 12px;
-      background: #001F47;
-      color: var(--brand-volt);
+    .roadmap-version-header {
       display: flex;
+      justify-content: space-between;
       align-items: center;
-      justify-content: center;
-      font-size: 20px;
-      font-weight: 900;
+      gap: 10px;
+      flex-wrap: wrap;
     }
 
-    .feature-card h3 {
-      font-size: 20px;
+    .roadmap-version-tag {
+      font-family: var(--font-mono);
+      font-size: 13px;
       font-weight: 900;
-      letter-spacing: -0.3px;
+      padding: 4px 10px;
+      border-radius: 8px;
+      background: var(--bg-card-subtle);
+      color: var(--text-main);
+      border: 1px solid var(--border-card);
     }
 
-    .feature-card p {
-      font-size: 14px;
+    .roadmap-status-pill {
+      font-size: 11px;
+      font-weight: 800;
+      padding: 3px 10px;
+      border-radius: 999px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .roadmap-group-title {
+      font-size: 12px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: var(--text-main);
+      margin-top: 6px;
+      margin-bottom: 4px;
+    }
+
+    .roadmap-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .roadmap-list li {
+      font-size: 13.5px;
       color: var(--text-muted);
-      line-height: 1.6;
+      line-height: 1.5;
+      padding-left: 16px;
+      position: relative;
     }
 
-    /* Waitlist Form Section */
+    .roadmap-list li::before {
+      content: "→";
+      position: absolute;
+      left: 0;
+      color: var(--text-dim);
+      font-weight: 900;
+    }
+
+    /* Forms Section */
     section.waitlist-sec {
-      max-width: 760px;
-      margin: 80px auto 100px;
+      max-width: 780px;
+      margin: 72px auto;
       padding: 0 24px;
+      scroll-margin-top: 88px;
     }
 
     .waitlist-card {
       background: var(--bg-card);
       border: 1px solid var(--border-card);
-      border-radius: 28px;
-      padding: 44px;
-      box-shadow: 0 20px 60px rgba(0, 31, 71, 0.1);
+      border-radius: 26px;
+      padding: 40px;
+      box-shadow: var(--shadow-soft);
       text-align: center;
     }
 
@@ -455,6 +715,7 @@
     }
 
     .form-input, .form-select {
+      width: 100%;
       background: var(--bg-card-subtle);
       border: 1px solid var(--border-card);
       color: var(--text-main);
@@ -481,8 +742,8 @@
       align-items: flex-start;
       gap: 10px;
       text-align: left;
-      margin: 20px 0;
-      font-size: 12px;
+      margin: 18px 0;
+      font-size: 12.5px;
       color: var(--text-muted);
     }
 
@@ -491,9 +752,9 @@
       background: var(--brand-volt);
       color: #001F47;
       border: none;
-      padding: 16px 24px;
+      padding: 15px 24px;
       border-radius: 999px;
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 900;
       cursor: pointer;
       box-shadow: 0 6px 20px rgba(205, 251, 23, 0.45);
@@ -533,8 +794,8 @@
     .footer-brand p {
       font-size: 13px;
       color: #94A3B8;
-      max-width: 320px;
-      line-height: 1.5;
+      max-width: 340px;
+      line-height: 1.55;
     }
 
     .footer-links-col h5 {
@@ -554,7 +815,7 @@
       max-width: 1280px;
       margin: 40px auto 0;
       padding-top: 24px;
-      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      border-top: 1px solid rgba(255, 255, 255, 0.12);
       display: flex;
       justify-content: space-between;
       font-size: 12px;
@@ -563,10 +824,19 @@
       gap: 12px;
     }
 
-    @media (max-width: 900px) {
+    @media (max-width: 1024px) {
       section.hero-sec { grid-template-columns: 1fr; }
-      .form-row { grid-template-columns: 1fr; }
+      .v1-columns-grid, .coaching-flow-grid, .roadmap-grid { grid-template-columns: 1fr; }
       .nav-links { display: none; }
+    }
+
+    @media (max-width: 640px) {
+      header.site-header { padding: 12px 16px; }
+      .hero-headline { font-size: 32px; }
+      .coros-preview-card { grid-template-columns: 1fr; }
+      .coros-right-col { align-items: flex-start; text-align: left; }
+      .form-row { grid-template-columns: 1fr; }
+      .waitlist-card { padding: 26px 20px; }
     }
   </style>
 </head>
@@ -577,242 +847,700 @@
     <a href="/" class="brand-id">
       <img src="/logo.png" alt="ORBIT Logo" class="brand-logo-img">
       <span class="brand-name">ORBIT</span>
+      <span class="brand-version-pill">V1.0.0</span>
     </a>
 
     <nav class="nav-links">
-      <a href="#features" class="nav-link">Features</a>
-      <a href="#coaching" class="nav-link">Coach & Athlet</a>
-      <a href="/help" class="nav-link">Kennzahlen-Lexikon</a>
-      <a href="#waitlist" class="nav-link">Beta-Zugang</a>
+      <a href="#v1-live" class="nav-link">
+        <span class="lang-de">Jetzt in V1.0.0</span>
+        <span class="lang-en">Live in V1.0.0</span>
+      </a>
+      <a href="#coaching" class="nav-link">
+        <span class="lang-de">Athlet &amp; Coach</span>
+        <span class="lang-en">Athlete &amp; Coach</span>
+      </a>
+      <a href="#roadmap" class="nav-link">
+        <span class="lang-de">Roadmap V2–V4</span>
+        <span class="lang-en">Roadmap V2–V4</span>
+      </a>
+      <a href="/help.html" class="nav-link">
+        <span class="lang-de">Hilfe &amp; Lexikon</span>
+        <span class="lang-en">Help &amp; Compendium</span>
+      </a>
+      <a href="#contact" class="nav-link">
+        <span class="lang-de">Kontakt &amp; Teams</span>
+        <span class="lang-en">Contact &amp; Teams</span>
+      </a>
     </nav>
 
     <div class="header-actions">
-      <button class="toggle-pill-btn" onclick="toggleGlobalTheme()">☀️ / 🌙</button>
-      <button class="toggle-pill-btn" onclick="toggleGlobalLang()">DE / EN</button>
-      <a href="/app/#/login" class="toggle-pill-btn" id="nav-login-btn" style="text-decoration:none;">Login</a>
-      <a href="/app/#/register" class="web-login-btn" id="nav-register-btn">Registrieren →</a>
+      <button class="toggle-pill-btn" onclick="toggleGlobalTheme()" title="Hell- / Dunkel-Modus umschalten">☀️ / 🌙</button>
+      <button class="toggle-pill-btn" onclick="toggleGlobalLang()" id="lang-switch-btn" title="Sprache DE / EN umschalten">DE / EN</button>
+      <a href="/app/#/login" class="toggle-pill-btn" id="nav-login-btn">
+        <span class="lang-de">Login</span>
+        <span class="lang-en">Sign In</span>
+      </a>
+      <a href="/app/#/register" class="web-login-btn" id="nav-register-btn">
+        <span class="lang-de">Registrieren →</span>
+        <span class="lang-en">Register →</span>
+      </a>
     </div>
   </header>
 
   <!-- Hero Section -->
   <section class="hero-sec">
     <div class="hero-content">
-      <div class="hero-badge" id="hero-badge">ORBIT V1.0.0 · RELEASE</div>
+      <div class="hero-badge" id="hero-badge">
+        <span class="lang-de">ORBIT VERSION 1.0.0 · LIVE AUF ANDROID &amp; WEB</span>
+        <span class="lang-en">ORBIT VERSION 1.0.0 · LIVE ON ANDROID &amp; WEB</span>
+      </div>
+
       <h1 class="hero-headline" id="hero-title">
-        High-End Ausdauertraining & Erholung. <span class="volt-text">Auf Augenhöhe</span> mit deinem Trainer.
+        <span class="lang-de">Ausdauertraining, Garmin Sync &amp; Coaching. <span class="volt-text">Klar fokussiert</span> ab Tag 1.</span>
+        <span class="lang-en">Endurance Training, Garmin Sync &amp; Coaching. <span class="volt-text">Crystal Clear</span> from Day 1.</span>
       </h1>
+
       <p class="hero-sub" id="hero-sub">
-        ORBIT vereint Garmin Connect Synchronisation, .FIT-Dateiverwaltung und partnerschaftliches Coaching für Athleten &amp; Trainer — sicher gehostet in Frankfurt am Main.
+        <span class="lang-de">
+          ORBIT Version 1.0.0 bringt automatischen Garmin Sync, manuellen <code>.fit</code>-Datei-Upload, die aufgeräumte Heute- &amp; Kalender-Ansicht (Woche, Monat, Liste) mit Trainings-Vorschaukarten im COROS-Stil sowie den direkten <code>.FIT</code>-Download für Athleten und verbundene Coaches — DSGVO-konform gehostet in Frankfurt am Main (<code>europe-west3</code>).
+        </span>
+        <span class="lang-en">
+          ORBIT Version 1.0.0 delivers automatic Garmin Sync, manual <code>.fit</code> file uploads, a clean Today &amp; Calendar view (Week, Month, List) featuring COROS-inspired training preview cards, and direct <code>.FIT</code> file downloads for athletes and connected coaches — hosted exclusively in Frankfurt am Main (<code>europe-west3</code>).
+        </span>
       </p>
+
       <div class="hero-cta-group">
-        <a href="/app/#/register" class="btn-primary-volt" id="btn-hero-register">Jetzt kostenlos registrieren →</a>
-        <a href="/app/#/login" class="btn-secondary-link" id="btn-hero-login">Login in ORBIT Web ↗</a>
+        <a href="/app/#/register" class="btn-primary-volt" id="btn-hero-register">
+          <span class="lang-de">Jetzt kostenlos registrieren →</span>
+          <span class="lang-en">Create Free Account →</span>
+        </a>
+        <a href="/app/#/login" class="btn-secondary-outline" id="btn-hero-login">
+          <span class="lang-de">Login in ORBIT Web (/app/) ↗</span>
+          <span class="lang-en">Sign In to ORBIT Web (/app/) ↗</span>
+        </a>
+        <a href="#v1-live" class="btn-secondary-outline">
+          <span class="lang-de">Alle V1.0.0-Funktionen ↓</span>
+          <span class="lang-en">Explore V1.0.0 Features ↓</span>
+        </a>
+      </div>
+
+      <div class="hero-trust-strip">
+        <span>✓ <span class="lang-de">Server Frankfurt (europe-west3)</span><span class="lang-en">Frankfurt EU Servers (europe-west3)</span></span>
+        <span>✓ <span class="lang-de">Triathlon, Rad, Lauf, Schwimmen &amp; Kraft</span><span class="lang-en">Triathlon, Bike, Run, Swim &amp; Strength</span></span>
+        <span>✓ <span class="lang-de">Direkter .FIT-Download für Athlet &amp; Coach</span><span class="lang-en">Direct .FIT Download for Athlete &amp; Coach</span></span>
       </div>
     </div>
 
-    <!-- Live Mockup: Konzept 01 + Konzept 10 -->
-    <div class="hero-mockup-wrapper">
-      <!-- Coach Feedback Bubble (Konzept 10) -->
+    <!-- Live Hero Mockup: Realer V1.0.0 Funktionsumfang (Heute & Kalender COROS-Preview + Coach-Link) -->
+    <div class="hero-mockup-wrapper" aria-label="ORBIT V1.0.0 Heute &amp; Kalender Vorschau">
       <div class="coach-bubble-floating">
         <div class="coach-avatar-mini">C</div>
         <div>
-          <span style="font-size:10px; color:#64748B; font-weight:800; display:block;">COACH TIM · VOR 10 MIN</span>
-          <span>„Starker Intervallblock! Morgen Ruhetag wie geplant.“</span>
+          <span style="font-size:10px; color:#64748B; font-weight:900; display:block;">
+            <span class="lang-de">COACH-VERBINDUNG AKTIV · DSGVO-FREIGABE</span>
+            <span class="lang-en">COACH LINK ACTIVE · GDPR CONSENT</span>
+          </span>
+          <span class="lang-de">Coach sieht den Kalender &amp; lädt originale .FIT-Dateien mit 1 Klick.</span>
+          <span class="lang-en">Coach views the calendar &amp; downloads original .FIT files in 1 click.</span>
         </div>
       </div>
 
-      <!-- Athlete 3 Rings Hero (Konzept 01) -->
       <div class="mockup-inner-header">
-        <div>
-          <span style="font-size:11px; text-transform:uppercase; letter-spacing:1px; color:#94A3B8; font-weight:800;">HEUTE · ATHLETE COCKPIT</span>
-          <div style="font-size:18px; font-weight:900;">Tim Zarges</div>
+        <div class="mockup-user-row">
+          <div class="mockup-avatar-circle">TZ</div>
+          <div>
+            <span style="font-size:10px; text-transform:uppercase; letter-spacing:0.8px; color:#94A3B8; font-weight:800;">
+              <span class="lang-de">HEUTE &amp; KALENDER (WOCHE · MONAT · LISTE)</span>
+              <span class="lang-en">TODAY &amp; CALENDAR (WEEK · MONTH · LIST)</span>
+            </span>
+            <div style="font-size:17px; font-weight:900;">Tim Zarges · Triathlon</div>
+          </div>
         </div>
-        <div style="background:rgba(205,251,23,0.15); border:1px solid rgba(205,251,23,0.3); color:var(--brand-volt); font-size:10px; font-weight:800; padding:4px 8px; border-radius:6px;">
-          GARMIN LIVE
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="background:rgba(205,251,23,0.16); border:1px solid rgba(205,251,23,0.35); color:var(--brand-volt); font-size:10px; font-weight:800; padding:4px 8px; border-radius:6px;">
+            GARMIN SYNC
+          </span>
+          <span style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); color:#E2E8F0; font-size:11px; padding:4px 8px; border-radius:6px;" title="Topbar Bug-Meldung">
+            🐛
+          </span>
         </div>
       </div>
 
-      <div class="mockup-rings-center">
-        <!-- 3 Concentric Rings SVG with Volt Lead Ring -->
-        <svg viewBox="0 0 120 120" class="rings-svg-hero" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <!-- Äußerer Volt Ring (Erholung 88%) -->
-          <circle cx="60" cy="60" r="48" stroke="#CDFB17" stroke-width="9" stroke-linecap="round" stroke-dasharray="240 60" transform="rotate(-90 60 60)"/>
-          <!-- Mittlerer Amber Ring (Tagesbelastung 74%) -->
-          <circle cx="60" cy="60" r="34" stroke="#FF6B00" stroke-width="8" stroke-linecap="round" stroke-dasharray="160 50" transform="rotate(-30 60 60)"/>
-          <!-- Innerer Cyan Ring (Schlaf 92%) -->
-          <circle cx="60" cy="60" r="20" stroke="#00D2FF" stroke-width="7" stroke-linecap="round" stroke-dasharray="100 25" transform="rotate(45 60 60)"/>
-          <text x="60" y="65" fill="#FFFFFF" font-size="14" font-weight="900" text-anchor="middle">88%</text>
-        </svg>
-
-        <div class="rings-hero-data">
-          <div class="recovery-status-pill">GRÜNE ERHOLUNG</div>
-          <div class="recovery-score-huge">88 %</div>
-          <div style="font-size:12px; color:#CBD5E1; line-height:1.35;">
-            HRV 74 ms (+6 ms vs. 30d Baseline)<br>
-            Ruhepuls 46 bpm (-2 bpm)
+      <!-- COROS-inspired Preview Card 1 (Bike) -->
+      <div class="coros-preview-card">
+        <div class="coros-left-col">
+          <div class="coros-main-row">
+            <span class="sport-dot-badge" style="background:#FF6B00; color:#FFFFFF;">
+              <span class="lang-de">🚴 RADFAHREN</span>
+              <span class="lang-en">🚴 CYCLING</span>
+            </span>
+            <span class="coros-primary-metric">84,2 km</span>
           </div>
+          <div class="coros-secondary-metrics">
+            02:38:14 &middot; 218 W &middot; 146 bpm &middot; 740 hm
+          </div>
+        </div>
+        <div class="coros-right-col">
+          <div class="coros-workout-title">
+            <span class="lang-de">Grundlagenausfahrt Taunus</span>
+            <span class="lang-en">Taunus Endurance Ride</span>
+          </div>
+          <span style="font-size:11px; color:#94A3B8;">18.11.26 &middot; 08:30 (24h)</span>
+          <span class="fit-download-pill">⬇ .FIT</span>
         </div>
       </div>
 
-      <!-- Today Workout Row -->
-      <div class="today-workout-preview">
-        <div>
-          <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
-            <span class="workout-badge-sport">RADSPORT</span>
-            <span style="font-size:12px; font-weight:800;">4×10 min Schwellenintervalle</span>
+      <!-- COROS-inspired Preview Card 2 (Run) -->
+      <div class="coros-preview-card" style="margin-bottom:0;">
+        <div class="coros-left-col">
+          <div class="coros-main-row">
+            <span class="sport-dot-badge" style="background:#00D2FF; color:#001F47;">
+              <span class="lang-de">🏃 LAUFEN</span>
+              <span class="lang-en">🏃 RUNNING</span>
+            </span>
+            <span class="coros-primary-metric">12,5 km</span>
           </div>
-          <span style="font-size:11px; color:#94A3B8;">Geplant: 85 km · 145 TSS · Ziel: 285 Watt</span>
+          <div class="coros-secondary-metrics">
+            00:56:15 &middot; 4:30 /km &middot; 154 bpm &middot; 85 hm
+          </div>
         </div>
-        <div style="color:var(--brand-volt); font-size:12px; font-weight:800;">
-          HEUTE →
+        <div class="coros-right-col">
+          <div class="coros-workout-title">
+            <span class="lang-de">Tempolauf am Main</span>
+            <span class="lang-en">River Tempo Run</span>
+          </div>
+          <span style="font-size:11px; color:#94A3B8;">17.11.26 &middot; 17:45 (24h)</span>
+          <span class="fit-download-pill">⬇ .FIT</span>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Section 2: Features Grid -->
-  <section class="features-sec" id="features">
+  <!-- Section 1: Jetzt live in ORBIT Version 1.0.0 -->
+  <section class="content-sec" id="v1-live">
     <div class="sec-headline-block">
-      <span class="sec-tag">ATHLETE-FIRST</span>
-      <h2 class="sec-title" id="features-title">Vier Säulen für maximale Ausdauerleistung</h2>
+      <span class="sec-tag">
+        <span class="lang-de">RELEASE V1.0.0 · AKTUELLER FUNKTIONSUMFANG</span>
+        <span class="lang-en">RELEASE V1.0.0 · CURRENT FEATURE SCOPE</span>
+      </span>
+      <h2 class="sec-title" id="features-title">
+        <span class="lang-de">Jetzt live in ORBIT Version 1.0.0</span>
+        <span class="lang-en">Now Live in ORBIT Version 1.0.0</span>
+      </h2>
+      <p class="sec-subtitle">
+        <span class="lang-de">
+          Schnell, aufgeräumt und zuverlässig: Version 1.0.0 konzentriert sich bewusst auf den stabilen Kern für das tägliche Training von Athleten und Vereinstrainern auf Android und im Web.
+        </span>
+        <span class="lang-en">
+          Fast, clean, and reliable: Version 1.0.0 intentionally focuses on the rock-solid daily training workflow for endurance athletes and club coaches on Android and Web.
+        </span>
+      </p>
     </div>
 
-    <div class="features-grid">
-      <!-- Feature 1 -->
-      <div class="feature-card">
-        <div class="feature-icon-badge">01</div>
-        <h3>Tagessteuerung & 3 Ringe</h3>
+    <div class="v1-columns-grid">
+      <!-- Spalte 1: Allgemein (V1.0.0) -->
+      <div class="v1-role-card">
+        <div class="v1-role-card-top-bar" style="background:var(--brand-volt);"></div>
+        <div class="v1-role-header">
+          <h3>
+            <span class="lang-de">Allgemein</span>
+            <span class="lang-en">General Platform</span>
+          </h3>
+          <span class="v1-role-badge" style="background:#001F47; color:var(--brand-volt);">V1.0.0 LIVE</span>
+        </div>
+        <ul class="v1-feature-list">
+          <li>
+            <span class="check-bullet">✓</span>
+            <div>
+              <span class="lang-de"><strong>Nutzung auf Android &amp; Web (<code>/app/</code>):</strong> Direkt über die „Login“- (<code>/app/#/login</code>) und „Registrieren“-Buttons (<code>/app/#/register</code>) im Browser sowie als native Android-App nutzbar.</span>
+              <span class="lang-en"><strong>Available on Android &amp; Web (<code>/app/</code>):</strong> Directly accessible via the "Sign In" (<code>/app/#/login</code>) and "Register" (<code>/app/#/register</code>) buttons on the web and via the native Android app.</span>
+            </div>
+          </li>
+          <li>
+            <span class="check-bullet">✓</span>
+            <div>
+              <span class="lang-de"><strong>Schnelles Onboarding &amp; Sicheres Konto:</strong> Rollenwahl (Athlet oder Coach), Login, Logout, „Passwort vergessen / zurücksetzen“ sowie E-Mail-Bestätigung.</span>
+              <span class="lang-en"><strong>Fast Onboarding &amp; Secure Account:</strong> Role selection (Athlete or Coach), Sign In, Sign Out, password reset email flow, and email verification.</span>
+            </div>
+          </li>
+          <li>
+            <span class="check-bullet">✓</span>
+            <div>
+              <span class="lang-de"><strong>Clean Professional Design (Hell &amp; Dunkel, DE &amp; EN):</strong> Kontraststarke Darstellung im Light- &amp; Dark-Mode, lückenlose Sprachumschaltung sowie automatische Datums- (<code>dd.mm.yy</code>) und <code>24h</code>-Uhrzeitformatierung gekoppelt an das Wohnland.</span>
+              <span class="lang-en"><strong>Clean Professional Design (Light &amp; Dark, DE &amp; EN):</strong> High-contrast Light &amp; Dark modes, full German/English switching, and automatic date (<code>dd.mm.yy</code>) and <code>24h</code> time formatting coupled to your country of residence.</span>
+            </div>
+          </li>
+          <li>
+            <span class="check-bullet">✓</span>
+            <div>
+              <span class="lang-de"><strong>Volle EU-Datenhoheit &amp; Topbar-Bugmeldung:</strong> Serverstandort Frankfurt am Main (<code>europe-west3</code>), zweistufige Funktion „Daten &amp; Konto löschen“ (Art. 17 DSGVO) sowie direktes Bug- &amp; Feedback-Icon oben rechts in der Topbar.</span>
+              <span class="lang-en"><strong>Full EU Data Sovereignty &amp; Topbar Bug Reporting:</strong> Hosted in Frankfurt am Main (<code>europe-west3</code>), two-step "Delete Data &amp; Account" flow (Art. 17 GDPR), and a clean bug report icon in the top bar.</span>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Spalte 2: Für Athleten (V1.0.0) -->
+      <div class="v1-role-card">
+        <div class="v1-role-card-top-bar" style="background:var(--brand-amber);"></div>
+        <div class="v1-role-header">
+          <h3>
+            <span class="lang-de">Für Athleten</span>
+            <span class="lang-en">For Athletes</span>
+          </h3>
+          <span class="v1-role-badge" style="background:rgba(255,107,0,0.14); color:var(--brand-amber);">ATHLETE V1.0.0</span>
+        </div>
+        <ul class="v1-feature-list">
+          <li>
+            <span class="check-bullet">✓</span>
+            <div>
+              <span class="lang-de"><strong>Profil Einfach &amp; Dauerhaftes Profilbild:</strong> Alle Stammdaten aus dem Onboarding (Vor-/Nachname, Wohnland, Größe, Gewicht, Geburtsdatum), dauerhaft gespeichertes Profilbild in Profil &amp; Topbar sowie volle Unterstützung für <strong>Triathlon</strong>, Radfahren, Laufen, Schwimmen &amp; Krafttraining.</span>
+              <span class="lang-en"><strong>Simple Profile &amp; Persistent Avatar:</strong> Manage all onboarding master data (name, country, height, weight, birth date), persistent profile photo in profile &amp; top bar, and full support for <strong>Triathlon</strong>, Cycling, Running, Swimming &amp; Strength.</span>
+            </div>
+          </li>
+          <li>
+            <span class="check-bullet">✓</span>
+            <div>
+              <span class="lang-de"><strong>Automatischer Garmin Sync &amp; Manueller <code>.fit</code>-Upload:</strong> Nahtlose OAuth-Anbindung an Garmin Connect inklusive Duplikatschutz sowie direkter Upload einzelner <code>.fit</code>-Trainingsdateien.</span>
+              <span class="lang-en"><strong>Automatic Garmin Sync &amp; Manual <code>.fit</code> Upload:</strong> Seamless Garmin Connect OAuth integration with duplicate protection plus direct manual <code>.fit</code> activity file uploads.</span>
+            </div>
+          </li>
+          <li>
+            <span class="check-bullet">✓</span>
+            <div>
+              <span class="lang-de"><strong>Heute-Ansicht &amp; 3-fach Kalender:</strong> Aufgeräumter „Heute“-Screen (fokussiert auf das heute absolvierte Training) sowie Kalender-Ansichten für <strong>Woche</strong>, <strong>Monat</strong> und <strong>Liste</strong>.</span>
+              <span class="lang-en"><strong>Today View &amp; 3-Mode Calendar:</strong> Focused "Today" screen showing today's completed training alongside <strong>Week</strong>, <strong>Month</strong>, and <strong>List</strong> calendar views.</span>
+            </div>
+          </li>
+          <li>
+            <span class="check-bullet">✓</span>
+            <div>
+              <span class="lang-de"><strong>Training Preview angelehnt an COROS:</strong> Kompakte Vorschaukarte mit Sportart-Icon, Hauptmetrik (Distanz <code>km</code> oder Dauer <code>hh:mm:ss</code>), Sekundärmetriken (Watt, Pace, Puls, Höhenmeter) und direktem <strong><code>.FIT</code>-Download-Button</strong> rechts.</span>
+              <span class="lang-en"><strong>COROS-Inspired Training Preview Card:</strong> Unified activity card with sport icon, primary metric (distance <code>km</code> or duration <code>hh:mm:ss</code>), secondary metrics (power, pace, HR, elevation), and a direct <strong><code>.FIT</code> download button</strong> on the right.</span>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Spalte 3: Für Coaches (V1.0.0) -->
+      <div class="v1-role-card">
+        <div class="v1-role-card-top-bar" style="background:var(--brand-cyan);"></div>
+        <div class="v1-role-header">
+          <h3>
+            <span class="lang-de">Für Coaches</span>
+            <span class="lang-en">For Coaches</span>
+          </h3>
+          <span class="v1-role-badge" style="background:rgba(0,210,255,0.15); color:var(--brand-cyan);">COACH V1.0.0</span>
+        </div>
+        <ul class="v1-feature-list">
+          <li>
+            <span class="check-bullet">✓</span>
+            <div>
+              <span class="lang-de"><strong>Profil Einfach für Trainer:</strong> Eigene Trainer-Stammdaten, Coaching-Schwerpunkt / Kurz-Biografie sowie dauerhaftes Profilbild im Web und auf Mobilgeräten.</span>
+              <span class="lang-en"><strong>Simple Coach Profile:</strong> Manage coach master data, coaching focus / short bio, and persistent profile photo across Web and Mobile.</span>
+            </div>
+          </li>
+          <li>
+            <span class="check-bullet">✓</span>
+            <div>
+              <span class="lang-de"><strong>Sichere Verbindung mit Athleten:</strong> Verknüpfung per 6-stelligem Einladungscode oder gezielter E-Mail-Anfrage — immer geschützt durch die explizite DSGVO-Freigabe des Athleten (jederzeit mit 1 Klick widerrufbar).</span>
+              <span class="lang-en"><strong>Secure Athlete Connection:</strong> Connect via 6-character invite code or direct email request — always protected by the athlete's explicit GDPR consent (revocable in 1 click at any time).</span>
+            </div>
+          </li>
+          <li>
+            <span class="check-bullet">✓</span>
+            <div>
+              <span class="lang-de"><strong>Klare 3-Tab-Navigationsleiste:</strong> Aufgeräumte Coach-Oberfläche mit den drei Tabs <strong>Athleten</strong>, <strong>Kalender</strong> (Woche, Monat &amp; Liste des gewählten Athleten) und <strong>Profil</strong>.</span>
+              <span class="lang-en"><strong>Clean 3-Tab Navigation:</strong> Streamlined coach interface featuring <strong>Athletes</strong>, <strong>Calendar</strong> (Week, Month &amp; List for the selected athlete), and <strong>Profile</strong>.</span>
+            </div>
+          </li>
+          <li>
+            <span class="check-bullet">✓</span>
+            <div>
+              <span class="lang-de"><strong>Direkter <code>.FIT</code>-Originaldatei-Download:</strong> Coaches können die originalen <code>.fit</code>-Trainingsdateien ihrer verbundenen Athleten mit einem Klick herunterladen (z. B. für weiterführende Analysen).</span>
+              <span class="lang-en"><strong>Direct <code>.FIT</code> Original File Download:</strong> Coaches can download the original <code>.fit</code> workout files of connected athletes with a single click for external analysis.</span>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 2: Zusammenspiel Athlet & Coach in V1.0.0 -->
+  <section class="content-sec" id="coaching">
+    <div class="sec-headline-block">
+      <span class="sec-tag">
+        <span class="lang-de">ATHLET &amp; COACH IN V1.0.0</span>
+        <span class="lang-en">ATHLETE &amp; COACH IN V1.0.0</span>
+      </span>
+      <h2 class="sec-title">
+        <span class="lang-de">So funktioniert die Zusammenarbeit in 3 Schritten</span>
+        <span class="lang-en">How Athlete–Coach Collaboration Works in 3 Steps</span>
+      </h2>
+      <p class="sec-subtitle">
+        <span class="lang-de">Volle Transparenz und Datenschutz nach Art. 9 DSGVO: Der Athlet behält jederzeit die Kontrolle über seine Trainingsdaten.</span>
+        <span class="lang-en">Full transparency and Art. 9 GDPR privacy protection: The athlete retains complete control over their training data at all times.</span>
+      </p>
+    </div>
+
+    <div class="coaching-flow-grid">
+      <div class="flow-step-card">
+        <span class="flow-step-num">SCHRITT 01 / STEP 01</span>
+        <h4>
+          <span class="lang-de">Registrieren &amp; Rolle wählen</span>
+          <span class="lang-en">Register &amp; Choose Role</span>
+        </h4>
         <p>
-          Tagesform auf einen Blick: Erholung (0–100 %), dynamischer Tagesbelastungskorridor und Schlafschuld. 
-          Basiert auf Ihren individuellen 30-Tage-Baselines für HRV und Ruhepuls.
+          <span class="lang-de">Athleten und Coaches erstellen ihr Konto in unter 60 Sekunden im Web (<code>/app/#/register</code>) oder in der Android-App und wählen im Onboarding ihre Rolle, Sprache (DE/EN) und ihr Wohnland.</span>
+          <span class="lang-en">Athletes and coaches create their account in under 60 seconds on the Web (<code>/app/#/register</code>) or Android app, selecting their role, language (DE/EN), and country of residence.</span>
         </p>
       </div>
 
-      <!-- Feature 2 -->
-      <div class="feature-card">
-        <div class="feature-icon-badge" style="color:var(--brand-amber);">02</div>
-        <h3>Profi-Telemetrie nach GoldenCheetah</h3>
+      <div class="flow-step-card">
+        <span class="flow-step-num">SCHRITT 02 / STEP 02</span>
+        <h4>
+          <span class="lang-de">Verbindung per Code oder E-Mail</span>
+          <span class="lang-en">Connect via Code or Email</span>
+        </h4>
         <p>
-          Sekundengenaue Auswertung: Critical Power (CP/W′), dynamischer Skiba W′bal-Batterieverlauf, 
-          Banister PMC (CTL/ATL/TSB) und automatische Intervall-Erkennung.
+          <span class="lang-de">Der Coach teilt seinen 6-stelligen Einladungscode oder sendet eine Verbindungsanfrage per E-Mail. Erst nach aktiver DSGVO-Zustimmung durch den Athleten wird die Verbindung aktiv.</span>
+          <span class="lang-en">The coach shares a 6-character invite code or sends an email connection request. The link only becomes active after the athlete explicitly grants GDPR consent.</span>
         </p>
       </div>
 
-      <!-- Feature 3 -->
-      <div class="feature-card" id="coaching">
-        <div class="feature-icon-badge" style="color:var(--brand-cyan);">03</div>
-        <h3>MATS-inspiriertes Coaching</h3>
+      <div class="flow-step-card">
+        <span class="flow-step-num">SCHRITT 03 / STEP 03</span>
+        <h4>
+          <span class="lang-de">Kalender einsehen &amp; .FIT herunterladen</span>
+          <span class="lang-en">Inspect Calendar &amp; Download .FIT</span>
+        </h4>
         <p>
-          Direkter Draht zum Vereinstrainer: Trainingsplan-Anpassungen, Kommentare direkt an Intervallen 
-          und DSGVO-konforme Erholungs-Ampel (Art. 9) für optimale Trainingsreize.
-        </p>
-      </div>
-
-      <!-- Feature 4 -->
-      <div class="feature-card">
-        <div class="feature-icon-badge" style="color:var(--brand-emerald);">04</div>
-        <h3>Garmin Live & 90-Tage-Backfill</h3>
-        <p>
-          Vollautomatische Synchronisation über offizielle Garmin Connect Push-Webhooks inklusive 90-Tage-Historie. 
-          Zusätzlicher Multi-Format-Upload für .FIT, .TCX und .GPX von Wahoo und SRM.
+          <span class="lang-de">Sobald der Athlet über Garmin synchronisiert oder eine <code>.fit</code>-Datei hochlädt, sieht der Coach die Einheit in der COROS-Vorschaukarte im Kalender und kann die originale <code>.fit</code>-Datei direkt herunterladen.</span>
+          <span class="lang-en">As soon as the athlete syncs via Garmin or uploads a <code>.fit</code> file, the coach sees the workout on the COROS preview card in the calendar and can download the original <code>.fit</code> file directly.</span>
         </p>
       </div>
     </div>
   </section>
 
-  <!-- Section 5: Vereins- & Team-Anfrage Formular -->
+  <!-- Section 3: Roadmap & Kommende Updates (V2.0.0 bis V4.0.0) -->
+  <section class="content-sec" id="roadmap">
+    <div class="sec-headline-block">
+      <span class="sec-tag-outline">
+        <span class="lang-de">ENTWICKLUNGSPLAN · KOMMENDE VERSIONEN (NICHT BESTANDTEIL VON V1.0.0)</span>
+        <span class="lang-en">PRODUCT ROADMAP · UPCOMING RELEASES (NOT PART OF V1.0.0)</span>
+      </span>
+      <h2 class="sec-title">
+        <span class="lang-de">Roadmap &amp; Kommende Updates (V2.0.0 bis V4.0.0)</span>
+        <span class="lang-en">Roadmap &amp; Upcoming Releases (V2.0.0 to V4.0.0)</span>
+      </h2>
+      <p class="sec-subtitle">
+        <span class="lang-de">
+          Transparente Ausbaustufen: Auf dem stabilen V1.0.0-Fundament folgen schrittweise unsere Module für Tiefen-Telemetrie, Trainingsplanung, Readiness und künstliche Intelligenz.
+        </span>
+        <span class="lang-en">
+          Transparent product evolution: Building on the stable V1.0.0 foundation, our upcoming milestones introduce deep telemetry, structured workout planning, readiness, and AI coaching.
+        </span>
+      </p>
+    </div>
+
+    <div class="roadmap-grid">
+      <!-- Meilenstein V2.0.0 -->
+      <div class="roadmap-card">
+        <div class="roadmap-version-header">
+          <span class="roadmap-version-tag">VERSION 2.0.0</span>
+          <span class="roadmap-status-pill" style="background:rgba(205,251,23,0.22); color:var(--text-main); border:1px solid var(--brand-volt);">
+            <span class="lang-de">Nächster Meilenstein</span>
+            <span class="lang-en">Next Milestone</span>
+          </span>
+        </div>
+        <h3 style="font-size:20px; font-weight:900;">
+          <span class="lang-de">Analyse, Diagnostik, Planung &amp; Kommunikation</span>
+          <span class="lang-en">Analysis, Diagnostics, Planning &amp; Communication</span>
+        </h3>
+
+        <div>
+          <div class="roadmap-group-title">
+            <span class="lang-de">Allgemein (V2.0.0)</span>
+            <span class="lang-en">General (V2.0.0)</span>
+          </div>
+          <ul class="roadmap-list">
+            <li>
+              <span class="lang-de"><strong>Leistungsdiagnostik &amp; Zonen:</strong> Schwellenwerte und Trainingszonen berechnen &amp; einstellen (inkl. 3-Zonen-Modell LIT / MIT / HIT).</span>
+              <span class="lang-en"><strong>Performance Diagnostics &amp; Zones:</strong> Calculate and configure thresholds and training zones (including 3-zone LIT / MIT / HIT model).</span>
+            </li>
+            <li>
+              <span class="lang-de"><strong>Chat, Kommentare &amp; Mitteilungen:</strong> Direkter Athlet-Coach-Chat, Kommentare an Einheiten (+ Einheit im Chat teilen) sowie Mitteilungen zu Chat, PRs &amp; Training.</span>
+              <span class="lang-en"><strong>Chat, Comments &amp; Notifications:</strong> Direct athlete-coach chat, workout comments (+ workout cards in chat), and notifications for chat, PRs &amp; training.</span>
+            </li>
+          </ul>
+        </div>
+
+        <div>
+          <div class="roadmap-group-title">
+            <span class="lang-de">Für Athleten (V2.0.0)</span>
+            <span class="lang-en">For Athletes (V2.0.0)</span>
+          </div>
+          <ul class="roadmap-list">
+            <li>
+              <span class="lang-de"><strong>Profil Fortgeschritten &amp; Historien-Import:</strong> History Garmin Sync sowie History Bulk-Upload für 300+ historische Trainingsdateien.</span>
+              <span class="lang-en"><strong>Advanced Profile &amp; History Import:</strong> Historical Garmin backfill sync and bulk upload for 300+ historical activity files.</span>
+            </li>
+            <li>
+              <span class="lang-de"><strong>Training Details &amp; Planung empfangen:</strong> 1-Hz-Telemetrie-Cockpit (interaktive Kurven, Laps, 2D-RPE-Quadrant) sowie vom Coach geplante Workouts im Kalender empfangen.</span>
+              <span class="lang-en"><strong>Training Details &amp; Planned Workouts:</strong> 1Hz telemetry cockpit (interactive streams, laps, 2D RPE quadrant) and receiving coach-planned workouts in the calendar.</span>
+            </li>
+          </ul>
+        </div>
+
+        <div>
+          <div class="roadmap-group-title">
+            <span class="lang-de">Für Coaches (V2.0.0)</span>
+            <span class="lang-en">For Coaches (V2.0.0)</span>
+          </div>
+          <ul class="roadmap-list">
+            <li>
+              <span class="lang-de"><strong>Trainings-Datenbank &amp; Workout-Builder (Web):</strong> Eigene Trainings-Bibliothek, strukturiertes Training bauen (farbige Zonen-Blöcke &amp; Ernährungsfeld) und pro Athlet im Kalender planen.</span>
+              <span class="lang-en"><strong>Workout Library &amp; Web Workout Builder:</strong> Reusable workout library, visual zone-block builder with nutrition notes, and per-athlete calendar scheduling.</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Meilenstein V3.0.0 -->
+      <div class="roadmap-card">
+        <div class="roadmap-version-header">
+          <span class="roadmap-version-tag">VERSION 3.0.0</span>
+          <span class="roadmap-status-pill" style="background:rgba(0,210,255,0.14); color:var(--text-main); border:1px solid var(--brand-cyan);">
+            <span class="lang-de">Geplant · Phase V3</span>
+            <span class="lang-en">Planned · Phase V3</span>
+          </span>
+        </div>
+        <h3 style="font-size:20px; font-weight:900;">
+          <span class="lang-de">Readiness, Health (3 Ringe) &amp; Machine Learning</span>
+          <span class="lang-en">Readiness, Health (3 Rings) &amp; Machine Learning</span>
+        </h3>
+
+        <div>
+          <div class="roadmap-group-title">
+            <span class="lang-de">Allgemein (V3.0.0)</span>
+            <span class="lang-en">General (V3.0.0)</span>
+          </div>
+          <ul class="roadmap-list">
+            <li>
+              <span class="lang-de"><strong>Saison-Ziele &amp; Mobiler Workout-Builder:</strong> A-/B-/C-Wettkampfziele planen sowie strukturierte Trainings direkt auf dem Smartphone bauen.</span>
+              <span class="lang-en"><strong>Season Goals &amp; Mobile Workout Builder:</strong> Plan A/B/C race targets and build structured workouts directly on mobile devices.</span>
+            </li>
+            <li>
+              <span class="lang-de"><strong>Zeitplanung &amp; Aufenthaltsort:</strong> Verfügbarkeitsprofile für Training im Kalender (Wochentage/Zeitfenster) und Standort-/Höhenkontext.</span>
+              <span class="lang-en"><strong>Availability Profiles &amp; Location:</strong> Weekly training time availability windows in the calendar plus location/altitude context.</span>
+            </li>
+          </ul>
+        </div>
+
+        <div>
+          <div class="roadmap-group-title">
+            <span class="lang-de">Für Athleten &amp; Coaches (V3.0.0)</span>
+            <span class="lang-en">For Athletes &amp; Coaches (V3.0.0)</span>
+          </div>
+          <ul class="roadmap-list">
+            <li>
+              <span class="lang-de"><strong>Profil Expert &amp; Daily Health (3 Ringe):</strong> Tagesform-, Belastungs- und Schlaf-Ringe auf Basis individueller 30-Tage-Baselines (HRV, Ruhepuls, Schlaf).</span>
+              <span class="lang-en"><strong>Expert Profile &amp; Daily Health (3 Rings):</strong> Readiness, load, and sleep rings powered by individual 30-day baselines (HRV, RHR, sleep).</span>
+            </li>
+            <li>
+              <span class="lang-de"><strong>Morgen-Check (Journal) &amp; ML-Analyse:</strong> Subjektives Tages-Journal sowie ganzheitliche Analyse aller Trainings- und Health-Daten inkl. Machine-Learning-Korrelationen.</span>
+              <span class="lang-en"><strong>Morning Check (Journal) &amp; ML Analytics:</strong> Daily subjective journal and holistic analysis across all training and health metrics including machine-learning correlations.</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Meilenstein V3.1.0 & V4.0.0 -->
+      <div class="roadmap-card">
+        <div class="roadmap-version-header">
+          <span class="roadmap-version-tag">VERSION 3.1.0 / 4.0.0</span>
+          <span class="roadmap-status-pill" style="background:rgba(139,92,246,0.15); color:var(--text-main); border:1px solid var(--brand-purple);">
+            <span class="lang-de">Zukunft &amp; KI-Vision</span>
+            <span class="lang-en">Future &amp; AI Vision</span>
+          </span>
+        </div>
+        <h3 style="font-size:20px; font-weight:900;">
+          <span class="lang-de">Multi-Provider-Ökosystem &amp; Interaktiver KI-Trainer</span>
+          <span class="lang-en">Multi-Provider Ecosystem &amp; Interactive AI Coach</span>
+        </h3>
+
+        <div>
+          <div class="roadmap-group-title">
+            <span class="lang-de">Version 3.1.0 — Weitere Anbieter</span>
+            <span class="lang-en">Version 3.1.0 — Additional Providers</span>
+          </div>
+          <ul class="roadmap-list">
+            <li>
+              <span class="lang-de"><strong>Sync zu weiteren Plattformen:</strong> Direkte Anbindung zusätzlicher Ökosysteme (z. B. Wahoo Cloud, COROS, Polar, Strava &amp; Apple Health / Health Connect).</span>
+              <span class="lang-en"><strong>Sync with Additional Ecosystems:</strong> Direct integration with Wahoo Cloud, COROS, Polar, Strava, and Apple Health / Health Connect.</span>
+            </li>
+          </ul>
+        </div>
+
+        <div>
+          <div class="roadmap-group-title">
+            <span class="lang-de">Version 4.0.0 — KI-Trainer &amp; Deep ML</span>
+            <span class="lang-en">Version 4.0.0 — AI Coach &amp; Deep ML</span>
+          </div>
+          <ul class="roadmap-list">
+            <li>
+              <span class="lang-de"><strong>Erweitertes Machine Learning:</strong> Prädiktive Belastungs-, Ermüdungs- und Wettkampf-Prognosen aus Langzeit-Telemetrie.</span>
+              <span class="lang-en"><strong>Advanced Machine Learning:</strong> Predictive load, fatigue, and race performance modeling built on longitudinal telemetry.</span>
+            </li>
+            <li>
+              <span class="lang-de"><strong>Interaktiver KI-Trainer:</strong> Intelligenter Co-Pilot für Athleten und Coaches zur adaptiven Trainingsplan-Steuerung unter voller menschlicher Entscheidungshoheit.</span>
+              <span class="lang-en"><strong>Interactive AI Coach:</strong> Intelligent co-pilot for athletes and coaches supporting adaptive plan adjustments while keeping humans in full control.</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 4: Vereins- & Team-Anfrage Formular -->
   <section class="waitlist-sec" id="waitlist">
     <div class="waitlist-card">
-      <span class="sec-tag">VEREINE, TEAMS &amp; TRAINERGRUPPEN</span>
-      <h2 style="font-size:28px; font-weight:900; margin:10px 0 12px;" id="waitlist-title">Vereins- &amp; Team-Onboarding anfragen</h2>
-      <p style="font-size:15px; color:var(--text-muted); margin-bottom:32px;" id="waitlist-sub">
-        Einzelne Athleten und Coaches können sich direkt über <a href="/app/#/register" style="color:inherit; font-weight:800;">ORBIT Web (/app/)</a> registrieren. Für Vereine und Trainingsgruppen richten wir gerne ein gemeinsames Team-Setup ein.
+      <span class="sec-tag">
+        <span class="lang-de">VEREINE, TEAMS &amp; TRAINERGRUPPEN</span>
+        <span class="lang-en">CLUBS, TEAMS &amp; COACHING GROUPS</span>
+      </span>
+      <h2 style="font-size:28px; font-weight:900; margin:10px 0 12px;" id="waitlist-title">
+        <span class="lang-de">Vereins- &amp; Team-Onboarding anfragen</span>
+        <span class="lang-en">Request Club &amp; Team Onboarding</span>
+      </h2>
+      <p style="font-size:15px; color:var(--text-muted); margin-bottom:28px;" id="waitlist-sub">
+        <span class="lang-de">
+          Einzelne Athleten und Coaches können sich sofort kostenlos über <a href="/app/#/register" style="color:inherit; font-weight:800;">ORBIT Web (/app/)</a> registrieren. Für Vereine, Kader und Trainingsgruppen richten wir gerne ein begleitetes Team-Setup ein.
+        </span>
+        <span class="lang-en">
+          Individual athletes and coaches can register right away for free via <a href="/app/#/register" style="color:inherit; font-weight:800;">ORBIT Web (/app/)</a>. For clubs, squads, and training groups, we gladly provide guided team onboarding.
+        </span>
       </p>
 
       <form id="beta-form" onsubmit="submitBetaWaitlist(event)">
         <div class="form-row">
           <div class="form-group">
-            <label class="form-label">Dein Name *</label>
+            <label class="form-label" for="waitlist-name">
+              <span class="lang-de">Dein Name *</span>
+              <span class="lang-en">Your Name *</span>
+            </label>
             <input type="text" class="form-input" id="waitlist-name" placeholder="z. B. Tim Zarges" required minlength="2" maxlength="100">
           </div>
           <div class="form-group">
-            <label class="form-label">E-Mail-Adresse *</label>
+            <label class="form-label" for="waitlist-email">
+              <span class="lang-de">E-Mail-Adresse *</span>
+              <span class="lang-en">Email Address *</span>
+            </label>
             <input type="email" class="form-input" id="waitlist-email" placeholder="name@verein.de" required maxlength="200">
           </div>
         </div>
 
         <div class="form-row">
           <div class="form-group">
-            <label class="form-label">Deine Rolle *</label>
+            <label class="form-label" for="waitlist-role">
+              <span class="lang-de">Deine Rolle *</span>
+              <span class="lang-en">Your Role *</span>
+            </label>
             <select class="form-select" id="waitlist-role" required>
-              <option value="ATHLETE">Athlet / Sportler</option>
+              <option value="ATHLETE">Athlet / Athlete</option>
               <option value="COACH">Trainer / Coach</option>
-              <option value="CLUB">Verein / Sportgruppe</option>
+              <option value="CLUB">Verein / Club &amp; Team</option>
             </select>
           </div>
           <div class="form-group">
-            <label class="form-label">Haupt-Gerätesystem *</label>
+            <label class="form-label" for="waitlist-device">
+              <span class="lang-de">Haupt-Gerätesystem *</span>
+              <span class="lang-en">Primary Device Ecosystem *</span>
+            </label>
             <select class="form-select" id="waitlist-device" required>
               <option value="GARMIN">Garmin Connect (Edge / Forerunner / Fenix)</option>
-              <option value="WAHOO">Wahoo (ELEMNT / ROAM)</option>
-              <option value="SRM">SRM / PowerControl</option>
-              <option value="OTHER">Sonstiges (.FIT / Strava)</option>
+              <option value="WAHOO">Wahoo (.FIT Upload)</option>
+              <option value="SRM">SRM / PowerControl (.FIT Upload)</option>
+              <option value="OTHER">Sonstiges (.FIT)</option>
             </select>
           </div>
         </div>
 
         <div class="checkbox-row">
-          <input type="checkbox" id="waitlist-consent" required style="margin-top:2px; accent-color:var(--brand-volt);">
+          <input type="checkbox" id="waitlist-consent" required style="margin-top:3px; accent-color:var(--brand-volt);">
           <label for="waitlist-consent">
-            Ich stimme der Kontaktaufnahme und der <a href="/privacy.html" target="_blank" style="color:inherit; font-weight:700;">Datenschutzerklärung (Art. 9 &amp; 13 DSGVO)</a> zu. Keine Weitergabe, keine Werbung.
+            <span class="lang-de">Ich stimme der Kontaktaufnahme und der <a href="/privacy.html" target="_blank" style="color:inherit; font-weight:700;">Datenschutzerklärung (Art. 9 &amp; 13 DSGVO)</a> zu. Keine Weitergabe, keine Werbung.</span>
+            <span class="lang-en">I agree to be contacted regarding my request and accept the <a href="/privacy.html" target="_blank" style="color:inherit; font-weight:700;">Privacy Policy (Art. 9 &amp; 13 GDPR)</a>. No third-party sharing, no ads.</span>
           </label>
         </div>
 
-        <button type="submit" class="btn-submit-waitlist" id="btn-submit-text">Vereins- &amp; Team-Anfrage absenden →</button>
+        <button type="submit" class="btn-submit-waitlist" id="btn-submit-text">
+          <span class="lang-de">Vereins- &amp; Team-Anfrage absenden →</span>
+          <span class="lang-en">Submit Club &amp; Team Request →</span>
+        </button>
       </form>
 
       <div id="waitlist-feedback" style="display:none; margin-top:20px; padding:16px; border-radius:12px; font-weight:800; font-size:14px;"></div>
     </div>
   </section>
 
-  <!-- Kontakt- & Feedback-Formular (Phase 28.3) -->
-  <section class="waitlist-sec" id="contact" style="padding-top:0;">
+  <!-- Section 5: Kontakt- & Feedback-Formular -->
+  <section class="waitlist-sec" id="contact" style="margin-top:0;">
     <div class="waitlist-card">
-      <div class="pill-badge" style="color:var(--brand-volt); border-color:var(--brand-volt);">SUPPORT & FEEDBACK</div>
-      <h2 style="font-size:28px; font-weight:900; margin:10px 0 12px;" id="contact-title">Kontakt & Support</h2>
-      <p style="font-size:15px; color:var(--text-muted); margin-bottom:32px;" id="contact-sub">
-        Fragen, Feature-Wünsche oder technischer Support? Unser Team antwortet in der Regel innerhalb von 24 Stunden.
+      <span class="sec-tag">SUPPORT &amp; FEEDBACK</span>
+      <h2 style="font-size:28px; font-weight:900; margin:10px 0 12px;" id="contact-title">
+        <span class="lang-de">Kontakt &amp; Technischer Support</span>
+        <span class="lang-en">Contact &amp; Technical Support</span>
+      </h2>
+      <p style="font-size:15px; color:var(--text-muted); margin-bottom:28px;" id="contact-sub">
+        <span class="lang-de">Fragen zu ORBIT V1.0.0, zur Garmin-Kopplung oder Ideen für kommende Versionen? Unser Team antwortet in der Regel innerhalb von 24 Stunden.</span>
+        <span class="lang-en">Questions about ORBIT V1.0.0, Garmin pairing, or ideas for upcoming releases? Our team typically responds within 24 hours.</span>
       </p>
 
       <form id="contact-form" onsubmit="submitContactRequest(event)">
-        <div class="form-grid">
-          <div>
-            <label class="form-label">Dein Name *</label>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="contact-name">
+              <span class="lang-de">Dein Name *</span>
+              <span class="lang-en">Your Name *</span>
+            </label>
             <input type="text" class="form-input" id="contact-name" placeholder="z. B. Tim Zarges" required minlength="2" maxlength="100">
           </div>
-          <div>
-            <label class="form-label">E-Mail-Adresse *</label>
+          <div class="form-group">
+            <label class="form-label" for="contact-email">
+              <span class="lang-de">E-Mail-Adresse *</span>
+              <span class="lang-en">Email Address *</span>
+            </label>
             <input type="email" class="form-input" id="contact-email" placeholder="name@verein.de" required maxlength="200">
           </div>
         </div>
 
-        <div style="margin-top:16px;">
-          <label class="form-label">Kategorie / Anliegen *</label>
+        <div class="form-group">
+          <label class="form-label" for="contact-category">
+            <span class="lang-de">Kategorie / Anliegen *</span>
+            <span class="lang-en">Category / Topic *</span>
+          </label>
           <select class="form-select" id="contact-category" required>
-            <option value="SUPPORT">❓ Allgemeine Frage & Hilfe</option>
-            <option value="FEEDBACK">💡 Feature-Wunsch & Feedback</option>
-            <option value="BUG">🐛 Fehler / Technisches Problem</option>
-            <option value="PARTNERSHIP">🤝 Kooperation / Vereinspartnerschaft</option>
-            <option value="OTHER">Sonstiges</option>
+            <option value="SUPPORT">❓ Allgemeine Frage &amp; Hilfe / General Support</option>
+            <option value="FEEDBACK">💡 Feature-Wunsch &amp; Feedback / Feature Request</option>
+            <option value="BUG">🐛 Fehler / Technisches Problem / Bug Report</option>
+            <option value="PARTNERSHIP">🤝 Kooperation / Vereinspartnerschaft / Club Partnership</option>
+            <option value="OTHER">Sonstiges / Other</option>
           </select>
         </div>
 
-        <div style="margin-top:16px;">
-          <label class="form-label">Deine Nachricht *</label>
+        <div class="form-group">
+          <label class="form-label" for="contact-message">
+            <span class="lang-de">Deine Nachricht *</span>
+            <span class="lang-en">Your Message *</span>
+          </label>
           <textarea class="form-input" id="contact-message" rows="4" placeholder="Beschreibe kurz dein Anliegen oder deinen Vorschlag..." required minlength="5" maxlength="5000" style="resize:vertical;"></textarea>
         </div>
 
-        <button type="submit" class="btn-submit-waitlist" id="btn-submit-contact-text" style="margin-top:20px;">Nachricht absenden →</button>
+        <button type="submit" class="btn-submit-waitlist" id="btn-submit-contact-text" style="margin-top:8px;">
+          <span class="lang-de">Nachricht absenden →</span>
+          <span class="lang-en">Send Message →</span>
+        </button>
       </form>
 
       <div id="contact-feedback" style="display:none; margin-top:20px; padding:16px; border-radius:12px; font-weight:800; font-size:14px;"></div>
@@ -823,83 +1551,74 @@
   <footer class="site-footer">
     <div class="footer-container">
       <div class="footer-brand">
-        <h4>ORBIT</h4>
+        <h4>ORBIT Performance / ORBIT Training</h4>
         <p>
-          High-End Telemetrie-, Performance- & Recovery-Plattform für Ausdauersportler und deren Vereinstrainer.
+          <span class="lang-de">Ausdauer-, Telemetrie- &amp; Coaching-Plattform für Triathleten, Radsportler, Läufer, Schwimmer und deren Vereinstrainer. Betreiber: ORBIT Endurance Technologies (Tim Zarges).</span>
+          <span class="lang-en">Endurance training, telemetry &amp; coaching platform for triathletes, cyclists, runners, swimmers, and their club coaches. Operated by ORBIT Endurance Technologies (Tim Zarges).</span>
         </p>
       </div>
 
       <div class="footer-links-col">
-        <h5>Plattform</h5>
+        <h5>
+          <span class="lang-de">Plattform (V1.0.0)</span>
+          <span class="lang-en">Platform (V1.0.0)</span>
+        </h5>
         <ul>
           <li><a href="/app/#/login">ORBIT Web – Login</a></li>
-          <li><a href="/app/#/register">ORBIT Web – Registrieren</a></li>
-          <li><a href="/help">Kennzahlen-Lexikon</a></li>
-          <li><a href="/brand-showcase.html">Design Showcase</a></li>
+          <li><a href="/app/#/register">ORBIT Web – Registrieren / Register</a></li>
+          <li><a href="#v1-live"><span class="lang-de">Funktionen in V1.0.0</span><span class="lang-en">Live in V1.0.0</span></a></li>
+          <li><a href="#roadmap"><span class="lang-de">Roadmap V2.0–V4.0</span><span class="lang-en">Roadmap V2.0–V4.0</span></a></li>
+          <li><a href="/help.html"><span class="lang-de">Hilfe &amp; Kennzahlen-Lexikon</span><span class="lang-en">Help &amp; Metrics Compendium</span></a></li>
         </ul>
       </div>
 
       <div class="footer-links-col">
-        <h5>Kontakt &amp; Support</h5>
+        <h5>
+          <span class="lang-de">Kontakt &amp; Support</span>
+          <span class="lang-en">Contact &amp; Support</span>
+        </h5>
         <ul>
           <li><a href="mailto:support@orbit-training.app">support@orbit-training.app</a></li>
           <li><a href="mailto:privacy@orbit-training.app">privacy@orbit-training.app</a></li>
-          <li><a href="#contact">Direktkontakt-Formular</a></li>
+          <li><a href="#contact"><span class="lang-de">Direktkontakt-Formular</span><span class="lang-en">Direct Contact Form</span></a></li>
         </ul>
       </div>
 
       <div class="footer-links-col">
-        <h5>Rechtliches</h5>
+        <h5>
+          <span class="lang-de">Rechtliches (DE / EU)</span>
+          <span class="lang-en">Legal &amp; Privacy (DE / EU)</span>
+        </h5>
         <ul>
-          <li><a href="/privacy.html">Datenschutz (DSGVO Art. 9)</a></li>
-          <li><a href="/imprint.html">Impressum (§ 5 DDG)</a></li>
-          <li><a href="/delete-account.html">Konto &amp; Daten löschen (Art. 17)</a></li>
+          <li><a href="/imprint.html"><span class="lang-de">Impressum (§ 5 DDG)</span><span class="lang-en">Legal Notice / Impressum (§ 5 DDG)</span></a></li>
+          <li><a href="/privacy.html"><span class="lang-de">Datenschutzerklärung (DSGVO Art. 9/13)</span><span class="lang-en">Privacy Policy (GDPR Art. 9/13)</span></a></li>
+          <li><a href="/delete-account.html"><span class="lang-de">Konto &amp; Daten löschen (Art. 17 DSGVO)</span><span class="lang-en">Delete Account &amp; Data (Art. 17 GDPR)</span></a></li>
         </ul>
       </div>
     </div>
 
     <div class="footer-bottom">
-      <div>&copy; 2026 ORBIT Performance / ORBIT Training (ORBIT Endurance Technologies). Serverstandort: Frankfurt am Main (europe-west3).</div>
-      <div>ORBIT Version 1.0.0 · Web &amp; Android</div>
+      <div>&copy; 2026 ORBIT Performance / ORBIT Training (ORBIT Endurance Technologies · Tim Zarges). Serverstandort: Frankfurt am Main (europe-west3).</div>
+      <div>ORBIT Version 1.0.0 (Build 1) · Android &amp; Web</div>
     </div>
   </footer>
 
   <script>
-    // Theme Switcher
+    // Hell- / Dunkel-Modus umschalten
     function toggleGlobalTheme() {
       const current = document.documentElement.getAttribute('data-theme') || 'light';
       const next = current === 'dark' ? 'light' : 'dark';
       document.documentElement.setAttribute('data-theme', next);
     }
 
-    // Language Switcher (DE & EN)
+    // Sprache DE / EN vollständig umschalten
     let isEn = false;
     function toggleGlobalLang() {
       isEn = !isEn;
-      if (isEn) {
-        document.getElementById('nav-login-btn').innerText = 'Sign In';
-        document.getElementById('nav-register-btn').innerText = 'Register →';
-        document.getElementById('hero-title').innerHTML = 'High-End Endurance Training & Recovery. <span class="volt-text">Eye-to-Eye</span> with your Coach.';
-        document.getElementById('hero-sub').innerText = 'ORBIT combines Garmin Connect sync, .FIT file management, and athlete-coach collaboration — hosted securely in Frankfurt am Main.';
-        document.getElementById('btn-hero-register').innerText = 'Create Free Account →';
-        document.getElementById('btn-hero-login').innerText = 'Sign In to ORBIT Web ↗';
-        document.getElementById('features-title').innerText = 'Four Pillars for Peak Endurance Performance';
-        document.getElementById('waitlist-title').innerText = 'Club & Team Onboarding Request';
-        document.getElementById('btn-submit-text').innerText = 'Submit Club Request →';
-      } else {
-        document.getElementById('nav-login-btn').innerText = 'Login';
-        document.getElementById('nav-register-btn').innerText = 'Registrieren →';
-        document.getElementById('hero-title').innerHTML = 'High-End Ausdauertraining & Erholung. <span class="volt-text">Auf Augenhöhe</span> mit deinem Trainer.';
-        document.getElementById('hero-sub').innerText = 'ORBIT vereint Garmin Connect Synchronisation, .FIT-Dateiverwaltung und partnerschaftliches Coaching für Athleten & Trainer — sicher gehostet in Frankfurt am Main.';
-        document.getElementById('btn-hero-register').innerText = 'Jetzt kostenlos registrieren →';
-        document.getElementById('btn-hero-login').innerText = 'Login in ORBIT Web ↗';
-        document.getElementById('features-title').innerText = 'Vier Säulen für maximale Ausdauerleistung';
-        document.getElementById('waitlist-title').innerText = 'Vereins- & Team-Onboarding anfragen';
-        document.getElementById('btn-submit-text').innerText = 'Vereins- & Team-Anfrage absenden →';
-      }
+      document.documentElement.setAttribute('lang', isEn ? 'en' : 'de');
     }
 
-    // Beta Waitlist Submission via Firestore REST API (Strictly according to firestore.rules)
+    // Vereins- & Team-Anfrage via Firestore REST API (konform zu firestore.rules)
     async function submitBetaWaitlist(e) {
       e.preventDefault();
       const feedback = document.getElementById('waitlist-feedback');
@@ -912,7 +1631,6 @@
       const consentGiven = document.getElementById('waitlist-consent').checked;
 
       submitBtn.disabled = true;
-      submitBtn.innerText = 'Wird übermittelt...';
 
       const entryId = 'beta_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
       const payload = {
@@ -927,11 +1645,9 @@
       };
 
       try {
-        // Direct call to Firestore emulator or live backend
         const projectId = 'orbit-app-mvp';
         const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/betaWaitlist?documentId=${entryId}`;
-        
-        const response = await fetch(url, {
+        await fetch(url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
@@ -940,21 +1656,23 @@
         feedback.style.display = 'block';
         feedback.style.background = '#001F47';
         feedback.style.color = '#CDFB17';
-        feedback.innerText = '✓ Vielen Dank! Deine Vereins- & Team-Anfrage wurde erfolgreich erfasst. Wir melden uns kurzfristig per E-Mail!';
+        feedback.innerText = isEn
+          ? '✓ Thank you! Your club & team request has been recorded. We will contact you shortly via email.'
+          : '✓ Vielen Dank! Deine Vereins- & Team-Anfrage wurde erfolgreich erfasst. Wir melden uns kurzfristig per E-Mail!';
         document.getElementById('beta-form').reset();
       } catch (err) {
-        // Fallback friendly message
         feedback.style.display = 'block';
         feedback.style.background = '#001F47';
         feedback.style.color = '#CDFB17';
-        feedback.innerText = '✓ Vielen Dank! Deine Anfrage wurde vorgemerkt. Wir kontaktieren dich kurzfristig per E-Mail!';
+        feedback.innerText = isEn
+          ? '✓ Thank you! Your request has been queued. We will contact you shortly via email.'
+          : '✓ Vielen Dank! Deine Anfrage wurde vorgemerkt. Wir kontaktieren dich kurzfristig per E-Mail!';
       } finally {
         submitBtn.disabled = false;
-        submitBtn.innerText = 'Vereins- & Team-Anfrage absenden →';
       }
     }
 
-    // Contact & Support Submission (Phase 28.3)
+    // Kontakt- & Support-Formular via Firestore REST API
     async function submitContactRequest(e) {
       e.preventDefault();
       const feedback = document.getElementById('contact-feedback');
@@ -966,7 +1684,6 @@
       const message = document.getElementById('contact-message').value.trim();
 
       submitBtn.disabled = true;
-      submitBtn.innerText = 'Wird gesendet...';
 
       const requestId = 'req_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
       const payload = {
@@ -983,7 +1700,6 @@
       try {
         const projectId = 'orbit-app-mvp';
         const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/contactRequests?documentId=${requestId}`;
-        
         await fetch(url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -993,16 +1709,19 @@
         feedback.style.display = 'block';
         feedback.style.background = '#001F47';
         feedback.style.color = '#CDFB17';
-        feedback.innerText = '✓ Vielen Dank! Deine Nachricht wurde übermittelt. Unser Support-Team meldet sich innerhalb von 24 Stunden bei dir.';
+        feedback.innerText = isEn
+          ? '✓ Thank you! Your message has been sent. Our support team will reply within 24 hours.'
+          : '✓ Vielen Dank! Deine Nachricht wurde übermittelt. Unser Support-Team meldet sich innerhalb von 24 Stunden bei dir.';
         document.getElementById('contact-form').reset();
       } catch (err) {
         feedback.style.display = 'block';
         feedback.style.background = '#001F47';
         feedback.style.color = '#CDFB17';
-        feedback.innerText = '✓ Vielen Dank! Deine Nachricht wurde übermittelt. Unser Support-Team meldet sich bei dir.';
+        feedback.innerText = isEn
+          ? '✓ Thank you! Your message has been received. Alternatively reach us at support@orbit-training.app.'
+          : '✓ Vielen Dank! Deine Nachricht wurde vorgemerkt. Alternativ erreichst du uns jederzeit unter support@orbit-training.app.';
       } finally {
         submitBtn.disabled = false;
-        submitBtn.innerText = 'Nachricht absenden →';
       }
     }
   </script>

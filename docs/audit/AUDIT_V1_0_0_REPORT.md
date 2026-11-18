@@ -27,7 +27,7 @@
 ### 2.1 Speicher- & Laufzeit-Effizienz
 - **Controller-Lifecycle & Disposal:**
   - Alle `State`-Klassen (`LoginScreen`, `V1SimpleOnboardingWizard`, `V1SimpleProfileView`, `ProfileScreen`, `V1AthleteCoachConnectionCard`, `EmailVerificationWaitingScreen`) geben ihre `TextEditingController` und `Timer` in `dispose()` frei.
-  - **Gefundene & behobene Dialog-Controller-Leaks:** In `LoginScreen._showForgotPasswordDialog`, `SettingsScreen._showResetPasswordEmailDialog` und `SettingsScreen._showChangePasswordDialog` wurden lokale `TextEditingController` nach dem Schließen des Dialogs nicht freigegeben. Alle drei Stellen wurden über `WidgetsBinding.instance.addPostFrameCallback((_) => controller.dispose())` nach `await showDialog<void>(...)` abgesichert.
+  - **Gefundene & behobene Dialog-Controller-Leaks (inkl. Schutz während der 150-ms-Schließanimation):** In `LoginScreen._showForgotPasswordDialog`, `SettingsScreen._showResetPasswordEmailDialog` und `SettingsScreen._showChangePasswordDialog` wurden die Dialoge in eigenständige `ConsumerStatefulWidget`-Klassen (`_ForgotPasswordDialog`, `_ResetPasswordEmailDialog`, `_ChangePasswordDialog`) gekapselt. Dadurch werden die internen `TextEditingController` exakt in `State.dispose()` freigegeben — erst nachdem die 150-ms-Reverse-Transition der `DialogRoute` vollständig beendet und das `TextFormField` aus dem Widget-Baum entfernt wurde (verifiziert durch Frame-für-Frame-Widget-Tests in `test/phase46_legal_gdpr_deletion_and_release_v1_test.dart`, Gruppe 7).
 - **Rebuild-Vermeidung & `const`-Disziplin:**
   - Durchgängiger Einsatz von `ref.watch(provider.select(...))` in `OrbitApp`, `DashboardScreen`, `TodayTabScreen`, `CalendarScreen`, `V1SimpleOnboardingWizard`, `V1SimpleProfileView`, `UserAvatarCircle`, `EmailVerificationBanner` und `SettingsScreen`.
 
@@ -85,12 +85,36 @@
 
 ---
 
-## 5. Block 5 — Finale Verifikation & Release-Synchronisation (`v1.0.0`)
+## 5. Block 5 — 360°-Webseiten-, Hilfe- & Roadmap-Audit (`public/index.html` & `public/help.html`)
+
+### 5.1 Inhaltliche & UWG-§-5-konforme Trennung von V1.0.0 Live vs. Roadmap (V2.0.0–V4.0.0)
+- **Sektion „Jetzt live in ORBIT Version 1.0.0“ (`#v1-live` in `public/index.html`):**
+  - **Allgemein (V1.0.0):** Nutzung auf Android & Web (`/app/`), direkt erreichbar über „Login“ (`/app/#/login`) und „Registrieren“ (`/app/#/register`); schnelles Onboarding für Athlet & Coach, Login/Logout, Passwort zurücksetzen & E-Mail-Bestätigung; Clean Professional Design (Hell & Dunkel), vollständige Sprachumschaltung (`DE & EN`), automatische Datums- (`dd.mm.yy`) und `24h`-Uhrzeitformatierung gekoppelt an das Wohnland; volle EU-Datenhoheit (`europe-west3` Frankfurt am Main, 2-Stufen-Funktion „Daten & Konto löschen“ sowie Topbar-Bugmeldung).
+  - **Für Athleten (V1.0.0):** „Profil Einfach“ mit allen Stammdaten, dauerhaftem Profilbild und Unterstützung für Triathlon, Radfahren, Laufen, Schwimmen & Krafttraining; automatischer Garmin Sync & manueller `.fit`-Upload; Heute-Ansicht & Kalender (Woche, Monat, Liste); Training Preview angelehnt an COROS mit direktem `.FIT`-Download-Button rechts.
+  - **Für Coaches (V1.0.0):** „Profil Einfach“ & sichere Verbindung mit Athleten (Einladungscode oder E-Mail-Anfrage mit expliziter DSGVO-Freigabe); 3-Tab-Navigationsleiste (`Athleten`, `Kalender`, `Profil`); direkter `.FIT`-Originaldatei-Download mit 1 Klick.
+- **Sektion „Roadmap & Kommende Updates (V2.0.0 bis V4.0.0)“ (`#roadmap` in `public/index.html`):**
+  - Glasklar als kommende Ausbaustufen (*„NICHT BESTANDTEIL VON V1.0.0“*) nach § 5 UWG gekennzeichnet:
+    - **Version 2.0.0 (Nächster Meilenstein):** Leistungsdiagnostik, Zonen berechnen & einstellen (inkl. LIT/MIT/HIT), Chat, Kommentare (+ Einheit im Chat) & Mitteilungen; Athlet: Profil Fortgeschritten, History Garmin Sync, History Bulk-Upload (300+ Dateien), Training Details (1-Hz-Cockpit & 2D-RPE-Quadrant) & Trainingsplanung empfangen; Coach: Profil Fortgeschritten, Trainings-Datenbank, Workout-Builder im Web (farbige Zonen-Blöcke & Ernährungsfeld) und Planung pro Athlet.
+    - **Version 3.0.0 (Readiness, Health & Machine Learning):** Saison-Ziele, Workout-Builder Mobil, Zeitplanung/Verfügbarkeitsprofile & Aufenthaltsort; Profil Expert, Daily Health (3 Ringe), Morgen-Check (Journal), Gesamtanalyse & Machine-Learning-Analyse.
+    - **Version 3.1.0 / 4.0.0 (Zukunft & KI):** Sync zu weiteren Anbietern, erweitertes Machine Learning & interaktiver KI-Trainer.
+- **Bereinigung von `public/help.html`:**
+  - Zweigeteilt in **Teil 1 (V1.0.0 Bedienungsanleitung & FAQ — Jetzt Live)** und **Teil 2 (Sportwissenschaftliches Lexikon — Geplante Module für V2.0.0 bis V4.0.0)**, vollständig zweisprachig (`DE & EN`) und im Hell-/Dunkel-Modus umschaltbar.
+- **Technische & Rechtliche Prüfung aller öffentlichen Routen (`HTTP 200` & `0` Drittanbieter-Requests):**
+  - `/`, `/help`, `/imprint`, `/impressum`, `/privacy`, `/delete-account`, `/app/`, `/app/canvaskit/canvaskit.js`, `/app/assets/fonts/MaterialIcons-Regular.otf`, `/app/assets/FontManifest.json` liefern alle **HTTP 200** (`ext_refs=[]`, `anchors_missing=[]`).
+
+---
+
+## 6. Block 6 — Finale Verifikation, Live-Screenshots & Release-Synchronisation (`v1.0.0`)
 
 - **`bash scripts/check_phase_ready.sh`:**
   - `flutter analyze`: `0 Errors, 0 Warnings, 0 Infos`
   - `npm --prefix functions run build && npm --prefix functions run lint`: `0 Errors`
   - Deutsche Dokumentations-Kommentare: `100 %`
-  - `flutter test` (inkl. `TZ=UTC`): **`267/267` Tests bestanden**
+  - `flutter test` (inkl. `TZ=UTC` & Dialog-Controller-Lifecycle-Tests): **`269/269` Tests bestanden**
 - **Emulator-Suite (`firestore` & `storage`):** **`12/12` Test-Suites (`113/113` Tests) bestanden**
+- **Live-Beweis-Screenshots (`docs/beta/screenshots/`):**
+  - `docs/beta/screenshots/audit_safari_website_v1_features.png` (Sektion „Jetzt live in ORBIT Version 1.0.0“ im geöffneten Safari-Browser)
+  - `docs/beta/screenshots/audit_safari_website_roadmap_v2_v4.png` (Neue Roadmap-Sektion V2.0.0 bis V4.0.0 im geöffneten Safari-Browser)
+  - `docs/beta/screenshots/audit_safari_orbit_web_app_icons_verify.png` (ORBIT Web unter `/app/` mit lokalem CanvasKit & `MaterialIcons-Regular.otf` ohne Tofu-Icons)
+  - `docs/beta/screenshots/audit_pixel10_v1_final.png` (ORBIT V1.0.0 Release-APK `1.0.0+1` auf dem Google Pixel 10 Pro `58251FDCR00EQ2` mit Topbar-Bugbutton und gespeichertem Profilbild)
 - **Produktions-Deployments:** Firebase Hosting (`/`, `/app/`, `/imprint.html`, `/privacy.html`, `/delete-account.html`, `/help.html`), Firestore Rules, Storage Rules, Cloud Functions (`europe-west3`) sowie Android Release-APK (`1.0.0+1`) auf Pixel 10 Pro (`58251FDCR00EQ2`).

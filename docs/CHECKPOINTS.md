@@ -26,21 +26,22 @@
 
 ## Einträge
 
-### [Phase 46 – 360°-Release-Audit V1.0.0] GitHub Actions CI-Fix, Controller-Lifecycle, TDDDG § 25 / DSGVO Art. 13/28/77 & Synchron-Release · RISIKO-HOCH
+### [Phase 46 – 360°-Release- & Webseiten-Audit V1.0.0] GitHub Actions CI-Fix, Dialog-Controller-Lifecycle, V1.0.0-Webseite + Roadmap (V2–V4), TDDDG § 25 / UWG § 5 / DSGVO & Synchron-Release · RISIKO-HOCH
 - **Branch / Tag / Release-Branch:** `main` · `v1.0.0` · `release/v1.0.0` · **Audit-Bericht:** `docs/audit/AUDIT_V1_0_0_REPORT.md`
-- **Block 1 – GitHub Actions CI-Reparatur (`pubspec.yaml` & `.github/workflows/ci.yml`):**
+- **Block 1 – GitHub Actions CI-Reparatur (`pubspec.yaml`, `.github/workflows/ci.yml`, `corpusStress.test.ts`):**
   - Hauptursache für CI-Abbruch in Job `flutter-test` (`run_id: 44270843956`, Schritt *Install dependencies*): `flutter_web_plugins: any` in `pubspec.yaml` (internes SDK-Paket, nicht auf `pub.dev` -> Exit-Code 69 bei `flutter pub get`). Eintrag aus `pubspec.yaml` entfernt (`flutter pub get` läuft in 1,9 s fehlerfrei).
-  - `.github/workflows/ci.yml`: Trigger auf `branches: [ "main", "release/**" ]`, `TZ: UTC` in `flutter-test` (alle **267/267 Tests** unter `TZ=UTC` grün), `node-version: '22'` (synchron zu `functions/package.json`), `npm run lint` und `npx jest --testPathIgnorePatterns="rules.test.ts|coachLink.test.ts" --runInBand` aktiviert.
-- **Block 2 & 3 – Senior Developer, Athleten- & Coach-Audit:**
-  - Lokale Dialog-`TextEditingController` in `LoginScreen._showForgotPasswordDialog`, `SettingsScreen._showResetPasswordEmailDialog` & `SettingsScreen._showChangePasswordDialog` über `WidgetsBinding.instance.addPostFrameCallback((_) => ...dispose())` sauber freigegeben.
-  - Letzte 4 „Closed Beta / 31. Oktober“-Texte im unteren Formular von `public/index.html` auf das V1.0.0 Vereins- & Team-Onboarding-Formular mit Direktlink auf `/app/#/register` aktualisiert.
+  - `.github/workflows/ci.yml`: Trigger auf `branches: [ "main", "release/**" ]`, `flutter-version: '3.41.3'` gepinnt, `TZ: UTC` in `flutter-test` & `functions-test` (alle **269/269 Flutter-Tests** grün), `node-version: '22'`, `npm run lint` und `npx jest --testPathIgnorePatterns="rules.test.ts|coachLink.test.ts" --runInBand` aktiviert; `jest.setTimeout(60000)` in `corpusStress.test.ts` für 2-vCPU-CI-Runner ergänzt.
+- **Block 2 & 3 – Senior Developer, Athleten-, Coach- & Webseiten-Audit (`public/index.html` & `public/help.html`):**
+  - Dialog-Controller-Lifecycle (`LoginScreen._showForgotPasswordDialog`, `SettingsScreen._showResetPasswordEmailDialog` & `SettingsScreen._showChangePasswordDialog`) als eigenständige `ConsumerStatefulWidget`-Klassen (`_ForgotPasswordDialog`, `_ResetPasswordEmailDialog`, `_ChangePasswordDialog`) implementiert, sodass `dispose()` erst nach Abschluss der 150-ms-Dialog-Schließanimation aufgerufen wird (durch 15-Frame-Transition-Widget-Tests in `phase46_legal_gdpr_deletion_and_release_v1_test.dart` bewiesen).
+  - `public/index.html` & `public/help.html` zweisprachig (`DE & EN`, Light & Dark Mode) auf den exakten V1.0.0-Stand (Allgemein, Für Athleten inkl. Triathlon & COROS-Preview-Karte, Für Coaches inkl. 3-Tab-Leiste & `.FIT`-Download) sowie die transparente Roadmap für **V2.0.0, V3.0.0 und V3.1.0/V4.0.0** nach `docs/ROADMAP_V1_TO_V4.md` aktualisiert (§ 5 UWG-konform).
 - **Block 4 – Rechtssicherheits- & TDDDG-§-25-Audit (DE/EU):**
   - `public/privacy.html` (`public/privacy/index.html`) und `lib/features/legal/widgets/legal_documents_sheet.dart` zweisprachig (DE/EN) um Auftragsverarbeiter nach Art. 28 DSGVO (*Google Cloud EMEA Limited / Google Ireland Limited*, ausschließlich `europe-west3` Frankfurt am Main, EU-DPA), Speicherdauer (Art. 13 Abs. 2 lit. a DSGVO), vollständige Betroffenenrechte (Art. 15–21 DSGVO inkl. `.FIT`-Portabilität), Beschwerderecht bei einer Datenschutz-Aufsichtsbehörde (Art. 77 DSGVO) und § 25 Abs. 2 Nr. 2 TDDDG ergänzt.
-  - `public/delete-account.html` (`web/delete-account.html`) und `public/help.html` um vollständige Verantwortlichen-Angabe (`ORBIT Performance / ORBIT Training`, `Tim Zarges`) sowie direkte 1-Klick-Footer-Links auf `/imprint.html`, `/privacy.html`, `/` und `/app/#/login` ergänzt (2-Klick-Erreichbarkeit nach § 5 DDG auf allen Unterseiten).
-  - Flutter-Web-Build mit `--no-web-resources-cdn` kompiliert (lokale CanvasKit-Auslieferung aus `/app/canvaskit/` ohne externe CDN-Abrufe).
-- **Block 5 – Qualitäts-Gate & Synchron-Deployment (nach letztem Code-Edit):**
-  - `bash scripts/check_phase_ready.sh`: `0 Errors / 0 Warnings / 0 Infos`, TS-Build/ESLint `0 Errors`, `100 %` deutsche Kommentare, **`267/267` Flutter-Tests bestanden**.
+  - `public/imprint.html` (`public/impressum/index.html`), `public/privacy.html` (`public/privacy/index.html`), `public/delete-account.html` (`web/delete-account.html`) und `public/help.html` mit vollständiger 1-Klick-Footer-Verlinkung (`/`, `/imprint.html`, `/privacy.html`, `/delete-account.html`, `/help.html`, `/app/#/login`) synchronisiert.
+  - Flutter-Web-Build mit `--no-web-resources-cdn` kompiliert (`/app/canvaskit/canvaskit.js` & `/app/assets/fonts/MaterialIcons-Regular.otf` liefern HTTP 200; `0` externe Google-Fonts-/gstatic-Abrufe).
+- **Block 5 – Qualitäts-Gate, Live-Beweis-Screenshots & Synchron-Deployment:**
+  - `bash scripts/check_phase_ready.sh`: `0 Errors / 0 Warnings / 0 Infos`, TS-Build/ESLint `0 Errors`, `100 %` deutsche Kommentare, **`269/269` Flutter-Tests bestanden**.
   - Emulator-Suite (`firestore` & `storage`): **`12/12` Suites (`113/113` Tests) bestanden**.
+  - Live-Beweis-Screenshots erstellt: `audit_safari_website_v1_features.png`, `audit_safari_website_roadmap_v2_v4.png`, `audit_safari_orbit_web_app_icons_verify.png` und `audit_pixel10_v1_final.png`.
 
 ### [Phase 46] Gesetzliche Anforderungen DE/EU, Öffentliche Webseite + Web-App, DSGVO Art. 17 Kontolöschung & V1.0.0 Gold-Release · RISIKO-HOCH
 - **Branch / Tag / Release-Branch:** `main` · `v1.0.0` · `release/v1.0.0`

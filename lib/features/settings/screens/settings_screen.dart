@@ -459,101 +459,22 @@ class SettingsScreen extends ConsumerWidget {
   }
 
   /// Öffnet den Dialog zum Senden einer Passwort-Zurücksetzen-E-Mail direkt aus den Einstellungen.
+  ///
+  /// Warum [_ResetPasswordEmailDialog]: Die Kapselung als `ConsumerStatefulWidget`
+  /// stellt sicher, dass der `TextEditingController` erst in `State.dispose()`
+  /// nach Ende der Dialog-Schließanimation freigegeben wird.
   Future<void> _showResetPasswordEmailDialog(
     BuildContext context,
     WidgetRef ref, {
     required bool isEn,
   }) async {
-    final emailCtrl = TextEditingController();
-    final formKey = GlobalKey<FormState>();
-    bool isSending = false;
-
     await showDialog<void>(
       context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (dialogCtx, setDialogState) => AlertDialog(
-          title: Text(
-            isEn ? 'Reset Password' : 'Passwort zurücksetzen',
-          ),
-          content: Form(
-            key: formKey,
-            child: TextFormField(
-              key: const Key('settings_reset_password_email_field'),
-              controller: emailCtrl,
-              keyboardType: TextInputType.emailAddress,
-              decoration: InputDecoration(
-                labelText: isEn ? 'Email Address' : 'E-Mail-Adresse',
-              ),
-              validator: (val) =>
-                  (val == null || val.trim().isEmpty || !val.contains('@'))
-                      ? (isEn
-                          ? 'Please enter a valid email address'
-                          : 'Bitte gib eine gültige E-Mail-Adresse ein')
-                      : null,
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: isSending ? null : () => Navigator.of(ctx).pop(),
-              child: Text(isEn ? 'Cancel' : 'Abbrechen'),
-            ),
-            ElevatedButton(
-              key: const Key('settings_reset_password_submit_button'),
-              onPressed: isSending
-                  ? null
-                  : () async {
-                      if (!(formKey.currentState?.validate() ?? false)) return;
-                      final target = emailCtrl.text.trim();
-                      setDialogState(() => isSending = true);
-                      try {
-                        await ref
-                            .read(authServiceProvider)
-                            .resetPassword(target);
-                        if (!context.mounted) return;
-                        if (ctx.mounted) Navigator.of(ctx).pop();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              isEn
-                                  ? 'Reset link sent to $target.'
-                                  : 'Link zum Zurücksetzen an $target gesendet.',
-                            ),
-                            backgroundColor: AppColors.emerald,
-                          ),
-                        );
-                      } catch (e) {
-                        if (ctx.mounted) {
-                          setDialogState(() => isSending = false);
-                        }
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                isEn
-                                    ? 'Could not send email: $e'
-                                    : 'E-Mail konnte nicht gesendet werden: $e',
-                              ),
-                              backgroundColor: AppColors.coral,
-                            ),
-                          );
-                        }
-                      }
-                    },
-              child: isSending
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : Text(isEn ? 'Send Link' : 'Link senden'),
-            ),
-          ],
-        ),
+      builder: (_) => _ResetPasswordEmailDialog(
+        parentContext: context,
+        isEn: isEn,
       ),
     );
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      emailCtrl.dispose();
-    });
   }
 
   /// Öffnet den Dialog zur Änderung des Passworts mit Live-Validierungs-Checkliste.
@@ -566,207 +487,172 @@ class SettingsScreen extends ConsumerWidget {
     WidgetRef ref, {
     String lang = 'de',
   }) async {
-    // Initialisiert Controller und Form-Key für den Passwort-Dialog
-    final isEn = lang == 'en';
-    final oldPwController = TextEditingController();
-    final newPwController = TextEditingController();
-    final confirmPwController = TextEditingController();
-    final formKey = GlobalKey<FormState>();
-
     await showDialog<void>(
       context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (context, setDialogState) {
-          final newPw = newPwController.text;
-          final confirmPw = confirmPwController.text;
-          final hasMinLength = newPw.length >= 8;
-          final hasUpper = newPw.contains(RegExp(r'[A-Z]'));
-          final hasLower = newPw.contains(RegExp(r'[a-z]'));
-          final hasDigitOrSpecial =
-              newPw.contains(RegExp(r'[0-9!@#\$%^&*(),.?":{}|<>]'));
-          final matchesConfirm = confirmPw.isNotEmpty && confirmPw == newPw;
-          final allValid = hasMinLength &&
-              hasUpper &&
-              hasLower &&
-              hasDigitOrSpecial &&
-              matchesConfirm;
-
-          return AlertDialog(
-            backgroundColor: AppColors.anthraciteCard,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-              side: const BorderSide(color: AppColors.darkSubtleBorder),
-            ),
-            title: Text(
-              AppStrings.settingsChangePasswordTitle(lang: lang),
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            content: SingleChildScrollView(
-              child: Form(
-                key: formKey,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    TextFormField(
-                      key: const Key('change_password_old_field'),
-                      controller: oldPwController,
-                      obscureText: true,
-                      style: const TextStyle(color: Colors.white),
-                      decoration: InputDecoration(
-                        labelText:
-                            isEn ? 'Current password' : 'Aktuelles Passwort',
-                        labelStyle: const TextStyle(color: Colors.white70),
-                        filled: true,
-                        fillColor: AppColors.carbonDark,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      validator: (val) => (val == null || val.isEmpty)
-                          ? (isEn
-                              ? 'Please enter your current password'
-                              : 'Bitte aktuelles Passwort eingeben')
-                          : null,
-                    ),
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      key: const Key('change_password_new_field'),
-                      controller: newPwController,
-                      obscureText: true,
-                      style: const TextStyle(color: Colors.white),
-                      onChanged: (_) => setDialogState(() {}),
-                      decoration: InputDecoration(
-                        labelText: isEn ? 'New password' : 'Neues Passwort',
-                        labelStyle: const TextStyle(color: Colors.white70),
-                        filled: true,
-                        fillColor: AppColors.carbonDark,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      key: const Key('change_password_confirm_field'),
-                      controller: confirmPwController,
-                      obscureText: true,
-                      style: const TextStyle(color: Colors.white),
-                      onChanged: (_) => setDialogState(() {}),
-                      decoration: InputDecoration(
-                        labelText: isEn
-                            ? 'Confirm new password'
-                            : 'Neues Passwort bestätigen',
-                        labelStyle: const TextStyle(color: Colors.white70),
-                        filled: true,
-                        fillColor: AppColors.carbonDark,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 14),
-                    _buildCriterion(
-                      hasMinLength,
-                      isEn ? 'At least 8 characters' : 'Mindestens 8 Zeichen',
-                    ),
-                    _buildCriterion(
-                      hasUpper,
-                      isEn
-                          ? 'At least 1 uppercase letter (A-Z)'
-                          : 'Mindestens 1 Großbuchstabe (A-Z)',
-                    ),
-                    _buildCriterion(
-                      hasLower,
-                      isEn
-                          ? 'At least 1 lowercase letter (a-z)'
-                          : 'Mindestens 1 Kleinbuchstabe (a-z)',
-                    ),
-                    _buildCriterion(
-                      hasDigitOrSpecial,
-                      isEn
-                          ? 'At least 1 digit or special character'
-                          : 'Mindestens 1 Zahl oder Sonderzeichen',
-                    ),
-                    _buildCriterion(
-                      matchesConfirm,
-                      isEn ? 'Passwords match' : 'Passwörter stimmen überein',
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(ctx).pop(),
-                child: Text(
-                  isEn ? 'Cancel' : 'Abbrechen',
-                  style: const TextStyle(color: Colors.white54),
-                ),
-              ),
-              ElevatedButton(
-                key: const Key('change_password_save_button'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor:
-                      allValid ? AppColors.volt : Colors.grey.shade700,
-                  foregroundColor: AppColors.navy,
-                ),
-                onPressed: allValid
-                    ? () async {
-                        if (formKey.currentState?.validate() ?? false) {
-                          try {
-                            await ref.read(authServiceProvider).changePassword(
-                                  oldPwController.text,
-                                  newPwController.text,
-                                );
-                            if (context.mounted) {
-                              Navigator.of(ctx).pop();
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    isEn
-                                        ? 'Password updated successfully.'
-                                        : 'Passwort erfolgreich aktualisiert.',
-                                  ),
-                                  backgroundColor: AppColors.emerald,
-                                ),
-                              );
-                            }
-                          } catch (e) {
-                            if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    isEn
-                                        ? 'Failed to change password: $e'
-                                        : 'Fehler beim Ändern des Passworts: $e',
-                                  ),
-                                  backgroundColor: AppColors.coral,
-                                ),
-                              );
-                            }
-                          }
-                        }
-                      }
-                    : null,
-                child: Text(
-                  isEn ? 'Save' : 'Speichern',
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ),
-            ],
-          );
-        },
+      builder: (_) => _ChangePasswordDialog(
+        parentContext: context,
+        lang: lang,
       ),
     );
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      oldPwController.dispose();
-      newPwController.dispose();
-      confirmPwController.dispose();
-    });
+  }
+}
+
+/// Eigenständiges Dialog-Widget zum Anfordern einer Passwort-Zurücksetzen-E-Mail
+/// in den Einstellungen ([SettingsScreen]).
+///
+/// Was: Rendert das E-Mail-Eingabefeld samt Validierung und Sende-Button.
+/// Warum: Gibt den internen [TextEditingController] sicher in `State.dispose()`
+/// frei, nachdem die Schließanimation der `DialogRoute` beendet ist.
+class _ResetPasswordEmailDialog extends ConsumerStatefulWidget {
+  /// Übergeordneter Kontext für die Erfolgs-/Fehler-SnackBar.
+  final BuildContext parentContext;
+
+  /// Gibt an, ob Englisch (`true`) oder Deutsch (`false`) aktiv ist.
+  final bool isEn;
+
+  const _ResetPasswordEmailDialog({
+    required this.parentContext,
+    required this.isEn,
+  });
+
+  @override
+  ConsumerState<_ResetPasswordEmailDialog> createState() =>
+      _ResetPasswordEmailDialogState();
+}
+
+class _ResetPasswordEmailDialogState
+    extends ConsumerState<_ResetPasswordEmailDialog> {
+  final TextEditingController _emailCtrl = TextEditingController();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  bool _isSending = false;
+
+  @override
+  void dispose() {
+    // Gibt den E-Mail-Controller nach Unmount des Dialog-Subtrees frei
+    _emailCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isEn = widget.isEn;
+    return AlertDialog(
+      title: Text(
+        isEn ? 'Reset Password' : 'Passwort zurücksetzen',
+      ),
+      content: Form(
+        key: _formKey,
+        child: TextFormField(
+          key: const Key('settings_reset_password_email_field'),
+          controller: _emailCtrl,
+          keyboardType: TextInputType.emailAddress,
+          decoration: InputDecoration(
+            labelText: isEn ? 'Email Address' : 'E-Mail-Adresse',
+          ),
+          validator: (val) =>
+              (val == null || val.trim().isEmpty || !val.contains('@'))
+                  ? (isEn
+                      ? 'Please enter a valid email address'
+                      : 'Bitte gib eine gültige E-Mail-Adresse ein')
+                  : null,
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: _isSending ? null : () => Navigator.of(context).pop(),
+          child: Text(isEn ? 'Cancel' : 'Abbrechen'),
+        ),
+        ElevatedButton(
+          key: const Key('settings_reset_password_submit_button'),
+          onPressed: _isSending
+              ? null
+              : () async {
+                  if (!(_formKey.currentState?.validate() ?? false)) return;
+                  final target = _emailCtrl.text.trim();
+                  setState(() => _isSending = true);
+                  try {
+                    await ref.read(authServiceProvider).resetPassword(target);
+                    if (context.mounted) Navigator.of(context).pop();
+                    if (widget.parentContext.mounted) {
+                      ScaffoldMessenger.of(widget.parentContext).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            isEn
+                                ? 'Reset link sent to $target.'
+                                : 'Link zum Zurücksetzen an $target gesendet.',
+                          ),
+                          backgroundColor: AppColors.emerald,
+                        ),
+                      );
+                    }
+                  } catch (e) {
+                    if (mounted) {
+                      setState(() => _isSending = false);
+                    }
+                    if (widget.parentContext.mounted) {
+                      ScaffoldMessenger.of(widget.parentContext).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            isEn
+                                ? 'Could not send email: $e'
+                                : 'E-Mail konnte nicht gesendet werden: $e',
+                          ),
+                          backgroundColor: AppColors.coral,
+                        ),
+                      );
+                    }
+                  }
+                },
+          child: _isSending
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : Text(isEn ? 'Send Link' : 'Link senden'),
+        ),
+      ],
+    );
+  }
+}
+
+/// Eigenständiges Dialog-Widget zur Passwort-Änderung mit Live-Kriterien-Checkliste.
+///
+/// Was: Verwaltet die drei Passwort-Felder (Alt, Neu, Bestätigung) und prüft
+/// Passwort-Sicherheitskriterien in Echtzeit.
+/// Warum: Gibt alle drei [TextEditingController] erst in `State.dispose()` frei,
+/// sodass während der Dialog-Schließanimation niemals auf bereits verworfene
+/// Controller zugegriffen wird.
+class _ChangePasswordDialog extends ConsumerStatefulWidget {
+  /// Übergeordneter Kontext für die Rückmeldungs-SnackBar.
+  final BuildContext parentContext;
+
+  /// Aktiver Sprachcode (`'de'` oder `'en'`).
+  final String lang;
+
+  const _ChangePasswordDialog({
+    required this.parentContext,
+    required this.lang,
+  });
+
+  @override
+  ConsumerState<_ChangePasswordDialog> createState() =>
+      _ChangePasswordDialogState();
+}
+
+class _ChangePasswordDialogState extends ConsumerState<_ChangePasswordDialog> {
+  final TextEditingController _oldPwController = TextEditingController();
+  final TextEditingController _newPwController = TextEditingController();
+  final TextEditingController _confirmPwController = TextEditingController();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
+  @override
+  void dispose() {
+    // Gibt alle drei Passwort-Controller erst nach vollständigem Unmount frei
+    _oldPwController.dispose();
+    _newPwController.dispose();
+    _confirmPwController.dispose();
+    super.dispose();
   }
 
   /// Rendert eine einzelne Kriterien-Zeile innerhalb des Passwort-Dialogs.
@@ -792,6 +678,193 @@ class SettingsScreen extends ConsumerWidget {
           ),
         ],
       ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isEn = widget.lang == 'en';
+    final newPw = _newPwController.text;
+    final confirmPw = _confirmPwController.text;
+    final hasMinLength = newPw.length >= 8;
+    final hasUpper = newPw.contains(RegExp(r'[A-Z]'));
+    final hasLower = newPw.contains(RegExp(r'[a-z]'));
+    final hasDigitOrSpecial =
+        newPw.contains(RegExp(r'[0-9!@#\$%^&*(),.?":{}|<>]'));
+    final matchesConfirm = confirmPw.isNotEmpty && confirmPw == newPw;
+    final allValid = hasMinLength &&
+        hasUpper &&
+        hasLower &&
+        hasDigitOrSpecial &&
+        matchesConfirm;
+
+    return AlertDialog(
+      backgroundColor: AppColors.anthraciteCard,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(color: AppColors.darkSubtleBorder),
+      ),
+      title: Text(
+        AppStrings.settingsChangePasswordTitle(lang: widget.lang),
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      content: SingleChildScrollView(
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TextFormField(
+                key: const Key('change_password_old_field'),
+                controller: _oldPwController,
+                obscureText: true,
+                style: const TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  labelText: isEn ? 'Current password' : 'Aktuelles Passwort',
+                  labelStyle: const TextStyle(color: Colors.white70),
+                  filled: true,
+                  fillColor: AppColors.carbonDark,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                validator: (val) => (val == null || val.isEmpty)
+                    ? (isEn
+                        ? 'Please enter your current password'
+                        : 'Bitte aktuelles Passwort eingeben')
+                    : null,
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                key: const Key('change_password_new_field'),
+                controller: _newPwController,
+                obscureText: true,
+                style: const TextStyle(color: Colors.white),
+                onChanged: (_) => setState(() {}),
+                decoration: InputDecoration(
+                  labelText: isEn ? 'New password' : 'Neues Passwort',
+                  labelStyle: const TextStyle(color: Colors.white70),
+                  filled: true,
+                  fillColor: AppColors.carbonDark,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                key: const Key('change_password_confirm_field'),
+                controller: _confirmPwController,
+                obscureText: true,
+                style: const TextStyle(color: Colors.white),
+                onChanged: (_) => setState(() {}),
+                decoration: InputDecoration(
+                  labelText:
+                      isEn ? 'Confirm new password' : 'Neues Passwort bestätigen',
+                  labelStyle: const TextStyle(color: Colors.white70),
+                  filled: true,
+                  fillColor: AppColors.carbonDark,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 14),
+              _buildCriterion(
+                hasMinLength,
+                isEn ? 'At least 8 characters' : 'Mindestens 8 Zeichen',
+              ),
+              _buildCriterion(
+                hasUpper,
+                isEn
+                    ? 'At least 1 uppercase letter (A-Z)'
+                    : 'Mindestens 1 Großbuchstabe (A-Z)',
+              ),
+              _buildCriterion(
+                hasLower,
+                isEn
+                    ? 'At least 1 lowercase letter (a-z)'
+                    : 'Mindestens 1 Kleinbuchstabe (a-z)',
+              ),
+              _buildCriterion(
+                hasDigitOrSpecial,
+                isEn
+                    ? 'At least 1 digit or special character'
+                    : 'Mindestens 1 Zahl oder Sonderzeichen',
+              ),
+              _buildCriterion(
+                matchesConfirm,
+                isEn ? 'Passwords match' : 'Passwörter stimmen überein',
+              ),
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(
+            isEn ? 'Cancel' : 'Abbrechen',
+            style: const TextStyle(color: Colors.white54),
+          ),
+        ),
+        ElevatedButton(
+          key: const Key('change_password_save_button'),
+          style: ElevatedButton.styleFrom(
+            backgroundColor:
+                allValid ? AppColors.volt : Colors.grey.shade700,
+            foregroundColor: AppColors.navy,
+          ),
+          onPressed: allValid
+              ? () async {
+                  if (_formKey.currentState?.validate() ?? false) {
+                    try {
+                      await ref.read(authServiceProvider).changePassword(
+                            _oldPwController.text,
+                            _newPwController.text,
+                          );
+                      if (context.mounted) {
+                        Navigator.of(context).pop();
+                      }
+                      if (widget.parentContext.mounted) {
+                        ScaffoldMessenger.of(widget.parentContext).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              isEn
+                                  ? 'Password updated successfully.'
+                                  : 'Passwort erfolgreich aktualisiert.',
+                            ),
+                            backgroundColor: AppColors.emerald,
+                          ),
+                        );
+                      }
+                    } catch (e) {
+                      if (widget.parentContext.mounted) {
+                        ScaffoldMessenger.of(widget.parentContext).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              isEn
+                                  ? 'Failed to change password: $e'
+                                  : 'Fehler beim Ändern des Passworts: $e',
+                            ),
+                            backgroundColor: AppColors.coral,
+                          ),
+                        );
+                      }
+                    }
+                  }
+                }
+              : null,
+          child: Text(
+            isEn ? 'Save' : 'Speichern',
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+        ),
+      ],
     );
   }
 }

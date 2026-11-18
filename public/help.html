@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ORBIT — Kennzahlen-Lexikon & Sportwissenschaft</title>
+  <title>ORBIT V1.0.0 — Hilfe, Bedienungsanleitung &amp; Sportwissenschaftliches Lexikon</title>
   <link rel="icon" type="image/png" href="/logo.png">
+  <meta name="description" content="Offizielle Bedienungsanleitung &amp; FAQ für ORBIT Version 1.0.0 (Android &amp; Web) sowie transparenter Ausblick auf die sportwissenschaftlichen Module in V2.0.0 bis V4.0.0.">
   <style>
     :root {
       --navy: #001F47;
@@ -13,6 +14,7 @@
       --amber: #FF6B00;
       --cyan: #00D2FF;
       --emerald: #10B981;
+      --purple: #8B5CF6;
       --bg: #F8FAFC;
       --card: #FFFFFF;
       --text: #001F47;
@@ -28,11 +30,15 @@
       --card: #0A1324;
       --text: #FFFFFF;
       --muted: #94A3B8;
-      --border: rgba(255, 255, 255, 0.1);
-      --box-bg: #001F47;
+      --border: rgba(255, 255, 255, 0.10);
+      --box-bg: #0F1C36;
     }
 
+    html[lang="de"] .lang-en { display: none !important; }
+    html[lang="en"] .lang-de { display: none !important; }
+
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
     body {
       background: var(--bg);
       color: var(--text);
@@ -42,7 +48,6 @@
       padding-bottom: 80px;
     }
 
-    /* Header */
     header.top-bar {
       position: sticky;
       top: 0;
@@ -55,6 +60,8 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
     }
 
     [data-theme="dark"] header.top-bar {
@@ -77,6 +84,7 @@
       display: flex;
       align-items: center;
       gap: 10px;
+      flex-wrap: wrap;
     }
 
     .theme-toggle-btn, .lang-toggle-btn {
@@ -88,6 +96,7 @@
       font-size: 12px;
       font-weight: 800;
       cursor: pointer;
+      text-decoration: none;
     }
 
     .back-home-btn {
@@ -101,15 +110,14 @@
       border: 1px solid var(--volt);
     }
 
-    /* Container */
     .container {
-      max-width: 960px;
+      max-width: 980px;
       margin: 40px auto 0;
       padding: 0 24px;
     }
 
     .intro-header {
-      margin-bottom: 40px;
+      margin-bottom: 36px;
       text-align: center;
     }
 
@@ -123,16 +131,15 @@
     .intro-header p {
       font-size: 16px;
       color: var(--muted);
-      max-width: 680px;
+      max-width: 720px;
       margin: 0 auto;
     }
 
-    /* Quick Filter Chips */
     .filter-chips {
       display: flex;
       gap: 8px;
       overflow-x: auto;
-      padding-bottom: 16px;
+      padding-bottom: 14px;
       margin-bottom: 32px;
     }
 
@@ -153,33 +160,64 @@
       color: var(--text);
     }
 
-    /* Metric Cards */
+    .section-divider {
+      margin: 48px 0 24px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .section-divider h2 {
+      font-size: 24px;
+      font-weight: 900;
+      letter-spacing: -0.4px;
+    }
+
     .metric-section {
       background: var(--card);
       border: 1px solid var(--border);
       border-radius: 20px;
-      padding: 32px;
-      margin-bottom: 28px;
+      padding: 30px;
+      margin-bottom: 24px;
       box-shadow: 0 8px 24px rgba(0, 31, 71, 0.04);
+      scroll-margin-top: 84px;
     }
 
     .metric-header {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      margin-bottom: 16px;
+      margin-bottom: 14px;
       gap: 16px;
+      flex-wrap: wrap;
     }
 
     .metric-title {
-      font-size: 22px;
+      font-size: 21px;
       font-weight: 900;
-      letter-spacing: -0.4px;
+      letter-spacing: -0.3px;
     }
 
-    .metric-badge {
+    .metric-badge-live {
       background: var(--navy);
       color: var(--volt);
+      font-size: 11px;
+      font-weight: 900;
+      padding: 4px 10px;
+      border-radius: 6px;
+      white-space: nowrap;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .metric-badge-roadmap {
+      background: var(--box-bg);
+      color: var(--text);
+      border: 1px dashed var(--border);
       font-size: 11px;
       font-weight: 800;
       padding: 4px 10px;
@@ -192,8 +230,22 @@
     .metric-body p {
       font-size: 15px;
       color: var(--muted);
-      margin-bottom: 16px;
+      margin-bottom: 14px;
       line-height: 1.6;
+    }
+
+    .metric-body ul {
+      padding-left: 20px;
+      color: var(--muted);
+      font-size: 14.5px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .metric-body li strong {
+      color: var(--text);
     }
 
     .formula-box {
@@ -205,7 +257,7 @@
       font-family: var(--font-mono);
       font-size: 13px;
       color: var(--text);
-      margin: 16px 0;
+      margin: 14px 0;
       overflow-x: auto;
     }
 
@@ -213,7 +265,7 @@
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
       gap: 14px;
-      margin-top: 16px;
+      margin-top: 14px;
     }
 
     .takeaway-item {
@@ -248,292 +300,394 @@
   <header class="top-bar">
     <a href="/" class="brand-link">
       <img src="/logo.png" alt="ORBIT Logo">
-      <span>ORBIT / LEXIKON</span>
+      <span>ORBIT V1.0.0 &middot; HILFE &amp; LEXIKON</span>
     </a>
     <div class="header-controls">
-      <button class="theme-toggle-btn" onclick="toggleTheme()">☀️ / 🌙 Theme</button>
+      <button class="theme-toggle-btn" onclick="toggleTheme()">☀️ / 🌙</button>
       <button class="lang-toggle-btn" onclick="toggleLang()">DE / EN</button>
-      <a href="/" class="back-home-btn">← Zurück zur App</a>
+      <a href="/app/#/login" class="theme-toggle-btn">ORBIT Web (/app/) →</a>
+      <a href="/" class="back-home-btn">
+        <span class="lang-de">← Startseite</span>
+        <span class="lang-en">← Home</span>
+      </a>
     </div>
   </header>
 
   <div class="container">
     <div class="intro-header">
-      <h1 id="intro-title">Sportwissenschaftliches Kennzahlen-Lexikon</h1>
+      <h1 id="intro-title">
+        <span class="lang-de">ORBIT V1.0.0 Bedienungsanleitung &amp; Sportwissenschaftliches Lexikon</span>
+        <span class="lang-en">ORBIT V1.0.0 User Guide &amp; Sports Science Compendium</span>
+      </h1>
       <p id="intro-sub">
-        Transparente Dokumentation aller ORBIT-Metriken für Athleten und Vereinstrainer. 
-        Keine Black-Box-Algorithmen – alle Formeln basieren auf publizierten sportwissenschaftlichen Standards (Skiba, Coggan, Morton, Banister).
+        <span class="lang-de">
+          Teil 1 erklärt alle Funktionen, die ab sofort in <strong>ORBIT Version 1.0.0</strong> (Android &amp; Web) live verfügbar sind. Teil 2 dokumentiert transparent die sportwissenschaftlichen Formeln für unsere kommenden Ausbaustufen <strong>V2.0.0 bis V4.0.0</strong>.
+        </span>
+        <span class="lang-en">
+          Part 1 explains all features live today in <strong>ORBIT Version 1.0.0</strong> (Android &amp; Web). Part 2 transparently documents the sports-science formulas planned for upcoming releases <strong>V2.0.0 through V4.0.0</strong>.
+        </span>
       </p>
     </div>
 
-    <!-- Quick Chips -->
+    <!-- Quick Filter Chips -->
     <nav class="filter-chips">
-      <a href="#three-rings" class="chip">3 ORBIT Ringe</a>
-      <a href="#orbit-score" class="chip">ORBIT Gesamt-Score</a>
-      <a href="#np-tss" class="chip">NP, IF & TSS</a>
-      <a href="#critical-power" class="chip">Critical Power & W'bal</a>
-      <a href="#pmc" class="chip">PMC: CTL / ATL / TSB</a>
-      <a href="#decoupling" class="chip">EF & Entkopplung</a>
-      <a href="#swolf" class="chip">SWOLF</a>
-      <a href="#garmin-backfill" class="chip">Garmin Backfill & Sync</a>
+      <a href="#v1-onboarding" class="chip">
+        <span class="lang-de">1. V1.0.0 Einstieg &amp; Konto</span>
+        <span class="lang-en">1. V1.0.0 Account &amp; Setup</span>
+      </a>
+      <a href="#v1-athlete" class="chip">
+        <span class="lang-de">2. V1.0.0 Athlet &amp; Garmin Sync</span>
+        <span class="lang-en">2. V1.0.0 Athlete &amp; Garmin Sync</span>
+      </a>
+      <a href="#v1-coros-card" class="chip">
+        <span class="lang-de">3. V1.0.0 COROS-Preview &amp; .FIT</span>
+        <span class="lang-en">3. V1.0.0 COROS Preview &amp; .FIT</span>
+      </a>
+      <a href="#v1-coach" class="chip">
+        <span class="lang-de">4. V1.0.0 Coach &amp; Verbindung</span>
+        <span class="lang-en">4. V1.0.0 Coach &amp; Linking</span>
+      </a>
+      <a href="#v1-privacy-delete" class="chip">
+        <span class="lang-de">5. Datenschutz &amp; Daten löschen</span>
+        <span class="lang-en">5. GDPR &amp; Account Deletion</span>
+      </a>
+      <a href="#roadmap-science" class="chip">
+        <span class="lang-de">6. Ausblick V2.0–V4.0 Lexikon</span>
+        <span class="lang-en">6. V2.0–V4.0 Science Compendium</span>
+      </a>
+      <a href="#support" class="chip">
+        <span class="lang-de">7. Support &amp; Kontakt</span>
+        <span class="lang-en">7. Support &amp; Contact</span>
+      </a>
     </nav>
 
-    <!-- 1. DREI RINGE -->
-    <section class="metric-section" id="three-rings">
+    <!-- =================================================================== -->
+    <!-- TEIL 1: JETZT LIVE IN ORBIT VERSION 1.0.0                           -->
+    <!-- =================================================================== -->
+    <div class="section-divider" id="v1-guide">
+      <h2>
+        <span class="lang-de">Teil 1 — Jetzt live in ORBIT Version 1.0.0 (Android &amp; Web)</span>
+        <span class="lang-en">Part 1 — Live Today in ORBIT Version 1.0.0 (Android &amp; Web)</span>
+      </h2>
+      <span class="metric-badge-live">VERSION 1.0.0 LIVE</span>
+    </div>
+
+    <!-- 1. Onboarding, Login, Sprache, Theme & Datumsformat -->
+    <section class="metric-section" id="v1-onboarding">
       <div class="metric-header">
         <div>
-          <h2 class="metric-title">1. Die drei ORBIT-Ringe (Tagessteuerung)</h2>
-          <span style="font-size:13px; color:var(--muted);">Erholung (Volt), Tagesbelastung (Amber), Schlaf-Score (Cyan)</span>
+          <h3 class="metric-title">
+            <span class="lang-de">1. Einstieg, Onboarding, Design &amp; Ländereinstellungen</span>
+            <span class="lang-en">1. Getting Started, Onboarding, Theme &amp; Regional Formats</span>
+          </h3>
+          <span style="font-size:13px; color:var(--muted);">
+            <span class="lang-de">Allgemeine Plattform-Funktionen in Version 1.0.0</span>
+            <span class="lang-en">General platform features in Version 1.0.0</span>
+          </span>
         </div>
-        <span class="metric-badge">Tagessteuerung</span>
+        <span class="metric-badge-live">V1.0.0 ALLGEMEIN</span>
+      </div>
+      <div class="metric-body">
+        <ul>
+          <li>
+            <span class="lang-de"><strong>Web &amp; Android:</strong> ORBIT Web ist direkt über <a href="/app/#/login" style="color:inherit;"><code>/app/#/login</code></a> (Login) und <a href="/app/#/register" style="color:inherit;"><code>/app/#/register</code></a> (Registrieren) erreichbar; parallel steht die Android-App bereit.</span>
+            <span class="lang-en"><strong>Web &amp; Android:</strong> ORBIT Web is directly accessible via <a href="/app/#/login" style="color:inherit;"><code>/app/#/login</code></a> (Sign In) and <a href="/app/#/register" style="color:inherit;"><code>/app/#/register</code></a> (Register), alongside the native Android app.</span>
+          </li>
+          <li>
+            <span class="lang-de"><strong>Schnelles Onboarding für Athlet &amp; Coach:</strong> Bei der Registrierung wählst du deine Rolle (<strong>Athlet</strong> oder <strong>Coach</strong>), erfasst deine Basis-Stammdaten und bestätigst deine E-Mail-Adresse. Über „Passwort vergessen?“ auf dem Login-Screen oder in den Einstellungen kannst du jederzeit einen Passwort-Reset-Link anfordern.</span>
+            <span class="lang-en"><strong>Fast Onboarding for Athlete &amp; Coach:</strong> During registration you select your role (<strong>Athlete</strong> or <strong>Coach</strong>), enter your core profile data, and verify your email address. Password reset links can be requested anytime from the login screen or settings.</span>
+          </li>
+          <li>
+            <span class="lang-de"><strong>Clean Professional Design (Hell &amp; Dunkel) &amp; Sprache (DE / EN):</strong> Alle Ansichten unterstützen den hellen und dunklen Darstellungsmodus sowie die sofortige Umschaltung zwischen Deutsch und Englisch.</span>
+            <span class="lang-en"><strong>Clean Professional Design (Light &amp; Dark) &amp; Language (DE / EN):</strong> Every screen supports Light and Dark modes as well as instant switching between German and English.</span>
+          </li>
+          <li>
+            <span class="lang-de"><strong>Datumsformat (<code>dd.mm.yy</code>) &amp; <code>24h</code>-Uhrzeit:</strong> Datum und Uhrzeit sind automatisch an dein gewähltes Wohnland gekoppelt (im DACH-/EU-Raum durchgängig <code>dd.mm.yy</code> und <code>24h</code>-Darstellung).</span>
+            <span class="lang-en"><strong>Date (<code>dd.mm.yy</code>) &amp; <code>24h</code> Time Formatting:</strong> Date and time formats are automatically coupled to your selected country of residence (e.g., <code>dd.mm.yy</code> and <code>24h</code> time across DACH/EU).</span>
+          </li>
+          <li>
+            <span class="lang-de"><strong>Bug-Meldung oben rechts in der Topbar:</strong> Über das Käfer-Icon in der oberen App-Leiste kannst du jederzeit Feedback oder technische Probleme direkt aus der App melden.</span>
+            <span class="lang-en"><strong>Topbar Bug Reporting:</strong> Use the bug icon in the top navigation bar on any screen to submit feedback or report technical issues directly.</span>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 2. Athleten: Profil Einfach, Garmin Sync & .FIT Upload -->
+    <section class="metric-section" id="v1-athlete">
+      <div class="metric-header">
+        <div>
+          <h3 class="metric-title">
+            <span class="lang-de">2. Für Athleten: Profil Einfach, Garmin Sync &amp; Manueller <code>.fit</code>-Upload</span>
+            <span class="lang-en">2. For Athletes: Simple Profile, Garmin Sync &amp; Manual <code>.fit</code> Upload</span>
+          </h3>
+          <span style="font-size:13px; color:var(--muted);">
+            <span class="lang-de">Stammdaten, Profilbild, Triathlon-Unterstützung &amp; Trainingsimport</span>
+            <span class="lang-en">Master data, profile photo, Triathlon support &amp; workout import</span>
+          </span>
+        </div>
+        <span class="metric-badge-live">V1.0.0 ATHLET</span>
+      </div>
+      <div class="metric-body">
+        <ul>
+          <li>
+            <span class="lang-de"><strong>Profil Einfach &amp; Dauerhaftes Profilbild:</strong> Im Tab „Profil“ kannst du Vor-/Nachname, Wohnland, Körpergröße, Gewicht, Geburtsdatum und deine Sportarten (<strong>Triathlon</strong>, Radfahren, Laufen, Schwimmen, Krafttraining) jederzeit bearbeiten. Dein hochgeladenes Profilbild wird dauerhaft in Cloud Storage gespeichert und in Profil sowie Topbar angezeigt.</span>
+            <span class="lang-en"><strong>Simple Profile &amp; Persistent Profile Photo:</strong> In the "Profile" tab you can edit your first/last name, country, height, weight, birth date, and sports (<strong>Triathlon</strong>, Cycling, Running, Swimming, Strength). Your uploaded profile photo is stored persistently in Cloud Storage and displayed in both your profile and top bar.</span>
+          </li>
+          <li>
+            <span class="lang-de"><strong>Automatischer Garmin Sync:</strong> Nach einmaliger OAuth-Verknüpfung mit Garmin Connect im Onboarding oder Profil werden neu absolvierte Aktivitäten automatisch nach ORBIT synchronisiert (inkl. SHA-256-Duplikatschutz).</span>
+            <span class="lang-en"><strong>Automatic Garmin Sync:</strong> Once connected to Garmin Connect via OAuth during onboarding or in your profile, newly completed workouts sync automatically to ORBIT (with SHA-256 duplicate prevention).</span>
+          </li>
+          <li>
+            <span class="lang-de"><strong>Manueller Upload von <code>.fit</code>-Dateien:</strong> Zusätzlich kannst du im Heute-Screen oder Kalender jederzeit einzelne <code>.fit</code>-Trainingsdateien (z. B. von Garmin, Wahoo oder SRM) manuell hochladen.</span>
+            <span class="lang-en"><strong>Manual <code>.fit</code> File Upload:</strong> You can also manually upload individual <code>.fit</code> workout files (e.g., from Garmin, Wahoo, or SRM) directly from the Today or Calendar screen.</span>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 3. Heute, Kalender & COROS-Vorschaukarte -->
+    <section class="metric-section" id="v1-coros-card">
+      <div class="metric-header">
+        <div>
+          <h3 class="metric-title">
+            <span class="lang-de">3. Heute-Ansicht, Kalender (Woche, Monat, Liste) &amp; COROS-Vorschaukarte</span>
+            <span class="lang-en">3. Today View, Calendar (Week, Month, List) &amp; COROS Preview Card</span>
+          </h3>
+          <span style="font-size:13px; color:var(--muted);">
+            <span class="lang-de">Einheitliche Trainings-Vorschaukarte mit direktem <code>.FIT</code>-Download</span>
+            <span class="lang-en">Unified workout preview card with direct <code>.FIT</code> download</span>
+          </span>
+        </div>
+        <span class="metric-badge-live">V1.0.0 TRAINING PREVIEW</span>
       </div>
       <div class="metric-body">
         <p>
-          Die drei Ringe auf dem „Heute“-Dashboard bilden das Herzstück der Tagessteuerung. Sie aggregieren Ihre physiologische Regenerationsfähigkeit und steuern die optimale Belastung des Tages:
+          <span class="lang-de">Sowohl in der <strong>Heute-Ansicht</strong> (fokusiert auf dein heute absolviertes Training) als auch in allen drei <strong>Kalender-Ansichten (Woche, Monat, Liste)</strong> stellt ORBIT V1.0.0 jede Einheit in einer übersichtlichen Vorschaukarte angelehnt an COROS dar:</span>
+          <span class="lang-en">Across both the <strong>Today view</strong> (focused on today's completed training) and all three <strong>Calendar views (Week, Month, List)</strong>, ORBIT V1.0.0 renders every workout in a clean COROS-inspired preview card:</span>
         </p>
         <div class="takeaway-grid">
           <div class="takeaway-item" style="border-top:3px solid var(--volt);">
-            <div class="takeaway-label">Ring 1: Erholung (0–100 %)</div>
-            <div class="takeaway-val">HRV (45%), RHR (25%), Schlaf (20%), Atmung (10%)</div>
-            <div style="font-size:12px; color:var(--muted); margin-top:4px;">Sigmoid-Abgleich gegen Ihre persönliche 30-Tage-Baseline. Ampel: Grün (&ge;67%), Gelb (34–66%), Rot (&le;33%).</div>
-          </div>
-          <div class="takeaway-item" style="border-top:3px solid var(--amber);">
-            <div class="takeaway-label">Ring 2: Tagesbelastung (0–100)</div>
-            <div class="takeaway-val">Dynamischer Zielkorridor</div>
-            <div style="font-size:12px; color:var(--muted); margin-top:4px;">Verbindet Trainings-TSS mit Alltagsstress. Der Zielkorridor passt sich morgens automatisch an Ihren Erholungswert an.</div>
+            <div class="takeaway-label">
+              <span class="lang-de">Linke Spalte (~68 %)</span>
+              <span class="lang-en">Left Column (~68 %)</span>
+            </div>
+            <div class="takeaway-val">
+              <span class="lang-de">Sportart-Icon + Haupt- &amp; Sekundärmetriken</span>
+              <span class="lang-en">Sport Icon + Primary &amp; Secondary Metrics</span>
+            </div>
+            <div style="font-size:12px; color:var(--muted); margin-top:4px;">
+              <span class="lang-de">Zeile 1: Sport-Icon in Sport-Akzentfarbe + Distanz (<code>km</code>) oder Dauer (<code>hh:mm:ss</code>). Zeile 2: Dauer, Ø Watt / Pace, Ø Puls (<code>bpm</code>) &amp; Höhenmeter (<code>hm</code>).</span>
+              <span class="lang-en">Row 1: Sport icon in accent color + distance (<code>km</code>) or duration (<code>hh:mm:ss</code>). Row 2: Duration, avg power / pace, avg HR (<code>bpm</code>) &amp; elevation (<code>m</code>).</span>
+            </div>
           </div>
           <div class="takeaway-item" style="border-top:3px solid var(--cyan);">
-            <div class="takeaway-label">Ring 3: Schlaf (0–100 %)</div>
-            <div class="takeaway-val">Dauer, Effizienz & Schlafschuld</div>
-            <div style="font-size:12px; color:var(--muted); margin-top:4px;">Vergleicht Ist-Schlaf mit Ihrem individuellen Schlafbedarf (Basis + Belastungszuschlag + 50 % der 7-Tage-Schlafschuld).</div>
+            <div class="takeaway-label">
+              <span class="lang-de">Rechte Spalte (~32 %)</span>
+              <span class="lang-en">Right Column (~32 %)</span>
+            </div>
+            <div class="takeaway-val">
+              <span class="lang-de">Workout-Titel &amp; Direkter <code>.FIT</code>-Download</span>
+              <span class="lang-en">Workout Title &amp; Direct <code>.FIT</code> Download</span>
+            </div>
+            <div style="font-size:12px; color:var(--muted); margin-top:4px;">
+              <span class="lang-de">Zeigt den Aktivitätstitel, die Startzeit im 24h-Format und den direkten <strong><code>.FIT</code>-Download-Button</strong> für Athleten und verbundene Coaches.</span>
+              <span class="lang-en">Displays the workout title, 24h start time, and the direct <strong><code>.FIT</code> download button</strong> for athletes and connected coaches.</span>
+            </div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- 2. ORBIT SCORE -->
-    <section class="metric-section" id="orbit-score">
+    <!-- 4. Für Coaches in V1.0.0 -->
+    <section class="metric-section" id="v1-coach">
       <div class="metric-header">
         <div>
-          <h2 class="metric-title">2. ORBIT Gesamt-Score (0–100)</h2>
-          <span style="font-size:13px; color:var(--muted);">Ganzheitlicher Leistungs- und Erholungs-Index</span>
+          <h3 class="metric-title">
+            <span class="lang-de">4. Für Coaches: Athleten-Verbindung, 3-Tab-Leiste &amp; <code>.FIT</code>-Download</span>
+            <span class="lang-en">4. For Coaches: Athlete Connection, 3-Tab Bar &amp; <code>.FIT</code> Download</span>
+          </h3>
+          <span style="font-size:13px; color:var(--muted);">
+            <span class="lang-de">DSGVO-konformes Coaching im Web und auf Mobilgeräten</span>
+            <span class="lang-en">GDPR-compliant coaching on Web and Mobile</span>
+          </span>
         </div>
-        <span class="metric-badge">Leitmetrik</span>
+        <span class="metric-badge-live">V1.0.0 COACH</span>
+      </div>
+      <div class="metric-body">
+        <ul>
+          <li>
+            <span class="lang-de"><strong>3-Tab-Navigationsleiste:</strong> Coaches arbeiten in V1.0.0 mit einer klaren 3-Tab-Struktur aus <strong>Athleten</strong>, <strong>Kalender</strong> und <strong>Profil</strong>.</span>
+            <span class="lang-en"><strong>3-Tab Navigation Bar:</strong> In V1.0.0, coaches work with a clean 3-tab layout consisting of <strong>Athletes</strong>, <strong>Calendar</strong>, and <strong>Profile</strong>.</span>
+          </li>
+          <li>
+            <span class="lang-de"><strong>Verbindung per Einladungscode oder E-Mail-Anfrage:</strong> Im Tab „Athleten“ kann der Coach einen 6-stelligen Einladungscode erzeugen oder einen Athleten per E-Mail anfragen. Der Athlet bestätigt die Verbindung in seinem „Profil Einfach“ mit ausdrücklicher DSGVO-Einwilligung.</span>
+            <span class="lang-en"><strong>Connect via Invite Code or Email Request:</strong> In the "Athletes" tab, a coach can generate a 6-character invite code or request an athlete by email. The athlete confirms the link in their Simple Profile with explicit GDPR consent.</span>
+          </li>
+          <li>
+            <span class="lang-de"><strong>Kalender-Einsicht &amp; Original-<code>.FIT</code>-Download:</strong> Nach aktiver Freigabe sieht der Coach alle absolvierten Einheiten des gewählten Athleten in der Wochen-, Monats- und Listenansicht und kann über den <code>.FIT</code>-Button auf jeder Vorschaukarte die originale Trainingsdatei herunterladen.</span>
+            <span class="lang-en"><strong>Calendar View &amp; Original <code>.FIT</code> Download:</strong> Once approved, the coach views all completed workouts of the selected athlete across Week, Month, and List views and can download the original <code>.fit</code> file directly from any preview card.</span>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 5. Datenschutz & 2-Stufen-Kontolöschung -->
+    <section class="metric-section" id="v1-privacy-delete">
+      <div class="metric-header">
+        <div>
+          <h3 class="metric-title">
+            <span class="lang-de">5. Datenschutz (Frankfurt <code>europe-west3</code>) &amp; 2-Stufen-Kontolöschung</span>
+            <span class="lang-en">5. Data Protection (Frankfurt <code>europe-west3</code>) &amp; 2-Step Account Deletion</span>
+          </h3>
+          <span style="font-size:13px; color:var(--muted);">
+            <span class="lang-de">Art. 9 &amp; Art. 17 DSGVO · Volle Datenhoheit für Athleten &amp; Coaches</span>
+            <span class="lang-en">Art. 9 &amp; Art. 17 GDPR · Full data sovereignty for athletes &amp; coaches</span>
+          </span>
+        </div>
+        <span class="metric-badge-live">DSGVO / GDPR</span>
       </div>
       <div class="metric-body">
         <p>
-          Der ORBIT Score bündelt die langfristige Trainingskonsistenz, die aktuelle Wettkampfform (TSB) und die jüngste Regenerationsqualität in einer einzigen Kennzahl (0–100):
-        </p>
-        <div class="formula-box">
-          ORBIT Score = (0.30 · Konsistenz) + (0.25 · Form TSB) + (0.25 · 7d-Erholung) + (0.20 · Schlaf)
-        </div>
-        <p>
-          Ein hoher Score (85–100) signalisiert, dass Sie über mehrere Wochen hinweg regelmäßig trainieren, sich optimal erholen und für Spitzenleistungen bereit sind.
+          <span class="lang-de">Alle Daten liegen ausschließlich in <strong>Frankfurt am Main (<code>europe-west3</code>)</strong>. Über <em>Profil</em> oder <em>Einstellungen</em> &rarr; <strong>„Daten &amp; Konto löschen“</strong> (sowie über <a href="/delete-account.html" style="color:inherit;"><code>/delete-account.html</code></a>) können Athleten und Coaches ihr Konto in einem zweistufigen Sicherheitsdialog rückstandslos löschen (inkl. Profil, Aktivitäten, Coach-Verbindungen, Garmin-Deregistrierung und aller <code>.fit</code>-Dateien in Cloud Storage).</span>
+          <span class="lang-en">All data is hosted exclusively in <strong>Frankfurt am Main (<code>europe-west3</code>)</strong>. Via <em>Profile</em> or <em>Settings</em> &rarr; <strong>"Delete Data &amp; Account"</strong> (as well as <a href="/delete-account.html" style="color:inherit;"><code>/delete-account.html</code></a>), athletes and coaches can permanently delete their account and all associated data (profile, workouts, coach links, Garmin registration, and <code>.fit</code> files in Cloud Storage) using a two-step confirmation dialog.</span>
         </p>
       </div>
     </section>
 
-    <!-- 3. NP, IF, TSS -->
+    <!-- =================================================================== -->
+    <!-- TEIL 2: AUSBLICK & SPORTWISSENSCHAFTLICHES LEXIKON (V2.0.0–V4.0.0)  -->
+    <!-- =================================================================== -->
+    <div class="section-divider" id="roadmap-science">
+      <h2>
+        <span class="lang-de">Teil 2 — Sportwissenschaftliches Lexikon (Geplante Module für V2.0.0 bis V4.0.0)</span>
+        <span class="lang-en">Part 2 — Sports Science Compendium (Planned Modules for V2.0.0 to V4.0.0)</span>
+      </h2>
+      <span class="metric-badge-roadmap">
+        <span class="lang-de">ROADMAP V2.0 – V4.0</span>
+        <span class="lang-en">ROADMAP V2.0 – V4.0</span>
+      </span>
+    </div>
+
+    <!-- V2.0.0: Leistungsdiagnostik, Zonen, NP/IF/TSS & CP/W'bal -->
     <section class="metric-section" id="np-tss">
       <div class="metric-header">
         <div>
-          <h2 class="metric-title">3. Normalized Power (NP), Intensity Factor (IF) & TSS</h2>
-          <span style="font-size:13px; color:var(--muted);">Physiologisch gewichtete Trainingsbelastung (Coggan-Standard)</span>
+          <h3 class="metric-title">
+            <span class="lang-de">6. Leistungsdiagnostik, Zonen (LIT/MIT/HIT), NP &amp; Skiba W′bal</span>
+            <span class="lang-en">6. Performance Diagnostics, Zones (LIT/MIT/HIT), NP &amp; Skiba W′bal</span>
+          </h3>
+          <span style="font-size:13px; color:var(--muted);">
+            <span class="lang-de">Geplant für Version 2.0.0 (Analyse, Diagnostik, 1-Hz-Cockpit &amp; Trainingsplanung)</span>
+            <span class="lang-en">Planned for Version 2.0.0 (Analysis, Diagnostics, 1Hz Cockpit &amp; Workout Planning)</span>
+          </span>
         </div>
-        <span class="metric-badge">Physiologie</span>
+        <span class="metric-badge-roadmap">
+          <span class="lang-de">FOLGT IN VERSION 2.0.0</span>
+          <span class="lang-en">COMING IN VERSION 2.0.0</span>
+        </span>
       </div>
       <div class="metric-body">
         <p>
-          Da physiologische Belastung nicht linear, sondern exponentiell mit der Intensität steigt (Laktatanhäufung, Glykogenverbrauch), bildet der einfache Durchschnittswert (Ø Watt) harte Intervalle nur unzureichend ab:
+          <span class="lang-de">Mit <strong>ORBIT Version 2.0.0</strong> wird das 1-Hz-Telemetrie-Cockpit, die Schwellenwert- und Zonenberechnung (inkl. 3-Zonen-Modell LIT/MIT/HIT), der 90-Tage-Garmin-Backfill, der Bulk-Upload (300+ Dateien) sowie der Web-Workout-Builder für Coaches freigeschaltet:</span>
+          <span class="lang-en"><strong>ORBIT Version 2.0.0</strong> introduces the 1Hz telemetry cockpit, threshold and zone calculation (including the 3-zone LIT/MIT/HIT model), 90-day historical Garmin backfill, bulk upload (300+ files), and the Web Workout Builder for coaches:</span>
         </p>
         <div class="formula-box">
-          NP = ( (1/N) · &sum; [30s gleitender Durchschnitt P(t)]^4 )^(1/4)<br>
-          IF = NP / FTP<br>
-          TSS = ( s · NP · IF ) / ( FTP · 3600 ) · 100
+          Normalisierte Leistung (NP) = ( (1/N) &middot; &sum; [30s gleitender Durchschnitt P(t)]^4 )^(1/4)<br>
+          Intensitäts-Faktor = NP / FTP &nbsp;&middot;&nbsp; ORBIT Belastung (Load) = ( s &middot; NP &middot; Intensität ) / ( FTP &middot; 3600 ) &middot; 100<br>
+          W'bal(t) = W' - &int; [ P(u) - CP ] &middot; exp( -(t - u) / &tau; ) du &nbsp;&nbsp;(Skiba et al. 2012)
         </div>
-        <p>
-          <strong>rTSS & NGP (Laufen):</strong> Grade Adjusted Pace (GAP) korrigiert Steigungen nach Minetti et al. (2002) und berechnet die normalisierte Lauf-Pace.<br>
-          <strong>sTSS (Schwimmen):</strong> Berechnet über Critical Swim Speed (CSS / 100m) und die Dauer der Schwimmeinheit.
-        </p>
       </div>
     </section>
 
-    <!-- 4. CRITICAL POWER & W'BAL -->
-    <section class="metric-section" id="critical-power">
+    <!-- V2.0.0 / V3.0.0: PMC & 3 Ringe -->
+    <section class="metric-section" id="three-rings">
       <div class="metric-header">
         <div>
-          <h2 class="metric-title">4. Critical Power ($CP$, $W'$) & Skiba $W'\text{bal}$</h2>
-          <span style="font-size:13px; color:var(--muted);">Anaerobe Kapazität & dynamische Batterie-Entladung</span>
+          <h3 class="metric-title">
+            <span class="lang-de">7. Daily Health (3 Ringe), Morgen-Check (Journal) &amp; Machine Learning</span>
+            <span class="lang-en">7. Daily Health (3 Rings), Morning Check (Journal) &amp; Machine Learning</span>
+          </h3>
+          <span style="font-size:13px; color:var(--muted);">
+            <span class="lang-de">Geplant für Version 3.0.0 bis 4.0.0 (Readiness, Saison-Ziele &amp; KI-Trainer)</span>
+            <span class="lang-en">Planned for Version 3.0.0 to 4.0.0 (Readiness, Season Goals &amp; AI Coach)</span>
+          </span>
         </div>
-        <span class="metric-badge">Bioenergetik</span>
+        <span class="metric-badge-roadmap">
+          <span class="lang-de">FOLGT IN VERSION 3.0.0 / 4.0.0</span>
+          <span class="lang-en">COMING IN VERSION 3.0.0 / 4.0.0</span>
+        </span>
       </div>
       <div class="metric-body">
         <p>
-          Das 2-Parameter-Modell nach Monod/Scherrer teilt die Leistungsfähigkeit in zwei physiologische Komponenten:
-        </p>
-        <ul>
-          <li><strong>Critical Power ($CP$ in Watt):</strong> Die maximale aerob aufrechterhaltbare Dauerleistung ohne vorzeitige Erschöpfung.</li>
-          <li><strong>$W'$ (in Kilojoule kJ):</strong> Die endliche anaerobe Arbeitskapazität oberhalb von $CP$ (Ihre „anaerobe Streichholzschachtel“).</li>
-        </ul>
-        <div class="formula-box">
-          P(t) = CP + W' / t<br>
-          W'bal(t) = W' - &int; [ P(u) - CP ] · exp( -(t - u) / &tau; ) du &nbsp;&nbsp;(Skiba et al. 2012)
-        </div>
-        <p>
-          Im ORBIT Aktivitäts-Cockpit sehen Sie sekundengenau, wie sich Ihr $W'\text{bal}$ bei harten Attacken leert und in Erholungsphasen unterhalb von $CP$ dynamisch wieder auflädt.
+          <span class="lang-de">In <strong>Version 3.0.0</strong> folgen das „Profil Expert“, die drei ORBIT-Tagesringe (Tagesform, Tagesbelastung, Schlaf auf Basis deiner persönlichen 30-Tage-HRV- und Ruhepuls-Baseline), der Morgen-Check (Journal), Saison-Ziele, der mobile Workout-Builder und die Machine-Learning-Korrelationsanalyse. In <strong>Version 3.1.0 / 4.0.0</strong> folgen weitere Anbieter-Syncs und der interaktive KI-Trainer.</span>
+          <span class="lang-en"><strong>Version 3.0.0</strong> adds the "Expert Profile", the three ORBIT daily rings (Readiness, Load, and Sleep based on your personal 30-day HRV and resting HR baselines), the Morning Check journal, season goals, mobile workout builder, and machine-learning correlation analytics. <strong>Version 3.1.0 / 4.0.0</strong> introduces additional provider syncs and the interactive AI Coach.</span>
         </p>
       </div>
     </section>
 
-    <!-- 5. PMC -->
-    <section class="metric-section" id="pmc">
-      <div class="metric-header">
-        <div>
-          <h2 class="metric-title">5. Performance Management Chart (PMC): CTL, ATL & TSB</h2>
-          <span style="font-size:13px; color:var(--muted);">Banister Impuls-Response-Modell für Fitness, Ermüdung & Frische</span>
-        </div>
-        <span class="metric-badge">Saisonsteuerung</span>
-      </div>
-      <div class="metric-body">
-        <p>
-          Das Performance Management Chart steuert Ihre Periodisierung und das Tapering vor Wettkämpfen:
-        </p>
-        <div class="formula-box">
-          CTL(t) = CTL(t-1) + ( TSS(t) - CTL(t-1) ) / 42 &nbsp;&nbsp;(Chronische Trainingsbelastung / Fitness)<br>
-          ATL(t) = ATL(t-1) + ( TSS(t) - ATL(t-1) ) / 7 &nbsp;&nbsp;&nbsp;(Akute Trainingsbelastung / Ermüdung)<br>
-          TSB(t) = CTL(t-1) - ATL(t-1) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(Trainingsstress-Balance / Frische & Form)
-        </div>
-        <div class="takeaway-grid">
-          <div class="takeaway-item">
-            <div class="takeaway-label">TSB &gt; +10 (Frisch)</div>
-            <div class="takeaway-val">Optimal für A-Wettkämpfe</div>
-          </div>
-          <div class="takeaway-item">
-            <div class="takeaway-label">TSB -10 bis +5 (Neutral)</div>
-            <div class="takeaway-val">Solider Trainingszustand</div>
-          </div>
-          <div class="takeaway-item">
-            <div class="takeaway-label">TSB &lt; -30 (Überlastungsrisiko)</div>
-            <div class="takeaway-val">Erhöhte Verletzungsgefahr</div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- 6. ENTKLOPPLUNG -->
-    <section class="metric-section" id="decoupling">
-      <div class="metric-header">
-        <div>
-          <h2 class="metric-title">6. Efficiency Factor (EF) & Aerobic Decoupling (Pw:HR)</h2>
-          <span style="font-size:13px; color:var(--muted);">Aerobe Ausdauer & Herzfrequenz-Drift</span>
-        </div>
-        <span class="metric-badge">Aerobe Basis</span>
-      </div>
-      <div class="metric-body">
-        <p>
-          Der <strong>Efficiency Factor (EF = NP / Ø HF)</strong> misst, wie viel Vortrieb Sie pro Herzschlag erzeugen. 
-          Das <strong>Aerobic Decoupling (%)</strong> vergleicht die erste und zweite Hälfte einer gleichmäßigen Ausdauereinheit:
-        </p>
-        <div class="formula-box">
-          Decoupling (%) = [ (EF_Hälfte1 - EF_Hälfte2) / EF_Hälfte1 ] · 100
-        </div>
-        <p>
-          <strong>Ampel-Klassifikation:</strong><br>
-          <span style="color:var(--emerald); font-weight:800;">Grün (&lt; 5 %):</span> Exzellente aerobe Basis. Kein thermischer oder muskulärer Drift.<br>
-          <span style="color:var(--amber); font-weight:800;">Gelb (5–8 %):</span> Moderate Ermüdung oder unzureichende Flüssigkeitszufuhr.<br>
-          <span style="color:#EF4444; font-weight:800;">Rot (&gt; 8 %):</span> Hoher kardiovaskulärer Drift. Grundlagenausdauer muss weiter ausgebaut werden.
-        </p>
-      </div>
-    </section>
-
-    <!-- 7. SWOLF -->
-    <section class="metric-section" id="swolf">
-      <div class="metric-header">
-        <div>
-          <h2 class="metric-title">7. SWOLF (Schwimm-Effizienz)</h2>
-          <span style="font-size:13px; color:var(--muted);">Schwimmzeit + Züge pro Bahn</span>
-        </div>
-        <span class="metric-badge">Schwimmen</span>
-      </div>
-      <div class="metric-body">
-        <p>
-          SWOLF (Kombination aus „Swim“ und „Golf“) misst die Effizienz Ihres Schwimmstils (je niedriger, desto besser):
-        </p>
-        <div class="formula-box">
-          SWOLF = Zeit pro Bahn (in Sekunden) + Anzahl der Züge pro Bahn
-        </div>
-        <p>
-          Beispiel 50m-Bahn: 42 Sekunden + 34 Züge = SWOLF 76.
-        </p>
-      </div>
-    </section>
-
-    <!-- 8. GARMIN BACKFILL -->
-    <section class="metric-section" id="garmin-backfill">
-      <div class="metric-header">
-        <div>
-          <h2 class="metric-title">8. Garmin Connect 90-Tage-Backfill & Multi-Format-Upload</h2>
-          <span style="font-size:13px; color:var(--muted);">Vollautomatische Synchronisation & historische Analyse</span>
-        </div>
-        <span class="metric-badge">Schnittstellen</span>
-      </div>
-      <div class="metric-body">
-        <p>
-          ORBIT synchronisiert Aktivitäten und tägliche Vitaldaten über offizielle Schnittstellen:
-        </p>
-        <ul>
-          <li><strong>Garmin Connect Push & Ping Webhooks:</strong> Sobald Ihre Garmin-Uhr oder Ihr Edge synchronisiert, liegt die Aktivität innerhalb weniger Sekunden inklusive 1Hz-Datenströmen (Watt, HF, GPS) im ORBIT-Dashboard.</li>
-          <li><strong>Historischer 90-Tage-Backfill:</strong> Auf Knopfdruck fordert ORBIT die letzten 90 Tage in 30-Tage-Chunks von Garmin an, um Ihre PMC-Kurve und Schwellenwerte sofort mit solider Historie zu füllen.</li>
-          <li><strong>Manueller Batch-Upload:</strong> Sie können bis zu 50 <code>.fit</code>, <code>.tcx</code> oder <code>.gpx</code> Dateien (inkl. GZIP) von Wahoo, SRM oder Karoo gleichzeitig per Drag & Drop importieren.</li>
-        </ul>
-      </div>
-    </section>
-
-    <!-- 9. SUPPORT & KONTAKT -->
+    <!-- Support & Kontakt -->
     <section class="metric-section" id="support">
       <div class="metric-header">
         <div>
-          <h2 class="metric-title">9. Support & Offizielle Ansprechpartner</h2>
-          <span style="font-size:13px; color:var(--muted);">Direkte E-Mail-Adressen des ORBIT-Entwicklerteams</span>
+          <h3 class="metric-title">
+            <span class="lang-de">8. Support &amp; Offizielle Ansprechpartner</span>
+            <span class="lang-en">8. Support &amp; Official Contacts</span>
+          </h3>
+          <span style="font-size:13px; color:var(--muted);">
+            <span class="lang-de">Direkte Kontaktwege zu ORBIT Performance / ORBIT Training (Tim Zarges)</span>
+            <span class="lang-en">Direct contact channels for ORBIT Performance / ORBIT Training (Tim Zarges)</span>
+          </span>
         </div>
-        <span class="metric-badge">Hilfe & Kontakt</span>
+        <span class="metric-badge-live">SUPPORT</span>
       </div>
       <div class="metric-body">
-        <p>
-          Haben Sie Fragen zu den Berechnungen, Auffälligkeiten bei Ihren Daten oder Feature-Wünsche für die Plattform? Kontaktieren Sie uns direkt über den passenden Kanal:
-        </p>
         <div class="takeaway-grid">
           <div class="takeaway-item" style="border-top:3px solid var(--volt);">
-            <div class="takeaway-label">Technischer Support & Bugs</div>
+            <div class="takeaway-label">
+              <span class="lang-de">Technischer Support &amp; Bugs</span>
+              <span class="lang-en">Technical Support &amp; Bugs</span>
+            </div>
             <div class="takeaway-val"><a href="mailto:bugs@orbit-training.app" style="color:var(--text); text-decoration:none;">bugs@orbit-training.app</a></div>
-            <div style="font-size:12px; color:var(--muted); margin-top:4px;">Abstürze, Parsing-Fehler & Upload-Probleme.</div>
+            <div style="font-size:12px; color:var(--muted); margin-top:4px;">
+              <span class="lang-de">Oder direkt über das Käfer-Icon oben rechts in der App-Topbar.</span>
+              <span class="lang-en">Or directly via the bug icon in the top bar of the app.</span>
+            </div>
           </div>
           <div class="takeaway-item" style="border-top:3px solid var(--cyan);">
-            <div class="takeaway-label">Allgemeine Hilfe</div>
+            <div class="takeaway-label">
+              <span class="lang-de">Allgemeine Hilfe &amp; Vereine</span>
+              <span class="lang-en">General Help &amp; Clubs</span>
+            </div>
             <div class="takeaway-val"><a href="mailto:support@orbit-training.app" style="color:var(--text); text-decoration:none;">support@orbit-training.app</a></div>
-            <div style="font-size:12px; color:var(--muted); margin-top:4px;">Fragen zur Bedienung & Trainer-Kopplung.</div>
+            <div style="font-size:12px; color:var(--muted); margin-top:4px;">
+              <span class="lang-de">Fragen zur Bedienung, Garmin-Kopplung &amp; Coach-Verbindung.</span>
+              <span class="lang-en">Questions on usage, Garmin pairing &amp; coach linking.</span>
+            </div>
           </div>
-          <div class="takeaway-item" style="border-top:3px solid var(--amber);">
-            <div class="takeaway-label">Ideen & Feedback</div>
-            <div class="takeaway-val"><a href="mailto:feedback@orbit-training.app" style="color:var(--text); text-decoration:none;">feedback@orbit-training.app</a></div>
-            <div style="font-size:12px; color:var(--muted); margin-top:4px;">Wünsche für neue Auswertungen & Diagramme.</div>
-          </div>
-          <div class="takeaway-item" style="border-top:3px solid #A855F7;">
-            <div class="takeaway-label">Datenschutz & DSGVO</div>
+          <div class="takeaway-item" style="border-top:3px solid var(--purple);">
+            <div class="takeaway-label">
+              <span class="lang-de">Datenschutz &amp; DSGVO</span>
+              <span class="lang-en">Privacy &amp; GDPR</span>
+            </div>
             <div class="takeaway-val"><a href="mailto:privacy@orbit-training.app" style="color:var(--text); text-decoration:none;">privacy@orbit-training.app</a></div>
-            <div style="font-size:12px; color:var(--muted); margin-top:4px;">Auskunft & Datenlöschung (Art. 15/17 DSGVO).</div>
+            <div style="font-size:12px; color:var(--muted); margin-top:4px;">
+              <span class="lang-de">Auskunft, Datenexport &amp; Kontolöschung (Art. 15–21 DSGVO).</span>
+              <span class="lang-en">Access, data portability &amp; erasure requests (Art. 15–21 GDPR).</span>
+            </div>
           </div>
         </div>
       </div>
     </section>
 
     <footer style="margin-top: 36px; padding-top: 20px; border-top: 1px solid var(--border); font-size: 13px; color: var(--muted); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
-      <div>&copy; 2026 ORBIT Performance / ORBIT Training (ORBIT Endurance Technologies) &middot; Version 1.0.0</div>
+      <div>&copy; 2026 ORBIT Performance / ORBIT Training (ORBIT Endurance Technologies &middot; Tim Zarges) &middot; Version 1.0.0</div>
       <div>
-        <a href="/imprint.html" style="color:inherit;">Impressum</a> &middot;
-        <a href="/privacy.html" style="color:inherit;">Datenschutzerklärung</a> &middot;
-        <a href="/delete-account.html" style="color:inherit;">Konto löschen</a> &middot;
-        <a href="/app/#/login" style="color:inherit; font-weight:700;">ORBIT Web</a>
+        <a href="/" style="color:inherit;">Startseite / Home</a> &middot;
+        <a href="/imprint.html" style="color:inherit;">Impressum / Legal Notice</a> &middot;
+        <a href="/privacy.html" style="color:inherit;">Datenschutz / Privacy</a> &middot;
+        <a href="/delete-account.html" style="color:inherit;">Konto löschen / Delete Account</a> &middot;
+        <a href="/app/#/login" style="color:inherit; font-weight:700;">ORBIT Web (/app/)</a>
       </div>
     </footer>
   </div>
@@ -548,13 +702,7 @@
     let isEn = false;
     function toggleLang() {
       isEn = !isEn;
-      if (isEn) {
-        document.getElementById('intro-title').innerText = 'Sports Science & Metrics Compendium';
-        document.getElementById('intro-sub').innerText = 'Transparent documentation of all ORBIT metrics for athletes and club coaches. No black-box algorithms — all formulas based on validated sports science standards.';
-      } else {
-        document.getElementById('intro-title').innerText = 'Sportwissenschaftliches Kennzahlen-Lexikon';
-        document.getElementById('intro-sub').innerText = 'Transparente Dokumentation aller ORBIT-Metriken für Athleten und Vereinstrainer. Keine Black-Box-Algorithmen – alle Formeln basieren auf publizierten sportwissenschaftlichen Standards.';
-      }
+      document.documentElement.setAttribute('lang', isEn ? 'en' : 'de');
     }
   </script>
 </body>
