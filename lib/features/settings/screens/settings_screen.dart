@@ -551,6 +551,9 @@ class SettingsScreen extends ConsumerWidget {
         ),
       ),
     );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      emailCtrl.dispose();
+    });
   }
 
   /// Öffnet den Dialog zur Änderung des Passworts mit Live-Validierungs-Checkliste.
@@ -759,6 +762,11 @@ class SettingsScreen extends ConsumerWidget {
         },
       ),
     );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      oldPwController.dispose();
+      newPwController.dispose();
+      confirmPwController.dispose();
+    });
   }
 
   /// Rendert eine einzelne Kriterien-Zeile innerhalb des Passwort-Dialogs.

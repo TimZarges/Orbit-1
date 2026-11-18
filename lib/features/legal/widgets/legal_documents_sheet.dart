@@ -232,21 +232,21 @@ class _LegalDocumentsSheetState extends State<LegalDocumentsSheet> {
       ),
       _LegalSection(
         title: isEn
-            ? '4. Server Location Germany (Frankfurt am Main)'
-            : '4. Serverstandort Deutschland (Frankfurt am Main)',
+            ? '4. Server Location Germany & Processors (Art. 28 GDPR)'
+            : '4. Serverstandort Deutschland & Auftragsverarbeiter (Art. 28 DSGVO)',
         body: isEn
-            ? 'All data is stored and processed exclusively inside the European Union in Frankfurt am Main (europe-west3). No ad trackers are used.'
-            : 'Sicherer Serverstandort Deutschland: Sämtliche Daten werden ausschließlich innerhalb der EU in Frankfurt am Main (europe-west3) nach strengen europäischen Datenschutzgesetzen verarbeitet. Keine Werbe-Tracker.',
+            ? 'All data is stored and processed exclusively inside the European Union in Frankfurt am Main (europe-west3) via Google Cloud EMEA Limited / Google Ireland Limited (Firebase Auth, Firestore, Cloud Storage, Cloud Functions) under an EU Data Processing Addendum (DPA). No ad trackers or external Google Fonts are loaded.'
+            : 'Sicherer Serverstandort Deutschland: Sämtliche Daten werden ausschließlich innerhalb der EU in Frankfurt am Main (europe-west3) über Google Cloud EMEA Limited / Google Ireland Limited (Firebase Auth, Firestore, Cloud Storage, Cloud Functions) auf Basis eines EU-Auftragsverarbeitungsvertrags (Art. 28 DSGVO) verarbeitet. Keine Werbe-Tracker, keine externen Google-Fonts-Abrufe.',
         primaryText: primaryText,
         secondaryText: secondaryText,
       ),
       _LegalSection(
         title: isEn
-            ? '5. Right to Complete Erasure (Art. 17 GDPR)'
-            : '5. Vollständige Daten- & Kontolöschung (Art. 17 DSGVO)',
+            ? '5. Storage Duration, Erasure & Your GDPR Rights (Art. 15–21, 77)'
+            : '5. Speicherdauer, Kontolöschung & Betroffenenrechte (Art. 15–21, 77 DSGVO)',
         body: isEn
-            ? 'You can irreversibly delete your account, profile, coach connections, workouts, and all .fit files in Storage at any time under Profile / Settings -> "Delete Data & Account" in the app or ORBIT Web (/app/).'
-            : 'Du kannst dein Konto samt Profil, Trainingshistorie, Coach-Verknüpfungen und sämtlichen .FIT-Dateien in Cloud Storage jederzeit über Profil Einfach / Einstellungen -> „Daten & Konto löschen“ (in App & ORBIT Web /app/) vollständig löschen.',
+            ? 'Data is stored only for the duration of your active account. You can irreversibly delete your account, profile, coach connections, workouts, and all .fit files in Storage at any time under Profile / Settings -> "Delete Data & Account" in the app or ORBIT Web (/app/) (rolling backups are overwritten within max. 30 days). You also have the right of access (Art. 15), rectification (Art. 16), restriction (Art. 18), data portability via direct .FIT download & JSON export (Art. 20), withdrawal of consent (Art. 7(3)), and the right to lodge a complaint with a data protection supervisory authority (Art. 77 GDPR).'
+            : 'Daten werden nur für die Dauer deines aktiven Kontos gespeichert. Du kannst dein Konto samt Profil, Trainingshistorie, Coach-Verknüpfungen und sämtlichen .FIT-Dateien in Cloud Storage jederzeit über Profil Einfach / Einstellungen -> „Daten & Konto löschen“ (in App & ORBIT Web /app/) sofort unwiderruflich löschen (verschlüsselte Sicherheits-Backups werden innerhalb von max. 30 Tagen rollierend überschrieben). Zudem stehen dir die Rechte auf Auskunft (Art. 15), Berichtigung (Art. 16), Einschränkung (Art. 18), Datenübertragbarkeit per direktem .FIT-Download & Export (Art. 20), Widerruf deiner Einwilligung (Art. 7 Abs. 3) sowie das Beschwerderecht bei einer Datenschutz-Aufsichtsbehörde (Art. 77 DSGVO) zu.',
         primaryText: primaryText,
         secondaryText: secondaryText,
       ),

@@ -257,6 +257,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         },
       ),
     );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      resetEmailController.dispose();
+    });
   }
 
   @override

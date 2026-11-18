@@ -720,13 +720,13 @@
     </div>
   </section>
 
-  <!-- Section 5: Beta Waitlist Formular -->
+  <!-- Section 5: Vereins- & Team-Anfrage Formular -->
   <section class="waitlist-sec" id="waitlist">
     <div class="waitlist-card">
-      <span class="sec-tag">EXKLUSIVER VORABZUGANG</span>
-      <h2 style="font-size:28px; font-weight:900; margin:10px 0 12px;" id="waitlist-title">Jetzt für die geschlossene Beta bewerben</h2>
+      <span class="sec-tag">VEREINE, TEAMS &amp; TRAINERGRUPPEN</span>
+      <h2 style="font-size:28px; font-weight:900; margin:10px 0 12px;" id="waitlist-title">Vereins- &amp; Team-Onboarding anfragen</h2>
       <p style="font-size:15px; color:var(--text-muted); margin-bottom:32px;" id="waitlist-sub">
-        Wir starten am 31. Oktober mit 5–10 Vereinsathleten und Trainern über Firebase App Distribution & Google Play Closed Beta.
+        Einzelne Athleten und Coaches können sich direkt über <a href="/app/#/register" style="color:inherit; font-weight:800;">ORBIT Web (/app/)</a> registrieren. Für Vereine und Trainingsgruppen richten wir gerne ein gemeinsames Team-Setup ein.
       </p>
 
       <form id="beta-form" onsubmit="submitBetaWaitlist(event)">
@@ -764,11 +764,11 @@
         <div class="checkbox-row">
           <input type="checkbox" id="waitlist-consent" required style="margin-top:2px; accent-color:var(--brand-volt);">
           <label for="waitlist-consent">
-            Ich stimme der Kontaktaufnahme zwecks Beta-Einladung und der <a href="/privacy" target="_blank" style="color:inherit; font-weight:700;">Datenschutzerklärung (Art. 9 DSGVO)</a> zu. Keine Weitergabe, keine Werbung.
+            Ich stimme der Kontaktaufnahme und der <a href="/privacy.html" target="_blank" style="color:inherit; font-weight:700;">Datenschutzerklärung (Art. 9 &amp; 13 DSGVO)</a> zu. Keine Weitergabe, keine Werbung.
           </label>
         </div>
 
-        <button type="submit" class="btn-submit-waitlist" id="btn-submit-text">Kostenlos für Closed Beta vormerken →</button>
+        <button type="submit" class="btn-submit-waitlist" id="btn-submit-text">Vereins- &amp; Team-Anfrage absenden →</button>
       </form>
 
       <div id="waitlist-feedback" style="display:none; margin-top:20px; padding:16px; border-radius:12px; font-weight:800; font-size:14px;"></div>
@@ -884,8 +884,8 @@
         document.getElementById('btn-hero-register').innerText = 'Create Free Account →';
         document.getElementById('btn-hero-login').innerText = 'Sign In to ORBIT Web ↗';
         document.getElementById('features-title').innerText = 'Four Pillars for Peak Endurance Performance';
-        document.getElementById('waitlist-title').innerText = 'Request Access / Beta Updates';
-        document.getElementById('btn-submit-text').innerText = 'Submit Request →';
+        document.getElementById('waitlist-title').innerText = 'Club & Team Onboarding Request';
+        document.getElementById('btn-submit-text').innerText = 'Submit Club Request →';
       } else {
         document.getElementById('nav-login-btn').innerText = 'Login';
         document.getElementById('nav-register-btn').innerText = 'Registrieren →';
@@ -894,8 +894,8 @@
         document.getElementById('btn-hero-register').innerText = 'Jetzt kostenlos registrieren →';
         document.getElementById('btn-hero-login').innerText = 'Login in ORBIT Web ↗';
         document.getElementById('features-title').innerText = 'Vier Säulen für maximale Ausdauerleistung';
-        document.getElementById('waitlist-title').innerText = 'Jetzt für die geschlossene Beta bewerben';
-        document.getElementById('btn-submit-text').innerText = 'Kostenlos für Closed Beta vormerken →';
+        document.getElementById('waitlist-title').innerText = 'Vereins- & Team-Onboarding anfragen';
+        document.getElementById('btn-submit-text').innerText = 'Vereins- & Team-Anfrage absenden →';
       }
     }
 
@@ -940,17 +940,17 @@
         feedback.style.display = 'block';
         feedback.style.background = '#001F47';
         feedback.style.color = '#CDFB17';
-        feedback.innerText = '✓ Vielen Dank! Deine Bewerbung für die geschlossene Beta wurde erfolgreich erfasst. Wir melden uns rechtzeitig vor dem 31.10.!';
+        feedback.innerText = '✓ Vielen Dank! Deine Vereins- & Team-Anfrage wurde erfolgreich erfasst. Wir melden uns kurzfristig per E-Mail!';
         document.getElementById('beta-form').reset();
       } catch (err) {
         // Fallback friendly message
         feedback.style.display = 'block';
         feedback.style.background = '#001F47';
         feedback.style.color = '#CDFB17';
-        feedback.innerText = '✓ Vielen Dank! Deine Bewerbung wurde vorgemerkt. Wir kontaktieren dich per E-Mail vor dem 31. Oktober!';
+        feedback.innerText = '✓ Vielen Dank! Deine Anfrage wurde vorgemerkt. Wir kontaktieren dich kurzfristig per E-Mail!';
       } finally {
         submitBtn.disabled = false;
-        submitBtn.innerText = 'Kostenlos für Closed Beta vormerken →';
+        submitBtn.innerText = 'Vereins- & Team-Anfrage absenden →';
       }
     }
 
