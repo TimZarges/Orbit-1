@@ -15,17 +15,40 @@ jobs:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
         with:
+          flutter-version: '3.41.3'
           channel: 'stable'
           cache: true
       - name: Install dependencies
         run: flutter pub get
       - name: Analyze project
-        run: flutter analyze
+        run: |
+          set +e
+          flutter analyze --no-pub > /tmp/analyze.log 2>&1
+          CODE=$?
+          cat /tmp/analyze.log
+          if [ $CODE -ne 0 ]; then
+            grep -E "error|warning|info" /tmp/analyze.log | head -n 20 | while IFS= read -r line; do
+              echo "::error title=FLUTTER_ANALYZE::${line}"
+            done
+            exit $CODE
+          fi
       - name: Run tests
-        run: flutter test
+        run: |
+          set +e
+          flutter test --no-pub > /tmp/flutter_test.log 2>&1
+          CODE=$?
+          cat /tmp/flutter_test.log
+          if [ $CODE -ne 0 ]; then
+            grep -E "Some tests failed|FAILED|Exception|Error" /tmp/flutter_test.log | tail -n 20 | while IFS= read -r line; do
+              echo "::error title=FLUTTER_TEST::${line}"
+            done
+            exit $CODE
+          fi
 
   functions-test:
     runs-on: ubuntu-latest
+    env:
+      TZ: UTC
     defaults:
       run:
         working-directory: ./functions
@@ -43,4 +66,14 @@ jobs:
       - name: Lint functions
         run: npm run lint
       - name: Run unit tests
-        run: npx jest --testPathIgnorePatterns="rules.test.ts|coachLink.test.ts" --runInBand
+        run: |
+          set +e
+          npx jest --testPathIgnorePatterns="rules.test.ts|coachLink.test.ts" --runInBand > /tmp/jest.log 2>&1
+          CODE=$?
+          cat /tmp/jest.log
+          if [ $CODE -ne 0 ]; then
+            grep -E "FAIL|●|Error:|Expected:|Received:|Exceeded timeout" /tmp/jest.log | head -n 25 | while IFS= read -r line; do
+              echo "::error title=JEST_TEST::${line}"
+            done
+            exit $CODE
+          fi
