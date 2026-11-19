@@ -255,13 +255,23 @@ export const redeemInvite = onCall(async (request) => {
       throw new HttpsError("failed-precondition", "Invite usage limit reached.");
     }
 
-    if (inviteData.usedBy.includes(uid)) {
-      throw new HttpsError("already-exists", "You already used this invite.");
-    }
-
+    // Bereits eingelösten Code bei reaktiviertem Link erneut nutzbar machen, solange keine ACTIVE-Verbindung besteht
     const coachId = inviteData.coachId;
     const linkId = `${uid}_${coachId}`;
     const linkRef = db.collection("coachLinks").doc(linkId);
+    const existingLinkDoc = await transaction.get(linkRef);
+    const existingStatus = existingLinkDoc.exists ? existingLinkDoc.data()?.status : null;
+
+    if (existingStatus === "ACTIVE") {
+      throw new HttpsError("already-exists", "Athlete is already connected with this coach.");
+    }
+
+    const usedByList = Array.isArray(inviteData.usedBy) ? inviteData.usedBy : [];
+    const alreadyInUsedBy = usedByList.includes(uid);
+    if (alreadyInUsedBy && existingLinkDoc.exists && existingStatus !== "REVOKED" && existingStatus !== "INACTIVE" && existingStatus !== "DECLINED") {
+      throw new HttpsError("already-exists", "You already used this invite.");
+    }
+
     const userRef = db.collection("users").doc(uid);
 
     const initialPermissions = {
@@ -271,15 +281,17 @@ export const redeemInvite = onCall(async (request) => {
       bodyWeightAndNotes: false,
     };
 
-    // Add to usedBy
-    const newUsedBy = [...inviteData.usedBy, uid];
+    // Athleten ohne Duplikate in usedBy eintragen
+    const newUsedBy = alreadyInUsedBy ? usedByList : [...usedByList, uid];
     transaction.update(inviteRef, { usedBy: newUsedBy });
 
-    // Create coachLink
+    // Saubere Voll-Überschreibung des Links ohne Altlasten (z. B. revokedAt)
     transaction.set(linkRef, {
       athleteId: uid,
       coachId: coachId,
       status: "ACTIVE",
+      requestedBy: uid,
+      inviteCode: code,
       permissions: initialPermissions,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -338,6 +350,23 @@ export const redeemInvite = onCall(async (request) => {
       coachEmail: cData?.email ?? "",
       athleteSports: Array.isArray(rawSports) ? rawSports : [],
     }, { merge: true });
+
+    // Etwaige offene E-Mail-Einladung nach Code-Einlösung als angenommen markieren
+    const normalizedAthleteEmail =
+      typeof aData?.email === "string" ? aData.email.trim().toLowerCase() : "";
+    if (normalizedAthleteEmail) {
+      const emailInviteRef = db
+        .collection("coachInvites")
+        .doc(buildEmailInviteId(txResult.coachId, normalizedAthleteEmail));
+      const emailInviteSnap = await emailInviteRef.get();
+      if (emailInviteSnap.exists) {
+        await emailInviteRef.set({
+          status: "CLAIMED_ACTIVE",
+          athleteId: uid,
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        }, { merge: true });
+      }
+    }
   } catch (_) {
     // Metadaten-Anreicherung optional (z. B. in Unit-Tests mit Mock-Firestore)
   }
@@ -469,19 +498,55 @@ export const revokeLink = onCall(async (request) => {
   const athleteId = linkData.athleteId;
   const coachId = linkData.coachId;
 
-  // 1. Link-Status auf REVOKED setzen
+  // 1. Link-Status auf REVOKED setzen und etwaige Alt-Dokumente bereinigen
+  const canonicalLinkId = `${athleteId}_${coachId}`;
   await linkRef.update({
     status: "REVOKED",
+    revokedBy: uid,
     updatedAt: admin.firestore.FieldValue.serverTimestamp(),
   });
 
-  // 1b. Zugehörige E-Mail-Einladung in `coachInvites` (falls vorhanden) ebenfalls schließen
   try {
-    const athleteEmail = typeof linkData.athleteEmail === "string"
-      ? linkData.athleteEmail.trim().toLowerCase()
-      : "";
-    if (athleteEmail) {
-      const inviteId = buildEmailInviteId(coachId, athleteEmail);
+    const duplicateLinksSnap = await db
+      .collection("coachLinks")
+      .where("athleteId", "==", athleteId)
+      .where("coachId", "==", coachId)
+      .get();
+    for (const dupDoc of duplicateLinksSnap.docs) {
+      if (dupDoc.id !== linkId && dupDoc.id !== canonicalLinkId) {
+        await dupDoc.ref.delete();
+      } else if (dupDoc.id === canonicalLinkId && dupDoc.id !== linkId) {
+        await dupDoc.ref.set({
+          athleteId,
+          coachId,
+          status: "REVOKED",
+          revokedBy: uid,
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        }, { merge: true });
+      }
+    }
+  } catch (_) {
+    // Optionale Alt-Dokument-Bereinigung
+  }
+
+  // 1b. Zugehörige E-Mail-Einladung in `coachInvites` (falls vorhanden) ebenfalls schließen
+  let resolvedAthleteEmail = typeof linkData.athleteEmail === "string"
+    ? linkData.athleteEmail.trim().toLowerCase()
+    : "";
+  if (!resolvedAthleteEmail) {
+    try {
+      const athleteSnap = await db.collection("users").doc(athleteId).get();
+      const userEmail = athleteSnap.data()?.email;
+      if (typeof userEmail === "string") {
+        resolvedAthleteEmail = userEmail.trim().toLowerCase();
+      }
+    } catch (_) {
+      // Fallback optional
+    }
+  }
+  try {
+    if (resolvedAthleteEmail) {
+      const inviteId = buildEmailInviteId(coachId, resolvedAthleteEmail);
       const inviteRef = db.collection("coachInvites").doc(inviteId);
       const inviteSnap = await inviteRef.get();
       if (inviteSnap.exists) {
@@ -493,6 +558,24 @@ export const revokeLink = onCall(async (request) => {
     }
   } catch (_) {
     // Optionaler Abgleich
+  }
+
+  // 1c. Athleten aus usedBy der Coach-Codes entfernen, damit spätere Neu-Verbindung möglich bleibt
+  try {
+    const coachInvitesSnap = await db
+      .collection("invites")
+      .where("coachId", "==", coachId)
+      .get();
+    for (const invDoc of coachInvitesSnap.docs) {
+      const usedBy = invDoc.data()?.usedBy;
+      if (Array.isArray(usedBy) && usedBy.includes(athleteId)) {
+        await invDoc.ref.update({
+          usedBy: admin.firestore.FieldValue.arrayRemove(athleteId),
+        });
+      }
+    }
+  } catch (_) {
+    // Code-Freigabe optional
   }
 
   // 2. coachId und authorizedCoachIds vom Athleten-Dokument entfernen & Art. 9 Consent-Widerruf dokumentieren
@@ -585,37 +668,60 @@ export const requestAthleteLinkByEmail = onCall(async (request) => {
   const inviteCode = await ensureCoachInviteCode(db, coachUid);
   const inviteId = buildEmailInviteId(coachUid, normalizedEmail);
 
-  // 1. Athleten-Account über Firestore `users` oder Firebase Auth (case-insensitiv) ermitteln
+  // 1. Athleten-Account primär über Firebase Auth (maßgebliche Login-UID) ermitteln
+  //    und nur dann auf Firestore `users` ausweichen, wenn kein Auth-Backend verfügbar ist.
+  //    Warum: So wird nach einer Kontolöschung + Neuanlage niemals eine verwaiste Alt-UID getroffen.
   let athleteId = "";
   let athleteData: Record<string, any> = {};
+  let authLookupConclusive = false;
 
-  const athleteSnap = await db.collection("users")
-    .where("email", "==", normalizedEmail)
-    .limit(1)
-    .get();
-
-  if (!athleteSnap.empty) {
-    const athleteDoc = athleteSnap.docs[0];
-    athleteId = athleteDoc.id;
-    athleteData = athleteDoc.data() || {};
-  } else {
-    // Fallback über Firebase Auth (fängt Groß-/Kleinschreibung oder fehlendes users.email auf)
-    try {
-      const authRecord = await admin.auth().getUserByEmail(normalizedEmail);
-      athleteId = authRecord.uid;
-      const docSnap = await db.collection("users").doc(athleteId).get();
-      if (docSnap.exists) {
-        athleteData = docSnap.data() || {};
-        if (!athleteData.email) {
-          await db.collection("users").doc(athleteId).set(
-            { uid: athleteId, email: normalizedEmail },
-            { merge: true }
-          );
-          athleteData.email = normalizedEmail;
-        }
+  try {
+    const authRecord = await admin.auth().getUserByEmail(normalizedEmail);
+    authLookupConclusive = true;
+    athleteId = authRecord.uid;
+    const docSnap = await db.collection("users").doc(athleteId).get();
+    if (docSnap.exists) {
+      athleteData = docSnap.data() || {};
+      const storedEmail =
+        typeof athleteData.email === "string"
+          ? athleteData.email.trim().toLowerCase()
+          : "";
+      if (storedEmail !== normalizedEmail) {
+        await db.collection("users").doc(athleteId).set(
+          { uid: athleteId, email: normalizedEmail },
+          { merge: true }
+        );
+        athleteData.email = normalizedEmail;
       }
-    } catch (_) {
-      // Kein Konto in Firebase Auth -> Einladung für spätere Registrierung anlegen
+    } else {
+      athleteData = {
+        uid: athleteId,
+        email: normalizedEmail,
+        profile: {
+          displayName: authRecord.displayName || normalizedEmail,
+        },
+      };
+    }
+  } catch (authErr: any) {
+    const errCode = typeof authErr?.code === "string" ? authErr.code : "";
+    if (errCode === "auth/user-not-found") {
+      // In Produktion existiert sicher kein Firebase-Auth-Login für diese E-Mail.
+      // Nur in reinen Firestore-Emulatortests ohne Auth-Backend auf `users` zurückfallen.
+      authLookupConclusive = Boolean(process.env.K_SERVICE || process.env.FUNCTION_TARGET);
+    }
+
+    if (!authLookupConclusive) {
+      const athleteSnap = await db.collection("users")
+        .where("email", "==", normalizedEmail)
+        .limit(5)
+        .get();
+      if (!athleteSnap.empty) {
+        const preferredDoc =
+          athleteSnap.docs.find((d) => d.data()?.role !== "TRAINER") ??
+          athleteSnap.docs[0];
+        athleteId = preferredDoc.id;
+        athleteData = preferredDoc.data() || {};
+      }
     }
   }
 
@@ -630,17 +736,48 @@ export const requestAthleteLinkByEmail = onCall(async (request) => {
 
     const linkId = `${athleteId}_${coachUid}`;
     const linkRef = db.collection("coachLinks").doc(linkId);
-    const existingLink = await linkRef.get();
-    if (existingLink.exists && existingLink.data()?.status === "ACTIVE") {
+
+    // Alle vorhandenen Link-Dokumente zwischen diesem Athleten & Coach prüfen (auch Alt-IDs)
+    const existingPairSnap = await db
+      .collection("coachLinks")
+      .where("athleteId", "==", athleteId)
+      .where("coachId", "==", coachUid)
+      .get();
+
+    const activeDoc = existingPairSnap.docs.find(
+      (doc) => doc.data()?.status === "ACTIVE"
+    );
+    if (activeDoc) {
       throw new HttpsError("already-exists", "Athlete is already connected with this coach.");
     }
 
+    const canonicalDoc = await linkRef.get();
+    if (canonicalDoc.exists && canonicalDoc.data()?.status === "ACTIVE") {
+      throw new HttpsError("already-exists", "Athlete is already connected with this coach.");
+    }
+
+    const allKnownStatuses = [
+      ...(canonicalDoc.exists ? [canonicalDoc.data()?.status] : []),
+      ...existingPairSnap.docs.map((d) => d.data()?.status),
+    ];
+    const wasAlreadyPending = allKnownStatuses.includes("PENDING");
+    const wasReactivated = allKnownStatuses.some(
+      (s) => s === "REVOKED" || s === "INACTIVE" || s === "DECLINED"
+    );
+
+    // Etwaige verwaiste Duplikat-Dokumente mit anderer Dokument-ID entfernen
+    for (const pairDoc of existingPairSnap.docs) {
+      if (pairDoc.id !== linkId) {
+        await pairDoc.ref.delete();
+      }
+    }
+
     const athleteName = resolveDisplayName(
-      { ...athleteData, email: athleteData.email ?? normalizedEmail },
+      { ...athleteData, email: normalizedEmail },
       normalizedEmail
     );
 
-    // Verbindungsanfrage im Status PENDING speichern (keine Datenfreigabe ohne DSGVO-Opt-in)
+    // Verbindungsanfrage im Status PENDING sauber neu schreiben (ohne Altlasten wie revokedAt/acceptedAt)
     await linkRef.set({
       athleteId,
       coachId: coachUid,
@@ -650,7 +787,7 @@ export const requestAthleteLinkByEmail = onCall(async (request) => {
       coachName,
       coachEmail,
       athleteName,
-      athleteEmail: athleteData?.email ?? normalizedEmail,
+      athleteEmail: normalizedEmail,
       permissions: {
         activities: false,
         calendar: false,
@@ -659,7 +796,7 @@ export const requestAthleteLinkByEmail = onCall(async (request) => {
       },
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-    }, { merge: true });
+    });
 
     await db.collection("coachInvites").doc(inviteId).set({
       inviteId,
@@ -673,12 +810,14 @@ export const requestAthleteLinkByEmail = onCall(async (request) => {
       mailQueued: true,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-    }, { merge: true });
+    });
 
     // Optionale In-App-Benachrichtigung + Mail-Queue-Eintrag anlegen
     try {
       await db.collection("users").doc(athleteId).collection("notifications").add({
-        title: "Neue Coach-Verbindungsanfrage",
+        title: wasReactivated
+          ? "Erneute Coach-Verbindungsanfrage"
+          : "Neue Coach-Verbindungsanfrage",
         body: `${coachName} möchte sich mit deinem ORBIT-Konto verbinden. Bitte im Profil bestätigen.`,
         type: "SYSTEM",
         route: "/profile",
@@ -701,6 +840,8 @@ export const requestAthleteLinkByEmail = onCall(async (request) => {
       success: true,
       deliveryMode: "IN_APP_PENDING",
       accountExists: true,
+      alreadyPending: wasAlreadyPending,
+      reactivated: wasReactivated,
       mailQueued,
       mailProviderConfigured: false,
       linkId,
@@ -713,7 +854,7 @@ export const requestAthleteLinkByEmail = onCall(async (request) => {
     };
   }
 
-  // 3. Fall B: Noch kein ORBIT-Konto -> offene Einladung in `coachInvites` & `mail`-Queue speichern
+  // 3. Fall B: Noch kein ORBIT-Konto -> offene Einladung in `coachInvites` sauber anlegen/zurücksetzen
   await db.collection("coachInvites").doc(inviteId).set({
     inviteId,
     coachId: coachUid,
@@ -728,7 +869,7 @@ export const requestAthleteLinkByEmail = onCall(async (request) => {
     ),
     createdAt: admin.firestore.FieldValue.serverTimestamp(),
     updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-  }, { merge: true });
+  });
 
   const mailQueued = await queueCoachInviteMail(db, {
     toEmail: normalizedEmail,
@@ -818,6 +959,7 @@ export async function claimCoachInvitesForAthlete(
     const linkRef = db.collection("coachLinks").doc(linkId);
     const existingLink = await linkRef.get();
     if (!existingLink.exists || existingLink.data()?.status !== "ACTIVE") {
+      // Voll-Überschreibung ohne Altlasten (z. B. früherer REVOKED-Status)
       await linkRef.set({
         athleteId: uid,
         coachId,
@@ -836,7 +978,7 @@ export async function claimCoachInvitesForAthlete(
         },
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-      }, { merge: true });
+      });
     }
 
     await inviteDoc.ref.set({
@@ -930,12 +1072,58 @@ export const respondToCoachLinkRequest = onCall(async (request) => {
   }
 
   const coachId = linkData.coachId as string;
+  const resolvedEmail =
+    typeof linkData.athleteEmail === "string"
+      ? linkData.athleteEmail.trim().toLowerCase()
+      : "";
+
+  /**
+   * Hilfsfunktion: Synchronisiert eine zugehörige E-Mail-Einladung in `coachInvites`.
+   */
+  const syncInviteStatus = async (nextStatus: string): Promise<void> => {
+    let targetEmail = resolvedEmail;
+    if (!targetEmail) {
+      try {
+        const uSnap = await db.collection("users").doc(uid).get();
+        const uMail = uSnap.data()?.email;
+        if (typeof uMail === "string") targetEmail = uMail.trim().toLowerCase();
+      } catch (_) {
+        // Optional
+      }
+    }
+    if (!targetEmail) return;
+    try {
+      const emailInviteRef = db
+        .collection("coachInvites")
+        .doc(buildEmailInviteId(coachId, targetEmail));
+      const emailInviteSnap = await emailInviteRef.get();
+      if (emailInviteSnap.exists) {
+        await emailInviteRef.set({
+          status: nextStatus,
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        }, { merge: true });
+      }
+    } catch (_) {
+      // Optional
+    }
+  };
+
   if (!accept) {
     await linkRef.update({
       status: "REVOKED",
+      revokedBy: uid,
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     });
+    await syncInviteStatus("REVOKED");
     return { success: true, status: "REVOKED" };
+  }
+
+  // Wurde die Anfrage zwischenzeitlich vom Coach zurückgezogen, keine veraltete Bestätigung zulassen
+  if (linkData.status === "REVOKED") {
+    throw new HttpsError(
+      "failed-precondition",
+      "This connection request was cancelled and is no longer pending."
+    );
   }
 
   if (gdprConsent !== true) {
@@ -954,6 +1142,7 @@ export const respondToCoachLinkRequest = onCall(async (request) => {
     permissions: initialPermissions,
     updatedAt: admin.firestore.FieldValue.serverTimestamp(),
   });
+  await syncInviteStatus("CLAIMED_ACTIVE");
 
   // DSGVO-Einwilligung, Coach-Zuordnung und Storage-Zugriffsarray am Athletenprofil dokumentieren
   const userRef = db.collection("users").doc(uid);

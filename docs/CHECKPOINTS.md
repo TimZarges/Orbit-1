@@ -2591,3 +2591,27 @@ The operation couldn’t be completed. Unable to locate a Java Runtime.
   - `docs/beta/screenshots/color_system_safari_website_light.png`
   - `docs/beta/screenshots/color_system_safari_web_app.png`
 
+---
+
+## Checkpoint Re-Invite / Re-Link & UI-Fehlerbehandlung (`v1.0.2`)
+- **Status:** Implementiert, gegen Analyzer/Tests/Emulator geprüft, auf `orbit-app-mvp` (Functions `europe-west3`, Rules, Indexes, Hosting) & Pixel 10 Pro (`58251FDCR00EQ2`) deployed und per Live-E2E-Skript sowie Live-UI-Screenshots verifiziert
+- **Datum:** 2026-11-19
+- **Umgesetzte Maßnahmen:**
+  1. **Backend Re-Invite / Re-Link & Dashboard-Trigger (`functions/src/coach.ts`, `functions/src/coach/dashboard.ts`):**
+     - Primärer Athleten-Lookup in `requestAthleteLinkByEmail` über `admin.auth().getUserByEmail(normalizedEmail)` (verhindert Treffer auf verwaiste `users`-Alt-UIDs), Bereinigung doppelter Link-Dokumente, sauberes Überschreiben von `coachLinks` und `coachInvites` ohne `{ merge: true }`-Altlasten sowie explizite Flags `reactivated` / `alreadyPending`.
+     - `revokeLink` entfernt `athleteId` aus `invites.usedBy` des Coaches; `redeemInvite` erlaubt erneute Code-Einlösung nach Trennung; `respondToCoachLinkRequest` synchronisiert zugehörige `coachInvites` und blockiert Bestätigungen auf bereits zurückgezogenen Anfragen.
+     - `onCoachLinkChanged` (`syncCoachDashboardAthlete`) fragt `users/{athleteId}/aggregates` indexfrei über `FieldPath.documentId() >= thirtyDaysAgoStr` ab (behebt den `FAILED_PRECONDITION`-Indexfehler aus dem Live-Log).
+  2. **Flutter Provider & UI (`v1_coach_connection_provider.dart`, `v1_coach_athletes_tab.dart`, `v1_athlete_coach_connection_card.dart`):**
+     - Gemeinsame, lokalisierte Fehlerübersetzung `V1CoachConnectionService.formatError`, Doppelklick-Sperre beim Zurückziehen/Beantworten, explizite Stream-Invalidierung sowie differenzierte Dialogtitel bei reaktivierten (`Verbindungsanfrage erneut gesendet`) und aktualisierten Anfragen.
+- **Verifizierte Befehlsausgaben:**
+  - `bash scripts/check_phase_ready.sh` -> Exit Code `0` (`flutter analyze`: `0 Errors, 0 Warnings, 0 Infos`, `functions` Build & Lint: `0 Errors`, `100 %` deutsche Kommentare, `flutter test`: **`273/273` Tests bestanden**).
+  - `npx -y firebase-tools emulators:exec --only firestore,storage "npm --prefix functions test"` -> Exit Code `0` (`Test Suites: 12 passed, 12 total`, `Tests: 118 passed, 118 total`, inklusive Re-Invite-/Ablehnungs-/Code-Wiederverwendungs-Test in `coachLink.test.ts`).
+  - `node -e "console.log(Object.keys(require('./functions/lib/index.js')))"` -> alle 37 Cloud Function Exporte inklusive `requestAthleteLinkByEmail`, `claimPendingCoachInvites`, `respondToCoachLinkRequest`, `revokeLink`, `redeemInvite`, `onCoachLinkChanged` verifiziert.
+  - `flutter build web --release --no-pub --no-web-resources-cdn --base-href /app/ --suppress-analytics` -> `Built build/web` -> `public/app/`.
+  - `flutter build apk --release --no-pub --suppress-analytics && adb -s 58251FDCR00EQ2 install -r build/app/outputs/flutter-apk/app-release.apk` -> `67.3MB`, `Performing Streamed Install -> Success`.
+  - `npx -y firebase-tools deploy --only functions,firestore:rules,firestore:indexes,hosting --project orbit-app-mvp --force` -> `Deploy complete!`.
+  - **Live-E2E-Verifikation gegen `orbit-app-mvp`** (mit 3 Wegwerf-Testkonten + anschließender `deleteAccount`-Bereinigung, Tims Athletenkonto unberührt): Erst-Einladung (`accountExists: true`, `PENDING`), Annahme (`ACTIVE`), `ALREADY_EXISTS`-Schutz, `revokeLink`, Re-Invite (`reactivated: true`, `PENDING`), Ablehnung + zweites Re-Invite (`ACTIVE`), erneute Einlösung des selben 6-stelligen Coach-Codes nach Trennung sowie Pre-Registration-Invite + automatischer Onboarding-Claim + Annahme komplett bestanden.
+- **Live-Screenshots (`docs/beta/screenshots/`):**
+  - `docs/beta/screenshots/v1_0_2_safari_live.png`
+  - `docs/beta/screenshots/v1_0_2_pixel10_live.png`
+

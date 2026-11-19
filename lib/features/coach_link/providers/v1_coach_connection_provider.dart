@@ -127,6 +127,94 @@ class V1CoachConnectionService {
   Future<void> revokeLink(String linkId) async {
     await _invoke('revokeLink', {'linkId': linkId});
   }
+
+  /// Übersetzt technische Cloud-Function- und Eingabefehler in verständliche,
+  /// lokalisierte Hinweise für Coach und Athlet (ohne interne Stacktraces).
+  ///
+  /// [error]: Gefangene Ausnahme (z. B. [FirebaseFunctionsException] oder [ArgumentError]).
+  /// [isEn]: `true` für Englisch, `false` für Deutsch.
+  static String formatError(Object error, {required bool isEn}) {
+    if (error is ArgumentError) {
+      final msg = error.message?.toString().trim() ?? '';
+      if (msg.isNotEmpty) return msg;
+    }
+
+    if (error is FirebaseFunctionsException) {
+      final rawMsg = (error.message ?? '').toLowerCase();
+      switch (error.code) {
+        case 'already-exists':
+          if (rawMsg.contains('already used')) {
+            return isEn
+                ? 'This invite code was already redeemed.'
+                : 'Dieser Einladungscode wurde bereits eingelöst.';
+          }
+          return isEn
+              ? 'This athlete is already actively connected with you.'
+              : 'Dieser Athlet ist bereits aktiv mit deinem Konto verbunden.';
+        case 'failed-precondition':
+          if (rawMsg.contains('not an athlete')) {
+            return isEn
+                ? 'This email belongs to a trainer account, not an athlete.'
+                : 'Diese E-Mail-Adresse gehört zu einem Coach-Konto und nicht zu einem Athleten.';
+          }
+          if (rawMsg.contains('expired')) {
+            return isEn
+                ? 'This invite code has expired. Please request a new one.'
+                : 'Dieser Einladungscode ist abgelaufen. Bitte fordere einen neuen Code an.';
+          }
+          if (rawMsg.contains('no longer pending') ||
+              rawMsg.contains('cancelled')) {
+            return isEn
+                ? 'This request was already cancelled and is no longer open.'
+                : 'Diese Verbindungsanfrage wurde bereits zurückgezogen und ist nicht mehr offen.';
+          }
+          return isEn
+              ? 'Action not possible in the current connection state.'
+              : 'Diese Aktion ist im aktuellen Verbindungsstatus nicht möglich.';
+        case 'invalid-argument':
+          if (rawMsg.contains('yourself')) {
+            return isEn
+                ? 'You cannot connect with your own account.'
+                : 'Du kannst dich nicht mit deinem eigenen Konto verbinden.';
+          }
+          if (rawMsg.contains('gdpr')) {
+            return isEn
+                ? 'Please confirm GDPR data sharing first.'
+                : 'Bitte bestätige zuerst die DSGVO-Datenfreigabe.';
+          }
+          return isEn
+              ? 'Please check your input (valid email address or invite code).'
+              : 'Bitte prüfe deine Eingabe (gültige E-Mail-Adresse oder Einladungscode).';
+        case 'permission-denied':
+          return isEn
+              ? 'You do not have permission for this action.'
+              : 'Du hast keine Berechtigung für diese Aktion.';
+        case 'not-found':
+          return isEn
+              ? 'Invite or connection was not found.'
+              : 'Einladung oder Verbindung wurde nicht gefunden.';
+        case 'unauthenticated':
+          return isEn
+              ? 'Session expired. Please sign in again.'
+              : 'Deine Sitzung ist abgelaufen. Bitte melde dich erneut an.';
+        case 'unavailable':
+        case 'deadline-exceeded':
+          return isEn
+              ? 'Server temporarily unreachable. Please try again.'
+              : 'Server vorübergehend nicht erreichbar. Bitte versuche es gleich erneut.';
+      }
+      if ((error.message ?? '').trim().isNotEmpty) {
+        return error.message!.trim();
+      }
+    }
+
+    final fallback = error.toString().replaceFirst('Exception: ', '').trim();
+    return fallback.isNotEmpty
+        ? fallback
+        : (isEn
+            ? 'An unexpected error occurred.'
+            : 'Es ist ein unerwarteter Fehler aufgetreten.');
+  }
 }
 
 /// Modell einer offenen Coach-E-Mail-Einladung für noch nicht registrierte Athleten.
@@ -189,7 +277,8 @@ final v1CoachPendingEmailInvitesStreamProvider =
 
 /// Automatische Übernahme offener Coach-E-Mail-Einladungen (`coachInvites`) für
 /// angemeldete Athleten, unabhängig davon, ob das Profil bereits geöffnet wurde.
-final v1AutoClaimCoachInvitesProvider = FutureProvider.autoDispose<int>((ref) async {
+final v1AutoClaimCoachInvitesProvider =
+    FutureProvider.autoDispose<int>((ref) async {
   if (Firebase.apps.isEmpty) return 0;
   final user = ref.watch(authStateChangesProvider).valueOrNull;
   if (user == null) return 0;
@@ -236,25 +325,23 @@ final v1CoachAthletesStreamProvider =
       .where('coachId', isEqualTo: uid)
       .snapshots()
       .asyncMap((snapshot) async {
-        final links = snapshot.docs
-            .map((doc) => V1CoachAthleteLink.fromMap(doc.id, doc.data()))
-            .where((l) => l.isActive || l.isPending)
-            .toList();
+    final links = snapshot.docs
+        .map((doc) => V1CoachAthleteLink.fromMap(doc.id, doc.data()))
+        .where((l) => l.isActive || l.isPending)
+        .toList();
 
-        // Athleten-Metadaten (Profil & letzte Aktivität) parallel nachladen
-        final enriched = await Future.wait(
-          links.map((link) => _enrichLinkForCoach(firestore, link)),
-        );
+    // Athleten-Metadaten (Profil & letzte Aktivität) parallel nachladen
+    final enriched = await Future.wait(
+      links.map((link) => _enrichLinkForCoach(firestore, link)),
+    );
 
-        // Aktive Athleten zuerst, danach alphabetisch nach Name sortieren
-        enriched.sort((a, b) {
-          if (a.isActive != b.isActive) return a.isActive ? -1 : 1;
-          return a.athleteName
-              .toLowerCase()
-              .compareTo(b.athleteName.toLowerCase());
-        });
-        return enriched;
-      });
+    // Aktive Athleten zuerst, danach alphabetisch nach Name sortieren
+    enriched.sort((a, b) {
+      if (a.isActive != b.isActive) return a.isActive ? -1 : 1;
+      return a.athleteName.toLowerCase().compareTo(b.athleteName.toLowerCase());
+    });
+    return enriched;
+  });
 });
 
 /// Echtzeit-Stream aller aktiven und eingehenden Coach-Verbindungen des Athleten.
@@ -273,15 +360,15 @@ final v1AthleteCoachLinksStreamProvider =
       .where('athleteId', isEqualTo: uid)
       .snapshots()
       .asyncMap((snapshot) async {
-        final links = snapshot.docs
-            .map((doc) => V1CoachAthleteLink.fromMap(doc.id, doc.data()))
-            .where((l) => l.isActive || l.isPending)
-            .toList();
+    final links = snapshot.docs
+        .map((doc) => V1CoachAthleteLink.fromMap(doc.id, doc.data()))
+        .where((l) => l.isActive || l.isPending)
+        .toList();
 
-        return Future.wait(
-          links.map((link) => _enrichLinkForAthlete(firestore, link)),
-        );
-      });
+    return Future.wait(
+      links.map((link) => _enrichLinkForAthlete(firestore, link)),
+    );
+  });
 });
 
 /// Lädt für einen Coach-Link Profildaten (`users/{athleteId}`) und das Datum

@@ -230,4 +230,105 @@ describe("Phase 18.3 Trainer-Athleten-Kopplung E2E Flow (Invite -> Redeem -> Art
     expect(acceptRes.success).toBe(true);
     expect(acceptRes.status).toBe("ACTIVE");
   });
+
+  it("Re-Invite & Re-Link nach Trennung/Ablehnung + Wiederverwendung von Code & Altlasten-Bereinigung", async () => {
+    const coachUid = "coach_relink";
+    const athleteUid = "athlete_relink";
+    const athleteEmail = "relink.athlet@verein.de";
+    const db = admin.firestore();
+
+    await db.collection("users").doc(coachUid).set({
+      uid: coachUid,
+      role: "TRAINER",
+      email: "coach.relink@verein.de",
+      profile: { firstName: "Max", lastName: "Coach" },
+    });
+    await db.collection("users").doc(athleteUid).set({
+      uid: athleteUid,
+      role: "ATHLETE",
+      email: athleteEmail,
+      profile: { firstName: "Elena", lastName: "ReLink" },
+    });
+
+    const linkId = `${athleteUid}_${coachUid}`;
+
+    // 1. Erstmalige Verbindung über 6-stelligen Einladungscode
+    const inviteRes = await (createInvite as any).run({
+      auth: { uid: coachUid },
+      data: {},
+    });
+    const code = inviteRes.code as string;
+
+    await (redeemInvite as any).run({
+      auth: { uid: athleteUid },
+      data: { code },
+    });
+
+    // 2. Verbindung trennen (`revokeLink`) -> Status REVOKED + usedBy bereinigt
+    await (revokeLink as any).run({
+      auth: { uid: athleteUid },
+      data: { linkId },
+    });
+
+    const afterRevokeLink = await db.collection("coachLinks").doc(linkId).get();
+    expect(afterRevokeLink.data()?.status).toBe("REVOKED");
+
+    const afterRevokeInvite = await db.collection("invites").doc(code).get();
+    expect(afterRevokeInvite.data()?.usedBy).not.toContain(athleteUid);
+
+    // 3. Coach lädt denselben Athleten erneut per E-Mail ein -> Reaktivierung als sauberes PENDING
+    const reinviteRes = await (requestAthleteLinkByEmail as any).run({
+      auth: { uid: coachUid },
+      data: { email: athleteEmail },
+    });
+    expect(reinviteRes.success).toBe(true);
+    expect(reinviteRes.reactivated).toBe(true);
+    expect(reinviteRes.status).toBe("PENDING");
+
+    const pendingSnap = await db.collection("coachLinks").doc(linkId).get();
+    expect(pendingSnap.data()?.status).toBe("PENDING");
+    expect(pendingSnap.data()?.permissions?.activities).toBe(false);
+    expect(pendingSnap.data()?.permissions?.calendar).toBe(false);
+
+    // 4. Athlet lehnt einmal ab (`accept: false`) -> REVOKED; Coach sendet nochmals -> PENDING
+    await (respondToCoachLinkRequest as any).run({
+      auth: { uid: athleteUid },
+      data: { linkId, accept: false, gdprConsent: false },
+    });
+    expect((await db.collection("coachLinks").doc(linkId).get()).data()?.status).toBe("REVOKED");
+
+    const secondReinvite = await (requestAthleteLinkByEmail as any).run({
+      auth: { uid: coachUid },
+      data: { email: athleteEmail },
+    });
+    expect(secondReinvite.reactivated).toBe(true);
+    expect(secondReinvite.status).toBe("PENDING");
+
+    // 5. Athlet bestätigt diesmal mit DSGVO-Opt-in -> ACTIVE
+    const acceptAgain = await (respondToCoachLinkRequest as any).run({
+      auth: { uid: athleteUid },
+      data: { linkId, accept: true, gdprConsent: true },
+    });
+    expect(acceptAgain.status).toBe("ACTIVE");
+
+    // 6. Aktive Verbindung blockiert doppelte E-Mail-Einladung sauber mit already-exists
+    await expect(
+      (requestAthleteLinkByEmail as any).run({
+        auth: { uid: coachUid },
+        data: { email: athleteEmail },
+      })
+    ).rejects.toThrow(/already connected/i);
+
+    // 7. Erneut trennen und denselben 6-stelligen Code erfolgreich wieder einlösen
+    await (revokeLink as any).run({
+      auth: { uid: coachUid },
+      data: { linkId },
+    });
+    const reRedeem = await (redeemInvite as any).run({
+      auth: { uid: athleteUid },
+      data: { code },
+    });
+    expect(reRedeem.success).toBe(true);
+    expect((await db.collection("coachLinks").doc(linkId).get()).data()?.status).toBe("ACTIVE");
+  });
 });

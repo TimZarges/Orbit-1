@@ -83,25 +83,36 @@ export async function syncCoachDashboardAthlete(coachId: string, athleteId: stri
     };
   }
 
-  // 3. Neuestes Aggregat laden (für CTL, ATL, TSB)
+  // 3. Neuestes Aggregat ohne Collection-Group-Index-Abhängigkeit laden (für CTL, ATL, TSB)
   const today = new Date();
   const todayStr = today.toISOString().split("T")[0];
-  const aggSnap = await db
-    .collection("users")
-    .doc(athleteId)
-    .collection("aggregates")
-    .orderBy(admin.firestore.FieldPath.documentId(), "desc")
-    .limit(1)
-    .get();
+  const thirtyDaysAgoStr = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+    .toISOString()
+    .split("T")[0];
 
   let ctl = 0;
   let atl = 0;
   let tsb = 0;
-  if (!aggSnap.empty) {
-    const aggData = aggSnap.docs[0].data();
-    ctl = aggData.ctl || 0;
-    atl = aggData.atl || 0;
-    tsb = aggData.tsb || 0;
+  try {
+    // Bereichsabfrage auf __name__ (aufsteigend) benötigt keinen Composite- oder CollectionGroup-Index
+    const aggSnap = await db
+      .collection("users")
+      .doc(athleteId)
+      .collection("aggregates")
+      .where(admin.firestore.FieldPath.documentId(), ">=", thirtyDaysAgoStr)
+      .get();
+
+    if (!aggSnap.empty) {
+      const sortedDocs = [...aggSnap.docs].sort((a, b) =>
+        b.id.localeCompare(a.id)
+      );
+      const aggData = sortedDocs[0].data();
+      ctl = aggData.ctl || 0;
+      atl = aggData.atl || 0;
+      tsb = aggData.tsb || 0;
+    }
+  } catch (_) {
+    // Fallback auf Basiswerte 0, falls noch keine Aggregate vorliegen
   }
   const formStatus = determineFormStatus(ctl, tsb);
 

@@ -15,6 +15,7 @@
 /// 7. Einstellungen (`SettingsScreen`: 1-Klick Impressum/Datenschutz & Kontolöschung).
 library;
 
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -879,7 +880,10 @@ void main() {
         find.byKey(const Key('coach_email_invite_result_dialog')),
         findsOneWidget,
       );
-      expect(find.text('Verbindungsanfrage in ORBIT hinterlegt'), findsOneWidget);
+      expect(
+        find.text('Verbindungsanfrage in ORBIT hinterlegt'),
+        findsOneWidget,
+      );
       await tester.tap(find.text('Verstanden'));
       await tester.pumpAndSettle();
 
@@ -945,6 +949,108 @@ void main() {
       expect(athletePayload?['linkId'], equals('ath_1_coach_1'));
       expect(athletePayload?['accept'], isTrue);
       expect(athletePayload?['gdprConsent'], isTrue);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets(
+        'V1CoachConnectionService.formatError & V1CoachAthletesTab Re-Invite-Feedback + saubere Fehlertexte',
+        (tester) async {
+      // 1. Prüfen der lokalisierten Fehlerformatierung (DE & EN)
+      final alreadyConnectedErr = FirebaseFunctionsException(
+        code: 'already-exists',
+        message: 'Athlete is already connected with this coach.',
+      );
+      final notAthleteErr = FirebaseFunctionsException(
+        code: 'failed-precondition',
+        message: 'Target user is not an athlete.',
+      );
+      expect(
+        V1CoachConnectionService.formatError(alreadyConnectedErr, isEn: false),
+        contains('bereits aktiv mit deinem Konto verbunden'),
+      );
+      expect(
+        V1CoachConnectionService.formatError(alreadyConnectedErr, isEn: true),
+        contains('already actively connected'),
+      );
+      expect(
+        V1CoachConnectionService.formatError(notAthleteErr, isEn: false),
+        contains('Coach-Konto'),
+      );
+
+      // 2. Re-Invite-Dialog zeigt bei `reactivated: true` den klaren Re-Send-Titel
+      var shouldThrow = false;
+      final fakeCoachService = V1CoachConnectionService(
+        invoke: (name, payload) async {
+          if (shouldThrow) {
+            throw alreadyConnectedErr;
+          }
+          return <String, dynamic>{
+            'success': true,
+            'deliveryMode': 'IN_APP_PENDING',
+            'accountExists': true,
+            'reactivated': true,
+            'alreadyPending': false,
+            'mailProviderConfigured': false,
+            'inviteCode': 'RE1234',
+            'athleteEmail': payload['email'],
+            'status': 'PENDING',
+          };
+        },
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            v1CoachConnectionServiceProvider
+                .overrideWithValue(fakeCoachService),
+          ],
+          child: const MaterialApp(
+            home: Scaffold(
+              body: V1CoachAthletesTab(
+                athletesOverride: [],
+                initialInviteCodeOverride: 'RE1234',
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Reaktivierungs-Fall
+      await tester.tap(find.byKey(const Key('coach_open_email_invite_btn')));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byKey(const Key('coach_invite_email_input')),
+        'erneut@verein.de',
+      );
+      await tester.tap(find.byKey(const Key('coach_send_email_invite_btn')));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(const Key('coach_email_invite_result_dialog')),
+        findsOneWidget,
+      );
+      expect(find.text('Verbindungsanfrage erneut gesendet'), findsOneWidget);
+      await tester.tap(find.text('Verstanden'));
+      await tester.pumpAndSettle();
+
+      // Fehlerfall ohne technischen Stacktrace im Dialog
+      shouldThrow = true;
+      await tester.tap(find.byKey(const Key('coach_open_email_invite_btn')));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byKey(const Key('coach_invite_email_input')),
+        'aktiv@verein.de',
+      );
+      await tester.tap(find.byKey(const Key('coach_send_email_invite_btn')));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text(
+          'Dieser Athlet ist bereits aktiv mit deinem Konto verbunden.',
+        ),
+        findsOneWidget,
+      );
       expect(tester.takeException(), isNull);
     });
   });

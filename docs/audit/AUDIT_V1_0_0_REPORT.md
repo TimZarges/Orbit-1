@@ -152,3 +152,21 @@
   - `bash scripts/check_phase_ready.sh`: `0 Errors / 0 Warnings / 0 Infos`, `100 %` deutsche Kommentare, **`272/272` Flutter-Tests bestanden**.
   - Emulator-Suite: **`12/12` Test-Suites (`117/117` Tests) bestanden**.
   - Live-Screenshots: `docs/beta/screenshots/color_system_pixel10_dark.png`, `docs/beta/screenshots/color_system_pixel10_coach_tab.png`, `docs/beta/screenshots/color_system_safari_website_light.png`, `docs/beta/screenshots/color_system_safari_web_app.png`.
+
+---
+
+## 9. Block 9 — Re-Invite / Re-Link & Fehlerformatierung (`v1.0.2`)
+
+- **Ursachenbehebung für Re-Invite / Re-Link bereits verknüpfter oder getrennter Konten:**
+  - `functions/src/coach.ts`:
+    - `requestAthleteLinkByEmail` löst den Athleten-Account primär über die maßgebliche Firebase-Auth-Identität (`admin.auth().getUserByEmail(normalizedEmail)`) statt zuerst über `users` auf (verhindert Treffer auf verwaiste Alt-Dokumente nach Kontowechsel/-löschung), bereinigt Duplikat-/Alt-ID-Dokumente in `coachLinks`, überschreibt `coachLinks` und `coachInvites` sauber ohne `{ merge: true }`-Altlasten (`REVOKED`/alte Permissions) und meldet `reactivated` / `alreadyPending` explizit an das UI zurück.
+    - `revokeLink` bereinigt zusätzlich `invites/{code}.usedBy` per `arrayRemove(athleteId)` sowie Alt-Link-Dokumente; `redeemInvite` erlaubt das erneute Einlösen desselben Coach-Codes nach Trennung (`status !== 'ACTIVE'`); `respondToCoachLinkRequest` synchronisiert zugehörige `coachInvites` und blockiert veraltete Annahmen zurückgezogener Anfragen.
+  - `functions/src/coach/dashboard.ts`:
+    - Behebt den im Live-Log aufgetretenen `FAILED_PRECONDITION`-Indexfehler in `onCoachLinkChanged` über eine indexfreie Bereichsabfrage (`FieldPath.documentId() >= thirtyDaysAgoStr`) auf `users/{athleteId}/aggregates`.
+  - **Flutter-UI & Provider (`v1_coach_connection_provider.dart`, `v1_coach_athletes_tab.dart`, `v1_athlete_coach_connection_card.dart`):**
+    - Zentrale Fehlerübersetzung `V1CoachConnectionService.formatError` für Coach-Dialog & Athletenkarte, Doppelklick-Sperre (`_busyActionIds` / `_isBusy`) beim Zurückziehen/Beantworten, sofortige Stream-Invalidierung und klares Rückmelde-UI für reaktivierte und aktualisierte Anfragen.
+- **Verifikation (`v1.0.2`):**
+  - `bash scripts/check_phase_ready.sh`: `flutter analyze` `0 Errors / 0 Warnings / 0 Infos`, `functions` Build & Lint `0 Errors`, `100 %` deutsche Kommentare, **`273/273` Flutter-Tests bestanden**.
+  - Emulator-Suite (`npx -y firebase-tools emulators:exec --only firestore,storage "npm --prefix functions test"`): **`12/12` Test-Suites (`118/118` Tests) bestanden** (inklusive neuem Re-Invite-, Ablehnungs- & Code-Wiederverwendungs-Test in `coachLink.test.ts`).
+  - **Live-End-to-End-Verifikation gegen `orbit-app-mvp`** (mit 3 Wegwerf-Testkonten inkl. anschließender restloser Kontolöschung via `deleteAccount`, reales Athletenkonto unberührt): E-Mail-Einladung (`accountExists: true`, `PENDING`) -> DSGVO-Annahme (`ACTIVE`) -> `ALREADY_EXISTS`-Schutz -> `revokeLink` -> erneute E-Mail-Einladung (`reactivated: true`, `PENDING`) -> Ablehnung + erneutes Re-Invite -> `ACTIVE` -> Trennung & Wiederverwendung des 6-stelligen Coach-Codes -> Pre-Registration-Invite + Onboarding-Claim + Annahme (`100 %` bestanden).
+  - Live-Screenshots: `docs/beta/screenshots/v1_0_2_safari_live.png`, `docs/beta/screenshots/v1_0_2_pixel10_live.png`.

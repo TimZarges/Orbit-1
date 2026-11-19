@@ -12,6 +12,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/design/app_colors.dart';
+import '../../auth/providers/user_provider.dart';
 import '../../coach_link/models/v1_coach_athlete_link.dart';
 import '../../coach_link/providers/v1_coach_connection_provider.dart';
 
@@ -88,10 +89,11 @@ class _V1AthleteCoachConnectionCardState
       }
     } catch (e) {
       if (mounted && showFeedbackOnEmpty) {
+        final formatted = V1CoachConnectionService.formatError(e, isEn: isEn);
         _showFeedback(
           isEn
-              ? 'Could not check invites: $e'
-              : 'Einladungsprüfung fehlgeschlagen: $e',
+              ? 'Could not check invites: $formatted'
+              : 'Einladungsprüfung fehlgeschlagen: $formatted',
           isError: true,
         );
       }
@@ -133,6 +135,9 @@ class _V1AthleteCoachConnectionCardState
             code: code,
             gdprConsent: true,
           );
+      // Verbindungs- und Profildaten direkt aktualisieren
+      ref.invalidate(v1AthleteCoachLinksStreamProvider);
+      ref.invalidate(userDocumentProvider);
       if (mounted) {
         _codeController.clear();
         setState(() => _gdprAcceptedForCode = false);
@@ -144,8 +149,11 @@ class _V1AthleteCoachConnectionCardState
       }
     } catch (e) {
       if (mounted) {
+        final formatted = V1CoachConnectionService.formatError(e, isEn: isEn);
         _showFeedback(
-          isEn ? 'Connection failed: $e' : 'Verbindung fehlgeschlagen: $e',
+          isEn
+              ? 'Connection failed: $formatted'
+              : 'Verbindung fehlgeschlagen: $formatted',
           isError: true,
         );
       }
@@ -159,6 +167,7 @@ class _V1AthleteCoachConnectionCardState
     V1CoachAthleteLink link, {
     required bool accept,
   }) async {
+    if (_isBusy) return;
     final isEn = widget.lang == 'en';
     final consented = _gdprAcceptedForRequest[link.linkId] ?? false;
     if (accept && !consented) {
@@ -178,7 +187,11 @@ class _V1AthleteCoachConnectionCardState
             accept: accept,
             gdprConsent: consented,
           );
+      // Verbindungs- und Profildaten direkt aktualisieren
+      ref.invalidate(v1AthleteCoachLinksStreamProvider);
+      ref.invalidate(userDocumentProvider);
       if (mounted) {
+        _gdprAcceptedForRequest.remove(link.linkId);
         _showFeedback(
           accept
               ? (isEn
@@ -189,8 +202,11 @@ class _V1AthleteCoachConnectionCardState
       }
     } catch (e) {
       if (mounted) {
+        final formatted = V1CoachConnectionService.formatError(e, isEn: isEn);
         _showFeedback(
-          isEn ? 'Action failed: $e' : 'Aktion fehlgeschlagen: $e',
+          isEn
+              ? 'Action failed: $formatted'
+              : 'Aktion fehlgeschlagen: $formatted',
           isError: true,
         );
       }
@@ -201,10 +217,14 @@ class _V1AthleteCoachConnectionCardState
 
   /// Widerruft eine bestehende Coach-Verbindung mit sofortiger Wirkung.
   Future<void> _disconnectCoach(V1CoachAthleteLink link) async {
+    if (_isBusy) return;
     final isEn = widget.lang == 'en';
     setState(() => _isBusy = true);
     try {
       await ref.read(v1CoachConnectionServiceProvider).revokeLink(link.linkId);
+      // Verbindungs- und Profildaten direkt aktualisieren
+      ref.invalidate(v1AthleteCoachLinksStreamProvider);
+      ref.invalidate(userDocumentProvider);
       if (mounted) {
         _showFeedback(
           isEn
@@ -214,8 +234,11 @@ class _V1AthleteCoachConnectionCardState
       }
     } catch (e) {
       if (mounted) {
+        final formatted = V1CoachConnectionService.formatError(e, isEn: isEn);
         _showFeedback(
-          isEn ? 'Disconnect failed: $e' : 'Trennen fehlgeschlagen: $e',
+          isEn
+              ? 'Disconnect failed: $formatted'
+              : 'Trennen fehlgeschlagen: $formatted',
           isError: true,
         );
       }
@@ -305,6 +328,15 @@ class _V1AthleteCoachConnectionCardState
             ),
             const SizedBox(height: 12),
 
+            if (linksAsync != null &&
+                linksAsync.isLoading &&
+                !linksAsync.hasValue) ...[
+              const Padding(
+                padding: EdgeInsets.only(bottom: 12),
+                child: LinearProgressIndicator(minHeight: 2),
+              ),
+            ],
+
             if (streamError != null) ...[
               Container(
                 key: const Key('athlete_coach_links_error'),
@@ -326,8 +358,9 @@ class _V1AthleteCoachConnectionCardState
                     ),
                     const SizedBox(height: 6),
                     TextButton.icon(
-                      onPressed: () =>
-                          _claimPendingEmailInvitesIfReady(showFeedbackOnEmpty: true),
+                      onPressed: () => _claimPendingEmailInvitesIfReady(
+                        showFeedbackOnEmpty: true,
+                      ),
                       icon: const Icon(Icons.refresh, size: 16),
                       label: Text(isEn ? 'Retry' : 'Erneut laden'),
                     ),

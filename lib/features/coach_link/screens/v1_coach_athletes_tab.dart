@@ -52,10 +52,49 @@ class _V1CoachAthletesTabState extends ConsumerState<V1CoachAthletesTab> {
   String? _inviteCode;
   bool _isGenerating = false;
 
+  /// Verhindert doppelte Klicks auf Zurückziehen-Buttons je Link-/Einladungs-ID.
+  final Set<String> _busyActionIds = <String>{};
+
   @override
   void initState() {
     super.initState();
     _inviteCode = widget.initialInviteCodeOverride;
+  }
+
+  /// Zieht eine offene Verbindungsanfrage oder Vormerkung geschützt vor Doppelklicks zurück.
+  Future<void> _cancelPendingAction({
+    required String actionId,
+    required Future<void> Function() action,
+    required String successMessage,
+    required bool isEn,
+  }) async {
+    if (_busyActionIds.contains(actionId)) return;
+    setState(() => _busyActionIds.add(actionId));
+    try {
+      await action();
+      ref.invalidate(v1CoachAthletesStreamProvider);
+      ref.invalidate(v1CoachPendingEmailInvitesStreamProvider);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(successMessage)),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              V1CoachConnectionService.formatError(e, isEn: isEn),
+            ),
+            backgroundColor: Colors.red.shade700,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _busyActionIds.remove(actionId));
+      }
+    }
   }
 
   /// Erzeugt über die Cloud Function `createInvite` einen neuen 6-stelligen Code.
@@ -126,7 +165,31 @@ class _V1CoachAthletesTabState extends ConsumerState<V1CoachAthletesTab> {
 
     final email = (result['athleteEmail'] as String? ?? '').trim();
     final accountExists = result['accountExists'] == true;
+    final reactivated = result['reactivated'] == true;
+    final alreadyPending = result['alreadyPending'] == true;
     final mailProviderConfigured = result['mailProviderConfigured'] == true;
+
+    // Streams sofort aktualisieren, damit neu gesendete/reaktivierte Anfragen direkt sichtbar sind
+    ref.invalidate(v1CoachAthletesStreamProvider);
+    ref.invalidate(v1CoachPendingEmailInvitesStreamProvider);
+
+    final String dialogTitle;
+    if (!accountExists) {
+      dialogTitle = isEn
+          ? 'Invitation Saved (No Account Yet)'
+          : 'Einladung vorgemerkt (noch kein Konto)';
+    } else if (reactivated) {
+      dialogTitle = isEn
+          ? 'Connection Request Re-sent'
+          : 'Verbindungsanfrage erneut gesendet';
+    } else if (alreadyPending) {
+      dialogTitle =
+          isEn ? 'Pending Request Refreshed' : 'Offene Anfrage aktualisiert';
+    } else {
+      dialogTitle = isEn
+          ? 'Connection Request Stored in ORBIT'
+          : 'Verbindungsanfrage in ORBIT hinterlegt';
+    }
 
     // Sowohl bei vorhandenem Konto (In-App-Anfrage) als auch ohne Konto klaren
     // Rückmelde-Dialog mit Hinweis zum Mail-Status + 6-stelligem Coach-Code zeigen
@@ -134,15 +197,7 @@ class _V1CoachAthletesTabState extends ConsumerState<V1CoachAthletesTab> {
       context: context,
       builder: (ctx) => AlertDialog(
         key: const Key('coach_email_invite_result_dialog'),
-        title: Text(
-          accountExists
-              ? (isEn
-                  ? 'Connection Request Stored in ORBIT'
-                  : 'Verbindungsanfrage in ORBIT hinterlegt')
-              : (isEn
-                  ? 'Invitation Saved (No Account Yet)'
-                  : 'Einladung vorgemerkt (noch kein Konto)'),
-        ),
+        title: Text(dialogTitle),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -486,12 +541,29 @@ class _V1CoachAthletesTabState extends ConsumerState<V1CoachAthletesTab> {
                               : 'Wartet auf DSGVO-Bestätigung des Athleten',
                         ),
                         trailing: IconButton(
-                          icon: Icon(Icons.close, color: errorColor),
+                          icon: _busyActionIds.contains(req.linkId)
+                              ? const SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : Icon(Icons.close, color: errorColor),
                           tooltip:
                               isEn ? 'Cancel request' : 'Anfrage zurückziehen',
-                          onPressed: () => ref
-                              .read(v1CoachConnectionServiceProvider)
-                              .revokeLink(req.linkId),
+                          onPressed: _busyActionIds.contains(req.linkId)
+                              ? null
+                              : () => _cancelPendingAction(
+                                    actionId: req.linkId,
+                                    isEn: isEn,
+                                    successMessage: isEn
+                                        ? 'Connection request cancelled.'
+                                        : 'Verbindungsanfrage zurückgezogen.',
+                                    action: () => ref
+                                        .read(v1CoachConnectionServiceProvider)
+                                        .revokeLink(req.linkId),
+                                  ),
                         ),
                       ),
                     ),
@@ -559,16 +631,35 @@ class _V1CoachAthletesTabState extends ConsumerState<V1CoachAthletesTab> {
                                 },
                               ),
                             IconButton(
-                              icon: Icon(
-                                Icons.close,
-                                color: errorColor,
-                              ),
+                              icon: _busyActionIds.contains(inv.inviteId)
+                                  ? const SizedBox(
+                                      width: 18,
+                                      height: 18,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : Icon(
+                                      Icons.close,
+                                      color: errorColor,
+                                    ),
                               tooltip: isEn
                                   ? 'Revoke invite'
                                   : 'Einladung zurückziehen',
-                              onPressed: () => ref
-                                  .read(v1CoachConnectionServiceProvider)
-                                  .revokePendingInvite(inv.inviteId),
+                              onPressed: _busyActionIds.contains(inv.inviteId)
+                                  ? null
+                                  : () => _cancelPendingAction(
+                                        actionId: inv.inviteId,
+                                        isEn: isEn,
+                                        successMessage: isEn
+                                            ? 'Invitation withdrawn.'
+                                            : 'Einladung zurückgezogen.',
+                                        action: () => ref
+                                            .read(
+                                              v1CoachConnectionServiceProvider,
+                                            )
+                                            .revokePendingInvite(inv.inviteId),
+                                      ),
                             ),
                           ],
                         ),
@@ -913,7 +1004,10 @@ class _InviteByEmailDialogState extends ConsumerState<_InviteByEmailDialog> {
                     if (mounted) {
                       setState(() {
                         _isSending = false;
-                        _errorMsg = e.toString();
+                        _errorMsg = V1CoachConnectionService.formatError(
+                          e,
+                          isEn: isEn,
+                        );
                       });
                     }
                   }
