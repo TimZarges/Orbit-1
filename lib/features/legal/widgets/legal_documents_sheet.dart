@@ -210,31 +210,31 @@ class _LegalDocumentsSheetState extends State<LegalDocumentsSheet> {
       ),
       _LegalSection(
         title: isEn
-            ? '2. Health & Training Data (Art. 9 GDPR)'
-            : '2. Gesundheits- & Trainingsdaten (Art. 9 DSGVO)',
+            ? '2. Data Categories, Health Data & Legal Bases (Art. 6 & 9 GDPR)'
+            : '2. Datenkategorien, Gesundheitsdaten & Rechtsgrundlagen (Art. 6 & 9 DSGVO)',
         body: isEn
-            ? 'ORBIT processes endurance training & health telemetry (heart rate, power, pace, duration, distance, and original .FIT/.TCX/.GPX files) exclusively based on your explicit GDPR Art. 9(2)(a) consent.'
-            : 'ORBIT verarbeitet Trainings-, Leistungs- und Gesundheitsdaten (Herzfrequenz, Wattwerte, Pace, Dauer, Distanz sowie Original-.FIT-/.TCX-/.GPX-Dateien) ausschließlich auf Grundlage deiner ausdrücklichen Einwilligung nach Art. 9 Abs. 2 lit. a DSGVO.',
+            ? 'ORBIT processes account/profile data (name, email, role, country of residence for dd.mm.yy / 24h formatting) to perform the platform service and prevent abuse (Art. 6(1)(b) & (f) GDPR, Firebase App Check). Endurance training & health telemetry (heart rate, power, pace, duration, distance, optional body height/weight/birth date/gender, and original .FIT/.TCX/.GPX files) is processed strictly based on your explicit, freely revocable consent (Art. 9(2)(a) & Art. 7 GDPR). Providing optional body metrics or Garmin sync is voluntary. No automated profiling or AI scoring occurs in Version 1.0.0 (Art. 13(2)(f) GDPR).'
+            : 'ORBIT verarbeitet Konto- und Stammdaten (Name, E-Mail, Rolle, Wohnland für dd.mm.yy / 24h) zur Bereitstellung der Plattform und Missbrauchsabwehr (Art. 6 Abs. 1 lit. b & lit. f DSGVO, Firebase App Check). Trainings-, Leistungs- und Gesundheitsdaten (Herzfrequenz, Wattwerte, Pace, Dauer, Distanz, optionale Körper-/Altersangaben sowie Original-.FIT-/.TCX-/.GPX-Dateien) werden ausschließlich auf Grundlage deiner ausdrücklichen, jederzeit widerruflichen Einwilligung nach Art. 9 Abs. 2 lit. a DSGVO (i. V. m. Art. 7 DSGVO) verarbeitet. Optionale Angaben und Garmin-Sync sind freiwillig. Es findet in Version 1.0.0 kein automatisiertes Profiling oder KI-Scoring statt (Art. 13 Abs. 2 lit. f DSGVO).',
         primaryText: primaryText,
         secondaryText: secondaryText,
       ),
       _LegalSection(
         title: isEn
-            ? '3. Garmin Connect & Optional Coach Sharing (.FIT)'
-            : '3. Garmin Connect & Optionale Coach-Freigabe (.FIT)',
+            ? '3. Garmin Connect™ & Optional Coach Sharing (.FIT)'
+            : '3. Garmin Connect™ & Optionale Coach-Freigabe (.FIT)',
         body: isEn
-            ? 'Garmin Connect uses OAuth 1.0a; we never store your Garmin password. A connected coach only gains read access to your completed calendar workouts and .fit file downloads after your explicit GDPR confirmation and can be revoked with 1 click at any time.'
-            : 'Die Garmin Connect Verknüpfung nutzt sicheres OAuth 1.0a (ohne Speicherung deines Garmin-Passworts). Ein verbundener Coach erhält erst nach deiner ausdrücklichen DSGVO-Freigabe Einsicht in deine absolvierten Trainings im Kalender sowie den .FIT-Datei-Download – jederzeit mit 1 Klick widerrufbar.',
+            ? 'Garmin Connect™ authentication uses OAuth 1.0a (no Garmin password stored). ORBIT is an independent platform and is not affiliated with, sponsored, or certified by Garmin Ltd. A connected coach only gains read access to completed calendar workouts and .fit downloads after your explicit GDPR opt-in and can be revoked in 1 click at any time (ending all platform access immediately). Please note: .fit files a coach already downloaded locally before revocation cannot be deleted remotely from the coach\'s local device.'
+            : 'Die Garmin Connect™ Verknüpfung nutzt OAuth 1.0a (ohne Speicherung deines Garmin-Passworts). ORBIT ist eine unabhängige Plattform ohne Partnerschaft oder Zertifizierung durch Garmin Ltd. Ein verbundener Coach erhält erst nach deiner ausdrücklichen DSGVO-Freigabe Einsicht in deine absolvierten Trainings im Kalender sowie den .FIT-Datei-Download – jederzeit mit 1 Klick widerrufbar (sofortiger Entzug aller Plattform-Rechte). Wichtiger Hinweis: Bereits vor dem Widerruf vom Coach lokal auf dessen Endgerät heruntergeladene .FIT-Dateien können technisch bedingt nicht automatisch remote beim Coach gelöscht werden.',
         primaryText: primaryText,
         secondaryText: secondaryText,
       ),
       _LegalSection(
         title: isEn
-            ? '4. Server Location Germany & Processors (Art. 28 GDPR)'
-            : '4. Serverstandort Deutschland & Auftragsverarbeiter (Art. 28 DSGVO)',
+            ? '4. Server Location Germany, Processors (Art. 28 GDPR) & Device Storage (§ 25 TDDDG)'
+            : '4. Serverstandort Deutschland, Auftragsverarbeitung (Art. 28 DSGVO) & Endgeräte (§ 25 TDDDG)',
         body: isEn
-            ? 'All data is stored and processed exclusively inside the European Union in Frankfurt am Main (Germany / EU) via Google Cloud EMEA Limited / Google Ireland Limited (Firebase Auth, Firestore, Cloud Storage, Cloud Functions) under an EU Data Processing Addendum (DPA). No ad trackers or external font servers are loaded.'
-            : 'Sicherer Serverstandort Deutschland: Sämtliche Daten werden ausschließlich innerhalb der EU in Frankfurt am Main (Deutschland / EU) über Google Cloud EMEA Limited / Google Ireland Limited (Firebase Auth, Firestore, Cloud Storage, Cloud Functions) auf Basis eines EU-Auftragsverarbeitungsvertrags (Art. 28 DSGVO) verarbeitet. Keine Werbe-Tracker, keine externen Schriftart-Abrufe.',
+            ? 'All data is stored and processed exclusively inside the European Union in Frankfurt am Main (Germany / EU) via Google Cloud EMEA Limited / Google Ireland Limited (Firebase Auth, Firestore, Cloud Storage, Cloud Functions) under an EU Data Processing Addendum (Art. 28 GDPR). No ad trackers, analytics cookies, or external font servers are loaded. Local browser storage (IndexedDB / localStorage) is used solely where strictly necessary for login sessions, theme, and language settings (Section 25(2) No. 2 TDDDG).'
+            : 'Sicherer Serverstandort Deutschland: Sämtliche Daten werden ausschließlich innerhalb der EU in Frankfurt am Main (Deutschland / EU) über Google Cloud EMEA Limited / Google Ireland Limited (Firebase Auth, Firestore, Cloud Storage, Cloud Functions) auf Basis eines EU-Auftragsverarbeitungsvertrags (Art. 28 DSGVO) verarbeitet. Keine Werbe-Tracker, keine Analyse-Cookies, keine externen Schriftart-Abrufe. Lokale Speicherung im Browser/Endgerät (IndexedDB / localStorage) erfolgt ausschließlich für technisch zwingend erforderliche Login-Sitzungen sowie Sprach-/Design-Einstellungen (§ 25 Abs. 2 Nr. 2 TDDDG).',
         primaryText: primaryText,
         secondaryText: secondaryText,
       ),
@@ -243,8 +243,8 @@ class _LegalDocumentsSheetState extends State<LegalDocumentsSheet> {
             ? '5. Storage Duration, Erasure & Your GDPR Rights (Art. 15–21, 77)'
             : '5. Speicherdauer, Kontolöschung & Betroffenenrechte (Art. 15–21, 77 DSGVO)',
         body: isEn
-            ? 'Data is stored only for the duration of your active account. You can irreversibly delete your account, profile, coach connections, workouts, and all .fit files in Storage at any time under Profile / Settings -> "Delete Data & Account" in the app or ORBIT Web (/app/) (rolling backups are overwritten within max. 30 days). You also have the right of access (Art. 15), rectification (Art. 16), restriction (Art. 18), data portability via direct .FIT download & JSON export (Art. 20), withdrawal of consent (Art. 7(3)), and the right to lodge a complaint with a data protection supervisory authority (Art. 77 GDPR).'
-            : 'Daten werden nur für die Dauer deines aktiven Kontos gespeichert. Du kannst dein Konto samt Profil, Trainingshistorie, Coach-Verknüpfungen und sämtlichen .FIT-Dateien in Cloud Storage jederzeit über Profil Einfach / Einstellungen -> „Daten & Konto löschen“ (in App & ORBIT Web /app/) sofort unwiderruflich löschen (verschlüsselte Sicherheits-Backups werden innerhalb von max. 30 Tagen rollierend überschrieben). Zudem stehen dir die Rechte auf Auskunft (Art. 15), Berichtigung (Art. 16), Einschränkung (Art. 18), Datenübertragbarkeit per direktem .FIT-Download & Export (Art. 20), Widerruf deiner Einwilligung (Art. 7 Abs. 3) sowie das Beschwerderecht bei einer Datenschutz-Aufsichtsbehörde (Art. 77 DSGVO) zu.',
+            ? 'Data is stored only for the duration of your active account. You can irreversibly delete your account, profile, coach connections, workouts, and all .fit files in Storage at any time under Profile / Settings -> "Delete Data & Account" in the app or ORBIT Web (/app/) (rolling backups are overwritten within max. 30 days). You also have the right of access (Art. 15), rectification (Art. 16), restriction (Art. 18), data portability via direct .FIT download & JSON export in Settings -> Privacy (Art. 20), objection (Art. 21), withdrawal of consent (Art. 7(3)), and the right to lodge a complaint with a data protection supervisory authority (Art. 77 GDPR).'
+            : 'Daten werden nur für die Dauer deines aktiven Kontos gespeichert. Du kannst dein Konto samt Profil, Trainingshistorie, Coach-Verknüpfungen, Garmin-Tokens und sämtlichen .FIT-Dateien in Cloud Storage jederzeit über Profil Einfach / Einstellungen -> „Daten & Konto löschen“ (in App & ORBIT Web /app/) sofort unwiderruflich löschen (verschlüsselte Sicherheits-Backups werden innerhalb von max. 30 Tagen rollierend überschrieben). Zudem stehen dir die Rechte auf Auskunft (Art. 15), Berichtigung (Art. 16), Einschränkung (Art. 18), Datenübertragbarkeit per direktem .FIT-Download & JSON-Export unter Einstellungen -> Datenschutz (Art. 20), Widerspruch (Art. 21), Widerruf deiner Einwilligung (Art. 7 Abs. 3) sowie das Beschwerderecht bei einer Datenschutz-Aufsichtsbehörde (Art. 77 DSGVO) zu.',
         primaryText: primaryText,
         secondaryText: secondaryText,
       ),
@@ -292,8 +292,18 @@ class _LegalDocumentsSheetState extends State<LegalDocumentsSheet> {
       _LegalSection(
         title: isEn ? 'Brand & Operator' : 'Marke & Betreiber der Plattform',
         body: isEn
-            ? '${ContactConfig.brandName}\nOperated by: ${ContactConfig.operatorName}\nRepresentative: ${ContactConfig.representativeName}\nLocation: ${ContactConfig.locationLabelEn}\nSupport: ${ContactConfig.supportEmail}\nPrivacy: ${ContactConfig.privacyEmail}\nWebsite: ${ContactConfig.websiteUrl}'
-            : '${ContactConfig.brandName}\nBetreiber: ${ContactConfig.operatorName}\nVerantwortlich nach § 5 DDG & § 18 Abs. 2 MStV: ${ContactConfig.representativeName}\nStandort: ${ContactConfig.locationLabelDe}\nE-Mail Support: ${ContactConfig.supportEmail}\nE-Mail Datenschutz: ${ContactConfig.privacyEmail}\nWebseite: ${ContactConfig.websiteUrl}',
+            ? '${ContactConfig.brandName}\nOperator: ${ContactConfig.representativeName} (${ContactConfig.operatorName})\nLocation: ${ContactConfig.locationLabelEn}\nSupport Email: ${ContactConfig.supportEmail}\nPrivacy Email: ${ContactConfig.privacyEmail}\nDirect Web Contact: ${ContactConfig.websiteUrl}#contact\nWebsite: ${ContactConfig.websiteUrl}'
+            : '${ContactConfig.brandName}\nBetreiber & Verantwortlicher nach § 5 DDG & § 18 Abs. 2 MStV: ${ContactConfig.representativeName} (${ContactConfig.operatorName})\nStandort: ${ContactConfig.locationLabelDe}\nE-Mail Support: ${ContactConfig.supportEmail}\nE-Mail Datenschutz: ${ContactConfig.privacyEmail}\nDirektkontakt-Webformular: ${ContactConfig.websiteUrl}#contact\nWebseite: ${ContactConfig.websiteUrl}',
+        primaryText: primaryText,
+        secondaryText: secondaryText,
+      ),
+      _LegalSection(
+        title: isEn
+            ? 'Trademarks & Open Source Licenses'
+            : 'Markenhinweis & Open-Source-Lizenzen',
+        body: isEn
+            ? 'Garmin Connect™ is a trademark of Garmin Ltd. ORBIT is an independent platform. Client & backend software incorporates open-source packages under MIT, BSD-3-Clause, and Apache-2.0 licenses.'
+            : 'Garmin Connect™ ist eine Marke der Garmin Ltd. ORBIT ist eine unabhängige Plattform ohne offizielle Zertifizierung durch Garmin Ltd. Die App und Cloud-Komponenten nutzen Open-Source-Pakete unter MIT-, BSD-3-Clause- und Apache-2.0-Lizenz.',
         primaryText: primaryText,
         secondaryText: secondaryText,
       ),
@@ -310,6 +320,24 @@ class _LegalDocumentsSheetState extends State<LegalDocumentsSheet> {
         style: TextStyle(fontSize: 12, color: secondaryText),
       ),
       const SizedBox(height: 12),
+      OutlinedButton.icon(
+        key: const Key('legal_open_source_licenses_btn'),
+        onPressed: () {
+          showLicensePage(
+            context: context,
+            applicationName: ContactConfig.brandName,
+            applicationVersion: AppInfo.fullVersionString,
+            applicationLegalese: isEn
+                ? '© 2026 ${ContactConfig.brandName} (${ContactConfig.representativeName})'
+                : '© 2026 ${ContactConfig.brandName} (${ContactConfig.representativeName})',
+          );
+        },
+        icon: const Icon(Icons.description_outlined, size: 18),
+        label: Text(
+          isEn ? 'Open Source Licenses' : 'Open-Source-Lizenzen anzeigen',
+        ),
+      ),
+      const SizedBox(height: 8),
       OutlinedButton.icon(
         key: const Key('legal_open_web_imprint_btn'),
         onPressed: () => _openExternalUrl(ContactConfig.imprintUrl),

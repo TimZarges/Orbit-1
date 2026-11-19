@@ -282,8 +282,8 @@ class _V1AthleteCoachConnectionCardState
     final streamError = linksAsync?.error;
 
     final gdprConsentLabel = isEn
-        ? 'I allow this coach to view my completed workouts in the calendar and download the associated .fit files.'
-        : 'Ich erlaube diesem Coach, meine absolvierten Trainings im Kalender einzusehen und die zugehörigen .fit-Dateien herunterzuladen.';
+        ? 'I allow this coach to view my completed workouts in the calendar and download the associated .fit files. (Revocable in 1 click at any time; .fit files already downloaded locally by the coach cannot be deleted remotely from their device.)'
+        : 'Ich erlaube diesem Coach, meine absolvierten Trainings im Kalender einzusehen und die zugehörigen .fit-Dateien herunterzuladen. (Jederzeit mit 1 Klick widerrufbar; bereits vorab lokal beim Coach heruntergeladene .fit-Dateien können nicht remote auf dessen Endgerät gelöscht werden.)';
 
     final primaryAccent = AppColors.primaryAccent(isDark: isDark);
     final cardBg = AppColors.cardBg(isDark: isDark);
@@ -442,8 +442,8 @@ class _V1AthleteCoachConnectionCardState
                     const SizedBox(height: 10),
                     Text(
                       isEn
-                          ? 'GDPR sharing active: Calendar & .fit download allowed.'
-                          : 'DSGVO-Freigabe aktiv: Kalender-Einsicht & .fit-Download erlaubt.',
+                          ? 'GDPR sharing active: Calendar & .fit download allowed. Disconnecting revokes all platform access immediately (existing local downloads remain on the coach\'s device).'
+                          : 'DSGVO-Freigabe aktiv: Kalender-Einsicht & .fit-Download erlaubt. Beim Trennen endet jeder Plattform-Zugriff sofort (bereits lokal gespeicherte Dateien verbleiben beim Coach).',
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: theme.colorScheme.onSurfaceVariant,
                       ),

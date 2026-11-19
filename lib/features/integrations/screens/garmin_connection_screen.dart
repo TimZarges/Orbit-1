@@ -499,8 +499,9 @@ class _GarminConnectionScreenState
               ] else ...[
                 // Nicht verbundener Zustand
                 Text(
-                  'Verbinde dein Garmin-Konto, um alle aufgezeichneten Trainings (Schwimmen, Radfahren, Laufen) '
-                  'automatisch und nahtlos in ORBIT zu analysieren.',
+                  'Verbinde dein Garmin Connect™ Konto per OAuth 1.0a, um aufgezeichnete Ausdauertrainings '
+                  '(Schwimmen, Radfahren, Laufen) in ORBIT zu synchronisieren, im Kalender einzusehen und '
+                  'optional für deinen Coach freizugeben. Dein Garmin-Passwort wird dabei niemals gespeichert.',
                   style: TextStyle(
                     color: theme.colorScheme.onSurfaceVariant,
                     fontSize: 15,
@@ -595,6 +596,15 @@ class _GarminConnectionScreenState
                   ),
                 ),
               ],
+              const SizedBox(height: 24),
+              Text(
+                'Hinweis nach Marken- & Schnittstellenrichtlinien: Garmin Connect™ ist eine Marke der Garmin Ltd. oder ihrer Tochtergesellschaften. ORBIT ist eine eigenständige Plattform ohne offizielle Partnerschaft oder Zertifizierung durch Garmin Ltd.',
+                style: TextStyle(
+                  fontSize: 12,
+                  height: 1.4,
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
             ],
           );
         },

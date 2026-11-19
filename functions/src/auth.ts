@@ -332,8 +332,28 @@ export const deleteAccount = onCall(
   await Promise.all([
     deleteQueryInBatches(db.collection("invites").where("coachId", "==", uid)),
     deleteQueryInBatches(db.collection("coachInvites").where("coachId", "==", uid)),
+    deleteQueryInBatches(db.collection("coachInvites").where("athleteId", "==", uid)),
     db.recursiveDelete(db.collection("coachDashboard").doc(uid)),
   ]);
+
+  // Etwaige Einladungscode-Verwendungen (`invites.usedBy`) bereinigen
+  try {
+    const redeemedInvites = await db
+      .collection("invites")
+      .where("usedBy", "array-contains", uid)
+      .get();
+    if (!redeemedInvites.empty) {
+      const cleanBatch = db.batch();
+      for (const invDoc of redeemedInvites.docs) {
+        cleanBatch.update(invDoc.ref, {
+          usedBy: admin.firestore.FieldValue.arrayRemove(uid),
+        });
+      }
+      await cleanBatch.commit();
+    }
+  } catch (_) {
+    // Optionale Bereinigung blockiert niemals die Kontolöschung
+  }
 
   // 3. Top-Level Aktivitäten, geplante Trainings, Chats & Garmin-Mappings bereinigen
   await Promise.all([
@@ -388,24 +408,63 @@ export const exportAccount = onCall(async (request) => {
 
   const db = admin.firestore();
   const userRef = db.collection("users").doc(uid);
-  const userDoc = await userRef.get();
-  
+  const [
+    userDoc,
+    dailyMetricsSnapshot,
+    thresholdSnapshot,
+    consentsSnapshot,
+    activitiesSnapshot,
+    athleteLinksSnapshot,
+    coachLinksSnapshot,
+  ] = await Promise.all([
+    userRef.get(),
+    userRef.collection("dailyMetrics").get(),
+    userRef.collection("thresholdHistory").get(),
+    userRef.collection("consents").get(),
+    db.collection("activities").where("athleteId", "==", uid).limit(500).get(),
+    db.collection("coachLinks").where("athleteId", "==", uid).get(),
+    db.collection("coachLinks").where("coachId", "==", uid).get(),
+  ]);
+
   // Health-Daten (dailyMetrics, Art. 20 DSGVO Datenübertragbarkeit)
-  const dailyMetricsSnapshot = await userRef.collection("dailyMetrics").get();
   const dailyMetrics: Record<string, any> = {};
   dailyMetricsSnapshot.forEach((doc) => {
     dailyMetrics[doc.id] = doc.data();
   });
 
   // Schwellenwert-Historie
-  const thresholdSnapshot = await userRef.collection("thresholdHistory").get();
   const thresholdHistory: Record<string, any> = {};
   thresholdSnapshot.forEach((doc) => {
     thresholdHistory[doc.id] = doc.data();
   });
 
+  // Einwilligungs-Protokoll (Art. 7 / Art. 9 DSGVO)
+  const consents: Record<string, any> = {};
+  consentsSnapshot.forEach((doc) => {
+    consents[doc.id] = doc.data();
+  });
+
+  // Aktivitäten-Metadaten (inkl. Verweis auf herunterladbare .FIT-Dateien)
+  const activities = activitiesSnapshot.docs.map((doc) => ({
+    id: doc.id,
+    ...doc.data(),
+  }));
+
+  // Coach-Athleten-Verknüpfungen
+  const coachLinks = [
+    ...athleteLinksSnapshot.docs,
+    ...coachLinksSnapshot.docs,
+  ].map((doc) => ({
+    id: doc.id,
+    ...doc.data(),
+  }));
+
   return {
+    exportedAt: new Date().toISOString(),
     userData: userDoc.data() || {},
+    activities,
+    coachLinks,
+    consents,
     dailyMetrics,
     thresholdHistory,
   };

@@ -27,6 +27,7 @@ import 'package:orbit/core/design/app_theme.dart';
 import 'package:orbit/features/activities/providers/activities_provider.dart';
 import 'package:orbit/features/auth/providers/auth_provider.dart';
 import 'package:orbit/features/auth/providers/user_provider.dart';
+import 'package:orbit/features/auth/screens/email_verification_waiting_screen.dart';
 import 'package:orbit/features/auth/screens/login_screen.dart';
 import 'package:orbit/features/auth/services/account_deletion_service.dart';
 import 'package:orbit/features/auth/widgets/email_verification_banner.dart';
@@ -46,6 +47,7 @@ import 'package:orbit/features/profile/widgets/user_avatar_circle.dart';
 import 'package:orbit/features/profile/widgets/v1_athlete_coach_connection_card.dart';
 import 'package:orbit/features/profile/widgets/v1_simple_profile_view.dart';
 import 'package:orbit/features/settings/screens/settings_screen.dart';
+import 'package:orbit/features/settings/widgets/privacy_settings_sheet.dart';
 
 /// Test-Mock für [AuthService] zur Verifikation von Sign-out nach Kontolöschung.
 class _MockAuthService implements AuthService {
@@ -137,8 +139,11 @@ void main() {
         find.textContaining('Art. 9 Abs. 2 lit. a DSGVO'),
         findsOneWidget,
       );
-      final listView = tester.widget<ListView>(find.byType(ListView).first);
-      listView.controller?.jumpTo(280);
+      await tester.scrollUntilVisible(
+        find.textContaining('Frankfurt am Main'),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
       await tester.pumpAndSettle();
       expect(find.textContaining('Frankfurt am Main'), findsWidgets);
 
@@ -1051,6 +1056,124 @@ void main() {
         ),
         findsOneWidget,
       );
+      expect(tester.takeException(), isNull);
+    });
+  });
+
+  group(
+      '9. Rechtssicherheit & Formalitäten (UWG, DDG, MStV, TDDDG, Open-Source-Lizenzen, Export)',
+      () {
+    testWidgets(
+        'SettingsScreen & LegalDocumentsSheet bieten Open-Source-Lizenzen + EmailVerificationWaitingScreen Datenschutz/Impressum',
+        (tester) async {
+      // 1. SettingsScreen zeigt Open-Source-Lizenzen-Kachel
+      await tester.pumpWidget(
+        const ProviderScope(
+          child: MaterialApp(
+            home: SettingsScreen(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final licenseTile =
+          find.byKey(const Key('settings_open_source_licenses_tile'));
+      await tester.scrollUntilVisible(licenseTile, 250);
+      await tester.pumpAndSettle();
+      expect(licenseTile, findsOneWidget);
+
+      // 2. LegalDocumentsSheet zeigt lokale-.FIT-Hinweise + Open-Source-Lizenzen-Button
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Builder(
+              builder: (ctx) => Center(
+                child: ElevatedButton(
+                  onPressed: () => LegalDocumentsSheet.show(
+                    ctx,
+                    initialTab: LegalDocumentTab.privacy,
+                    lang: 'de',
+                  ),
+                  child: const Text('Open'),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
+
+      final localFinder = find.textContaining('lokal');
+      await tester.scrollUntilVisible(
+        localFinder,
+        200,
+        scrollable: find.byType(Scrollable).last,
+      );
+      await tester.pumpAndSettle();
+      expect(localFinder, findsWidgets);
+
+      final tdddgFinder = find.textContaining('§ 25 Abs. 2 Nr. 2 TDDDG');
+      await tester.scrollUntilVisible(
+        tdddgFinder,
+        200,
+        scrollable: find.byType(Scrollable).last,
+      );
+      await tester.pumpAndSettle();
+      expect(tdddgFinder, findsWidgets);
+
+      await tester.tap(find.text('Impressum'));
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const Key('legal_open_source_licenses_btn')),
+        findsOneWidget,
+      );
+
+      // 3. EmailVerificationWaitingScreen enthält 1-Klick-Zugang zu Datenschutz & Impressum
+      await tester.pumpWidget(
+        const ProviderScope(
+          child: MaterialApp(
+            home: EmailVerificationWaitingScreen(),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      expect(
+        find.byKey(const Key('verify_email_privacy_link')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const Key('verify_email_imprint_link')),
+        findsOneWidget,
+      );
+
+      // 4. PrivacySettingsSheet zeigt echten Art.-20-JSON-Export-Dialog statt Mock-Snackbar
+      await tester.pumpWidget(
+        const ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              body: PrivacySettingsSheet(),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final exportTileFinder = find.text('Alle Daten exportieren');
+      await tester.scrollUntilVisible(
+        exportTileFinder,
+        200,
+        scrollable: find.byType(Scrollable).last,
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(exportTileFinder);
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(const Key('gdpr_export_result_dialog')),
+        findsOneWidget,
+      );
+      expect(find.byKey(const Key('gdpr_export_copy_btn')), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
   });

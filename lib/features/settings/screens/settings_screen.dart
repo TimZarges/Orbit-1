@@ -294,7 +294,30 @@ class SettingsScreen extends ConsumerWidget {
             },
           ),
 
-          // 7b. Impressum & Rechtliche Hinweise (1-Klick-Zugang DE/EN)
+          // 7b. Open-Source-Lizenzen (MIT, BSD, Apache-2.0)
+          ListTile(
+            key: const Key('settings_open_source_licenses_tile'),
+            leading: const Icon(Icons.description_outlined),
+            title: Text(
+              isEn ? 'Open Source Licenses' : 'Open-Source-Lizenzen',
+            ),
+            subtitle: Text(
+              isEn
+                  ? 'Third-party software packages & copyright notices'
+                  : 'Verwendete Drittanbieter-Pakete & Lizenzhinweise',
+            ),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () {
+              showLicensePage(
+                context: context,
+                applicationName: 'ORBIT Performance / ORBIT Training',
+                applicationVersion: 'v1.0.0 (Build 1)',
+                applicationLegalese: '© 2026 ORBIT Performance (Tim Zarges)',
+              );
+            },
+          ),
+
+          // 7c. Impressum & Rechtliche Hinweise (1-Klick-Zugang DE/EN)
           ListTile(
             key: const Key('settings_legal_imprint_tile'),
             leading: const Icon(Icons.gavel_outlined),
@@ -313,6 +336,7 @@ class SettingsScreen extends ConsumerWidget {
               LegalDocumentsSheet.show(
                 context,
                 initialTab: LegalDocumentTab.imprint,
+                lang: lang,
               );
             },
           ),

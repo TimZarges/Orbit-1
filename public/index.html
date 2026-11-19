@@ -1469,6 +1469,10 @@
           <span class="lang-de">Nachricht absenden →</span>
           <span class="lang-en">Send Message →</span>
         </button>
+        <p style="font-size:12px; color:var(--text-muted); margin-top:12px; line-height:1.45;">
+          <span class="lang-de">Datenschutzhinweis: Deine Angaben werden ausschließlich zur Bearbeitung deiner Anfrage verarbeitet (Art. 6 Abs. 1 lit. b / lit. f DSGVO). Weitere Details findest du in unserer <a href="/privacy.html" style="color:inherit;">Datenschutzerklärung</a>.</span>
+          <span class="lang-en">Privacy notice: Your details are processed solely to handle your inquiry (Art. 6 (1) (b) / (f) GDPR). See our <a href="/privacy.html" style="color:inherit;">Privacy Policy</a> for details.</span>
+        </p>
       </form>
 
       <div id="contact-feedback" style="display:none; margin-top:20px; padding:16px; border-radius:12px; font-weight:800; font-size:14px;"></div>
@@ -1526,7 +1530,7 @@
     </div>
 
     <div class="footer-bottom">
-      <div>&copy; 2026 ORBIT Performance / ORBIT Training (ORBIT Endurance Technologies · Tim Zarges). Serverstandort: Frankfurt am Main (Deutschland / EU).</div>
+      <div>&copy; 2026 ORBIT Performance / ORBIT Training (ORBIT Endurance Technologies · Tim Zarges). Serverstandort: Frankfurt am Main (Deutschland / EU). Garmin Connect™ ist eine Marke der Garmin Ltd.; ORBIT ist eine unabhängige Plattform.</div>
       <div>ORBIT Version 1.0.0 (Build 1) · Android &amp; Web</div>
     </div>
   </footer>
@@ -1574,11 +1578,14 @@
       try {
         const projectId = 'orbit-app-mvp';
         const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/contactRequests?documentId=${requestId}`;
-        await fetch(url, {
+        const res = await fetch(url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
+        if (!res.ok) {
+          throw new Error('HTTP ' + res.status);
+        }
 
         feedback.style.display = 'block';
         feedback.style.background = '#001F47';
@@ -1589,11 +1596,11 @@
         document.getElementById('contact-form').reset();
       } catch (err) {
         feedback.style.display = 'block';
-        feedback.style.background = '#001F47';
-        feedback.style.color = '#CDFB17';
+        feedback.style.background = '#7F1D1D';
+        feedback.style.color = '#FFFFFF';
         feedback.innerText = isEn
-          ? '✓ Thank you! Your message has been received. Alternatively reach us at support@orbit-training.app.'
-          : '✓ Vielen Dank! Deine Nachricht wurde vorgemerkt. Alternativ erreichst du uns jederzeit unter support@orbit-training.app.';
+          ? '✕ Direct submission failed. Please email us directly at support@orbit-training.app.'
+          : '✕ Direkte Übermittlung fehlgeschlagen. Bitte schreibe uns direkt per E-Mail an support@orbit-training.app.';
       } finally {
         submitBtn.disabled = false;
       }

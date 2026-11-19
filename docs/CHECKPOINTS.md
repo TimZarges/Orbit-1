@@ -2615,3 +2615,20 @@ The operation couldn’t be completed. Unable to locate a Java Runtime.
   - `docs/beta/screenshots/v1_0_2_safari_live.png`
   - `docs/beta/screenshots/v1_0_2_pixel10_live.png`
 
+---
+
+## Checkpoint Rechtssicherheits- & Formalitäten-Audit (`LEGAL_COMPLIANCE_REPORT_V1`)
+- **Status:** Geprüft (UWG, DSGVO, DDG, MStV, TDDDG, Garmin Brand Guidelines & Open-Source-Lizenzen), Code-/Textlücken behoben, auf `orbit-app-mvp` & Pixel 10 Pro (`58251FDCR00EQ2`) deployed und live verifiziert
+- **Datum:** 2026-11-19
+- **Umgesetzte Maßnahmen (inkl. Prüfbericht `docs/audit/LEGAL_COMPLIANCE_REPORT_V1.md`):**
+  1. **Mock-Export & Fehler-Fake beseitigt:** `PrivacySettingsSheet._triggerExport` ruft jetzt real `exportAccount` (`europe-west3`) auf (erweitert um `activities`, `coachLinks`, `consents`, `exportedAt`) statt `Future.delayed`; `submitContactRequest` in `public/index.html` prüft `res.ok` und meldet Fehler ehrlich + Datenschutzhinweis unter dem Formular.
+  2. **Open-Source-Lizenzen & Erreichbarkeit:** `SettingsScreen` & `LegalDocumentsSheet` bieten `showLicensePage` (MIT / BSD / Apache-2.0); `EmailVerificationWaitingScreen` verlinkt Datenschutz & Impressum per 1 Klick; `PrivacySettingsSheet` & `SettingsScreen` übergeben `lang`.
+  3. **Coach-Download-Transparenz, TDDDG, Garmin™ & Deletion-Cleanup:** `V1AthleteCoachConnectionCard`, `LegalDocumentsSheet` und `public/privacy.html` (+ `/privacy/`) erläutern duale Rechtsgrundlagen (Art. 6 + Art. 9 DSGVO), Art. 13(2)(e)/(f), Art. 21, § 25 Abs. 2 Nr. 2 TDDDG (`0` externe Font-/Tracking-Requests), Unabhängigkeit von Garmin Connect™ und Unmöglichkeit remote-gelöschter lokaler Coach-`.fit`-Downloads; `public/delete-account.html` auf V1.0.0-Stand bereinigt; `deleteAccount` bereinigt zusätzlich `coachInvites` (`athleteId == uid`) & `invites.usedBy`.
+- **Verifizierte Befehlsausgaben:**
+  - `bash scripts/check_phase_ready.sh` -> Exit Code `0` (`flutter analyze`: `0 Errors, 0 Warnings, 0 Infos`, `functions`: `0 Errors`, `100 %` deutsche Kommentare, `flutter test`: **`274/274` Tests bestanden**).
+  - `npx -y firebase-tools emulators:exec --only firestore,storage "npm --prefix functions test"` -> Exit Code `0` (`Test Suites: 12 passed, 12 total`, `Tests: 118 passed, 118 total`).
+  - Live-HTTP- & Third-Party-Audit (`/`, `/impressum/`, `/privacy/`, `/app/`): alle `HTTP 200`, **`external_3p_hits=0`**; Live-Probe `exportAccount` -> `deleteAccount` mit Wegwerf-UID bestanden.
+- **Live-Screenshots (`docs/beta/screenshots/`):**
+  - `docs/beta/screenshots/legal_audit_safari_privacy.png`
+  - `docs/beta/screenshots/legal_audit_pixel10_live.png`
+

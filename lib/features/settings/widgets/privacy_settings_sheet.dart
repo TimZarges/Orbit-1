@@ -7,8 +7,11 @@
 /// unwiderrufliche Löschung an den zentralen [AccountDeletionService].
 library;
 
+import 'dart:convert';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/design/app_colors.dart';
@@ -53,22 +56,113 @@ class _PrivacySettingsSheetState extends ConsumerState<PrivacySettingsSheet> {
   /// Laufzeit-Flag während einer laufenden DSGVO-Kontolöschung.
   bool _deleting = false;
 
-  /// Simuliert die Export-Anfrage und informiert den Nutzer per Rückmeldung.
+  /// Ruft den echten Art.-20-DSGVO-Datenexport über die Cloud Function `exportAccount`
+  /// (`europe-west3`) ab und zeigt das maschinenlesbare JSON inklusive Kopier-Funktion an.
   Future<void> _triggerExport({required bool isEn}) async {
     setState(() => _exporting = true);
-    await Future.delayed(const Duration(seconds: 1));
-    if (!mounted) return;
-    setState(() => _exporting = false);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          isEn
-              ? 'Your complete data export is being prepared and provided via email.'
-              : 'Dein vollständiger Datenexport wird vorbereitet und per E-Mail bereitgestellt.',
+    try {
+      final Map<String, dynamic> payload;
+      if (Firebase.apps.isEmpty) {
+        payload = <String, dynamic>{
+          'exportedAt': DateTime.now().toUtc().toIso8601String(),
+          'notice': 'Test/Offline-Umgebung ohne aktive Firebase-Session',
+        };
+      } else {
+        final callable = FirebaseFunctions.instanceFor(region: 'europe-west3')
+            .httpsCallable('exportAccount');
+        final res = await callable.call();
+        payload = res.data is Map
+            ? Map<String, dynamic>.from(res.data as Map)
+            : <String, dynamic>{};
+      }
+
+      if (!mounted) return;
+      setState(() => _exporting = false);
+
+      final prettyJson = const JsonEncoder.withIndent('  ').convert(payload);
+      await showDialog<void>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          key: const Key('gdpr_export_result_dialog'),
+          title: Text(
+            isEn
+                ? 'GDPR Data Export (Art. 20)'
+                : 'DSGVO-Datenexport (Art. 20)',
+          ),
+          content: SizedBox(
+            width: 460,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  isEn
+                      ? 'Your machine-readable JSON export is ready. You can copy it directly below or download original .FIT files from each workout card.'
+                      : 'Dein maschinenlesbarer JSON-Export steht bereit. Original-.FIT-Dateien kannst du zusätzlich direkt an jeder Trainingseinheit herunterladen.',
+                  style: Theme.of(ctx).textTheme.bodySmall,
+                ),
+                const SizedBox(height: 12),
+                Container(
+                  constraints: const BoxConstraints(maxHeight: 220),
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Theme.of(ctx).colorScheme.surfaceContainerHighest,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: SingleChildScrollView(
+                    child: SelectableText(
+                      prettyJson,
+                      style: const TextStyle(
+                        fontFamily: 'monospace',
+                        fontSize: 11,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: Text(isEn ? 'Close' : 'Schließen'),
+            ),
+            FilledButton.icon(
+              key: const Key('gdpr_export_copy_btn'),
+              onPressed: () async {
+                await Clipboard.setData(ClipboardData(text: prettyJson));
+                if (ctx.mounted) Navigator.of(ctx).pop();
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        isEn
+                            ? 'JSON data export copied to clipboard.'
+                            : 'JSON-Datenexport in die Zwischenablage kopiert.',
+                      ),
+                      backgroundColor: const Color(0xFF10B981),
+                    ),
+                  );
+                }
+              },
+              icon: const Icon(Icons.copy_rounded, size: 18),
+              label: Text(isEn ? 'Copy JSON' : 'JSON kopieren'),
+            ),
+          ],
         ),
-        backgroundColor: const Color(0xFF10B981),
-      ),
-    );
+      );
+    } catch (err) {
+      if (!mounted) return;
+      setState(() => _exporting = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            isEn ? 'Data export failed: $err' : 'Datenexport fehlgeschlagen: $err',
+          ),
+          backgroundColor: const Color(0xFFEF4444),
+        ),
+      );
+    }
   }
 
   /// Führt die vollständige Kontolöschung über Backend & Auth-Logout durch.
@@ -287,6 +381,7 @@ class _PrivacySettingsSheetState extends ConsumerState<PrivacySettingsSheet> {
                       onTap: () => LegalDocumentsSheet.show(
                         context,
                         initialTab: LegalDocumentTab.privacy,
+                        lang: lang,
                       ),
                     ),
 
@@ -321,6 +416,7 @@ class _PrivacySettingsSheetState extends ConsumerState<PrivacySettingsSheet> {
                       onTap: () => LegalDocumentsSheet.show(
                         context,
                         initialTab: LegalDocumentTab.imprint,
+                        lang: lang,
                       ),
                     ),
 

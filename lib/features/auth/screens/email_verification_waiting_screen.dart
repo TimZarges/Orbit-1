@@ -14,6 +14,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/design/app_colors.dart';
 import '../../../core/design/app_typography.dart';
 import '../../beta_feedback/widgets/beta_bug_reporter_sheet.dart';
+import '../../legal/widgets/legal_documents_sheet.dart';
 import '../../settings/providers/settings_provider.dart';
 import '../providers/auth_provider.dart';
 import '../services/auth_guard_service.dart';
@@ -353,6 +354,37 @@ class _EmailVerificationWaitingScreenState
                       },
                     ),
                   ],
+                  const SizedBox(height: 20),
+                  Wrap(
+                    alignment: WrapAlignment.center,
+                    spacing: 12,
+                    children: [
+                      TextButton(
+                        key: const Key('verify_email_privacy_link'),
+                        onPressed: () => LegalDocumentsSheet.show(
+                          context,
+                          initialTab: LegalDocumentTab.privacy,
+                          lang: lang,
+                        ),
+                        child: Text(
+                          isEn ? 'Privacy Policy' : 'Datenschutz',
+                          style: TextStyle(fontSize: 12, color: secondaryText),
+                        ),
+                      ),
+                      TextButton(
+                        key: const Key('verify_email_imprint_link'),
+                        onPressed: () => LegalDocumentsSheet.show(
+                          context,
+                          initialTab: LegalDocumentTab.imprint,
+                          lang: lang,
+                        ),
+                        child: Text(
+                          isEn ? 'Legal Notice' : 'Impressum',
+                          style: TextStyle(fontSize: 12, color: secondaryText),
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),
