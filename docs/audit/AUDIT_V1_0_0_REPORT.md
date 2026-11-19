@@ -187,3 +187,7 @@
   - `bash scripts/check_phase_ready.sh`: `0 Errors / 0 Warnings / 0 Infos`, `functions` Build & Lint `0 Errors`, `100 %` deutsche Kommentare, **`276/276` Flutter-Tests bestanden**.
   - Emulator-Suite (`npx -y firebase-tools emulators:exec --only firestore,storage "npm --prefix functions test"`): **`12/12` Test-Suites (`120/120` Tests) bestanden** (inkl. `coachLink.test.ts` Coach-Trennung + `.fit`-Sperre & `auth.test.ts` `sanitizeExportValue`).
   - Live-E2E-Prüfung auf `orbit-app-mvp` (Wegwerf-Konten) + Live-Screenshots: `docs/beta/screenshots/v1_coach_disconnect_dialog.png`, `docs/beta/screenshots/v1_0_0_final_pixel10.png`.
+- **Android Sideloading-Signatur & GitHub Release (`v1.0.2`):**
+  - Signiert mit festem lokalem Release-Keystore (`orbit_release`, `CN=ORBIT Training, OU=Mobile Engineering, O=ORBIT Endurance Technologies, L=Frankfurt am Main, C=DE`, RSA 2048; `key.properties` & `.jks` bleiben per `.gitignore` strikt außerhalb von Git).
+  - Signatur-Zertifikat `SHA-256`: `3b02f4a991216ca2534a1f4345eb0685eb7daa13ea4da831f91bd564af3a223d` (`SHA-1`: `d1c935b4808de019987d2a9d1cb8cd8edf4d75a9`, in Firebase `orbit-app-mvp` hinterlegt).
+  - Datei: `ORBIT-v1.0.0.apk` (`67.727.565` Bytes, Datei-SHA-256 `20f5f474db1074dc2f4ac1e81c0ec925c004119cf0341dec09f288608c7c7afa`) als GitHub Release Asset unter `https://github.com/TimZarges/Orbit-1/releases/tag/v1.0.2` veröffentlicht.
