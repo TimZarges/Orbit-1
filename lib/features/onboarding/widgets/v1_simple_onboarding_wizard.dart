@@ -222,12 +222,10 @@ class _V1SimpleOnboardingWizardState
     final isEn = lang == 'en';
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final cardBg = isDark ? AppColors.anthraciteCard : AppColors.white;
-    final borderColor =
-        isDark ? AppColors.darkSubtleBorder : AppColors.cardBorder;
-    final primaryText = isDark ? AppColors.white : AppColors.lightTextPrimary;
-    final secondaryText =
-        isDark ? AppColors.textSecondaryDark : const Color(0xFF475569);
+    final cardBg = AppColors.cardBg(isDark: isDark);
+    final borderColor = AppColors.cardBorderFor(isDark: isDark);
+    final primaryText = AppColors.primaryText(isDark: isDark);
+    final secondaryText = AppColors.secondaryText(isDark: isDark);
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -583,8 +581,8 @@ class _V1SimpleOnboardingWizardState
                             previewBytes: _pendingAvatarBytes,
                             backgroundColor: isDark
                                 ? Theme.of(context).scaffoldBackgroundColor
-                                : const Color(0xFFF1F5F9),
-                            iconColor: isDark ? AppColors.volt : AppColors.navy,
+                                : AppColors.lightSecondarySurface,
+                            iconColor: AppColors.primaryAccent(isDark: isDark),
                           ),
                           Positioned(
                             bottom: 0,
@@ -1139,30 +1137,27 @@ class _V1SimpleOnboardingWizardState
     bool isDark,
   ) {
     final selected = _selectedSports.contains(code);
+    final sportColor = AppColors.resolveSportColor(code, isDark: isDark);
+    final selectedBg = AppColors.primaryAccent(isDark: isDark);
+    final selectedFg = isDark ? AppColors.navy : AppColors.lightCardSurface;
     return FilterChip(
       key: Key('v1_onboarding_sport_$code'),
       showCheckmark: false,
       avatar: code == 'TRIATHLON'
           ? TriathlonCombinedIcon(
               size: 16,
-              color: selected
-                  ? (isDark ? AppColors.navy : AppColors.white)
-                  : (isDark ? AppColors.volt : AppColors.navy),
+              color: selected ? selectedFg : sportColor,
             )
           : Icon(
               icon,
               size: 18,
-              color: selected
-                  ? (isDark ? AppColors.navy : AppColors.white)
-                  : (isDark ? AppColors.volt : AppColors.navy),
+              color: selected ? selectedFg : sportColor,
             ),
       label: Text(label),
       selected: selected,
-      selectedColor: isDark ? AppColors.volt : AppColors.navy,
+      selectedColor: selectedBg,
       labelStyle: TextStyle(
-        color: selected
-            ? (isDark ? AppColors.navy : AppColors.white)
-            : (isDark ? AppColors.white : AppColors.lightTextPrimary),
+        color: selected ? selectedFg : AppColors.primaryText(isDark: isDark),
         fontWeight: selected ? FontWeight.bold : FontWeight.normal,
       ),
       onSelected: (val) {
@@ -1380,9 +1375,7 @@ class _RoleOptionCard extends StatelessWidget {
               subtitle,
               style: AppTypography.bodySmall.copyWith(
                 fontSize: 11.5,
-                color: isDark
-                    ? AppColors.textSecondaryDark
-                    : const Color(0xFF475569),
+                color: AppColors.secondaryText(isDark: isDark),
               ),
             ),
           ],

@@ -86,12 +86,10 @@ class _LegalDocumentsSheetState extends State<LegalDocumentsSheet> {
     final isEn = widget.lang == 'en';
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final bgColor = isDark ? AppColors.anthraciteCard : Colors.white;
-    final borderColor =
-        isDark ? Colors.white.withValues(alpha: 0.1) : const Color(0xFFE2E8F0);
-    final primaryText = isDark ? Colors.white : const Color(0xFF0F172A);
-    final secondaryText =
-        isDark ? AppColors.textSecondaryDark : const Color(0xFF475569);
+    final bgColor = AppColors.cardBg(isDark: isDark);
+    final borderColor = AppColors.cardBorderFor(isDark: isDark);
+    final primaryText = AppColors.primaryText(isDark: isDark);
+    final secondaryText = AppColors.secondaryText(isDark: isDark);
 
     return DraggableScrollableSheet(
       initialChildSize: 0.85,

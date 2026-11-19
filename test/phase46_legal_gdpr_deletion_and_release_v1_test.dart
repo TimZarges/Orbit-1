@@ -42,6 +42,7 @@ import 'package:orbit/features/integrations/providers/garmin_provider.dart';
 import 'package:orbit/features/legal/widgets/legal_documents_sheet.dart';
 import 'package:orbit/features/onboarding/widgets/v1_simple_onboarding_wizard.dart';
 import 'package:orbit/features/profile/widgets/user_avatar_circle.dart';
+import 'package:orbit/features/profile/widgets/v1_athlete_coach_connection_card.dart';
 import 'package:orbit/features/profile/widgets/v1_simple_profile_view.dart';
 import 'package:orbit/features/settings/screens/settings_screen.dart';
 
@@ -823,6 +824,127 @@ void main() {
         find.byKey(const Key('coach_copy_invite_share_btn')),
         findsOneWidget,
       );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets(
+        'hinterlegt In-App-Anfrage für bestehendes Konto und Athlet bestätigt nach DSGVO-Haken',
+        (tester) async {
+      String? coachFn;
+      final fakeCoachService = V1CoachConnectionService(
+        invoke: (name, payload) async {
+          coachFn = name;
+          return <String, dynamic>{
+            'ok': true,
+            'accountExists': true,
+            'deliveryMode': 'IN_APP_PENDING',
+            'status': 'PENDING',
+            'linkId': 'ath_1_coach_1',
+            'inviteCode': 'ABC123',
+            'athleteEmail': 'athlet@orbit.training',
+            'mailProviderConfigured': false,
+          };
+        },
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            v1CoachConnectionServiceProvider
+                .overrideWithValue(fakeCoachService),
+          ],
+          child: const MaterialApp(
+            home: Scaffold(
+              body: V1CoachAthletesTab(
+                athletesOverride: [],
+                initialInviteCodeOverride: 'ABC123',
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const Key('coach_open_email_invite_btn')));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byKey(const Key('coach_invite_email_input')),
+        'Athlet@Orbit.training',
+      );
+      await tester.tap(find.byKey(const Key('coach_send_email_invite_btn')));
+      await tester.pumpAndSettle();
+
+      expect(coachFn, equals('requestAthleteLinkByEmail'));
+      expect(
+        find.byKey(const Key('coach_email_invite_result_dialog')),
+        findsOneWidget,
+      );
+      expect(find.text('Verbindungsanfrage in ORBIT hinterlegt'), findsOneWidget);
+      await tester.tap(find.text('Verstanden'));
+      await tester.pumpAndSettle();
+
+      // Jetzt Athleten-Ansicht: eingehende PENDING-Anfrage prüfen & mit DSGVO-Opt-in bestätigen
+      String? athleteFn;
+      Map<String, dynamic>? athletePayload;
+      final fakeAthleteService = V1CoachConnectionService(
+        invoke: (name, payload) async {
+          athleteFn = name;
+          athletePayload = payload;
+          return <String, dynamic>{'success': true, 'status': 'ACTIVE'};
+        },
+      );
+      const pendingLink = V1CoachAthleteLink(
+        linkId: 'ath_1_coach_1',
+        athleteId: 'ath_1',
+        coachId: 'coach_1',
+        coachName: 'Coach Tim',
+        coachEmail: 'coach@orbit.training',
+        status: 'PENDING',
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            v1CoachConnectionServiceProvider
+                .overrideWithValue(fakeAthleteService),
+          ],
+          child: const MaterialApp(
+            home: Scaffold(
+              body: SingleChildScrollView(
+                child: V1AthleteCoachConnectionCard(
+                  lang: 'de',
+                  linksOverride: [pendingLink],
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(const Key('pending_coach_request_ath_1_coach_1')),
+        findsOneWidget,
+      );
+      final confirmBtnFinder =
+          find.byKey(const Key('accept_coach_btn_ath_1_coach_1'));
+      expect(
+        tester.widget<FilledButton>(confirmBtnFinder).onPressed,
+        isNull,
+      );
+
+      await tester.tap(
+        find.byKey(const Key('pending_gdpr_checkbox_ath_1_coach_1')),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(confirmBtnFinder);
+      await tester.pumpAndSettle();
+
+      expect(athleteFn, equals('respondToCoachLinkRequest'));
+      expect(athletePayload?['linkId'], equals('ath_1_coach_1'));
+      expect(athletePayload?['accept'], isTrue);
+      expect(athletePayload?['gdprConsent'], isTrue);
       expect(tester.takeException(), isNull);
     });
   });

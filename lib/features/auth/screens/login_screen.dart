@@ -144,10 +144,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final isEn = lang == 'en';
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final primaryText = isDark ? AppColors.white : AppColors.lightTextPrimary;
-    final secondaryText =
-        isDark ? AppColors.textSecondaryDark : const Color(0xFF475569);
-    final accentColor = isDark ? AppColors.volt : AppColors.navy;
+    final primaryText = AppColors.primaryText(isDark: isDark);
+    final secondaryText = AppColors.secondaryText(isDark: isDark);
+    final accentColor = AppColors.primaryAccent(isDark: isDark);
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -445,9 +444,7 @@ class _ForgotPasswordDialogState extends ConsumerState<_ForgotPasswordDialog> {
                   ? 'Enter your email address. We will send you a secure link to reset your password.'
                   : 'Gib deine E-Mail-Adresse ein. Wir senden dir umgehend einen sicheren Link zum Zurücksetzen deines Passworts.',
               style: TextStyle(
-                color: isDark
-                    ? AppColors.textSecondaryDark
-                    : const Color(0xFF475569),
+                color: AppColors.secondaryText(isDark: isDark),
                 fontSize: 13,
               ),
             ),

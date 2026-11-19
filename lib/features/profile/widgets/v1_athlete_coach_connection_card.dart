@@ -63,13 +63,38 @@ class _V1AthleteCoachConnectionCardState
     }
   }
 
-  /// Prüft still im Hintergrund auf offene Coach-E-Mail-Einladungen (`coachInvites`).
-  Future<void> _claimPendingEmailInvitesIfReady() async {
+  /// Prüft aktiv auf offene Coach-E-Mail-Einladungen (`coachInvites`) und lädt bei
+  /// Bedarf den Verbindungs-Stream neu.
+  Future<void> _claimPendingEmailInvitesIfReady({
+    bool showFeedbackOnEmpty = false,
+  }) async {
+    final isEn = widget.lang == 'en';
     try {
       if (Firebase.apps.isEmpty) return;
-      await ref.read(v1CoachConnectionServiceProvider).claimPendingInvites();
-    } catch (_) {
-      // Optionaler Hintergrundabgleich ohne UI-Störung
+      final claimed = await ref
+          .read(v1CoachConnectionServiceProvider)
+          .claimPendingInvites();
+      ref.invalidate(v1AthleteCoachLinksStreamProvider);
+      if (mounted && showFeedbackOnEmpty) {
+        _showFeedback(
+          claimed > 0
+              ? (isEn
+                  ? '$claimed coach request(s) loaded.'
+                  : '$claimed Coach-Anfrage(n) übernommen.')
+              : (isEn
+                  ? 'Checked: no new open email invitations.'
+                  : 'Geprüft: keine weiteren offenen E-Mail-Einladungen gefunden.'),
+        );
+      }
+    } catch (e) {
+      if (mounted && showFeedbackOnEmpty) {
+        _showFeedback(
+          isEn
+              ? 'Could not check invites: $e'
+              : 'Einladungsprüfung fehlgeschlagen: $e',
+          isError: true,
+        );
+      }
     }
   }
 
@@ -201,10 +226,13 @@ class _V1AthleteCoachConnectionCardState
 
   /// Zeigt eine lokalisierte Rückmeldung über eine SnackBar an.
   void _showFeedback(String message, {bool isError = false}) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: isError ? Colors.red.shade700 : AppColors.volt,
+        backgroundColor: isError
+            ? AppColors.statusError(isDark: isDark)
+            : AppColors.statusSuccess(isDark: isDark),
       ),
     );
   }
@@ -215,33 +243,40 @@ class _V1AthleteCoachConnectionCardState
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    // Entweder Test-Override oder echter Firestore-Stream (defensiv gegen fehlendes Firebase)
+    // Hintergrund-Übernahme offener E-Mail-Einladungen beim Öffnen triggern
+    AsyncValue<List<V1CoachAthleteLink>>? linksAsync;
     final List<V1CoachAthleteLink> links;
     if (widget.linksOverride != null) {
       links = widget.linksOverride!;
     } else {
-      links =
-          ref.watch(v1AthleteCoachLinksStreamProvider).valueOrNull ?? const [];
+      ref.watch(v1AutoClaimCoachInvitesProvider);
+      linksAsync = ref.watch(v1AthleteCoachLinksStreamProvider);
+      links = linksAsync?.valueOrNull ?? const [];
     }
 
     final activeLinks = links.where((l) => l.isActive).toList();
     final pendingLinks = links.where((l) => l.isPending).toList();
+    final streamError = linksAsync?.error;
 
     final gdprConsentLabel = isEn
         ? 'I allow this coach to view my completed workouts in the calendar and download the associated .fit files.'
         : 'Ich erlaube diesem Coach, meine absolvierten Trainings im Kalender einzusehen und die zugehörigen .fit-Dateien herunterzuladen.';
 
+    final primaryAccent = AppColors.primaryAccent(isDark: isDark);
+    final cardBg = AppColors.cardBg(isDark: isDark);
+    final borderColor = AppColors.cardBorderFor(isDark: isDark);
+    final subtleBg = AppColors.subtleSurface(isDark: isDark);
+    final successColor = AppColors.statusSuccess(isDark: isDark);
+    final warningColor = AppColors.statusWarning(isDark: isDark);
+    final errorColor = AppColors.statusError(isDark: isDark);
+
     return Card(
       key: const Key('athlete_coach_connection_card'),
       elevation: 0,
-      color: isDark ? AppColors.anthraciteCard : Colors.white,
+      color: cardBg,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(
-          color: isDark
-              ? Colors.white.withValues(alpha: 0.08)
-              : const Color(0xFFE2E8F0),
-        ),
+        side: BorderSide(color: borderColor),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -253,7 +288,7 @@ class _V1AthleteCoachConnectionCardState
                 Icon(
                   Icons.supervisor_account_outlined,
                   size: 20,
-                  color: isDark ? AppColors.volt : AppColors.navy,
+                  color: primaryAccent,
                 ),
                 const SizedBox(width: 8),
                 Expanded(
@@ -270,18 +305,47 @@ class _V1AthleteCoachConnectionCardState
             ),
             const SizedBox(height: 12),
 
+            if (streamError != null) ...[
+              Container(
+                key: const Key('athlete_coach_links_error'),
+                padding: const EdgeInsets.all(12),
+                margin: const EdgeInsets.only(bottom: 12),
+                decoration: BoxDecoration(
+                  color: errorColor.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: errorColor.withValues(alpha: 0.45)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      isEn
+                          ? 'Could not load coach requests: $streamError'
+                          : 'Coach-Anfragen konnten nicht geladen werden: $streamError',
+                      style: TextStyle(fontSize: 12, color: errorColor),
+                    ),
+                    const SizedBox(height: 6),
+                    TextButton.icon(
+                      onPressed: () =>
+                          _claimPendingEmailInvitesIfReady(showFeedbackOnEmpty: true),
+                      icon: const Icon(Icons.refresh, size: 16),
+                      label: Text(isEn ? 'Retry' : 'Erneut laden'),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+
             // 1. Aktive Coach-Verbindung anzeigen
             for (final active in activeLinks) ...[
               Container(
                 key: Key('active_coach_tile_${active.coachId}'),
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: isDark
-                      ? Colors.white.withValues(alpha: 0.04)
-                      : const Color(0xFFF8FAFC),
+                  color: subtleBg,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: AppColors.volt.withValues(alpha: 0.45),
+                    color: successColor.withValues(alpha: 0.50),
                   ),
                 ),
                 child: Column(
@@ -328,7 +392,7 @@ class _V1AthleteCoachConnectionCardState
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: AppColors.volt.withValues(alpha: 0.2),
+                            color: successColor.withValues(alpha: 0.16),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
@@ -336,7 +400,7 @@ class _V1AthleteCoachConnectionCardState
                             style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.bold,
-                              color: isDark ? AppColors.volt : AppColors.navy,
+                              color: successColor,
                             ),
                           ),
                         ),
@@ -363,8 +427,8 @@ class _V1AthleteCoachConnectionCardState
                           isEn ? 'Disconnect Coach' : 'Verbindung trennen',
                         ),
                         style: OutlinedButton.styleFrom(
-                          foregroundColor: Colors.redAccent,
-                          side: const BorderSide(color: Colors.redAccent),
+                          foregroundColor: errorColor,
+                          side: BorderSide(color: errorColor),
                         ),
                       ),
                     ),
@@ -381,12 +445,10 @@ class _V1AthleteCoachConnectionCardState
                 padding: const EdgeInsets.all(12),
                 margin: const EdgeInsets.only(bottom: 12),
                 decoration: BoxDecoration(
-                  color: isDark
-                      ? Colors.white.withValues(alpha: 0.04)
-                      : const Color(0xFFF8FAFC),
+                  color: subtleBg,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: Colors.amber.withValues(alpha: 0.5),
+                    color: warningColor.withValues(alpha: 0.55),
                   ),
                 ),
                 child: Column(
@@ -396,9 +458,9 @@ class _V1AthleteCoachConnectionCardState
                       isEn
                           ? 'Incoming Coach Request'
                           : 'Eingehende Coach-Anfrage',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        color: Colors.amber,
+                        color: warningColor,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -507,6 +569,23 @@ class _V1AthleteCoachConnectionCardState
                   isEn ? 'Connect with Coach' : 'Mit Coach verbinden',
                 ),
               ),
+              if (widget.linksOverride == null) ...[
+                const SizedBox(height: 8),
+                TextButton.icon(
+                  key: const Key('athlete_check_email_invites_btn'),
+                  onPressed: _isBusy
+                      ? null
+                      : () => _claimPendingEmailInvitesIfReady(
+                            showFeedbackOnEmpty: true,
+                          ),
+                  icon: const Icon(Icons.mark_email_read_outlined, size: 16),
+                  label: Text(
+                    isEn
+                        ? 'Check for email invitations'
+                        : 'Auf E-Mail-Einladungen prüfen',
+                  ),
+                ),
+              ],
             ],
           ],
         ),

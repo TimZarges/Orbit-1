@@ -9,8 +9,10 @@ library;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../auth/providers/user_provider.dart';
 import '../models/v1_coach_athlete_link.dart';
 
 /// Funktionssignatur für abstrahierte Cloud-Function-Aufrufe (ermöglicht Test-Mocks).
@@ -164,6 +166,10 @@ class V1PendingCoachEmailInvite {
 }
 
 /// Stream aller noch unbeanspruchten E-Mail-Einladungen (`coachInvites`) eines Coaches.
+///
+/// Verwendet bewusst eine Einzel-Feld-Query (`coachId == uid`) mit clientseitiger
+/// Statusfilterung, damit auf Live-Firestore niemals ein fehlender Composite Index
+/// die Liste blockiert.
 final v1CoachPendingEmailInvitesStreamProvider =
     StreamProvider.autoDispose<List<V1PendingCoachEmailInvite>>((ref) {
   final uid = ref.watch(authStateChangesProvider).valueOrNull?.uid;
@@ -172,13 +178,31 @@ final v1CoachPendingEmailInvitesStreamProvider =
   return FirebaseFirestore.instance
       .collection('coachInvites')
       .where('coachId', isEqualTo: uid)
-      .where('status', isEqualTo: 'PENDING_REGISTRATION')
       .snapshots()
       .map(
         (snap) => snap.docs
             .map((d) => V1PendingCoachEmailInvite.fromMap(d.id, d.data()))
+            .where((inv) => inv.status == 'PENDING_REGISTRATION')
             .toList(growable: false),
       );
+});
+
+/// Automatische Übernahme offener Coach-E-Mail-Einladungen (`coachInvites`) für
+/// angemeldete Athleten, unabhängig davon, ob das Profil bereits geöffnet wurde.
+final v1AutoClaimCoachInvitesProvider = FutureProvider.autoDispose<int>((ref) async {
+  if (Firebase.apps.isEmpty) return 0;
+  final user = ref.watch(authStateChangesProvider).valueOrNull;
+  if (user == null) return 0;
+  final userDoc = ref.watch(userDocumentProvider).valueOrNull;
+  if (userDoc?['role'] == 'TRAINER') return 0;
+
+  try {
+    return await ref
+        .read(v1CoachConnectionServiceProvider)
+        .claimPendingInvites();
+  } catch (_) {
+    return 0;
+  }
 });
 
 /// Riverpod-Provider für den [V1CoachConnectionService].
@@ -196,11 +220,11 @@ final v1SelectedCoachAthleteIdProvider = StateProvider<String?>((ref) => null);
 
 /// Echtzeit-Stream aller aktiven und offenen Athleten-Verbindungen des Coaches.
 ///
-/// Was: Überwacht `coachLinks` mit `coachId == currentUid` und
-/// `status in ['ACTIVE', 'PENDING']` und reichert aktive Athleten mit Profildaten
+/// Was: Überwacht `coachLinks` mit Einzel-Feld-Query `coachId == currentUid`,
+/// filtert `ACTIVE`/`PENDING` lokal und reichert aktive Athleten mit Profildaten
 /// (Name, E-Mail, Hauptsportarten inkl. `TRIATHLON`) sowie dem Datum der letzten
 /// absolvierten Aktivität an.
-/// Warum: Hält die Coach-Athletenliste und die Kalender-Auswahlleiste immer synchron.
+/// Warum: Hält die Coach-Athletenliste ohne Composite-Index-Abhängigkeit immer synchron.
 final v1CoachAthletesStreamProvider =
     StreamProvider.autoDispose<List<V1CoachAthleteLink>>((ref) {
   final uid = ref.watch(authStateChangesProvider).valueOrNull?.uid;
@@ -210,11 +234,11 @@ final v1CoachAthletesStreamProvider =
   return firestore
       .collection('coachLinks')
       .where('coachId', isEqualTo: uid)
-      .where('status', whereIn: ['ACTIVE', 'PENDING'])
       .snapshots()
       .asyncMap((snapshot) async {
         final links = snapshot.docs
             .map((doc) => V1CoachAthleteLink.fromMap(doc.id, doc.data()))
+            .where((l) => l.isActive || l.isPending)
             .toList();
 
         // Athleten-Metadaten (Profil & letzte Aktivität) parallel nachladen
@@ -235,9 +259,9 @@ final v1CoachAthletesStreamProvider =
 
 /// Echtzeit-Stream aller aktiven und eingehenden Coach-Verbindungen des Athleten.
 ///
-/// Was: Überwacht `coachLinks` mit `athleteId == currentUid` und
-/// `status in ['ACTIVE', 'PENDING']` und ergänzt bei Bedarf den Coach-Namen
-/// sowie die E-Mail-Adresse aus `users/{coachId}`.
+/// Was: Überwacht `coachLinks` über Einzel-Feld-Query `athleteId == currentUid`,
+/// filtert `ACTIVE`/`PENDING` lokal (ohne Zwang zu einem Composite Index) und
+/// ergänzt bei Bedarf den Coach-Namen sowie die E-Mail-Adresse aus `users/{coachId}`.
 final v1AthleteCoachLinksStreamProvider =
     StreamProvider.autoDispose<List<V1CoachAthleteLink>>((ref) {
   final uid = ref.watch(authStateChangesProvider).valueOrNull?.uid;
@@ -247,11 +271,11 @@ final v1AthleteCoachLinksStreamProvider =
   return firestore
       .collection('coachLinks')
       .where('athleteId', isEqualTo: uid)
-      .where('status', whereIn: ['ACTIVE', 'PENDING'])
       .snapshots()
       .asyncMap((snapshot) async {
         final links = snapshot.docs
             .map((doc) => V1CoachAthleteLink.fromMap(doc.id, doc.data()))
+            .where((l) => l.isActive || l.isPending)
             .toList();
 
         return Future.wait(

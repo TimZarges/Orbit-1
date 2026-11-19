@@ -364,12 +364,10 @@ class _V1SimpleProfileViewState extends ConsumerState<V1SimpleProfileView> {
     final isEn = lang == 'en';
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final cardBg = isDark ? AppColors.anthraciteCard : AppColors.white;
-    final borderColor =
-        isDark ? AppColors.darkSubtleBorder : AppColors.cardBorder;
-    final primaryText = isDark ? AppColors.white : AppColors.lightTextPrimary;
-    final secondaryText =
-        isDark ? AppColors.textSecondaryDark : const Color(0xFF475569);
+    final cardBg = AppColors.cardBg(isDark: isDark);
+    final borderColor = AppColors.cardBorderFor(isDark: isDark);
+    final primaryText = AppColors.primaryText(isDark: isDark);
+    final secondaryText = AppColors.secondaryText(isDark: isDark);
 
     String email = '';
     String? uid;
@@ -959,10 +957,8 @@ class _V1SimpleProfileViewState extends ConsumerState<V1SimpleProfileView> {
               ? Icons.check_circle_rounded
               : Icons.sync_disabled_rounded,
           color: isConnected
-              ? AppColors.emerald
-              : (isDark
-                  ? AppColors.textSecondaryDark
-                  : const Color(0xFF64748B)),
+              ? AppColors.statusSuccess(isDark: isDark)
+              : AppColors.secondaryText(isDark: isDark),
         ),
         const SizedBox(width: 10),
         Expanded(
@@ -1033,30 +1029,27 @@ class _V1SimpleProfileViewState extends ConsumerState<V1SimpleProfileView> {
     Color primaryText,
   ) {
     final isSelected = _selectedSports.contains(code);
+    final sportColor = AppColors.resolveSportColor(code, isDark: isDark);
+    final selectedBg = AppColors.primaryAccent(isDark: isDark);
+    final selectedFg = isDark ? AppColors.navy : AppColors.lightCardSurface;
     return FilterChip(
       key: Key('v1_profile_sport_$code'),
       showCheckmark: false,
       avatar: code == 'TRIATHLON'
           ? TriathlonCombinedIcon(
               size: 16,
-              color: isSelected
-                  ? (isDark ? AppColors.navy : AppColors.white)
-                  : (isDark ? AppColors.volt : AppColors.navy),
+              color: isSelected ? selectedFg : sportColor,
             )
           : Icon(
               icon,
               size: 18,
-              color: isSelected
-                  ? (isDark ? AppColors.navy : AppColors.white)
-                  : (isDark ? AppColors.volt : AppColors.navy),
+              color: isSelected ? selectedFg : sportColor,
             ),
       label: Text(label),
       selected: isSelected,
-      selectedColor: isDark ? AppColors.volt : AppColors.navy,
+      selectedColor: selectedBg,
       labelStyle: TextStyle(
-        color: isSelected
-            ? (isDark ? AppColors.navy : AppColors.white)
-            : primaryText,
+        color: isSelected ? selectedFg : primaryText,
         fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
       ),
       onSelected: (selected) {

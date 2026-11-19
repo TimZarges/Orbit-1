@@ -1,9 +1,8 @@
 /// Datei-Header: `lib/core/theme/orbit_professional_theme.dart`
-/// Zweck: Clean Professional Design System für ORBIT (Phase 41) in Hell & Dunkel.
-/// Architektur-Einordnung: Core-Theme-Schicht (`lib/core/theme/`), definiert die
-/// professionellen Carbon/Anthrazit-Tokens für den Dark Mode (`#0D0F12` / `#16181D`)
-/// und Alabaster/Reinweiß-Tokens für den Light Mode (`#F4F6F9` / `#FFFFFF`) unter
-/// Wahrung der ORBIT Marken- und Sportfarben (`#001F47` Navy & `#CDFB17` Volt).
+/// Zweck: Verankertes Clean Professional Design System für ORBIT in Light & Dark Mode
+/// (`docs/design/COLOR_SYSTEM_V1.md`), abgeleitet direkt aus [AppColors].
+/// Architektur-Einordnung: Core-Theme-Schicht (`lib/core/theme/`), stellt `const`-optimierte
+/// und gecachte Material-3-Themes für die gesamte App bereit (`AGENTS.md` Regel 10).
 library;
 
 import 'package:flutter/material.dart';
@@ -11,62 +10,61 @@ import '../design/app_colors.dart';
 import '../design/app_spacing.dart';
 import '../design/app_typography.dart';
 
-/// Zentrale Farb- und Design-Tokens sowie `ThemeData`-Fabrik für das
-/// Clean Professional Design System (Phase 41).
+/// Zentrale `ThemeData`-Fabrik für ORBIT (Light & Dark).
 ///
-/// Was: Liefert hochperformante, `const`-optimierte Farbkonstanten und fertige
-/// Material-3-Themes für Light Mode und Dark Mode.
-/// Warum: Vermeidet Objekt-Instanziierungen innerhalb von `build()`-Methoden
-/// (`AGENTS.md` Regel 10) und garantiert einen ruhigen, kontrastreichen Look.
+/// Was: Baut konsistente Material-3-Themes für Light Mode (`#F6F8FB` BG, `#FFFFFF` Cards,
+/// `#EEF2F7` Sekundärfläche, `#0F172A` Text, `#001F47`/`#003B82` Navy-Akzent, `#DCE3EC` Rahmen)
+/// und Dark Mode (`#0B0E14` BG, `#141923` Cards, `#1B2230` Elevated, `#222B3A` Subtilfläche,
+/// `#F8FAFC` Text, `#CDFB17` Volt-Akzent, `0x24FFFFFF` Rahmen).
+/// Warum: Alle UI-Komponenten beziehen ihre Farben zentral ohne Einzel-Hex-Wildwuchs.
 class OrbitProfessionalTheme {
   /// Privater Konstruktor zur Verhinderung von Instanziierungen.
   const OrbitProfessionalTheme._();
 
   // ===========================================================================
-  // Dark Mode Tokens (Carbon & Anthrazit)
+  // Verankerte Token-Verweise (Single Source of Truth: AppColors)
   // ===========================================================================
 
-  /// Tiefer Carbon-Hintergrund (`#0D0F12`) für den Dark Mode.
-  static const Color darkBackground = Color(0xFF0D0F12);
+  /// Ruhiger Dark-Background (`#0B0E14`).
+  static const Color darkBackground = AppColors.darkBackground;
 
-  /// Abgesetzte Anthrazit-Kartenoberfläche (`#16181D`) für den Dark Mode.
-  static const Color darkCardSurface = Color(0xFF16181D);
+  /// Dark-Karten- und Leistenfläche (`#141923`).
+  static const Color darkCardSurface = AppColors.darkCardSurface;
 
-  /// Erhöhte Oberfläche im Dark Mode (`#1E2128`) für Sheets und Dialoge.
-  static const Color darkElevatedSurface = Color(0xFF1E2128);
+  /// Erhöhte Dark-Oberfläche für Sheets und Dialoge (`#1B2230`).
+  static const Color darkElevatedSurface = AppColors.darkElevatedSurface;
 
-  /// Dezenter 1px-Rahmen im Dark Mode (8 % Weiß-Opazität: `0x14FFFFFF`).
-  static const Color darkSubtleBorder = Color(0x14FFFFFF);
+  /// Subtile Dark-Fläche (`#222B3A`).
+  static const Color darkSubtleSurface = AppColors.darkSubtleSurface;
+
+  /// Feiner Dark-Rahmen (`0x24FFFFFF`).
+  static const Color darkSubtleBorder = AppColors.darkSubtleBorder;
 
   /// Primäre Textfarbe im Dark Mode (`#F8FAFC`).
-  static const Color darkTextPrimary = Color(0xFFF8FAFC);
+  static const Color darkTextPrimary = AppColors.darkTextPrimary;
 
-  /// Sekundäre, gedämpfte Textfarbe im Dark Mode (`#94A3B8`).
-  static const Color darkTextSecondary = Color(0xFF94A3B8);
+  /// Sekundäre Textfarbe im Dark Mode (`#94A3B8`).
+  static const Color darkTextSecondary = AppColors.darkTextSecondary;
 
-  // ===========================================================================
-  // Light Mode Tokens (Alabaster & Reinweiß)
-  // ===========================================================================
+  /// Ruhiger Light-Background (`#F6F8FB`).
+  static const Color lightBackground = AppColors.lightBackground;
 
-  /// Klarer Alabaster-Hintergrund (`#F4F6F9`) für den Light Mode.
-  static const Color lightBackground = Color(0xFFF4F6F9);
+  /// Reinweiße Karten- & Leistenfläche im Light Mode (`#FFFFFF`).
+  static const Color lightCardSurface = AppColors.lightCardSurface;
 
-  /// Reinweiße Kartenoberfläche (`#FFFFFF`) für den Light Mode.
-  static const Color lightCardSurface = Color(0xFFFFFFFF);
+  /// Sanfte Sekundärfläche im Light Mode (`#EEF2F7`).
+  static const Color lightSecondarySurface = AppColors.lightSecondarySurface;
 
-  /// Feiner Schiefergrau-Rahmen (`#E2E8F0`) für Karten im Light Mode.
-  static const Color lightSubtleBorder = Color(0xFFE2E8F0);
+  /// Feiner Rahmen im Light Mode (`#DCE3EC`).
+  static const Color lightSubtleBorder = AppColors.lightBorder;
 
-  /// Kontrastreiche dunkle Typografie (`#0F172A`) für den Light Mode.
-  static const Color lightTextPrimary = Color(0xFF0F172A);
+  /// Kontraststarker Haupttext im Light Mode (`#0F172A`).
+  static const Color lightTextPrimary = AppColors.lightTextPrimary;
 
-  /// Sekundäre Textfarbe im Light Mode (`#475569`).
-  static const Color lightTextSecondary = Color(0xFF475569);
+  /// Sekundärtext im Light Mode (`#64748B`).
+  static const Color lightTextSecondary = AppColors.lightTextSecondary;
 
-  /// Erzeugt das Clean Professional Light Theme (`#F4F6F9` Alabaster, `#FFFFFF` Karten,
-  /// `#E2E8F0` Rahmen, `#0F172A` Typografie).
-  ///
-  /// Rückgabewert: Konfiguriertes [ThemeData] für `Brightness.light`.
+  /// Erzeugt das verankerte Light Theme (ohne Logo-Volt in Standard-UI/Texten).
   static ThemeData buildLightTheme() {
     // Statische TextTheme-Definition für scharfe, kontrastreiche Typografie (#0F172A)
     const textTheme = TextTheme(
@@ -92,7 +90,7 @@ class OrbitProfessionalTheme {
       labelLarge: AppTypography.label,
     );
 
-    // Zusammenbau des Material-3 Light-Themes mit Alabaster-Hintergrund und weißen Karten
+    // Zusammenbau des Material-3 Light-Themes mit Logo-Navy (#001F47 / #003B82) als Akzent
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.light,
@@ -102,16 +100,16 @@ class OrbitProfessionalTheme {
       dividerColor: lightSubtleBorder,
       colorScheme: const ColorScheme.light(
         primary: AppColors.navy,
-        onPrimary: AppColors.white,
+        onPrimary: lightCardSurface,
         secondary: AppColors.navyLight,
-        onSecondary: AppColors.white,
+        onSecondary: lightCardSurface,
         surface: lightCardSurface,
         onSurface: lightTextPrimary,
-        surfaceContainerHighest: lightBackground,
+        surfaceContainerHighest: lightSecondarySurface,
         onSurfaceVariant: lightTextSecondary,
         outline: lightSubtleBorder,
-        error: AppColors.z5,
-        onError: AppColors.white,
+        error: AppColors.errorLight,
+        onError: lightCardSurface,
       ),
       appBarTheme: const AppBarTheme(
         backgroundColor: lightCardSurface,
@@ -143,10 +141,45 @@ class OrbitProfessionalTheme {
           side: BorderSide(color: lightSubtleBorder, width: 1),
         ),
       ),
+      dialogTheme: const DialogThemeData(
+        backgroundColor: lightCardSurface,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(18)),
+          side: BorderSide(color: lightSubtleBorder, width: 1),
+        ),
+      ),
+      bottomSheetTheme: const BottomSheetThemeData(
+        backgroundColor: lightCardSurface,
+        surfaceTintColor: Colors.transparent,
+      ),
+      dividerTheme: const DividerThemeData(
+        color: lightSubtleBorder,
+        thickness: 1,
+      ),
+      checkboxTheme: CheckboxThemeData(
+        fillColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return AppColors.navy;
+          }
+          return null;
+        }),
+        checkColor: WidgetStateProperty.all(lightCardSurface),
+      ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.navy,
-          foregroundColor: AppColors.white,
+          foregroundColor: lightCardSurface,
+          elevation: 0,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+          textStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+        ),
+      ),
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          backgroundColor: AppColors.navy,
+          foregroundColor: lightCardSurface,
           elevation: 0,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
@@ -155,11 +188,17 @@ class OrbitProfessionalTheme {
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: lightTextPrimary,
+          foregroundColor: AppColors.navy,
           side: const BorderSide(color: lightSubtleBorder, width: 1.5),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
           textStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+        ),
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          foregroundColor: AppColors.navyLight,
+          textStyle: const TextStyle(fontWeight: FontWeight.w600),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
@@ -190,12 +229,10 @@ class OrbitProfessionalTheme {
     );
   }
 
-  /// Erzeugt das Clean Professional Dark Theme (`#0D0F12` Carbon-Hintergrund,
-  /// `#16181D` Anthrazit-Karten, 1px Rahmen mit 8 % Weiß-Opazität, Volt `#CDFB17` Akzente).
-  ///
-  /// Rückgabewert: Konfiguriertes [ThemeData] für `Brightness.dark`.
+  /// Erzeugt das verankerte Dark Theme (`#0B0E14` BG, `#141923` Cards, `#1B2230` Elevated,
+  /// `0x24FFFFFF` Rahmen und Volt `#CDFB17` Akzent).
   static ThemeData buildDarkTheme() {
-    // Statische TextTheme-Definition für gestochen scharfe helle Typografie auf Carbon
+    // Statische TextTheme-Definition für gestochen scharfe Typografie (#F8FAFC)
     const textTheme = TextTheme(
       displayLarge: AppTypography.display,
       displayMedium: AppTypography.headline,
@@ -219,7 +256,7 @@ class OrbitProfessionalTheme {
       labelLarge: AppTypography.label,
     );
 
-    // Zusammenbau des Material-3 Dark-Themes mit Carbon-Hintergrund und Anthrazit-Karten
+    // Zusammenbau des Material-3 Dark-Themes mit Volt (#CDFB17) als Primär-Akzent
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.dark,
@@ -237,11 +274,11 @@ class OrbitProfessionalTheme {
         surfaceContainerHighest: darkElevatedSurface,
         onSurfaceVariant: darkTextSecondary,
         outline: darkSubtleBorder,
-        error: AppColors.channelHeartRate,
-        onError: AppColors.white,
+        error: AppColors.errorDark,
+        onError: darkTextPrimary,
       ),
       appBarTheme: const AppBarTheme(
-        backgroundColor: darkBackground,
+        backgroundColor: darkCardSurface,
         foregroundColor: darkTextPrimary,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
@@ -270,8 +307,43 @@ class OrbitProfessionalTheme {
           side: BorderSide(color: darkSubtleBorder, width: 1),
         ),
       ),
+      dialogTheme: const DialogThemeData(
+        backgroundColor: darkElevatedSurface,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(18)),
+          side: BorderSide(color: darkSubtleBorder, width: 1),
+        ),
+      ),
+      bottomSheetTheme: const BottomSheetThemeData(
+        backgroundColor: darkElevatedSurface,
+        surfaceTintColor: Colors.transparent,
+      ),
+      dividerTheme: const DividerThemeData(
+        color: darkSubtleBorder,
+        thickness: 1,
+      ),
+      checkboxTheme: CheckboxThemeData(
+        fillColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return AppColors.volt;
+          }
+          return null;
+        }),
+        checkColor: WidgetStateProperty.all(AppColors.navy),
+      ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.volt,
+          foregroundColor: AppColors.navy,
+          elevation: 0,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+          textStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+        ),
+      ),
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
           backgroundColor: AppColors.volt,
           foregroundColor: AppColors.navy,
           elevation: 0,
@@ -289,9 +361,15 @@ class OrbitProfessionalTheme {
           textStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
         ),
       ),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          foregroundColor: AppColors.volt,
+          textStyle: const TextStyle(fontWeight: FontWeight.w600),
+        ),
+      ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: darkCardSurface,
+        fillColor: darkSubtleSurface,
         labelStyle: const TextStyle(color: darkTextSecondary),
         floatingLabelStyle: const TextStyle(
           color: AppColors.volt,

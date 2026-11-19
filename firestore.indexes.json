@@ -81,6 +81,30 @@
       ]
     },
     {
+      "collectionGroup": "coachLinks",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "athleteId", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "coachInvites",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "coachId", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "coachInvites",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "athleteEmail", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" }
+      ]
+    },
+    {
       "collectionGroup": "webhookEvents",
       "queryScope": "COLLECTION",
       "fields": [

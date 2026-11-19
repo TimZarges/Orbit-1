@@ -9,42 +9,53 @@
   <style>
     :root {
       --brand-navy: #001F47;
-      --brand-navy-deep: #00122B;
+      --brand-navy-light: #003B82;
       --brand-volt: #CDFB17;
-      --brand-volt-hover: #BEEA06;
-      --brand-amber: #FF6B00;
-      --brand-cyan: #00D2FF;
-      --brand-emerald: #10B981;
-      --brand-purple: #8B5CF6;
+      --accent: #001F47;
+      --accent-hover: #003B82;
+      --on-accent: #FFFFFF;
+      --brand-amber: #D97706;
+      --brand-cyan: #0284C7;
+      --brand-emerald: #059669;
+      --brand-purple: #7C3AED;
+      --brand-indigo: #4F46E5;
       --font-stack: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Inter", sans-serif;
       --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
-      /* Light Theme (Default: Clean Professional / Alabaster) */
-      --bg-page: #F8FAFC;
+      /* Light Theme (Verankertes ORBIT Farbsystem: Ruhiges Hell + Logo-Navy) */
+      --bg-page: #F6F8FB;
       --bg-card: #FFFFFF;
-      --bg-card-subtle: #F1F5F9;
-      --text-main: #001F47;
-      --text-muted: #475569;
+      --bg-card-subtle: #EEF2F7;
+      --text-main: #0F172A;
+      --text-muted: #64748B;
       --text-dim: #64748B;
-      --border-card: #E2E8F0;
+      --border-card: #DCE3EC;
       --shadow-soft: 0 12px 32px rgba(0, 31, 71, 0.06);
-      --hero-card-bg: #001F47;
-      --hero-card-text: #FFFFFF;
+      --hero-card-bg: #0B0E14;
+      --hero-card-text: #F8FAFC;
       --header-bg: rgba(255, 255, 255, 0.95);
     }
 
     [data-theme="dark"] {
-      --bg-page: #050B14;
-      --bg-card: #0A1324;
-      --bg-card-subtle: #0F1C36;
-      --text-main: #FFFFFF;
+      --accent: #CDFB17;
+      --accent-hover: #CDFB17;
+      --on-accent: #001F47;
+      --brand-amber: #F59E0B;
+      --brand-cyan: #38BDF8;
+      --brand-emerald: #10B981;
+      --brand-purple: #A78BFA;
+      --brand-indigo: #818CF8;
+      --bg-page: #0B0E14;
+      --bg-card: #141923;
+      --bg-card-subtle: #1B2230;
+      --text-main: #F8FAFC;
       --text-muted: #94A3B8;
-      --text-dim: #64748B;
-      --border-card: rgba(255, 255, 255, 0.10);
+      --text-dim: #94A3B8;
+      --border-card: rgba(255, 255, 255, 0.14);
       --shadow-soft: 0 16px 40px rgba(0, 0, 0, 0.5);
-      --hero-card-bg: #0A1324;
-      --hero-card-text: #FFFFFF;
-      --header-bg: rgba(5, 11, 20, 0.95);
+      --hero-card-bg: #141923;
+      --hero-card-text: #F8FAFC;
+      --header-bg: rgba(11, 14, 20, 0.95);
     }
 
     /* Zweisprachige Steuerung (DE Standard, EN bei lang="en") */
@@ -102,8 +113,8 @@
     .brand-version-pill {
       font-size: 11px;
       font-weight: 800;
-      background: #001F47;
-      color: var(--brand-volt);
+      background: var(--accent);
+      color: var(--on-accent);
       padding: 2px 8px;
       border-radius: 999px;
       letter-spacing: 0.4px;
@@ -148,9 +159,9 @@
     }
 
     .web-login-btn {
-      background: #001F47;
-      color: var(--brand-volt);
-      border: 1px solid var(--brand-volt);
+      background: var(--accent);
+      color: var(--on-accent);
+      border: 1px solid var(--accent);
       text-decoration: none;
       padding: 8px 18px;
       border-radius: 999px;
@@ -162,8 +173,8 @@
     }
 
     .web-login-btn:hover {
-      background: var(--brand-volt);
-      color: #001F47;
+      background: var(--accent-hover);
+      color: var(--on-accent);
     }
 
     /* Hero Section */
@@ -187,15 +198,15 @@
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      background: #001F47;
-      color: var(--brand-volt);
+      background: var(--bg-card-subtle);
+      color: var(--text-main);
       font-size: 12px;
       font-weight: 800;
       padding: 5px 14px;
       border-radius: 999px;
       width: fit-content;
       letter-spacing: 0.5px;
-      border: 1px solid rgba(205, 251, 23, 0.35);
+      border: 1px solid var(--border-card);
     }
 
     .hero-headline {
@@ -207,8 +218,8 @@
     }
 
     .hero-headline span.volt-text {
-      color: #001F47;
-      background: var(--brand-volt);
+      color: var(--on-accent);
+      background: var(--accent);
       padding: 0 8px;
       border-radius: 6px;
       display: inline-block;
@@ -230,20 +241,20 @@
     }
 
     .btn-primary-volt {
-      background: var(--brand-volt);
-      color: #001F47;
+      background: var(--accent);
+      color: var(--on-accent);
       text-decoration: none;
       padding: 14px 26px;
       border-radius: 999px;
       font-size: 15px;
       font-weight: 900;
       letter-spacing: 0.2px;
-      box-shadow: 0 6px 20px rgba(205, 251, 23, 0.45);
+      box-shadow: 0 6px 20px rgba(0, 31, 71, 0.18);
       transition: all 0.15s;
     }
 
     .btn-primary-volt:hover {
-      background: var(--brand-volt-hover);
+      background: var(--accent-hover);
       transform: translateY(-2px);
     }
 
@@ -260,7 +271,7 @@
     }
 
     .btn-secondary-outline:hover {
-      border-color: var(--brand-volt);
+      border-color: var(--accent);
     }
 
     .hero-trust-strip {
@@ -442,8 +453,8 @@
     .sec-tag {
       font-size: 11px;
       font-weight: 900;
-      color: #001F47;
-      background: var(--brand-volt);
+      color: var(--on-accent);
+      background: var(--accent);
       padding: 4px 12px;
       border-radius: 999px;
       text-transform: uppercase;
@@ -555,8 +566,8 @@
       width: 20px;
       height: 20px;
       border-radius: 6px;
-      background: #001F47;
-      color: var(--brand-volt);
+      background: var(--accent);
+      color: var(--on-accent);
       font-size: 12px;
       font-weight: 900;
       display: inline-flex;
@@ -584,8 +595,8 @@
     .flow-step-num {
       font-size: 12px;
       font-weight: 900;
-      color: #001F47;
-      background: var(--brand-volt);
+      color: var(--on-accent);
+      background: var(--accent);
       padding: 3px 10px;
       border-radius: 6px;
       display: inline-block;
@@ -970,7 +981,7 @@
       <div class="orbit-preview-card">
         <div class="preview-left-col">
           <div class="preview-main-row">
-            <span class="sport-dot-badge" style="background:#FF6B00; color:#FFFFFF;">
+            <span class="sport-dot-badge" style="background:#F59E0B; color:#FFFFFF;">
               <span class="lang-de">🚴 RADFAHREN</span>
               <span class="lang-en">🚴 CYCLING</span>
             </span>
@@ -994,7 +1005,7 @@
       <div class="orbit-preview-card" style="margin-bottom:0;">
         <div class="preview-left-col">
           <div class="preview-main-row">
-            <span class="sport-dot-badge" style="background:#00D2FF; color:#001F47;">
+            <span class="sport-dot-badge" style="background:#10B981; color:#FFFFFF;">
               <span class="lang-de">🏃 LAUFEN</span>
               <span class="lang-en">🏃 RUNNING</span>
             </span>
@@ -1040,13 +1051,13 @@
     <div class="v1-columns-grid">
       <!-- Spalte 1: Allgemein (V1.0.0) -->
       <div class="v1-role-card">
-        <div class="v1-role-card-top-bar" style="background:var(--brand-volt);"></div>
+        <div class="v1-role-card-top-bar" style="background:var(--accent);"></div>
         <div class="v1-role-header">
           <h3>
             <span class="lang-de">Allgemein</span>
             <span class="lang-en">General Platform</span>
           </h3>
-          <span class="v1-role-badge" style="background:#001F47; color:var(--brand-volt);">V1.0.0 LIVE</span>
+          <span class="v1-role-badge" style="background:var(--accent); color:var(--on-accent);">V1.0.0 LIVE</span>
         </div>
         <ul class="v1-feature-list">
           <li>
@@ -1248,7 +1259,7 @@
       <div class="roadmap-card">
         <div class="roadmap-version-header">
           <span class="roadmap-version-tag">VERSION 2.0.0</span>
-          <span class="roadmap-status-pill" style="background:rgba(205,251,23,0.22); color:var(--text-main); border:1px solid var(--brand-volt);">
+          <span class="roadmap-status-pill" style="background:var(--bg-card-subtle); color:var(--text-main); border:1px solid var(--accent);">
             <span class="lang-de">Nächster Meilenstein</span>
             <span class="lang-en">Next Milestone</span>
           </span>

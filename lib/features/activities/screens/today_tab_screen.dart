@@ -116,8 +116,8 @@ class TodayTabScreen extends ConsumerWidget {
           : FloatingActionButton(
               key: const Key('today_fab_upload_button'),
               tooltip: AppStrings.fileUploadAction(lang: lang),
-              backgroundColor: isDark ? AppColors.volt : AppColors.navy,
-              foregroundColor: isDark ? AppColors.navy : AppColors.volt,
+              backgroundColor: AppColors.primaryAccent(isDark: isDark),
+              foregroundColor: isDark ? AppColors.navy : AppColors.white,
               onPressed: uploadState.isUploading
                   ? null
                   : () => ref
@@ -129,7 +129,7 @@ class TodayTabScreen extends ConsumerWidget {
                       height: 24,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: isDark ? AppColors.navy : AppColors.volt,
+                        color: isDark ? AppColors.navy : AppColors.white,
                       ),
                     )
                   : const Icon(Icons.add),
@@ -171,13 +171,10 @@ class TodayTabScreen extends ConsumerWidget {
 
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final cardBg = isDark ? AppColors.anthraciteCard : AppColors.white;
-    final borderColor =
-        isDark ? AppColors.darkSubtleBorder : AppColors.cardBorder;
-    final primaryTextColor =
-        isDark ? AppColors.white : AppColors.lightTextPrimary;
-    final secondaryTextColor =
-        isDark ? AppColors.textSecondaryDark : const Color(0xFF475569);
+    final cardBg = AppColors.cardBg(isDark: isDark);
+    final borderColor = AppColors.cardBorderFor(isDark: isDark);
+    final primaryTextColor = AppColors.primaryText(isDark: isDark);
+    final secondaryTextColor = AppColors.secondaryText(isDark: isDark);
 
     if (completedToday.isEmpty) {
       return ListView(

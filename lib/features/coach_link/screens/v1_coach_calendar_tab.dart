@@ -133,12 +133,10 @@ class V1CoachCalendarTab extends ConsumerWidget {
           key: const Key('coach_calendar_athlete_selector'),
           width: double.infinity,
           decoration: BoxDecoration(
-            color: isDark ? AppColors.anthraciteCard : Colors.white,
+            color: AppColors.cardBg(isDark: isDark),
             border: Border(
               bottom: BorderSide(
-                color: isDark
-                    ? Colors.white.withValues(alpha: 0.08)
-                    : const Color(0xFFE2E8F0),
+                color: AppColors.cardBorderFor(isDark: isDark),
               ),
             ),
           ),
@@ -166,15 +164,20 @@ class V1CoachCalendarTab extends ConsumerWidget {
                     label: Text(displayName),
                     avatar: CircleAvatar(
                       radius: 11,
-                      backgroundColor:
-                          isSelected ? AppColors.navy : AppColors.volt,
+                      backgroundColor: isSelected
+                          ? AppColors.primaryAccent(isDark: isDark)
+                          : AppColors.subtleSurface(isDark: isDark),
                       child: Text(
                         (displayName.isNotEmpty ? displayName[0] : 'A')
                             .toUpperCase(),
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
-                          color: isSelected ? AppColors.volt : AppColors.navy,
+                          color: isSelected
+                              ? (isDark
+                                  ? AppColors.navy
+                                  : AppColors.lightCardSurface)
+                              : AppColors.primaryText(isDark: isDark),
                         ),
                       ),
                     ),

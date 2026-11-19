@@ -135,3 +135,20 @@
   - `bash scripts/check_phase_ready.sh`: `flutter analyze` `0 Errors / 0 Warnings / 0 Infos`, `functions` Build & Lint `0 Errors`, `100 %` deutsche Kommentare, **`271/271` Flutter-Tests bestanden**.
   - Emulator-Suite (`npx -y firebase-tools emulators:exec --only firestore,storage "npm --prefix functions test" --project orbit-app-mvp`): **`12/12` Test-Suites (`117/117` Tests) bestanden**.
   - Live-Screenshots: `docs/beta/screenshots/audit_pixel10_v1_0_1_today_clean.png`, `docs/beta/screenshots/audit_safari_v1_0_1_website_clean.png`, `docs/beta/screenshots/audit_safari_v1_0_1_web_app.png`.
+
+---
+
+## 8. Block 8 — Verankertes ORBIT Farbsystem (`COLOR_SYSTEM_V1`) & Index-/Stream-Reparatur Coach-E-Mail-Einladung (`v1.0.1`)
+
+- **Verankerte Single Source of Truth (`docs/design/COLOR_SYSTEM_V1.md`, `app_colors.dart`, `orbit_professional_theme.dart`, `theme_tokens.dart`):**
+  - **Light Mode:** Ruhiger Hintergrund `#F6F8FB`, Karten & Leisten `#FFFFFF`, Sekundärfläche `#EEF2F7`, Haupttext `#0F172A`, Akzent `#001F47` / `#003B82`, Sekundärtext `#64748B`, Rahmen `#DCE3EC`, Erfolg `#059669`, Warnung `#D97706`, Fehler `#DC2626`. **Kein Logo-Volt (`#CDFB17`)** auf Text oder Standard-UI-Flächen im Light Mode (ausschließlich als zukünftige GPX-Spur reserviert).
+  - **Dark Mode:** Ruhiger Hintergrund `#0B0E14`, Karten & Leisten `#141923`, Erhöhte Fläche `#1B2230`, Subtile Fläche `#222B3A`, Haupttext `#F8FAFC`, Sekundärtext `#94A3B8`, Rahmen `0x24FFFFFF`, Primär-Akzent `#CDFB17`, Erfolg `#10B981`, Warnung `#F59E0B`, Fehler `#EF4444`.
+  - **Unabhängige Sportarten- & Zonen-/V2–V4-Tokens:** Triathlon `#0284C7`/`#38BDF8`, Rad `#D97706`/`#F59E0B`, Lauf `#059669`/`#10B981`, Schwimmen `#2563EB`/`#60A5FA`, Kraft `#475569`/`#94A3B8`, Zonen `Z1–Z7` & V2–V4 ohne Verwendung von `#001F47` oder `#CDFB17`.
+  - **Web-Angleichung (`public/index.html`, `help.html`, `imprint.html`, `privacy.html`, `delete-account.html`, `privacy/index.html`, `impressum/index.html`, `web/delete-account.html`):** CSS-Variablen in Light & Dark vollständig angeglichen (`#F6F8FB`/`#FFFFFF`/`#EEF2F7`/`#001F47`/`#003B82` bzw. `#0B0E14`/`#141923`/`#1B2230`/`#CDFB17`).
+- **Vollständige Reparatur der Coach-E-Mail-Einladung (`firestore.indexes.json`, `v1_coach_connection_provider.dart`, `v1_coach_athletes_tab.dart`, `v1_athlete_coach_connection_card.dart`, `dashboard_screen.dart`, `functions/src/coach.ts`):**
+  - **Root-Cause-Analyse auf Live-Firestore:** `npx firebase-tools firestore:indexes --project orbit-app-mvp` belegte das Fehlen der Composite Indexes für `coachLinks(athleteId, status)` und `coachInvites(coachId, status)` — wodurch beide Live-Streams (`v1AthleteCoachLinksStreamProvider`, `v1CoachPendingEmailInvitesStreamProvider`) `FAILED_PRECONDITION` warfen und über `.valueOrNull ?? const []` stillschweigend verschluckt wurden.
+  - **Behebung:** `firestore.indexes.json` um `coachLinks(athleteId, status)` sowie `coachInvites(coachId, status)` / `(athleteEmail, status)` ergänzt und live deployed; alle drei Client-Streams sowie `claimCoachInvitesForAthlete` auf indexfreie Einzel-Feld-Queries mit lokaler Statusfilterung umgestellt; Stream-Fehler werden in UI explizit mit Retry-Button angezeigt (`AGENTS.md` Regel 0); Coach erhält sowohl bei vorhandenem als auch bei neuem Konto den klaren Rückmelde-Dialog inkl. Mail-Status & 6-stelligem Code; Athleten überführen offene Einladungen automatisch via `v1AutoClaimCoachInvitesProvider` (`DashboardScreen` & `V1AthleteCoachConnectionCard`) sowie manuell über `athlete_check_email_invites_btn`.
+- **Verifikation:**
+  - `bash scripts/check_phase_ready.sh`: `0 Errors / 0 Warnings / 0 Infos`, `100 %` deutsche Kommentare, **`272/272` Flutter-Tests bestanden**.
+  - Emulator-Suite: **`12/12` Test-Suites (`117/117` Tests) bestanden**.
+  - Live-Screenshots: `docs/beta/screenshots/color_system_pixel10_dark.png`, `docs/beta/screenshots/color_system_pixel10_coach_tab.png`, `docs/beta/screenshots/color_system_safari_website_light.png`, `docs/beta/screenshots/color_system_safari_web_app.png`.

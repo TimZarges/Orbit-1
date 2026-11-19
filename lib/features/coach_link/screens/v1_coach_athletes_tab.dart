@@ -128,37 +128,33 @@ class _V1CoachAthletesTabState extends ConsumerState<V1CoachAthletesTab> {
     final accountExists = result['accountExists'] == true;
     final mailProviderConfigured = result['mailProviderConfigured'] == true;
 
-    if (accountExists) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            isEn
-                ? 'Connection request sent to $email (Coach code: $returnedCode). Athlete confirms GDPR sharing in Profile.'
-                : 'Verbindungsanfrage für $email hinterlegt (Coach-Code: $returnedCode). Athlet bestätigt im Profil.',
-          ),
-        ),
-      );
-      return;
-    }
-
-    // Für noch nicht registrierte E-Mails: Klare Anleitung + 1-Klick-Teilen des Coach-Codes
+    // Sowohl bei vorhandenem Konto (In-App-Anfrage) als auch ohne Konto klaren
+    // Rückmelde-Dialog mit Hinweis zum Mail-Status + 6-stelligem Coach-Code zeigen
     await showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
         key: const Key('coach_email_invite_result_dialog'),
         title: Text(
-          isEn
-              ? 'Invitation Saved (No Account Yet)'
-              : 'Einladung vorgemerkt (noch kein Konto)',
+          accountExists
+              ? (isEn
+                  ? 'Connection Request Stored in ORBIT'
+                  : 'Verbindungsanfrage in ORBIT hinterlegt')
+              : (isEn
+                  ? 'Invitation Saved (No Account Yet)'
+                  : 'Einladung vorgemerkt (noch kein Konto)'),
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              isEn
-                  ? 'No ORBIT account exists for $email yet. Your invitation is saved and will appear automatically in their Profile as soon as they sign up with $email.'
-                  : 'Für $email existiert noch kein ORBIT-Konto. Die Einladung ist gespeichert und erscheint automatisch im Profil, sobald sich $email registriert.',
+              accountExists
+                  ? (isEn
+                      ? 'A direct GDPR connection request was created for $email. The athlete now sees it immediately in their ORBIT "Coach" and "Profile" tabs.'
+                      : 'Für $email wurde direkt eine DSGVO-Verbindungsanfrage im System hinterlegt. Der Athlet sieht sie sofort in seinem ORBIT-Bereich „Coach“ und „Profil“.')
+                  : (isEn
+                      ? 'No ORBIT account exists for $email yet. Your invitation is saved and will appear automatically in their Profile as soon as they sign up with $email.'
+                      : 'Für $email existiert noch kein ORBIT-Konto. Die Einladung ist gespeichert und erscheint automatisch im Profil, sobald sich $email registriert.'),
             ),
             const SizedBox(height: 10),
             if (!mailProviderConfigured)
@@ -248,16 +244,29 @@ class _V1CoachAthletesTabState extends ConsumerState<V1CoachAthletesTab> {
     final isEn = lang == 'en';
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final cardBg = AppColors.cardBg(isDark: isDark);
+    final borderColor = AppColors.cardBorderFor(isDark: isDark);
+    final subtleBg = AppColors.subtleSurface(isDark: isDark);
+    final primaryAccent = AppColors.primaryAccent(isDark: isDark);
+    final warningColor = AppColors.statusWarning(isDark: isDark);
+    final errorColor = AppColors.statusError(isDark: isDark);
 
-    final List<V1CoachAthleteLink> allLinks = widget.athletesOverride ??
-        (ref.watch(v1CoachAthletesStreamProvider).valueOrNull ?? const []);
+    final AsyncValue<List<V1CoachAthleteLink>>? linksAsync =
+        widget.athletesOverride != null
+            ? null
+            : ref.watch(v1CoachAthletesStreamProvider);
+    final AsyncValue<List<V1PendingCoachEmailInvite>>? emailInvitesAsync =
+        widget.athletesOverride != null
+            ? null
+            : ref.watch(v1CoachPendingEmailInvitesStreamProvider);
+
+    final List<V1CoachAthleteLink> allLinks =
+        widget.athletesOverride ?? (linksAsync?.valueOrNull ?? const []);
     final List<V1PendingCoachEmailInvite> pendingEmailInvites =
         widget.athletesOverride != null
             ? const []
-            : (ref
-                    .watch(v1CoachPendingEmailInvitesStreamProvider)
-                    .valueOrNull ??
-                const []);
+            : (emailInvitesAsync?.valueOrNull ?? const []);
+    final Object? streamError = linksAsync?.error ?? emailInvitesAsync?.error;
     final activeAthletes = allLinks.where((l) => l.isActive).toList();
     final pendingRequests = allLinks.where((l) => l.isPending).toList();
     final totalPendingCount =
@@ -266,6 +275,46 @@ class _V1CoachAthletesTabState extends ConsumerState<V1CoachAthletesTab> {
     return Scaffold(
       body: CustomScrollView(
         slivers: [
+          if (streamError != null)
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                child: Container(
+                  key: const Key('coach_athletes_stream_error'),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: errorColor.withValues(alpha: 0.10),
+                    borderRadius: BorderRadius.circular(12),
+                    border:
+                        Border.all(color: errorColor.withValues(alpha: 0.45)),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.error_outline, color: errorColor, size: 18),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          isEn
+                              ? 'Error loading athletes: $streamError'
+                              : 'Fehler beim Laden der Athletenliste: $streamError',
+                          style: TextStyle(fontSize: 12, color: errorColor),
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          ref.invalidate(v1CoachAthletesStreamProvider);
+                          ref.invalidate(
+                            v1CoachPendingEmailInvitesStreamProvider,
+                          );
+                        },
+                        child: Text(isEn ? 'Retry' : 'Neu laden'),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
           // 1. Einladungscode- & E-Mail-Anfrage-Karte
           SliverToBoxAdapter(
             child: Padding(
@@ -273,14 +322,10 @@ class _V1CoachAthletesTabState extends ConsumerState<V1CoachAthletesTab> {
               child: Card(
                 key: const Key('coach_invite_card'),
                 elevation: 0,
-                color: isDark ? AppColors.anthraciteCard : Colors.white,
+                color: cardBg,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
-                  side: BorderSide(
-                    color: isDark
-                        ? Colors.white.withValues(alpha: 0.08)
-                        : const Color(0xFFE2E8F0),
-                  ),
+                  side: BorderSide(color: borderColor),
                 ),
                 child: Padding(
                   padding: const EdgeInsets.all(16),
@@ -311,12 +356,10 @@ class _V1CoachAthletesTabState extends ConsumerState<V1CoachAthletesTab> {
                             vertical: 12,
                           ),
                           decoration: BoxDecoration(
-                            color: isDark
-                                ? Colors.white.withValues(alpha: 0.05)
-                                : const Color(0xFFF8FAFC),
+                            color: subtleBg,
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: AppColors.volt.withValues(alpha: 0.5),
+                              color: primaryAccent.withValues(alpha: 0.45),
                             ),
                           ),
                           child: Row(
@@ -415,16 +458,21 @@ class _V1CoachAthletesTabState extends ConsumerState<V1CoachAthletesTab> {
                     child: Card(
                       key: Key('coach_pending_athlete_${req.athleteId}'),
                       elevation: 0,
-                      color: isDark ? AppColors.anthraciteCard : Colors.white,
+                      color: cardBg,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14),
                         side: BorderSide(
-                          color: Colors.amber.withValues(alpha: 0.4),
+                          color: warningColor.withValues(alpha: 0.45),
                         ),
                       ),
                       child: ListTile(
-                        leading: const CircleAvatar(
-                          child: Icon(Icons.hourglass_top_rounded, size: 18),
+                        leading: CircleAvatar(
+                          backgroundColor: subtleBg,
+                          child: Icon(
+                            Icons.hourglass_top_rounded,
+                            size: 18,
+                            color: warningColor,
+                          ),
                         ),
                         title: Text(
                           req.athleteName.isNotEmpty
@@ -438,8 +486,7 @@ class _V1CoachAthletesTabState extends ConsumerState<V1CoachAthletesTab> {
                               : 'Wartet auf DSGVO-Bestätigung des Athleten',
                         ),
                         trailing: IconButton(
-                          icon:
-                              const Icon(Icons.close, color: Colors.redAccent),
+                          icon: Icon(Icons.close, color: errorColor),
                           tooltip:
                               isEn ? 'Cancel request' : 'Anfrage zurückziehen',
                           onPressed: () => ref
@@ -462,16 +509,21 @@ class _V1CoachAthletesTabState extends ConsumerState<V1CoachAthletesTab> {
                     child: Card(
                       key: Key('coach_pending_email_invite_${inv.inviteId}'),
                       elevation: 0,
-                      color: isDark ? AppColors.anthraciteCard : Colors.white,
+                      color: cardBg,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14),
                         side: BorderSide(
-                          color: Colors.amber.withValues(alpha: 0.4),
+                          color: warningColor.withValues(alpha: 0.45),
                         ),
                       ),
                       child: ListTile(
-                        leading: const CircleAvatar(
-                          child: Icon(Icons.mail_outline_rounded, size: 18),
+                        leading: CircleAvatar(
+                          backgroundColor: subtleBg,
+                          child: Icon(
+                            Icons.mail_outline_rounded,
+                            size: 18,
+                            color: warningColor,
+                          ),
                         ),
                         title: Text(
                           inv.athleteEmail,
@@ -507,9 +559,9 @@ class _V1CoachAthletesTabState extends ConsumerState<V1CoachAthletesTab> {
                                 },
                               ),
                             IconButton(
-                              icon: const Icon(
+                              icon: Icon(
                                 Icons.close,
-                                color: Colors.redAccent,
+                                color: errorColor,
                               ),
                               tooltip: isEn
                                   ? 'Revoke invite'
@@ -593,14 +645,10 @@ class _V1CoachAthletesTabState extends ConsumerState<V1CoachAthletesTab> {
                   child: Card(
                     key: Key('coach_athlete_card_${athlete.athleteId}'),
                     elevation: 0,
-                    color: isDark ? AppColors.anthraciteCard : Colors.white,
+                    color: cardBg,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14),
-                      side: BorderSide(
-                        color: isDark
-                            ? Colors.white.withValues(alpha: 0.08)
-                            : const Color(0xFFE2E8F0),
-                      ),
+                      side: BorderSide(color: borderColor),
                     ),
                     child: InkWell(
                       borderRadius: BorderRadius.circular(14),
@@ -712,13 +760,12 @@ class _SportBadge extends StatelessWidget {
     final isTri = normalized == 'TRIATHLON';
     final label =
         isTri ? 'Triathlon' : AppStrings.sportLabel(normalized, lang: lang);
+    final sportColor = AppColors.resolveSportColor(normalized, isDark: isDark);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: isDark
-            ? Colors.white.withValues(alpha: 0.08)
-            : const Color(0xFFF1F5F9),
+        color: AppColors.subtleSurface(isDark: isDark),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
@@ -727,13 +774,13 @@ class _SportBadge extends StatelessWidget {
           if (isTri)
             TriathlonCombinedIcon(
               size: 13,
-              color: isDark ? AppColors.volt : AppColors.navy,
+              color: sportColor,
             )
           else
             Icon(
               _iconForSport(normalized),
               size: 13,
-              color: isDark ? AppColors.volt : AppColors.navy,
+              color: sportColor,
             ),
           const SizedBox(width: 4),
           Text(

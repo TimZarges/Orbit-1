@@ -2567,3 +2567,27 @@ The operation couldn’t be completed. Unable to locate a Java Runtime.
   - `docs/beta/screenshots/audit_safari_v1_0_1_website_clean.png`
   - `docs/beta/screenshots/audit_safari_v1_0_1_web_app.png`
 
+---
+
+## Checkpoint Farbsystem-Verankerung (`COLOR_SYSTEM_V1`) & Coach-E-Mail-Verbindung E2E (`v1.0.1`)
+- **Status:** Implementiert, gegen Analyzer/Tests/Emulator geprüft, auf `orbit-app-mvp` (Functions, Rules, Indexes, Hosting) & Pixel 10 Pro (`58251FDCR00EQ2`) deployed und visuell in Safari & App verifiziert
+- **Datum:** 2026-11-19
+- **Umgesetzte Maßnahmen:**
+  1. **Verankertes Farbsystem (Light & Dark):**
+     - Dokumentiert in `docs/design/COLOR_SYSTEM_V1.md`, verankert in `app_colors.dart`, `orbit_professional_theme.dart`, `theme_tokens.dart` sowie allen V1-Screens und `public/*.html` (`index.html`, `help.html`, `imprint.html`, `privacy.html`, `delete-account.html` + gespiegelte Unterseiten).
+     - Light Mode nutzt ausschließlich Logo-Navy (`#001F47` / `#003B82`) als Marken-Akzent (kein Volt `#CDFB17` in UI/Text; reserviert für GPX-Spur); Dark Mode nutzt Logo-Volt (`#CDFB17`) auf `#0B0E14` / `#141923` / `#1B2230`; Sportarten & Zonen/V2–V4-Tokens komplett unabhängig von Markenfarben.
+  2. **Coach-Athleten-Verbindung per E-Mail End-to-End repariert:**
+     - Live-Index-Check zeigte fehlende Composite Indexes auf `coachLinks(athleteId, status)` & `coachInvites(coachId, status)` (`FAILED_PRECONDITION` wurde vorher über `.valueOrNull ?? const []` verschluckt).
+     - Composite Indexes in `firestore.indexes.json` ergänzt und deployed (`deployed indexes successfully`), Client-Streams & `claimCoachInvitesForAthlete` auf indexunabhängige Einzel-Feld-Queries umgestellt, Fehler explizit gerendert, `v1AutoClaimCoachInvitesProvider` in `DashboardScreen` & `V1AthleteCoachConnectionCard` (inkl. Button `Auf E-Mail-Einladungen prüfen`) integriert, `revokeLink` schließt zugehörige `coachInvites`, und `V1CoachAthletesTab` zeigt für bestehende wie neue Konten den ehrlichen Rückmelde-Dialog inkl. 6-stelligem Code.
+- **Verifizierte Befehlsausgaben:**
+  - `bash scripts/check_phase_ready.sh` -> Exit Code `0` (`flutter analyze`: `0 Errors, 0 Warnings, 0 Infos`, `functions`: `0 Errors`, `100 %` deutsche Kommentare, `flutter test`: **`272/272` Tests bestanden**).
+  - `npx -y firebase-tools emulators:exec --only firestore,storage "npm --prefix functions test" --project orbit-app-mvp` -> Exit Code `0` (`Test Suites: 12 passed, 12 total`, `Tests: 117 passed, 117 total`).
+  - `flutter build web --release --no-pub --no-web-resources-cdn --base-href /app/ --suppress-analytics` -> `Built build/web` -> `public/app/`.
+  - `npx -y firebase-tools deploy --only functions,firestore:rules,firestore:indexes,hosting --project orbit-app-mvp --force` -> `deployed indexes successfully`, `Deploy complete!`.
+  - `flutter build apk --release --no-pub --suppress-analytics && adb -s 58251FDCR00EQ2 install -r build/app/outputs/flutter-apk/app-release.apk` -> `67.2MB`, `Performing Streamed Install -> Success`.
+- **Live-Screenshots (`docs/beta/screenshots/`):**
+  - `docs/beta/screenshots/color_system_pixel10_dark.png`
+  - `docs/beta/screenshots/color_system_pixel10_coach_tab.png`
+  - `docs/beta/screenshots/color_system_safari_website_light.png`
+  - `docs/beta/screenshots/color_system_safari_web_app.png`
+

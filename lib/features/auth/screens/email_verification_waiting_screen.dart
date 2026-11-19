@@ -209,10 +209,9 @@ class _EmailVerificationWaitingScreenState
     final isEn = lang == 'en';
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final primaryText = isDark ? AppColors.white : AppColors.lightTextPrimary;
-    final secondaryText =
-        isDark ? AppColors.textSecondaryDark : const Color(0xFF475569);
-    final accentColor = isDark ? AppColors.volt : AppColors.navy;
+    final primaryText = AppColors.primaryText(isDark: isDark);
+    final secondaryText = AppColors.secondaryText(isDark: isDark);
+    final accentColor = AppColors.primaryAccent(isDark: isDark);
 
     String email = '';
     try {

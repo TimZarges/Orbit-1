@@ -228,12 +228,13 @@ class _EmailVerificationBannerState
     );
     final isEn = lang == 'en';
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bgColor = isDark ? const Color(0xFF2B2312) : const Color(0xFFFFFBEB);
-    final borderColor = isDark
-        ? AppColors.amber.withValues(alpha: 0.45)
-        : const Color(0xFFF59E0B);
-    final textColor = isDark ? Colors.white : const Color(0xFF78350F);
-    final accentColor = isDark ? AppColors.amber : const Color(0xFFB45309);
+    final Color warnColor = AppColors.statusWarning(isDark: isDark);
+    final bgColor = isDark
+        ? AppColors.darkElevatedSurface
+        : warnColor.withValues(alpha: 0.08);
+    final borderColor = warnColor.withValues(alpha: isDark ? 0.55 : 0.45);
+    final textColor = AppColors.primaryText(isDark: isDark);
+    final accentColor = warnColor;
     final emailLabel = user.email ?? '';
 
     return Container(

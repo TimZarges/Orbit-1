@@ -99,9 +99,9 @@ class UserAvatarCircle extends ConsumerWidget {
     );
 
     final Color fallbackBg = backgroundColor ??
-        (isDark ? AppColors.anthraciteCard : const Color(0xFFE2E8F0));
+        AppColors.subtleSurface(isDark: isDark);
     final Color fallbackIcon =
-        iconColor ?? (isDark ? AppColors.volt : AppColors.navy);
+        iconColor ?? AppColors.primaryAccent(isDark: isDark);
 
     return CircleAvatar(
       radius: radius,

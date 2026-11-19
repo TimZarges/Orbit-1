@@ -9,27 +9,29 @@ class TriathlonCombinedIcon extends StatelessWidget {
   /// Größe der einzelnen Icons.
   final double size;
 
-  /// Optionale Akzentfarbe für die Piktogramme.
-  final Color color;
+  /// Optionale Akzentfarbe für die Piktogramme (Standard: unabhängiges Triathlon-Token).
+  final Color? color;
 
   const TriathlonCombinedIcon({
     super.key,
     this.size = 14,
-    this.color = AppColors.volt,
+    this.color,
   });
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final effectiveColor = color ?? AppColors.resolveSportColor('TRIATHLON', isDark: isDark);
     return FittedBox(
       fit: BoxFit.scaleDown,
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.pool, size: size, color: color),
+          Icon(Icons.pool, size: size, color: effectiveColor),
           const SizedBox(width: 2),
-          Icon(Icons.directions_bike, size: size, color: color),
+          Icon(Icons.directions_bike, size: size, color: effectiveColor),
           const SizedBox(width: 2),
-          Icon(Icons.directions_run, size: size, color: color),
+          Icon(Icons.directions_run, size: size, color: effectiveColor),
         ],
       ),
     );

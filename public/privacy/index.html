@@ -8,19 +8,26 @@
   <style>
     :root {
       --navy: #001F47;
+      --navy-light: #003B82;
       --volt: #CDFB17;
-      --bg: #F4F6F9;
+      --accent: #001F47;
+      --on-accent: #FFFFFF;
+      --bg: #F6F8FB;
       --card: #FFFFFF;
+      --surface-subtle: #EEF2F7;
       --text: #0F172A;
-      --muted: #475569;
-      --border: #E2E8F0;
+      --muted: #64748B;
+      --border: #DCE3EC;
     }
     [data-theme="dark"] {
-      --bg: #0D0F12;
-      --card: #16181D;
+      --accent: #CDFB17;
+      --on-accent: #001F47;
+      --bg: #0B0E14;
+      --card: #141923;
+      --surface-subtle: #222B3A;
       --text: #F8FAFC;
       --muted: #94A3B8;
-      --border: rgba(255, 255, 255, 0.10);
+      --border: rgba(255, 255, 255, 0.14);
     }
     body {
       background: var(--bg);
@@ -73,8 +80,8 @@
       text-decoration: none;
     }
     .back-btn {
-      background: var(--volt);
-      color: #001F47;
+      background: var(--accent);
+      color: var(--on-accent);
       text-decoration: none;
       padding: 7px 14px;
       border-radius: 999px;
@@ -87,14 +94,14 @@
       font-weight: 800;
       margin-top: 28px;
       margin-bottom: 10px;
-      border-left: 4px solid var(--volt);
+      border-left: 4px solid var(--accent);
       padding-left: 12px;
     }
     p, li { color: var(--muted); font-size: 15px; margin-bottom: 10px; }
     ul { padding-left: 22px; margin-bottom: 14px; }
     .badge {
-      background: #001F47;
-      color: var(--volt);
+      background: var(--accent);
+      color: var(--on-accent);
       font-size: 11px;
       font-weight: 800;
       padding: 4px 10px;

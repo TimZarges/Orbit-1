@@ -80,9 +80,11 @@ class TrainingPreviewCard extends ConsumerWidget {
         isDark ? AppColors.darkSubtleBorder : AppColors.cardBorder;
     final primaryTextColor =
         isDark ? AppColors.white : AppColors.lightTextPrimary;
-    final secondaryTextColor =
-        isDark ? AppColors.textSecondaryDark : const Color(0xFF475569);
-    final sportAccent = _resolveSportColor(activity.sport, isDark: isDark);
+    final secondaryTextColor = AppColors.secondaryText(isDark: isDark);
+    final sportAccent = AppColors.resolveSportColor(
+      activity.sport,
+      isDark: isDark,
+    );
 
     // Berechnet Haupt- und Sekundärmetriken außerhalb des Widget-Baums
     final primaryMetric = _formatPrimaryMetric(activity);
@@ -357,24 +359,6 @@ class TrainingPreviewCard extends ConsumerWidget {
       return TriathlonCombinedIcon(size: 16, color: color);
     }
     return Icon(_getSportIcon(upper), size: 20, color: color);
-  }
-
-  /// Liefert die definierte Sport-Akzentfarbe.
-  static Color _resolveSportColor(String sport, {required bool isDark}) {
-    switch (sport.toUpperCase()) {
-      case 'BIKE':
-        return AppColors.sportBike;
-      case 'RUN':
-        return AppColors.sportRun;
-      case 'SWIM':
-        return AppColors.sportSwim;
-      case 'TRIATHLON':
-        return isDark ? AppColors.volt : AppColors.navy;
-      case 'STRENGTH':
-        return AppColors.sportStrength;
-      default:
-        return isDark ? AppColors.volt : AppColors.navy;
-    }
   }
 
   /// Ermittelt das Material-Icon für eine Sportart.

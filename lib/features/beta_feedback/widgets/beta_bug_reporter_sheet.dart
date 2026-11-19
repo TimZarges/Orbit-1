@@ -87,14 +87,20 @@ Future<void> showBetaBugReporterSheet(
   final capturedPng = await captureOrbitScreenPng();
   if (!context.mounted) return;
 
+  final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
   await showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
     useSafeArea: true,
-    backgroundColor: AppColors.navy,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      side: BorderSide(color: Color(0xFF003E80), width: 1),
+    backgroundColor: isDarkTheme
+        ? AppColors.darkElevatedSurface
+        : AppColors.lightCardSurface,
+    shape: RoundedRectangleBorder(
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+      side: BorderSide(
+        color: AppColors.cardBorderFor(isDark: isDarkTheme),
+        width: 1,
+      ),
     ),
     builder: (sheetCtx) => BetaBugReporterSheet(
       initialCategory: initialCategory,
@@ -257,6 +263,13 @@ class _BetaBugReporterSheetState extends State<BetaBugReporterSheet> {
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
     final logs = OrbitErrorHandler.recentLogs;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryAccent = AppColors.primaryAccent(isDark: isDark);
+    final primaryText = AppColors.primaryText(isDark: isDark);
+    final secondaryText = AppColors.secondaryText(isDark: isDark);
+    final boxBg = AppColors.subtleSurface(isDark: isDark);
+    final boxBorder = AppColors.cardBorderFor(isDark: isDark);
+    final onPrimary = isDark ? AppColors.navy : AppColors.lightCardSurface;
 
     return Padding(
       padding: EdgeInsets.fromLTRB(20, 16, 20, 20 + bottomInset),
@@ -270,7 +283,7 @@ class _BetaBugReporterSheetState extends State<BetaBugReporterSheet> {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF475569),
+                  color: boxBorder,
                   borderRadius: BorderRadius.circular(4),
                 ),
               ),
@@ -281,13 +294,13 @@ class _BetaBugReporterSheetState extends State<BetaBugReporterSheet> {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF002A5C),
+                    color: boxBg,
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: const Color(0xFF003E80)),
+                    border: Border.all(color: boxBorder),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.bug_report,
-                    color: AppColors.volt,
+                    color: primaryAccent,
                     size: 20,
                   ),
                 ),
@@ -299,21 +312,21 @@ class _BetaBugReporterSheetState extends State<BetaBugReporterSheet> {
                       Text(
                         'Beta Bug- & Feedback-Reporter',
                         style: AppTypography.title.copyWith(
-                          color: Colors.white,
+                          color: primaryText,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       Text(
                         'Hilf uns, ORBIT vor dem Release am 31.10. zu perfektionieren.',
                         style: AppTypography.bodySmall.copyWith(
-                          color: const Color(0xFF94A3B8),
+                          color: secondaryText,
                         ),
                       ),
                     ],
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.close, color: Color(0xFF94A3B8)),
+                  icon: Icon(Icons.close, color: secondaryText),
                   onPressed: () => Navigator.of(context).pop(),
                 ),
               ],
@@ -323,7 +336,7 @@ class _BetaBugReporterSheetState extends State<BetaBugReporterSheet> {
               'Kategorie wählen',
               style: AppTypography.label.copyWith(
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: primaryText,
               ),
             ),
             const SizedBox(height: 8),
@@ -336,14 +349,14 @@ class _BetaBugReporterSheetState extends State<BetaBugReporterSheet> {
                   key: Key('beta_category_${cat.wireValue}'),
                   label: Text(cat.label()),
                   selected: selected,
-                  backgroundColor: const Color(0xFF002A5C),
-                  selectedColor: AppColors.volt,
+                  backgroundColor: boxBg,
+                  selectedColor: primaryAccent,
                   side: BorderSide(
-                    color: selected ? AppColors.volt : const Color(0xFF003E80),
+                    color: selected ? primaryAccent : boxBorder,
                     width: 1,
                   ),
                   labelStyle: TextStyle(
-                    color: selected ? AppColors.navy : Colors.white,
+                    color: selected ? onPrimary : primaryText,
                     fontWeight: selected ? FontWeight.bold : FontWeight.w500,
                   ),
                   onSelected: (_) {
@@ -357,57 +370,57 @@ class _BetaBugReporterSheetState extends State<BetaBugReporterSheet> {
               key: const Key('beta_feedback_description_field'),
               controller: _descriptionController,
               maxLines: 4,
-              style: const TextStyle(color: Colors.white),
+              style: TextStyle(color: primaryText),
               decoration: InputDecoration(
                 filled: true,
-                fillColor: const Color(0xFF002A5C),
+                fillColor: boxBg,
                 labelText: 'Was ist passiert oder was schlägst du vor?',
-                labelStyle: const TextStyle(color: Color(0xFF94A3B8)),
+                labelStyle: TextStyle(color: secondaryText),
                 hintText: 'Beschreibe kurz das Problem oder deine Idee...',
-                hintStyle: const TextStyle(color: Color(0xFF64748B)),
+                hintStyle: TextStyle(color: secondaryText),
                 errorText: _validationError,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFF003E80)),
+                  borderSide: BorderSide(color: boxBorder),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFF003E80)),
+                  borderSide: BorderSide(color: boxBorder),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: AppColors.volt, width: 2),
+                  borderSide: BorderSide(color: primaryAccent, width: 2),
                 ),
               ),
             ),
             const SizedBox(height: 12),
             Container(
               decoration: BoxDecoration(
-                color: const Color(0xFF002A5C),
+                color: boxBg,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFF003E80)),
+                border: Border.all(color: boxBorder),
               ),
               child: Column(
                 children: [
                   CheckboxListTile(
                     key: const Key('beta_diagnostics_optin_checkbox'),
                     value: _includeDiagnostics,
-                    activeColor: AppColors.volt,
-                    checkColor: AppColors.navy,
-                    title: const Text(
+                    activeColor: primaryAccent,
+                    checkColor: onPrimary,
+                    title: Text(
                       'Diagnose-Metadaten anhängen (Opt-in)',
                       style: TextStyle(
                         fontWeight: FontWeight.w600,
                         fontSize: 14,
-                        color: Colors.white,
+                        color: primaryText,
                       ),
                     ),
                     subtitle: Text(
                       'Screen (${widget.currentRoute}), App-Version ($appVersionString), '
                       'Gerät (${_resolveDeviceInfo()}) & letzte ${logs.length} anonymisierte Log-Zeilen (ohne Gesundheitsdaten).',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
-                        color: Color(0xFF94A3B8),
+                        color: secondaryText,
                       ),
                     ),
                     onChanged: (val) {
@@ -419,11 +432,11 @@ class _BetaBugReporterSheetState extends State<BetaBugReporterSheet> {
                     CheckboxListTile(
                       key: const Key('beta_screenshot_optin_checkbox'),
                       value: _includeScreenshot,
-                      activeColor: AppColors.volt,
-                      checkColor: AppColors.navy,
-                      title: const Text(
+                      activeColor: primaryAccent,
+                      checkColor: onPrimary,
+                      title: Text(
                         'Screenshot des aktuellen Screens beifügen',
-                        style: TextStyle(fontSize: 13, color: Colors.white),
+                        style: TextStyle(fontSize: 13, color: primaryText),
                       ),
                       onChanged: (val) {
                         setState(() => _includeScreenshot = val ?? false);
@@ -439,37 +452,36 @@ class _BetaBugReporterSheetState extends State<BetaBugReporterSheet> {
                 key: const Key('beta_feedback_submit_button'),
                 onPressed: _isSubmitting ? null : _submit,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.volt,
-                  foregroundColor: AppColors.navy,
+                  backgroundColor: primaryAccent,
+                  foregroundColor: onPrimary,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
                 icon: _isSubmitting
-                    ? const SizedBox(
+                    ? SizedBox(
                         width: 18,
                         height: 18,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          color: AppColors.navy,
+                          color: onPrimary,
                         ),
                       )
-                    : const Icon(Icons.send_outlined,
-                        size: 18, color: AppColors.navy,),
+                    : Icon(Icons.send_outlined, size: 18, color: onPrimary),
                 label: Text(
                   _isSubmitting ? 'Wird gesendet...' : 'Meldung absenden',
-                  style: const TextStyle(
-                    color: AppColors.navy,
+                  style: TextStyle(
+                    color: onPrimary,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
+            Text(
               'Support: bugs@orbit-training.app · support@orbit-training.app',
               style: TextStyle(
-                color: Color(0xFF64748B),
+                color: secondaryText,
                 fontSize: 11,
               ),
               textAlign: TextAlign.center,

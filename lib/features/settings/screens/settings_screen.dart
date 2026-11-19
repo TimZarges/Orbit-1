@@ -70,6 +70,8 @@ class SettingsScreen extends ConsumerWidget {
     );
 
     final isEn = lang == 'en';
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final accentColor = AppColors.primaryAccent(isDark: isDark);
 
     return Scaffold(
       appBar: AppBar(
@@ -319,8 +321,7 @@ class SettingsScreen extends ConsumerWidget {
 
           // 8. Fehler melden & Verbesserung vorschlagen
           ListTile(
-            leading:
-                const Icon(Icons.bug_report_outlined, color: AppColors.volt),
+            leading: Icon(Icons.bug_report_outlined, color: accentColor),
             title: Text(AppStrings.settingsBugReportTitle(lang: lang)),
             subtitle: Text(AppStrings.settingsBugReportSubtitle(lang: lang)),
             trailing: const Icon(Icons.chevron_right),
@@ -334,7 +335,7 @@ class SettingsScreen extends ConsumerWidget {
           // 9. Meine gemeldeten Tickets
           ListTile(
             key: const Key('settings_my_feedback_tile'),
-            leading: const Icon(Icons.inbox_outlined, color: AppColors.volt),
+            leading: Icon(Icons.inbox_outlined, color: accentColor),
             title: Text(AppStrings.navMyFeedback(lang: lang)),
             subtitle: Text(AppStrings.settingsMyFeedbackSubtitle(lang: lang)),
             trailing: const Icon(Icons.chevron_right),
@@ -348,7 +349,7 @@ class SettingsScreen extends ConsumerWidget {
           // 10. Passwort ändern & Passwort zurücksetzen
           ListTile(
             key: const Key('settings_change_password_tile'),
-            leading: const Icon(Icons.lock_reset, color: AppColors.volt),
+            leading: Icon(Icons.lock_reset, color: accentColor),
             title: Text(AppStrings.settingsChangePasswordTitle(lang: lang)),
             subtitle:
                 Text(AppStrings.settingsChangePasswordSubtitle(lang: lang)),
@@ -359,9 +360,9 @@ class SettingsScreen extends ConsumerWidget {
           ),
           ListTile(
             key: const Key('settings_reset_password_email_tile'),
-            leading: const Icon(
+            leading: Icon(
               Icons.mark_email_read_outlined,
-              color: AppColors.volt,
+              color: accentColor,
             ),
             title: Text(
               isEn
@@ -815,9 +816,16 @@ class _ChangePasswordDialogState extends ConsumerState<_ChangePasswordDialog> {
         ElevatedButton(
           key: const Key('change_password_save_button'),
           style: ElevatedButton.styleFrom(
-            backgroundColor:
-                allValid ? AppColors.volt : Colors.grey.shade700,
-            foregroundColor: AppColors.navy,
+            backgroundColor: allValid
+                ? AppColors.primaryAccent(
+                    isDark: Theme.of(context).brightness == Brightness.dark,
+                  )
+                : AppColors.subtleSurface(
+                    isDark: Theme.of(context).brightness == Brightness.dark,
+                  ),
+            foregroundColor: Theme.of(context).brightness == Brightness.dark
+                ? AppColors.navy
+                : AppColors.lightCardSurface,
           ),
           onPressed: allValid
               ? () async {

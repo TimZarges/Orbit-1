@@ -1,16 +1,20 @@
+/// Datei-Header: `lib/core/design/theme_tokens.dart`
+/// Zweck: Leichtgewichtiger Kontext-Zugriff auf die verankerten Light- und Dark-Tokens.
+/// Architektur-Einordnung: Delegiert vollständig an [AppColors] als Single Source of Truth.
+library;
+
 import 'package:flutter/material.dart';
 import 'app_colors.dart';
 
-/// Zentrales Design-Token-System für ORBIT.
-/// Basiert strikt auf Brand-Navy (#001F47) und Volt (#CDFB17) ohne verbotenes #0F172A.
+/// Zentrales Design-Token-System für ORBIT (abgeleitet von [AppColors]).
 class OrbitThemeTokens {
   final Brightness brightness;
   final Color background;
   final Color surface;
   final Color cardBackground;
   final Color cardBorder;
-  final Color primary; // Volt
-  final Color onPrimary; // Navy
+  final Color primary;
+  final Color onPrimary;
   final Color textPrimary;
   final Color textSecondary;
   final Color textMuted;
@@ -30,36 +34,37 @@ class OrbitThemeTokens {
     required this.divider,
   });
 
-  /// Dark-Cockpit-Theme (Standard für High-End Telemetrie)
+  /// Dark-Mode-Tokens (`#0B0E14` / `#141923` / `#CDFB17`).
   static const OrbitThemeTokens dark = OrbitThemeTokens(
     brightness: Brightness.dark,
-    background: AppColors.navy,
-    surface: Color(0xFF002A5C),
-    cardBackground: Color(0xFF002A5C),
-    cardBorder: Color(0xFF003D82),
+    background: AppColors.darkBackground,
+    surface: AppColors.darkCardSurface,
+    cardBackground: AppColors.darkCardSurface,
+    cardBorder: AppColors.darkSubtleBorder,
     primary: AppColors.volt,
     onPrimary: AppColors.navy,
-    textPrimary: AppColors.white,
-    textSecondary: Color(0xFFCBD5E1),
-    textMuted: Color(0xFF94A3B8),
-    divider: Color(0xFF003D82),
+    textPrimary: AppColors.darkTextPrimary,
+    textSecondary: AppColors.darkTextSecondary,
+    textMuted: AppColors.darkTextSecondary,
+    divider: AppColors.darkSubtleBorder,
   );
 
-  /// Helles Theme (Optimale Ablesbarkeit im Freien / bei Sonnenlicht)
+  /// Light-Mode-Tokens (`#F6F8FB` / `#FFFFFF` / `#001F47`).
   static const OrbitThemeTokens light = OrbitThemeTokens(
     brightness: Brightness.light,
-    background: Color(0xFFF8FAFC),
-    surface: AppColors.white,
-    cardBackground: AppColors.white,
-    cardBorder: AppColors.cardBorder,
-    primary: AppColors.volt,
-    onPrimary: AppColors.navy,
-    textPrimary: AppColors.navy,
-    textSecondary: Color(0xFF475569),
-    textMuted: Color(0xFF94A3B8),
-    divider: Color(0xFFE2E8F0),
+    background: AppColors.lightBackground,
+    surface: AppColors.lightCardSurface,
+    cardBackground: AppColors.lightCardSurface,
+    cardBorder: AppColors.lightBorder,
+    primary: AppColors.navy,
+    onPrimary: AppColors.lightCardSurface,
+    textPrimary: AppColors.lightTextPrimary,
+    textSecondary: AppColors.lightTextSecondary,
+    textMuted: AppColors.lightTextSecondary,
+    divider: AppColors.lightBorder,
   );
 
+  /// Liefert die passenden Tokens für den aktuellen [Theme]-Kontext.
   static OrbitThemeTokens of(BuildContext context) {
     return Theme.of(context).brightness == Brightness.dark ? dark : light;
   }

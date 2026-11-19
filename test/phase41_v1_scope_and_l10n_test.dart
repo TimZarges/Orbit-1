@@ -3,8 +3,8 @@
 /// 1. `ReleaseConfig` Feature-Steuerung (Standard V1.0.0: `isV2Enabled = false`,
 ///    `isV3Enabled = false`, Ausblendung der 3 Daily Health Ringe, Readiness-Score,
 ///    Workout-Builder/Analyse-Tabs im V1.0.0-Standardbetrieb sowie Test-Override).
-/// 2. Clean Professional Design System (`OrbitProfessionalTheme`: Dark `#0D0F12` /
-///    `#16181D` / `0x14FFFFFF` vs. Light `#F4F6F9` / `#FFFFFF` / `#E2E8F0` / `#0F172A`).
+/// 2. Clean Professional Design System (`OrbitProfessionalTheme`: Dark `#0B0E14` /
+///    `#141923` / `0x24FFFFFF` vs. Light `#F6F8FB` / `#FFFFFF` / `#DCE3EC` / `#0F172A`).
 /// 3. Vollständige Zweisprachigkeit (`DE` & `EN`) und `CountryDateTimeFormatter`
 ///    (`dd.mm.yy` & `24h`-Format nach Wohnland).
 library;
@@ -13,6 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:orbit/core/config/release_config.dart';
+import 'package:orbit/core/design/app_colors.dart';
 import 'package:orbit/core/design/app_theme.dart';
 import 'package:orbit/core/theme/orbit_professional_theme.dart';
 import 'package:orbit/core/utils/country_date_time_formatter.dart';
@@ -198,41 +199,49 @@ void main() {
   });
 
   group('2. Clean Professional Design System (Hell & Dunkel)', () {
-    test('Dark Mode nutzt #0D0F12 Carbon, #16181D Karten und 8% Weiß-Rahmen',
+    test(
+        'Dark Mode nutzt #0B0E14 BG, #141923 Karten, 0x24FFFFFF Rahmen und #CDFB17 Akzent',
         () {
       final dark = AppTheme.darkTheme;
       expect(dark.brightness, equals(Brightness.dark));
       expect(
         dark.scaffoldBackgroundColor,
-        equals(const Color(0xFF0D0F12)),
+        equals(const Color(0xFF0B0E14)),
       );
       expect(
         dark.cardTheme.color,
-        equals(const Color(0xFF16181D)),
+        equals(const Color(0xFF141923)),
       );
+      expect(dark.colorScheme.primary, equals(const Color(0xFFCDFB17)));
+      expect(dark.colorScheme.onSurface, equals(const Color(0xFFF8FAFC)));
       final shape = dark.cardTheme.shape as RoundedRectangleBorder;
       expect(
         shape.side.color,
         equals(OrbitProfessionalTheme.darkSubtleBorder),
       );
+      expect(shape.side.color, equals(const Color(0x24FFFFFF)));
       expect(shape.side.width, equals(1.0));
     });
 
     test(
-        'Light Mode nutzt #F4F6F9 Alabaster, #FFFFFF Karten, #E2E8F0 Rahmen und #0F172A Typografie',
+        'Light Mode nutzt #F6F8FB BG, #FFFFFF Karten, #DCE3EC Rahmen, #001F47/#003B82 Navy ohne Volt',
         () {
       final light = AppTheme.lightTheme;
       expect(light.brightness, equals(Brightness.light));
       expect(
         light.scaffoldBackgroundColor,
-        equals(const Color(0xFFF4F6F9)),
+        equals(const Color(0xFFF6F8FB)),
       );
       expect(
         light.cardTheme.color,
         equals(const Color(0xFFFFFFFF)),
       );
+      expect(light.colorScheme.primary, equals(const Color(0xFF001F47)));
+      expect(light.colorScheme.secondary, equals(const Color(0xFF003B82)));
+      expect(light.colorScheme.primary, isNot(equals(AppColors.volt)));
+      expect(light.colorScheme.secondary, isNot(equals(AppColors.volt)));
       final shape = light.cardTheme.shape as RoundedRectangleBorder;
-      expect(shape.side.color, equals(const Color(0xFFE2E8F0)));
+      expect(shape.side.color, equals(const Color(0xFFDCE3EC)));
       expect(
         light.colorScheme.onSurface,
         equals(const Color(0xFF0F172A)),

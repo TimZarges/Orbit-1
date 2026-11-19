@@ -11,7 +11,6 @@ import 'package:go_router/go_router.dart';
 import '../../../core/config/release_config.dart';
 import '../../../core/design/app_colors.dart';
 import '../../../core/localization/app_strings.dart';
-import '../../../core/theme/orbit_professional_theme.dart';
 import '../../../core/widgets/responsive_content_frame.dart';
 import '../../activities/screens/today_tab_screen.dart';
 import '../../analysis/screens/analysis_tab_screen.dart';
@@ -77,6 +76,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     final bool isExtendedRail =
         screenWidth >= ResponsiveContentFrame.extendedRailBreakpoint;
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
+
+    // Offene Coach-E-Mail-Einladungen bei Athleten automatisch übernehmen
+    if (!isTrainer) {
+      ref.watch(v1AutoClaimCoachInvitesProvider);
+    }
 
     // Seiten-Liste abhängig von Rolle, aktivem Release-Scope und Responsive-Modus
     final List<Widget> pages = isTrainer
@@ -297,18 +301,17 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   key: const Key('dashboard_web_navigation_rail'),
                   extended: isExtendedRail,
                   minExtendedWidth: 210,
-                  backgroundColor: isDark
-                      ? OrbitProfessionalTheme.darkCardSurface
-                      : Colors.white,
+                  backgroundColor: AppColors.cardBg(isDark: isDark),
                   selectedIndex: safeIndex,
                   onDestinationSelected: onTabSelected,
-                  indicatorColor: AppColors.volt.withValues(alpha: 0.22),
+                  indicatorColor: AppColors.primaryAccent(isDark: isDark)
+                      .withValues(alpha: isDark ? 0.20 : 0.12),
                   selectedIconTheme: IconThemeData(
-                    color: isDark ? AppColors.volt : AppColors.navy,
+                    color: AppColors.primaryAccent(isDark: isDark),
                   ),
                   selectedLabelTextStyle: TextStyle(
                     fontWeight: FontWeight.w700,
-                    color: isDark ? AppColors.volt : AppColors.navy,
+                    color: AppColors.primaryAccent(isDark: isDark),
                   ),
                   leading: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 16),
@@ -340,9 +343,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 VerticalDivider(
                   width: 1,
                   thickness: 1,
-                  color: isDark
-                      ? OrbitProfessionalTheme.darkSubtleBorder
-                      : const Color(0xFFE2E8F0),
+                  color: AppColors.cardBorderFor(isDark: isDark),
                 ),
                 Expanded(child: contentArea),
               ],

@@ -475,6 +475,26 @@ export const revokeLink = onCall(async (request) => {
     updatedAt: admin.firestore.FieldValue.serverTimestamp(),
   });
 
+  // 1b. Zugehörige E-Mail-Einladung in `coachInvites` (falls vorhanden) ebenfalls schließen
+  try {
+    const athleteEmail = typeof linkData.athleteEmail === "string"
+      ? linkData.athleteEmail.trim().toLowerCase()
+      : "";
+    if (athleteEmail) {
+      const inviteId = buildEmailInviteId(coachId, athleteEmail);
+      const inviteRef = db.collection("coachInvites").doc(inviteId);
+      const inviteSnap = await inviteRef.get();
+      if (inviteSnap.exists) {
+        await inviteRef.set({
+          status: "REVOKED",
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        }, { merge: true });
+      }
+    }
+  } catch (_) {
+    // Optionaler Abgleich
+  }
+
   // 2. coachId und authorizedCoachIds vom Athleten-Dokument entfernen & Art. 9 Consent-Widerruf dokumentieren
   const userRef = db.collection("users").doc(athleteId);
   await userRef.update({
@@ -762,13 +782,17 @@ export async function claimCoachInvitesForAthlete(
     return { claimedCount: 0, claimedCoachIds: [] };
   }
 
+  // Einzel-Feld-Query vermeidet Abhängigkeit von Composite Indexes bei sofortigem Signup
   const invitesSnap = await db
     .collection("coachInvites")
     .where("athleteEmail", "==", normalizedEmail)
-    .where("status", "==", "PENDING_REGISTRATION")
     .get();
 
-  if (invitesSnap.empty) {
+  const pendingDocs = invitesSnap.docs.filter(
+    (doc) => doc.data()?.status === "PENDING_REGISTRATION"
+  );
+
+  if (pendingDocs.length === 0) {
     return { claimedCount: 0, claimedCoachIds: [] };
   }
 
@@ -779,7 +803,7 @@ export async function claimCoachInvitesForAthlete(
   const nowMs = Date.now();
   const claimedCoachIds: string[] = [];
 
-  for (const inviteDoc of invitesSnap.docs) {
+  for (const inviteDoc of pendingDocs) {
     const inv = inviteDoc.data();
     const coachId = typeof inv.coachId === "string" ? inv.coachId : "";
     if (!coachId || coachId === uid) continue;

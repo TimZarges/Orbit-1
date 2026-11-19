@@ -222,9 +222,12 @@ class CalendarScreen extends ConsumerWidget {
     final plannedHours = (summary.plannedDurationSec / 3600).toStringAsFixed(1);
     final actualHours = (summary.actualDurationSec / 3600).toStringAsFixed(1);
 
-    Color progressColor = const Color(0xFF10B981);
-    if (compliance < 75) progressColor = const Color(0xFFF59E0B);
-    if (compliance > 130) progressColor = const Color(0xFF3B82F6);
+    Color progressColor = AppColors.statusSuccess(isDark: isDark);
+    if (compliance < 75) progressColor = AppColors.statusWarning(isDark: isDark);
+    if (compliance > 130) {
+      progressColor =
+          isDark ? AppColors.sportSwimDark : AppColors.sportSwimLight;
+    }
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -244,8 +247,7 @@ class CalendarScreen extends ConsumerWidget {
                   'Wochensoll: ${actualHours}h von ${plannedHours}h (${compliance.toStringAsFixed(0)} %)',
                   style: theme.textTheme.labelMedium?.copyWith(
                     fontWeight: FontWeight.bold,
-                    color:
-                        isDark ? AppColors.white : AppColors.lightTextPrimary,
+                    color: AppColors.primaryText(isDark: isDark),
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -255,9 +257,7 @@ class CalendarScreen extends ConsumerWidget {
               Text(
                 '${summary.trainingDaysCount} aktive Tage · ${summary.completedWorkoutsCount}/${summary.totalPlannedWorkoutsCount} geplant',
                 style: theme.textTheme.labelSmall?.copyWith(
-                  color: isDark
-                      ? AppColors.textSecondaryDark
-                      : const Color(0xFF64748B),
+                  color: AppColors.secondaryText(isDark: isDark),
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -271,8 +271,7 @@ class CalendarScreen extends ConsumerWidget {
                       ? summary.actualDurationSec / summary.plannedDurationSec
                       : (summary.actualDurationSec > 0 ? 1.0 : 0.0))
                   .clamp(0.0, 1.0),
-              backgroundColor:
-                  isDark ? AppColors.carbonDark : const Color(0xFFE2E8F0),
+              backgroundColor: AppColors.subtleSurface(isDark: isDark),
               color: progressColor,
               minHeight: 6,
             ),
@@ -376,7 +375,8 @@ class CalendarScreen extends ConsumerWidget {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
-                    color: AppColors.volt.withValues(alpha: 0.25),
+                    color: AppColors.primaryAccent(isDark: isDark)
+                        .withValues(alpha: isDark ? 0.22 : 0.12),
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Text(
@@ -384,7 +384,7 @@ class CalendarScreen extends ConsumerWidget {
                     style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.bold,
-                      color: isDark ? AppColors.volt : AppColors.navy,
+                      color: AppColors.primaryAccent(isDark: isDark),
                     ),
                   ),
                 ),
@@ -401,7 +401,10 @@ class CalendarScreen extends ConsumerWidget {
                         height: 8,
                         margin: const EdgeInsets.only(left: 4),
                         decoration: BoxDecoration(
-                          color: _getSportColor(a.sport),
+                          color: AppColors.resolveSportColor(
+                            a.sport,
+                            isDark: isDark,
+                          ),
                           shape: BoxShape.circle,
                         ),
                       ),
@@ -442,9 +445,7 @@ class CalendarScreen extends ConsumerWidget {
                     child: Text(
                       AppStrings.calendarNoSessionsOnDay(lang: lang),
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: isDark
-                            ? AppColors.textSecondaryDark
-                            : const Color(0xFF64748B),
+                        color: AppColors.secondaryText(isDark: isDark),
                       ),
                     ),
                   )
@@ -586,10 +587,17 @@ class CalendarScreen extends ConsumerWidget {
               // Sportart-Farbpunkte (absolvierte Einheiten gefüllt, geplante in V2 hohl)
               final dotEntries = <({Color color, bool filled})>[
                 for (final a in dayActivities)
-                  (color: _getSportColor(a.sport), filled: true),
+                  (
+                    color: AppColors.resolveSportColor(a.sport, isDark: isDark),
+                    filled: true,
+                  ),
                 if (isV2Enabled)
                   for (final w in dayWorkouts)
-                    (color: _getSportColor(w.sport), filled: w.isCompleted),
+                    (
+                      color:
+                          AppColors.resolveSportColor(w.sport, isDark: isDark),
+                      filled: w.isCompleted,
+                    ),
               ];
 
               return InkWell(
@@ -675,9 +683,8 @@ class CalendarScreen extends ConsumerWidget {
                           '${CountryDateTimeFormatter.formatDate(selectedDate, countryCode: countryCode)} • ${AppStrings.calendarNoSessionsOnDay(lang: lang)}',
                           style:
                               Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                    color: isDark
-                                        ? AppColors.textSecondaryDark
-                                        : const Color(0xFF64748B),
+                                    color:
+                                        AppColors.secondaryText(isDark: isDark),
                                   ),
                         ),
                 )
@@ -788,23 +795,5 @@ class CalendarScreen extends ConsumerWidget {
     final m = dt.month.toString().padLeft(2, '0');
     final y = dt.year.toString().padLeft(4, '0');
     return '$y-$m-$d';
-  }
-
-  /// Liefert die definierte Sport-Akzentfarbe für den Monats-/Wochen-Farbpunkt.
-  static Color _getSportColor(String sport) {
-    switch (sport.toUpperCase()) {
-      case 'BIKE':
-        return AppColors.sportBike;
-      case 'RUN':
-        return AppColors.sportRun;
-      case 'SWIM':
-        return AppColors.sportSwim;
-      case 'TRIATHLON':
-        return AppColors.volt;
-      case 'STRENGTH':
-        return AppColors.sportStrength;
-      default:
-        return const Color(0xFF94A3B8);
-    }
   }
 }
