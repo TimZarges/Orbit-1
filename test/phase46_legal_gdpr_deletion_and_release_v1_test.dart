@@ -46,8 +46,28 @@ import 'package:orbit/features/onboarding/widgets/v1_simple_onboarding_wizard.da
 import 'package:orbit/features/profile/widgets/user_avatar_circle.dart';
 import 'package:orbit/features/profile/widgets/v1_athlete_coach_connection_card.dart';
 import 'package:orbit/features/profile/widgets/v1_simple_profile_view.dart';
+import 'package:orbit/features/settings/models/app_settings.dart';
+import 'package:orbit/features/settings/providers/settings_provider.dart';
 import 'package:orbit/features/settings/screens/settings_screen.dart';
 import 'package:orbit/features/settings/widgets/privacy_settings_sheet.dart';
+
+/// Test-Settings-Controller zur gezielten Prüfung von DE & EN in Widget-Tests.
+class _TestLangSettingsController extends SettingsController {
+  final String lang;
+  final ThemeMode mode;
+
+  _TestLangSettingsController({
+    this.lang = 'de',
+    this.mode = ThemeMode.light,
+  });
+
+  @override
+  AppSettings build() => AppSettings(
+        languageCode: lang,
+        countryCode: 'DE',
+        themeMode: mode,
+      );
+}
 
 /// Test-Mock für [AuthService] zur Verifikation von Sign-out nach Kontolöschung.
 class _MockAuthService implements AuthService {
@@ -1174,6 +1194,165 @@ void main() {
         findsOneWidget,
       );
       expect(find.byKey(const Key('gdpr_export_copy_btn')), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  });
+
+  group('10. V1.0.0 Coach trennt Athleten-Verbindung (DE & EN)', () {
+    testWidgets(
+        'DE: Coach-Karte zeigt „Verbindung trennen“, Bestätigungs-Dialog und ruft disconnectAthlete/revokeLink auf',
+        (tester) async {
+      String? invokedFn;
+      Map<String, dynamic>? invokedPayload;
+      const activeAthlete = V1CoachAthleteLink(
+        linkId: 'ath_disc_1_coach_1',
+        athleteId: 'ath_disc_1',
+        coachId: 'coach_1',
+        athleteName: 'Lena Lauf',
+        athleteEmail: 'lena@verein.de',
+        status: 'ACTIVE',
+        athleteSports: ['RUN'],
+      );
+
+      final container = ProviderContainer(
+        overrides: [
+          settingsControllerProvider.overrideWith(
+            () => _TestLangSettingsController(lang: 'de', mode: ThemeMode.light),
+          ),
+          v1CoachConnectionServiceProvider.overrideWith(
+            (ref) => V1CoachConnectionService(
+              ref: ref,
+              invoke: (fn, payload) async {
+                invokedFn = fn;
+                invokedPayload = payload;
+                return <String, dynamic>{'success': true};
+              },
+            ),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+      container.read(v1SelectedCoachAthleteIdProvider.notifier).state =
+          'ath_disc_1';
+
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: MaterialApp(
+            theme: AppTheme.lightTheme,
+            home: const Scaffold(
+              body: V1CoachAthletesTab(
+                athletesOverride: [activeAthlete],
+                initialInviteCodeOverride: 'CD1234',
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final disconnectBtn =
+          find.byKey(const Key('coach_disconnect_athlete_btn_ath_disc_1'));
+      await tester.scrollUntilVisible(
+        disconnectBtn,
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Verbindung trennen'), findsOneWidget);
+
+      await tester.tap(disconnectBtn);
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(const Key('coach_disconnect_confirm_dialog')),
+        findsOneWidget,
+      );
+      expect(find.text('Verbindung zum Athleten trennen?'), findsOneWidget);
+      expect(
+        find.textContaining('Bereits lokal heruntergeladene .FIT-Dateien'),
+        findsOneWidget,
+      );
+
+      await tester.tap(find.byKey(const Key('coach_disconnect_confirm_btn')));
+      await tester.pumpAndSettle();
+
+      expect(invokedFn, equals('revokeLink'));
+      expect(invokedPayload?['linkId'], equals('ath_disc_1_coach_1'));
+      expect(container.read(v1SelectedCoachAthleteIdProvider), isNull);
+      expect(find.text('Verbindung zu Lena Lauf getrennt.'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets(
+        'EN: Coach-Karte zeigt „Disconnect athlete“, Bestätigungs-Dialog und ruft disconnectAthlete/revokeLink bei Bestätigung auf',
+        (tester) async {
+      var disconnectCalled = false;
+      const activeAthlete = V1CoachAthleteLink(
+        linkId: 'ath_disc_en_coach_1',
+        athleteId: 'ath_disc_en',
+        coachId: 'coach_1',
+        athleteName: 'Tom Tri',
+        athleteEmail: 'tom@club.org',
+        status: 'ACTIVE',
+        athleteSports: ['TRIATHLON'],
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            settingsControllerProvider.overrideWith(
+              () => _TestLangSettingsController(lang: 'en', mode: ThemeMode.dark),
+            ),
+            v1CoachConnectionServiceProvider.overrideWith(
+              (ref) => V1CoachConnectionService(
+                ref: ref,
+                invoke: (fn, payload) async {
+                  disconnectCalled = true;
+                  return <String, dynamic>{'success': true};
+                },
+              ),
+            ),
+          ],
+          child: MaterialApp(
+            theme: AppTheme.darkTheme,
+            home: const Scaffold(
+              body: V1CoachAthletesTab(
+                athletesOverride: [activeAthlete],
+                initialInviteCodeOverride: 'EN1234',
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final disconnectBtn =
+          find.byKey(const Key('coach_disconnect_athlete_btn_ath_disc_en'));
+      await tester.scrollUntilVisible(
+        disconnectBtn,
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Disconnect athlete'), findsOneWidget);
+
+      // Erst Abbrechen testen
+      await tester.tap(disconnectBtn);
+      await tester.pumpAndSettle();
+      expect(find.text('Disconnect athlete?'), findsOneWidget);
+      await tester.tap(find.byKey(const Key('coach_disconnect_cancel_btn')));
+      await tester.pumpAndSettle();
+      expect(disconnectCalled, isFalse);
+
+      // Danach endgültig bestätigen
+      await tester.tap(disconnectBtn);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('coach_disconnect_confirm_btn')));
+      await tester.pumpAndSettle();
+
+      expect(disconnectCalled, isTrue);
+      expect(find.text('Disconnected from Tom Tri.'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
   });

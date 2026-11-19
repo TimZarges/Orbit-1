@@ -88,3 +88,11 @@ Diese Punkte liegen außerhalb des Quellcodes und **müssen vor dem breiten öff
    - Internes VVT (Art. 30 DSGVO) ablegen und im Google Play Console *Data Safety*-Formular exakt die erhobenen Daten (E-Mail, Name, Fitness-/Gesundheitsdaten, optionale Körperdaten, keine Weitergabe an Dritte zu Werbezwecken) inklusive Link zu `https://orbit-app-mvp.web.app/delete-account.html` angeben.
 5. **[PFLICHT — Garmin Developer Portal] Garmin Production Key & Compliance-Abnahme:**
    - Sicherstellen, dass im Garmin Connect Developer Program die Produktions-Evaluation/Freigabe (inkl. Webhook- & Deregistrierungs-Endpunkten) abgeschlossen ist und keine Test-Evaluation-Limits überschritten werden.
+
+---
+
+## 7. Abschluss-Nachkontrolle V1.0.0 (`v1.0.2`, 2026-11-19)
+
+- **Art. 20 DSGVO JSON-Export ohne Secret-Leak (`functions/src/auth.ts`):** `exportAccount` filtert sämtliche Export-Objekte rekursiv über `sanitizeExportValue(...)` (Entfernung von `oauthToken`, `oauthTokenSecret`, `accessToken`, `accessTokenSecret`, `refreshToken`, `tokenSecret`, `garminSecrets`, `passwordHash`, `private`; Umwandlung von Firestore-Timestamps in ISO-8601), getestet in `functions/src/__tests__/auth.test.ts`.
+- **Beidseitige Trennung Athlet & Coach (`functions/src/coach.ts`, `v1_coach_connection_provider.dart`, `v1_coach_athletes_tab.dart`):** Sowohl Athleten als auch Coaches können aktive Verbindungen jederzeit mit sofortigem Zugriffsentzug beenden (`REVOKED`, `revokedAt`, `revokedBy: 'COACH' | 'ATHLETE'`, Entzug von `authorizedCoachIds` & `.fit`-Zugriff), mit explizitem Dialoghinweis auf bereits lokal gespeicherte `.FIT`-Dateien (`test/phase46_legal_gdpr_deletion_and_release_v1_test.dart`, `276/276` Flutter-Tests und `12/12` Backend-/Emulator-Suites mit `120/120` Tests grün).
+- **Einziger verbleibender Blocker vor breitem öffentlichem Store-Launch:** Ergänzung der realen **ladungsfähigen Postanschrift** gemäß § 5 Abs. 1 Nr. 1 DDG im Impressum sowie Abschluss der in Abschnitt 6 aufgeführten Betreiber-Checkliste.

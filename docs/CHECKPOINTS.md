@@ -2632,3 +2632,28 @@ The operation couldn’t be completed. Unable to locate a Java Runtime.
   - `docs/beta/screenshots/legal_audit_safari_privacy.png`
   - `docs/beta/screenshots/legal_audit_pixel10_live.png`
 
+---
+
+## Checkpoint Finales V1.0.0-Feature (Coach trennt Athleten-Verbindung) & V1.0.0-Abschluss (`v1.0.2`)
+- **Status:** Implementiert, modulare Refactorings & Export-Nachkontrolle abgeschlossen, gegen Analyzer/Tests/Emulator geprüft, auf `orbit-app-mvp` (Functions, Rules, Hosting) & Pixel 10 Pro (`58251FDCR00EQ2`) deployed und live verifiziert
+- **Datum:** 2026-11-19
+- **Umgesetzte Maßnahmen:**
+  1. **Backend Coach-Trennung & DSGVO-Export-Hardening (`functions/src/coach.ts`, `functions/src/auth.ts`):**
+     - `revokeLink` unterstützt `linkId` und Coach-Fallback `athleteId`, setzt `status: 'REVOKED'`, `revokedAt`, `revokedBy: 'COACH' | 'ATHLETE'` sowie `revokedByUid`, bereinigt `authorizedCoachIds` & `coachId` auf `users/{athleteId}`, `coachInvites` (`athleteId == athleteId` & `inviteId`), `invites.usedBy`, `activities.coachId`, `plannedWorkouts.coachId`, `chats` und `coachDashboard/{coachId}/athletes/{athleteId}`.
+     - `exportAccount` filtert rekursiv über `sanitizeExportValue(...)` sämtliche sensiblen Server-/OAuth-Secrets (`oauthTokenSecret`, `accessTokenSecret`, `refreshToken` etc.) und serialisiert Firestore-Timestamps sauber als ISO-8601-Strings.
+  2. **Coach-UI, Provider & Wartbarkeit (`v1_coach_connection_provider.dart`, `v1_coach_athletes_tab.dart`, `privacy_settings_sheet.dart`):**
+     - `V1CoachConnectionService.disconnectAthlete(athleteId)` ruft `revokeLink` auf, setzt aktives `v1SelectedCoachAthleteIdProvider` & `viewedAthleteIdProvider` zurück und invalidiert Coach-Streams.
+     - `V1CoachAthletesTab` zeigt auf jeder Karte verbundenener Athleten (`_ConnectedAthleteCard`) den Button **„Verbindung trennen“** / **„Disconnect athlete“** (Fehler-Rot `#DC2626` Light / `#EF4444` Dark) mit klarem Bestätigungs-Dialog inkl. Hinweis zu lokal heruntergeladenen `.FIT`-Dateien und ruhiger SnackBar-Rückmeldung.
+     - Auslagerung von `_ConnectedAthleteCard` & `_GdprExportResultDialog` für saubere Modularität; 100 % deutsche Dokumentationskommentare.
+  3. **Offener Store-Hinweis:** Für den breiten öffentlichen Play-Store-/Marketing-Launch muss seitens des Betreibers nur noch die **ladungsfähige Postanschrift** nach § 5 Abs. 1 Nr. 1 DDG im Impressum ergänzt werden (`docs/audit/LEGAL_COMPLIANCE_REPORT_V1.md`).
+- **Verifizierte Befehlsausgaben:**
+  - `bash scripts/check_phase_ready.sh` -> Exit Code `0` (`flutter analyze`: `0 Errors, 0 Warnings, 0 Infos`, `functions` Build & Lint: `0 Errors`, `100 %` deutsche Kommentare, `flutter test`: **`276/276` Tests bestanden**, inkl. 2 neuer DE/EN Coach-Disconnect Widget-Tests).
+  - `npx -y firebase-tools emulators:exec --only firestore,storage "npm --prefix functions test"` -> Exit Code `0` (`Test Suites: 12 passed, 12 total`, `Tests: 120 passed, 120 total`, inkl. `coachLink.test.ts` Coach-Trennung + `.fit`-Zugriffsverlust und `auth.test.ts` `sanitizeExportValue`).
+  - `flutter build web --release --no-pub --no-web-resources-cdn --base-href /app/ --suppress-analytics` -> `Built build/web` -> `public/app/`.
+  - `flutter build apk --release --no-pub --suppress-analytics && adb -s 58251FDCR00EQ2 install -r build/app/outputs/flutter-apk/app-release.apk` -> `67.7MB`, `Performing Streamed Install -> Success`.
+  - `npx -y firebase-tools deploy --only functions,firestore:rules,hosting --project orbit-app-mvp --force` -> `Deploy complete!`.
+  - **Live-E2E-Verifikation gegen `orbit-app-mvp`** (mit 2 Wegwerf-Testkonten + anschließender `deleteAccount`-Bereinigung): Coach-Disconnect über `athleteId` -> Re-Invite (`reactivated: true`) -> `exportAccount` JSON -> `100 %` bestanden.
+- **Live-Screenshots (`docs/beta/screenshots/`):**
+  - `docs/beta/screenshots/v1_coach_disconnect_dialog.png`
+  - `docs/beta/screenshots/v1_0_0_final_pixel10.png`
+

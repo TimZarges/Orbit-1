@@ -394,9 +394,54 @@ export const deleteAccount = onCall(
 );
 
 /**
+ * Bereinigt beliebige Export-Objekte rekursiv für die maschinenlesbare Ausgabe
+ * gemäß Art. 20 DSGVO: entfernt vertrauliche Server-/OAuth-Secrets (z. B. Garmin
+ * `oauthTokenSecret` / `accessTokenSecret` / `refreshToken`) und wandelt
+ * Firestore-Timestamps in standardisierte ISO-8601-Zeitstempel um.
+ */
+export function sanitizeExportValue(value: unknown): unknown {
+  const blockedKeys = new Set([
+    "oauthtoken",
+    "oauthtokensecret",
+    "accesstoken",
+    "accesstokensecret",
+    "refreshtoken",
+    "tokensecret",
+    "consumersecret",
+    "garminsecrets",
+    "passwordhash",
+    "private",
+  ]);
+
+  if (value === null || value === undefined) {
+    return value;
+  }
+  if (
+    typeof (value as { toDate?: () => Date }).toDate === "function"
+  ) {
+    return (value as { toDate: () => Date }).toDate().toISOString();
+  }
+  if (Array.isArray(value)) {
+    return value.map((item) => sanitizeExportValue(item));
+  }
+  if (typeof value === "object") {
+    const cleanObj: Record<string, unknown> = {};
+    for (const [key, entryVal] of Object.entries(value as Record<string, unknown>)) {
+      if (blockedKeys.has(key.toLowerCase())) {
+        continue;
+      }
+      cleanObj[key] = sanitizeExportValue(entryVal);
+    }
+    return cleanObj;
+  }
+  return value;
+}
+
+/**
  * Erstellt einen vollständigen maschinenlesbaren Datenexport des Nutzers
  * gemäß Art. 20 DSGVO ("Recht auf Datenübertragbarkeit").
- * Exportiert Profil, tägliche Metriken und Schwellenwerthistorie als JSON.
+ * Exportiert Profil, Aktivitäten, Coach-Verknüpfungen, Einwilligungen, tägliche
+ * Metriken und Schwellenwerthistorie als JSON – garantiert ohne Server-/OAuth-Secrets.
  *
  * @throws {HttpsError} unauthenticated - Wenn die Anfrage nicht authentifiziert ist.
  */
@@ -427,41 +472,45 @@ export const exportAccount = onCall(async (request) => {
   ]);
 
   // Health-Daten (dailyMetrics, Art. 20 DSGVO Datenübertragbarkeit)
-  const dailyMetrics: Record<string, any> = {};
+  const dailyMetrics: Record<string, unknown> = {};
   dailyMetricsSnapshot.forEach((doc) => {
-    dailyMetrics[doc.id] = doc.data();
+    dailyMetrics[doc.id] = sanitizeExportValue(doc.data());
   });
 
   // Schwellenwert-Historie
-  const thresholdHistory: Record<string, any> = {};
+  const thresholdHistory: Record<string, unknown> = {};
   thresholdSnapshot.forEach((doc) => {
-    thresholdHistory[doc.id] = doc.data();
+    thresholdHistory[doc.id] = sanitizeExportValue(doc.data());
   });
 
   // Einwilligungs-Protokoll (Art. 7 / Art. 9 DSGVO)
-  const consents: Record<string, any> = {};
+  const consents: Record<string, unknown> = {};
   consentsSnapshot.forEach((doc) => {
-    consents[doc.id] = doc.data();
+    consents[doc.id] = sanitizeExportValue(doc.data());
   });
 
   // Aktivitäten-Metadaten (inkl. Verweis auf herunterladbare .FIT-Dateien)
-  const activities = activitiesSnapshot.docs.map((doc) => ({
-    id: doc.id,
-    ...doc.data(),
-  }));
+  const activities = activitiesSnapshot.docs.map((doc) =>
+    sanitizeExportValue({
+      id: doc.id,
+      ...doc.data(),
+    })
+  );
 
   // Coach-Athleten-Verknüpfungen
   const coachLinks = [
     ...athleteLinksSnapshot.docs,
     ...coachLinksSnapshot.docs,
-  ].map((doc) => ({
-    id: doc.id,
-    ...doc.data(),
-  }));
+  ].map((doc) =>
+    sanitizeExportValue({
+      id: doc.id,
+      ...doc.data(),
+    })
+  );
 
   return {
     exportedAt: new Date().toISOString(),
-    userData: userDoc.data() || {},
+    userData: sanitizeExportValue(userDoc.data() || {}),
     activities,
     coachLinks,
     consents,

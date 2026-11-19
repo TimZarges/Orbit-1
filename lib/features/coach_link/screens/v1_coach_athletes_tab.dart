@@ -288,6 +288,102 @@ class _V1CoachAthletesTabState extends ConsumerState<V1CoachAthletesTab> {
     ref.read(v1CoachTabIndexProvider.notifier).state = 1;
   }
 
+  /// Öffnet einen klaren DSGVO-Bestätigungsdialog und trennt danach die aktive
+  /// Verbindung zu [athlete] mit sofortiger Wirkung über `disconnectAthlete`.
+  ///
+  /// Warum: Schützt vor versehentlichem Trennen, informiert transparent darüber,
+  /// dass lokal gespeicherte `.FIT`-Dateien beim Coach verbleiben, und setzt bei
+  /// Erfolg den Kalender-Kontext sowie die Athletenliste sauber zurück.
+  Future<void> _confirmAndDisconnectAthlete(
+    V1CoachAthleteLink athlete, {
+    required bool isEn,
+    required bool isDark,
+  }) async {
+    if (_busyActionIds.contains(athlete.athleteId)) return;
+
+    final displayName = athlete.athleteName.isNotEmpty
+        ? athlete.athleteName
+        : athlete.athleteEmail;
+    final errorColor = AppColors.statusError(isDark: isDark);
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        key: const Key('coach_disconnect_confirm_dialog'),
+        title: Text(
+          isEn ? 'Disconnect athlete?' : 'Verbindung zum Athleten trennen?',
+        ),
+        content: Text(
+          isEn
+              ? "You will immediately lose access to $displayName's calendar and training files. Any .FIT files already downloaded locally will remain unaffected."
+              : 'Du verlierst sofort den Zugriff auf den Kalender und die Trainingsdateien von $displayName. Bereits lokal heruntergeladene .FIT-Dateien bleiben davon unberührt.',
+        ),
+        actions: [
+          TextButton(
+            key: const Key('coach_disconnect_cancel_btn'),
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(isEn ? 'Cancel' : 'Abbrechen'),
+          ),
+          FilledButton(
+            key: const Key('coach_disconnect_confirm_btn'),
+            style: FilledButton.styleFrom(
+              backgroundColor: errorColor,
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(
+              isEn ? 'Disconnect athlete' : 'Verbindung trennen',
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    setState(() => _busyActionIds.add(athlete.athleteId));
+    try {
+      await ref
+          .read(v1CoachConnectionServiceProvider)
+          .disconnectAthlete(athlete.athleteId, linkId: athlete.linkId);
+      // Sicherheits-Reset auch dann, falls Service im Widget-Test ohne Container-Ref gemockt wurde
+      if (ref.read(v1SelectedCoachAthleteIdProvider) == athlete.athleteId) {
+        ref.read(v1SelectedCoachAthleteIdProvider.notifier).state = null;
+      }
+      if (ref.read(viewedAthleteIdProvider) == athlete.athleteId) {
+        ref.read(viewedAthleteIdProvider.notifier).state = null;
+      }
+      ref.invalidate(v1CoachAthletesStreamProvider);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              isEn
+                  ? 'Disconnected from $displayName.'
+                  : 'Verbindung zu $displayName getrennt.',
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              V1CoachConnectionService.formatError(e, isEn: isEn),
+            ),
+            backgroundColor: errorColor,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _busyActionIds.remove(athlete.athleteId));
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final lang = ref.watch(
@@ -730,104 +826,185 @@ class _V1CoachAthletesTabState extends ConsumerState<V1CoachAthletesTab> {
                       )
                     : (isEn ? 'No activity yet' : 'Noch keine Aktivität');
 
-                return Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
-                  child: Card(
-                    key: Key('coach_athlete_card_${athlete.athleteId}'),
-                    elevation: 0,
-                    color: cardBg,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                      side: BorderSide(color: borderColor),
-                    ),
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(14),
-                      onTap: () => _openAthleteCalendar(athlete),
-                      child: Padding(
-                        padding: const EdgeInsets.all(14),
-                        child: Row(
-                          children: [
-                            CircleAvatar(
-                              radius: 22,
-                              backgroundColor: AppColors.navy,
-                              child: Text(
-                                (athlete.athleteName.isNotEmpty
-                                        ? athlete.athleteName[0]
-                                        : 'A')
-                                    .toUpperCase(),
-                                style: const TextStyle(
-                                  color: AppColors.volt,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    athlete.athleteName.isNotEmpty
-                                        ? athlete.athleteName
-                                        : athlete.athleteEmail,
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 15,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  if (athlete.athleteSports.isNotEmpty)
-                                    Wrap(
-                                      spacing: 6,
-                                      runSpacing: 4,
-                                      children: athlete.athleteSports
-                                          .take(3)
-                                          .map(
-                                            (sport) => _SportBadge(
-                                              sport: sport,
-                                              lang: lang,
-                                              isDark: isDark,
-                                            ),
-                                          )
-                                          .toList(),
-                                    ),
-                                  const SizedBox(height: 6),
-                                  Row(
-                                    children: [
-                                      Icon(
-                                        Icons.schedule,
-                                        size: 14,
-                                        color:
-                                            theme.colorScheme.onSurfaceVariant,
-                                      ),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        isEn
-                                            ? 'Last training: $lastActStr'
-                                            : 'Letztes Training: $lastActStr',
-                                        style:
-                                            theme.textTheme.bodySmall?.copyWith(
-                                          color: theme
-                                              .colorScheme.onSurfaceVariant,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const Icon(Icons.calendar_month_outlined),
-                          ],
-                        ),
-                      ),
-                    ),
+                return _ConnectedAthleteCard(
+                  athlete: athlete,
+                  lastActivityLabel: lastActStr,
+                  lang: lang,
+                  isDark: isDark,
+                  isDisconnecting:
+                      _busyActionIds.contains(athlete.athleteId),
+                  onOpenCalendar: () => _openAthleteCalendar(athlete),
+                  onDisconnect: () => _confirmAndDisconnectAthlete(
+                    athlete,
+                    isEn: isEn,
+                    isDark: isDark,
                   ),
                 );
               },
             ),
           const SliverToBoxAdapter(child: SizedBox(height: 24)),
         ],
+      ),
+    );
+  }
+}
+
+/// Modulare Karte für einen aktiv verbundenen Athleten im V1.0.0 Coach-Tab.
+///
+/// Was: Rendert Avatar, Name, Sportarten-Badges, Zeitstempel der letzten
+/// Aktivität, Kalender-Sprung sowie den destruktiven „Verbindung trennen“-Button.
+/// Warum: Hält die Haupt-Listenmethode schlank und sorgt für eine saubere
+/// Trennung zwischen Layout-Präsentation und Verbindungs-Aktionen.
+class _ConnectedAthleteCard extends StatelessWidget {
+  final V1CoachAthleteLink athlete;
+  final String lastActivityLabel;
+  final String lang;
+  final bool isDark;
+  final bool isDisconnecting;
+  final VoidCallback onOpenCalendar;
+  final VoidCallback onDisconnect;
+
+  const _ConnectedAthleteCard({
+    required this.athlete,
+    required this.lastActivityLabel,
+    required this.lang,
+    required this.isDark,
+    required this.isDisconnecting,
+    required this.onOpenCalendar,
+    required this.onDisconnect,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isEn = lang == 'en';
+    final theme = Theme.of(context);
+    final cardBg = AppColors.cardBg(isDark: isDark);
+    final borderColor = AppColors.cardBorderFor(isDark: isDark);
+    final errorColor = AppColors.statusError(isDark: isDark);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
+      child: Card(
+        key: Key('coach_athlete_card_${athlete.athleteId}'),
+        elevation: 0,
+        color: cardBg,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(14),
+          side: BorderSide(color: borderColor),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            InkWell(
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(14),
+              ),
+              onTap: onOpenCalendar,
+              child: Padding(
+                padding: const EdgeInsets.all(14),
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 22,
+                      backgroundColor: AppColors.navy,
+                      child: Text(
+                        (athlete.athleteName.isNotEmpty
+                                ? athlete.athleteName[0]
+                                : 'A')
+                            .toUpperCase(),
+                        style: const TextStyle(
+                          color: AppColors.volt,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            athlete.athleteName.isNotEmpty
+                                ? athlete.athleteName
+                                : athlete.athleteEmail,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          if (athlete.athleteSports.isNotEmpty)
+                            Wrap(
+                              spacing: 6,
+                              runSpacing: 4,
+                              children: athlete.athleteSports
+                                  .take(3)
+                                  .map(
+                                    (sport) => _SportBadge(
+                                      sport: sport,
+                                      lang: lang,
+                                      isDark: isDark,
+                                    ),
+                                  )
+                                  .toList(),
+                            ),
+                          const SizedBox(height: 6),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.schedule,
+                                size: 14,
+                                color: theme.colorScheme.onSurfaceVariant,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                isEn
+                                    ? 'Last training: $lastActivityLabel'
+                                    : 'Letztes Training: $lastActivityLabel',
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: theme.colorScheme.onSurfaceVariant,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Icon(Icons.calendar_month_outlined),
+                  ],
+                ),
+              ),
+            ),
+            Divider(height: 1, color: borderColor),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: TextButton.icon(
+                  key: Key('coach_disconnect_athlete_btn_${athlete.athleteId}'),
+                  onPressed: isDisconnecting ? null : onDisconnect,
+                  style: TextButton.styleFrom(
+                    foregroundColor: errorColor,
+                    minimumSize: const Size(44, 44),
+                  ),
+                  icon: isDisconnecting
+                      ? SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: errorColor,
+                          ),
+                        )
+                      : const Icon(Icons.link_off_rounded, size: 18),
+                  label: Text(
+                    isEn ? 'Disconnect athlete' : 'Verbindung trennen',
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

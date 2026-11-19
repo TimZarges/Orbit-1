@@ -82,73 +82,22 @@ class _PrivacySettingsSheetState extends ConsumerState<PrivacySettingsSheet> {
       final prettyJson = const JsonEncoder.withIndent('  ').convert(payload);
       await showDialog<void>(
         context: context,
-        builder: (ctx) => AlertDialog(
-          key: const Key('gdpr_export_result_dialog'),
-          title: Text(
-            isEn
-                ? 'GDPR Data Export (Art. 20)'
-                : 'DSGVO-Datenexport (Art. 20)',
-          ),
-          content: SizedBox(
-            width: 460,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
+        builder: (_) => _GdprExportResultDialog(
+          isEn: isEn,
+          prettyJson: prettyJson,
+          onCopied: () {
+            if (!mounted) return;
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
                   isEn
-                      ? 'Your machine-readable JSON export is ready. You can copy it directly below or download original .FIT files from each workout card.'
-                      : 'Dein maschinenlesbarer JSON-Export steht bereit. Original-.FIT-Dateien kannst du zusätzlich direkt an jeder Trainingseinheit herunterladen.',
-                  style: Theme.of(ctx).textTheme.bodySmall,
+                      ? 'JSON data export copied to clipboard.'
+                      : 'JSON-Datenexport in die Zwischenablage kopiert.',
                 ),
-                const SizedBox(height: 12),
-                Container(
-                  constraints: const BoxConstraints(maxHeight: 220),
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: Theme.of(ctx).colorScheme.surfaceContainerHighest,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: SingleChildScrollView(
-                    child: SelectableText(
-                      prettyJson,
-                      style: const TextStyle(
-                        fontFamily: 'monospace',
-                        fontSize: 11,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(),
-              child: Text(isEn ? 'Close' : 'Schließen'),
-            ),
-            FilledButton.icon(
-              key: const Key('gdpr_export_copy_btn'),
-              onPressed: () async {
-                await Clipboard.setData(ClipboardData(text: prettyJson));
-                if (ctx.mounted) Navigator.of(ctx).pop();
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        isEn
-                            ? 'JSON data export copied to clipboard.'
-                            : 'JSON-Datenexport in die Zwischenablage kopiert.',
-                      ),
-                      backgroundColor: const Color(0xFF10B981),
-                    ),
-                  );
-                }
-              },
-              icon: const Icon(Icons.copy_rounded, size: 18),
-              label: Text(isEn ? 'Copy JSON' : 'JSON kopieren'),
-            ),
-          ],
+                backgroundColor: const Color(0xFF10B981),
+              ),
+            );
+          },
         ),
       );
     } catch (err) {
@@ -558,6 +507,82 @@ class _PrivacySettingsSheetState extends ConsumerState<PrivacySettingsSheet> {
           ),
         );
       },
+    );
+  }
+}
+
+/// Eigenständiger Ergebnis-Dialog für den Art.-20-DSGVO-JSON-Datenexport.
+///
+/// Was: Stellt den formatierten JSON-Export scrollbar bereit und erlaubt das
+/// Kopieren in die Zwischenablage mit Bestätigung.
+/// Warum: Lagert das Dialog-Layout sauber aus [_PrivacySettingsSheetState] aus.
+class _GdprExportResultDialog extends StatelessWidget {
+  final bool isEn;
+  final String prettyJson;
+  final VoidCallback onCopied;
+
+  const _GdprExportResultDialog({
+    required this.isEn,
+    required this.prettyJson,
+    required this.onCopied,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      key: const Key('gdpr_export_result_dialog'),
+      title: Text(
+        isEn ? 'GDPR Data Export (Art. 20)' : 'DSGVO-Datenexport (Art. 20)',
+      ),
+      content: SizedBox(
+        width: 460,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              isEn
+                  ? 'Your machine-readable JSON export is ready. You can copy it directly below or download original .FIT files from each workout card.'
+                  : 'Dein maschinenlesbarer JSON-Export steht bereit. Original-.FIT-Dateien kannst du zusätzlich direkt an jeder Trainingseinheit herunterladen.',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+            const SizedBox(height: 12),
+            Container(
+              constraints: const BoxConstraints(maxHeight: 220),
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: SingleChildScrollView(
+                child: SelectableText(
+                  prettyJson,
+                  style: const TextStyle(
+                    fontFamily: 'monospace',
+                    fontSize: 11,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(isEn ? 'Close' : 'Schließen'),
+        ),
+        FilledButton.icon(
+          key: const Key('gdpr_export_copy_btn'),
+          onPressed: () async {
+            await Clipboard.setData(ClipboardData(text: prettyJson));
+            if (context.mounted) Navigator.of(context).pop();
+            onCopied();
+          },
+          icon: const Icon(Icons.copy_rounded, size: 18),
+          label: Text(isEn ? 'Copy JSON' : 'JSON kopieren'),
+        ),
+      ],
     );
   }
 }

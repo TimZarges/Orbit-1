@@ -15,6 +15,7 @@ import {
   requestAthleteLinkByEmail,
   claimPendingCoachInvites,
   respondToCoachLinkRequest,
+  downloadActivityFit,
 } from "../coach";
 
 // Sicherstellen, dass firebase-admin mit dem Emulator verbunden ist
@@ -330,5 +331,74 @@ describe("Phase 18.3 Trainer-Athleten-Kopplung E2E Flow (Invite -> Redeem -> Art
     });
     expect(reRedeem.success).toBe(true);
     expect((await db.collection("coachLinks").doc(linkId).get()).data()?.status).toBe("ACTIVE");
+  });
+
+  it("Coach trennt aktive Verbindung (revokeLink durch Coach) -> revokedAt, revokedBy='COACH', Entzug authorizedCoachIds & .fit-Sperre", async () => {
+    const coachUid = "coach_disconnect";
+    const athleteUid = "athlete_disconnect";
+    const athleteEmail = "disconnect.athlet@verein.de";
+    const db = admin.firestore();
+    const linkId = `${athleteUid}_${coachUid}`;
+
+    await db.collection("users").doc(coachUid).set({
+      uid: coachUid,
+      role: "TRAINER",
+      email: "coach.disconnect@verein.de",
+      profile: { firstName: "Tim", lastName: "Trainer" },
+    });
+    await db.collection("users").doc(athleteUid).set({
+      uid: athleteUid,
+      role: "ATHLETE",
+      email: athleteEmail,
+      profile: { firstName: "Sara", lastName: "Run" },
+    });
+    await db.collection("activities").doc("act_fit_sec").set({
+      athleteId: athleteUid,
+      coachId: null,
+      title: "Dauerlauf",
+      sport: "RUN",
+    });
+
+    // 1. E-Mail-Einladung + DSGVO-Bestätigung durch Athleten
+    await (requestAthleteLinkByEmail as any).run({
+      auth: { uid: coachUid },
+      data: { email: athleteEmail },
+    });
+    await (respondToCoachLinkRequest as any).run({
+      auth: { uid: athleteUid },
+      data: { linkId, accept: true, gdprConsent: true },
+    });
+
+    const beforeDisconnect = await db.collection("users").doc(athleteUid).get();
+    expect(beforeDisconnect.data()?.authorizedCoachIds).toContain(coachUid);
+
+    const coachClientDb = testEnv.authenticatedContext(coachUid).firestore();
+    await assertSucceeds(coachClientDb.collection("activities").doc("act_fit_sec").get());
+
+    // 2. Verbundener Coach trennt die Beziehung direkt per athleteId/linkId
+    const disconnectRes = await (revokeLink as any).run({
+      auth: { uid: coachUid },
+      data: { athleteId: athleteUid },
+    });
+    expect(disconnectRes.success).toBe(true);
+
+    // 3. Verifikation: REVOKED, revokedBy === 'COACH', revokedAt vorhanden, authorizedCoachIds bereinigt
+    const revokedLinkSnap = await db.collection("coachLinks").doc(linkId).get();
+    expect(revokedLinkSnap.data()?.status).toBe("REVOKED");
+    expect(revokedLinkSnap.data()?.revokedBy).toBe("COACH");
+    expect(revokedLinkSnap.data()?.revokedAt).toBeDefined();
+
+    const afterDisconnectAthlete = await db.collection("users").doc(athleteUid).get();
+    expect(afterDisconnectAthlete.data()?.authorizedCoachIds || []).not.toContain(coachUid);
+    expect(afterDisconnectAthlete.data()?.coachId).toBeUndefined();
+
+    // 4. Sofortiger Verlust von Firestore-Aktivitätensicht & .fit-Download-Berechtigung
+    await assertFails(coachClientDb.collection("activities").doc("act_fit_sec").get());
+    await expect(
+      (downloadActivityFit as any).run({
+        auth: { uid: coachUid },
+        data: { activityId: "act_fit_sec" },
+      })
+    ).rejects.toThrow(/No active coach permission/i);
   });
 });

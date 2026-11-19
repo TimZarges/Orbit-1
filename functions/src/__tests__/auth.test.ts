@@ -1,7 +1,11 @@
 
 import * as fft from "firebase-functions-test";
 import axios from "axios";
-import { setInitialRole, deregisterGarminUserIfConnected } from "../auth";
+import {
+  setInitialRole,
+  deregisterGarminUserIfConnected,
+  sanitizeExportValue,
+} from "../auth";
 
 jest.mock("axios");
 const mockedAxios = axios as jest.Mocked<typeof axios>;
@@ -155,5 +159,35 @@ describe("deregisterGarminUserIfConnected", () => {
     expect(deletedPaths).toContain("garminUsers/g_xyz");
     expect(warnSpy).toHaveBeenCalled();
     warnSpy.mockRestore();
+  });
+});
+
+describe("sanitizeExportValue (Art. 20 DSGVO Datenschutz-Filter)", () => {
+  it("entfernt rekursiv OAuth-/Server-Secrets und formatiert Timestamps als ISO-8601", () => {
+    const fakeTimestamp = {
+      toDate: () => new Date("2026-11-19T08:00:00.000Z"),
+    };
+    const cleaned = sanitizeExportValue({
+      uid: "u_export",
+      email: "athlet@orbit.training",
+      oauthToken: "secret_tok",
+      oauthTokenSecret: "secret_sec",
+      nested: {
+        refreshToken: "ref_123",
+        accessTokenSecret: "acc_sec",
+        createdAt: fakeTimestamp,
+        sport: "TRIATHLON",
+      },
+      private: { hidden: true },
+    }) as Record<string, any>;
+
+    expect(cleaned.uid).toBe("u_export");
+    expect(cleaned.oauthToken).toBeUndefined();
+    expect(cleaned.oauthTokenSecret).toBeUndefined();
+    expect(cleaned.private).toBeUndefined();
+    expect(cleaned.nested.refreshToken).toBeUndefined();
+    expect(cleaned.nested.accessTokenSecret).toBeUndefined();
+    expect(cleaned.nested.sport).toBe("TRIATHLON");
+    expect(cleaned.nested.createdAt).toBe("2026-11-19T08:00:00.000Z");
   });
 });

@@ -170,3 +170,20 @@
   - Emulator-Suite (`npx -y firebase-tools emulators:exec --only firestore,storage "npm --prefix functions test"`): **`12/12` Test-Suites (`118/118` Tests) bestanden** (inklusive neuem Re-Invite-, Ablehnungs- & Code-Wiederverwendungs-Test in `coachLink.test.ts`).
   - **Live-End-to-End-Verifikation gegen `orbit-app-mvp`** (mit 3 Wegwerf-Testkonten inkl. anschließender restloser Kontolöschung via `deleteAccount`, reales Athletenkonto unberührt): E-Mail-Einladung (`accountExists: true`, `PENDING`) -> DSGVO-Annahme (`ACTIVE`) -> `ALREADY_EXISTS`-Schutz -> `revokeLink` -> erneute E-Mail-Einladung (`reactivated: true`, `PENDING`) -> Ablehnung + erneutes Re-Invite -> `ACTIVE` -> Trennung & Wiederverwendung des 6-stelligen Coach-Codes -> Pre-Registration-Invite + Onboarding-Claim + Annahme (`100 %` bestanden).
   - Live-Screenshots: `docs/beta/screenshots/v1_0_2_safari_live.png`, `docs/beta/screenshots/v1_0_2_pixel10_live.png`.
+
+---
+
+## 10. Block 10 — Finaler V1.0.0-Abschluss: Coach trennt Athleten-Verbindung, Export-Hardening & Code-Qualität (`v1.0.2`)
+
+- **Coach-seitig initiiertes Trennen (`functions/src/coach.ts`, `v1_coach_connection_provider.dart`, `v1_coach_athletes_tab.dart`):**
+  - `revokeLink` akzeptiert `linkId` oder `athleteId` (Coach-Fallback), setzt `status: 'REVOKED'`, `revokedAt` und `revokedBy: 'COACH' | 'ATHLETE'` (`revokedByUid`), entfernt sofort `coachId` & `authorizedCoachIds` vom Athleten-Dokument sowie offene `coachInvites`, `invites.usedBy` und `coachDashboard`-Einträge; Firestore Rules, Storage Rules und `downloadActivityFit` entziehen dem ehemaligen Coach unmittelbar jeden Lese- und `.FIT`-Download-Zugriff.
+  - `V1CoachConnectionService.disconnectAthlete(athleteId)` ruft `revokeLink` auf, setzt eine aktive Kalender-Auswahl (`v1SelectedCoachAthleteIdProvider`, `viewedAthleteIdProvider`) zurück und invalidiert die Coach-Streams.
+  - Jede Karte verbundener Athleten (`_ConnectedAthleteCard`) zeigt in `V1CoachAthletesTab` den Button **„Verbindung trennen“** / **„Disconnect athlete“** (`#DC2626` Light / `#EF4444` Dark) inklusive DE/EN-Bestätigungsdialog (`coach_disconnect_confirm_dialog`) und Hinweis auf bereits lokal gespeicherte `.FIT`-Dateien.
+- **Rechtssicherheits-Nachkontrolle & Modularität (`functions/src/auth.ts`, `privacy_settings_sheet.dart`):**
+  - `exportAccount` (Art. 20 DSGVO) filtert alle Ausgabedaten rekursiv über `sanitizeExportValue(...)`, sodass garantiert keine Server-/OAuth-Secrets (`oauthTokenSecret`, `accessTokenSecret`, `refreshToken` etc.) geleakt werden und Firestore-Timestamps als ISO-8601 serialisieren; `_GdprExportResultDialog` wurde sauber ausgelagert.
+- **Offener Store-Hinweis:**
+  - ORBIT V1.0.0 ist technisch vollständig und funktional abgeschlossen; für den breiten öffentlichen Google Play Store Launch muss organisatorisch noch die echte **ladungsfähige Postanschrift** gemäß § 5 Abs. 1 Nr. 1 DDG im Impressum ergänzt werden (`docs/audit/LEGAL_COMPLIANCE_REPORT_V1.md`).
+- **Verifikation (`v1.0.2` Feature Complete):**
+  - `bash scripts/check_phase_ready.sh`: `0 Errors / 0 Warnings / 0 Infos`, `functions` Build & Lint `0 Errors`, `100 %` deutsche Kommentare, **`276/276` Flutter-Tests bestanden**.
+  - Emulator-Suite (`npx -y firebase-tools emulators:exec --only firestore,storage "npm --prefix functions test"`): **`12/12` Test-Suites (`120/120` Tests) bestanden** (inkl. `coachLink.test.ts` Coach-Trennung + `.fit`-Sperre & `auth.test.ts` `sanitizeExportValue`).
+  - Live-E2E-Prüfung auf `orbit-app-mvp` (Wegwerf-Konten) + Live-Screenshots: `docs/beta/screenshots/v1_coach_disconnect_dialog.png`, `docs/beta/screenshots/v1_0_0_final_pixel10.png`.

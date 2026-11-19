@@ -9,11 +9,13 @@ library;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../auth/providers/user_provider.dart';
 import '../models/v1_coach_athlete_link.dart';
+import 'athlete_context_provider.dart';
 
 /// Funktionssignatur für abstrahierte Cloud-Function-Aufrufe (ermöglicht Test-Mocks).
 typedef CoachCallableInvoker = Future<Map<String, dynamic>> Function(
@@ -34,11 +36,25 @@ class V1CoachConnectionService {
   /// Injizierbarer Aufrufer für Cloud Functions in `europe-west3`.
   final CoachCallableInvoker _invoke;
 
+  /// Optionaler Riverpod-[Ref] zur direkten Aktualisierung abhängiger UI-Provider
+  /// (z. B. Zurücksetzen von [v1SelectedCoachAthleteIdProvider] nach Coach-Trennung).
+  final Ref? _ref;
+
+  /// Optionaler Resolver für die aktuelle Coach-UID (erleichtert isolierte Tests).
+  final String? Function()? _currentUidResolver;
+
   /// Erstellt einen [V1CoachConnectionService].
   ///
   /// [invoke]: Optionaler benutzerdefinierter Aufrufer für Tests.
-  V1CoachConnectionService({CoachCallableInvoker? invoke})
-      : _invoke = invoke ?? _defaultInvoker;
+  /// [ref]: Optionaler Riverpod-Container-Zugriff für State-/Stream-Updates.
+  /// [currentUidResolver]: Optionaler UID-Lieferant für Unit-/Widget-Tests.
+  V1CoachConnectionService({
+    CoachCallableInvoker? invoke,
+    Ref? ref,
+    String? Function()? currentUidResolver,
+  })  : _invoke = invoke ?? _defaultInvoker,
+        _ref = ref,
+        _currentUidResolver = currentUidResolver;
 
   /// Standard-Aufrufer gegen Firebase Cloud Functions (`europe-west3`).
   static Future<Map<String, dynamic>> _defaultInvoker(
@@ -126,6 +142,53 @@ class V1CoachConnectionService {
   /// und entzieht dem Coach sofort alle Leserechte.
   Future<void> revokeLink(String linkId) async {
     await _invoke('revokeLink', {'linkId': linkId});
+  }
+
+  /// Trennt als Coach die bestehende Verbindung zu [athleteId] sofort über `revokeLink`,
+  /// bereinigt eine aktive Kalender-Auswahl ([v1SelectedCoachAthleteIdProvider] und
+  /// [viewedAthleteIdProvider]) und invalidiert die Live-Streams der Athletenliste.
+  ///
+  /// Warum: Damit nach der Trennung durch den Coach weder veraltete Kalender-Ansichten
+  /// des bisherigen Athleten offen bleiben noch Reste im Cache stehen bleiben.
+  Future<void> disconnectAthlete(
+    String athleteId, {
+    String? linkId,
+  }) async {
+    final cleanAthleteId = athleteId.trim();
+    if (cleanAthleteId.isEmpty) {
+      throw ArgumentError('athleteId darf nicht leer sein.');
+    }
+
+    String resolvedLinkId = (linkId ?? '').trim();
+    if (resolvedLinkId.isEmpty) {
+      String? coachUid = _currentUidResolver?.call();
+      if ((coachUid == null || coachUid.isEmpty) && Firebase.apps.isNotEmpty) {
+        coachUid = FirebaseAuth.instance.currentUser?.uid;
+      }
+      if (coachUid != null && coachUid.isNotEmpty) {
+        resolvedLinkId = '${cleanAthleteId}_$coachUid';
+      }
+    }
+
+    // Cloud Function akzeptiert deterministische linkId oder athleteId als Coach-Fallback
+    await _invoke(
+      'revokeLink',
+      resolvedLinkId.isNotEmpty
+          ? {'linkId': resolvedLinkId}
+          : {'athleteId': cleanAthleteId},
+    );
+
+    final activeRef = _ref;
+    if (activeRef != null) {
+      if (activeRef.read(v1SelectedCoachAthleteIdProvider) == cleanAthleteId) {
+        activeRef.read(v1SelectedCoachAthleteIdProvider.notifier).state = null;
+      }
+      if (activeRef.read(viewedAthleteIdProvider) == cleanAthleteId) {
+        activeRef.read(viewedAthleteIdProvider.notifier).state = null;
+      }
+      activeRef.invalidate(v1CoachAthletesStreamProvider);
+      activeRef.invalidate(v1CoachPendingEmailInvitesStreamProvider);
+    }
   }
 
   /// Übersetzt technische Cloud-Function- und Eingabefehler in verständliche,
@@ -297,7 +360,7 @@ final v1AutoClaimCoachInvitesProvider =
 /// Riverpod-Provider für den [V1CoachConnectionService].
 final v1CoachConnectionServiceProvider =
     Provider<V1CoachConnectionService>((ref) {
-  return V1CoachConnectionService();
+  return V1CoachConnectionService(ref: ref);
 });
 
 /// Aktiver Tab-Index der V1.0.0 Coach-3-Tab-Navigation

@@ -477,13 +477,21 @@ export const revokeLink = onCall(async (request) => {
     throw new HttpsError("unauthenticated", "Must be logged in.");
   }
 
-  const { linkId } = request.data || {};
-  if (!linkId) {
-    throw new HttpsError("invalid-argument", "linkId is required.");
+  const rawLinkId =
+    typeof request.data?.linkId === "string" ? request.data.linkId.trim() : "";
+  const rawAthleteId =
+    typeof request.data?.athleteId === "string"
+      ? request.data.athleteId.trim()
+      : "";
+  const resolvedInputLinkId =
+    rawLinkId || (rawAthleteId ? `${rawAthleteId}_${uid}` : "");
+
+  if (!resolvedInputLinkId) {
+    throw new HttpsError("invalid-argument", "linkId or athleteId is required.");
   }
   const db = admin.firestore();
 
-  const linkRef = db.collection("coachLinks").doc(linkId);
+  const linkRef = db.collection("coachLinks").doc(resolvedInputLinkId);
   const linkDoc = await linkRef.get();
 
   if (!linkDoc.exists) {
@@ -497,12 +505,15 @@ export const revokeLink = onCall(async (request) => {
 
   const athleteId = linkData.athleteId;
   const coachId = linkData.coachId;
+  const revokedByRole = uid === coachId ? "COACH" : "ATHLETE";
 
-  // 1. Link-Status auf REVOKED setzen und etwaige Alt-Dokumente bereinigen
+  // 1. Link-Status auf REVOKED setzen inkl. Zeitstempel & Rolle + Alt-Dokumente bereinigen
   const canonicalLinkId = `${athleteId}_${coachId}`;
   await linkRef.update({
     status: "REVOKED",
-    revokedBy: uid,
+    revokedBy: revokedByRole,
+    revokedByUid: uid,
+    revokedAt: admin.firestore.FieldValue.serverTimestamp(),
     updatedAt: admin.firestore.FieldValue.serverTimestamp(),
   });
 
@@ -513,14 +524,16 @@ export const revokeLink = onCall(async (request) => {
       .where("coachId", "==", coachId)
       .get();
     for (const dupDoc of duplicateLinksSnap.docs) {
-      if (dupDoc.id !== linkId && dupDoc.id !== canonicalLinkId) {
+      if (dupDoc.id !== linkDoc.id && dupDoc.id !== canonicalLinkId) {
         await dupDoc.ref.delete();
-      } else if (dupDoc.id === canonicalLinkId && dupDoc.id !== linkId) {
+      } else if (dupDoc.id === canonicalLinkId && dupDoc.id !== linkDoc.id) {
         await dupDoc.ref.set({
           athleteId,
           coachId,
           status: "REVOKED",
-          revokedBy: uid,
+          revokedBy: revokedByRole,
+          revokedByUid: uid,
+          revokedAt: admin.firestore.FieldValue.serverTimestamp(),
           updatedAt: admin.firestore.FieldValue.serverTimestamp(),
         }, { merge: true });
       }
@@ -529,7 +542,7 @@ export const revokeLink = onCall(async (request) => {
     // Optionale Alt-Dokument-Bereinigung
   }
 
-  // 1b. Zugehörige E-Mail-Einladung in `coachInvites` (falls vorhanden) ebenfalls schließen
+  // 1b. Zugehörige E-Mail-Einladungen in `coachInvites` (nach ID & athleteId) schließen
   let resolvedAthleteEmail = typeof linkData.athleteEmail === "string"
     ? linkData.athleteEmail.trim().toLowerCase()
     : "";
@@ -552,6 +565,21 @@ export const revokeLink = onCall(async (request) => {
       if (inviteSnap.exists) {
         await inviteRef.set({
           status: "REVOKED",
+          revokedAt: admin.firestore.FieldValue.serverTimestamp(),
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        }, { merge: true });
+      }
+    }
+    const matchingInvites = await db
+      .collection("coachInvites")
+      .where("coachId", "==", coachId)
+      .where("athleteId", "==", athleteId)
+      .get();
+    for (const invDoc of matchingInvites.docs) {
+      if (invDoc.data()?.status !== "REVOKED") {
+        await invDoc.ref.set({
+          status: "REVOKED",
+          revokedAt: admin.firestore.FieldValue.serverTimestamp(),
           updatedAt: admin.firestore.FieldValue.serverTimestamp(),
         }, { merge: true });
       }
@@ -578,18 +606,25 @@ export const revokeLink = onCall(async (request) => {
     // Code-Freigabe optional
   }
 
-  // 2. coachId und authorizedCoachIds vom Athleten-Dokument entfernen & Art. 9 Consent-Widerruf dokumentieren
+  // 2. coachId und authorizedCoachIds vom Athleten-Dokument entfernen & Art. 9 Widerruf dokumentieren
   const userRef = db.collection("users").doc(athleteId);
-  await userRef.update({
-    coachId: admin.firestore.FieldValue.delete(),
-    authorizedCoachIds: admin.firestore.FieldValue.arrayRemove(coachId),
-    "consents.coachSharingRevokedAt": admin.firestore.FieldValue.serverTimestamp(),
-  });
+  const userSnap = await userRef.get();
+  if (userSnap.exists) {
+    const userPayload: Record<string, any> = {
+      authorizedCoachIds: admin.firestore.FieldValue.arrayRemove(coachId),
+      "consents.coachSharingRevokedAt": admin.firestore.FieldValue.serverTimestamp(),
+    };
+    if (userSnap.data()?.coachId === coachId) {
+      userPayload.coachId = admin.firestore.FieldValue.delete();
+    }
+    await userRef.update(userPayload);
+  }
 
   await userRef.collection("consents").add({
     type: "COACH_LINK_REVOKED",
     coachId,
-    revokedBy: uid,
+    revokedBy: revokedByRole,
+    revokedByUid: uid,
     version: "v1",
     createdAt: admin.firestore.FieldValue.serverTimestamp(),
   });
