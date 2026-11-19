@@ -14,6 +14,13 @@ import {
   garminConsumerSecret,
 } from "../import/garmin/backfill";
 import { syncGarminActivitiesNow } from "../import/garmin/sync";
+import {
+  GARMIN_CALLBACK_URL,
+  garminAuthCancel,
+  garminAuthCallback,
+  isValidGarminVerifier,
+  normalizeGarminCallbackInput,
+} from "../import/garmin/auth";
 import * as admin from "firebase-admin";
 import axios from "axios";
 import * as crypto from "crypto";
@@ -550,6 +557,125 @@ describe("Garmin Webhook, 3x30d Backfill Chunking, Ping/Push & ActivityDetails S
       expect(res.success).toBe(false);
       expect(res.count).toBe(0);
       expect(res.error).toContain("Garmin API-Ratenlimit erreicht");
+    });
+  });
+
+  describe("4. Garmin OAuth-1.0a-Flow, Abbruch & Verifier-Bereinigung (v1.0.3)", () => {
+    it("nutzt die feste Hosting-Callback-URL und erkennt ungueltige Verifier-Strings wie 'null'", () => {
+      expect(GARMIN_CALLBACK_URL).toBe("https://orbit-app-mvp.web.app/callback/garmin");
+
+      expect(isValidGarminVerifier("abc123verifier")).toBe(true);
+      expect(isValidGarminVerifier("null")).toBe(false);
+      expect(isValidGarminVerifier("NULL")).toBe(false);
+      expect(isValidGarminVerifier("undefined")).toBe(false);
+      expect(isValidGarminVerifier("denied")).toBe(false);
+      expect(isValidGarminVerifier("   ")).toBe(false);
+      expect(isValidGarminVerifier(null)).toBe(false);
+    });
+
+    it("normalisiert abgebrochene Callbacks deterministisch ohne Fehlaufruf an Garmin", () => {
+      expect(normalizeGarminCallbackInput({ oauthVerifier: "null", oauthToken: "tok_1" })).toEqual({
+        oauthToken: "tok_1",
+        oauthVerifier: null,
+        isCancelled: true,
+      });
+      expect(normalizeGarminCallbackInput({ denied: "1", oauthToken: "tok_1" })).toEqual({
+        oauthToken: "tok_1",
+        oauthVerifier: null,
+        isCancelled: true,
+      });
+      expect(normalizeGarminCallbackInput({ oauthVerifier: "  ver_99  ", oauthToken: " tok_2 " })).toEqual({
+        oauthToken: "tok_2",
+        oauthVerifier: "ver_99",
+        isCancelled: false,
+      });
+    });
+
+    it("garminAuthCallback setzt Status auf DISCONNECTED und wirft 'cancelled' bei oauth_verifier=null", async () => {
+      const deleteSpy = jest.fn().mockResolvedValue(undefined);
+      const setSpy = jest.fn().mockResolvedValue(undefined);
+
+      const mockCollection = jest.fn((colName: string) => {
+        if (colName === "users") {
+          return {
+            doc: jest.fn(() => ({
+              collection: jest.fn((subCol: string) => ({
+                doc: jest.fn(() => {
+                  if (subCol === "private") {
+                    return { delete: deleteSpy };
+                  }
+                  return {
+                    get: jest.fn().mockResolvedValue({ exists: true, data: () => ({ state: "CONNECTING" }) }),
+                    set: setSpy,
+                  };
+                }),
+              })),
+            })),
+          };
+        }
+        return { doc: jest.fn(() => ({})) };
+      });
+
+      jest.spyOn(admin, "firestore").mockReturnValue({ collection: mockCollection } as any);
+
+      await expect(
+        (garminAuthCallback as any).run({
+          auth: { uid: "athlete_cancel_1" },
+          data: { oauthToken: "tok_abc", oauthVerifier: "null" },
+        })
+      ).rejects.toThrow("Garmin-Autorisierung wurde im Browser abgebrochen.");
+
+      expect(deleteSpy).toHaveBeenCalledTimes(1);
+      expect(setSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ state: "DISCONNECTED" }),
+        { merge: true }
+      );
+    });
+
+    it("garminAuthCancel bereinigt laufenden Versuch ohne bestehende CONNECTED-Verbindung zu ueberschreiben", async () => {
+      const deleteSpy = jest.fn().mockResolvedValue(undefined);
+      const setSpy = jest.fn().mockResolvedValue(undefined);
+
+      let currentServerState = "CONNECTING";
+      const mockCollection = jest.fn(() => ({
+        doc: jest.fn(() => ({
+          collection: jest.fn((subCol: string) => ({
+            doc: jest.fn(() => {
+              if (subCol === "private") {
+                return { delete: deleteSpy };
+              }
+              return {
+                get: jest.fn().mockResolvedValue({
+                  exists: true,
+                  data: () => ({ state: currentServerState }),
+                }),
+                set: setSpy,
+              };
+            }),
+          })),
+        })),
+      }));
+
+      jest.spyOn(admin, "firestore").mockReturnValue({ collection: mockCollection } as any);
+
+      const res1 = await (garminAuthCancel as any).run({
+        auth: { uid: "athlete_1" },
+        data: { reason: "timeout" },
+      });
+      expect(res1).toEqual({ success: true, cancelled: true });
+      expect(setSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ state: "ERROR" }),
+        { merge: true }
+      );
+
+      // Schutztest: Wenn Status bereits CONNECTED ist, darf garminAuthCancel ihn NICHT auf DISCONNECTED setzen
+      setSpy.mockClear();
+      currentServerState = "CONNECTED";
+      await (garminAuthCancel as any).run({
+        auth: { uid: "athlete_1" },
+        data: { reason: "cancelled" },
+      });
+      expect(setSpy).not.toHaveBeenCalled();
     });
   });
 });

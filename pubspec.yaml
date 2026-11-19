@@ -1,7 +1,7 @@
 name: orbit
 description: Mobile-First-Trainingsplattform für Ausdauersportler.
 publish_to: 'none'
-version: 1.0.0+1
+version: 1.0.0+3
 
 environment:
   sdk: ^3.3.0

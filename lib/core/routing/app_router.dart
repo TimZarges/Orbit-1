@@ -6,6 +6,7 @@ import '../../features/profile/screens/profile_screen.dart';
 import '../../features/calendar/screens/calendar_screen.dart';
 import '../../features/profile/screens/thresholds_screen.dart';
 import '../../features/settings/screens/settings_screen.dart';
+import '../../features/integrations/models/garmin_status.dart';
 import '../../features/integrations/screens/garmin_connection_screen.dart';
 import '../../features/beta_feedback/screens/admin_feedback_screen.dart';
 import '../../features/auth/screens/login_screen.dart';
@@ -98,15 +99,17 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       return null;
     },
     errorBuilder: (context, state) {
-      // Fallback für ungematchte Garmin-OAuth-Callbacks
+      // Fallback für ungematchte Garmin-OAuth-Callbacks (inkl. bereinigter Parameter)
       final uri = state.uri;
       final uriStr = uri.toString();
       if (uri.scheme == 'orbit' ||
           uri.path.contains('garmin') ||
           uriStr.contains('oauth_verifier')) {
+        final params = parseGarminCallbackUri(uri);
         return GarminConnectionScreen(
-          initialVerifier: uri.queryParameters['oauth_verifier'],
-          initialToken: uri.queryParameters['oauth_token'],
+          initialVerifier: params.verifier,
+          initialToken: params.token,
+          initialError: params.error,
         );
       }
       return Scaffold(
@@ -213,10 +216,14 @@ final goRouterProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: 'garmin',
-                builder: (context, state) => GarminConnectionScreen(
-                  initialVerifier: state.uri.queryParameters['oauth_verifier'],
-                  initialToken: state.uri.queryParameters['oauth_token'],
-                ),
+                builder: (context, state) {
+                  final params = parseGarminCallbackUri(state.uri);
+                  return GarminConnectionScreen(
+                    initialVerifier: params.verifier,
+                    initialToken: params.token,
+                    initialError: params.error,
+                  );
+                },
               ),
             ],
           ),
@@ -224,17 +231,25 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/oauth/garmin',
-        builder: (context, state) => GarminConnectionScreen(
-          initialVerifier: state.uri.queryParameters['oauth_verifier'],
-          initialToken: state.uri.queryParameters['oauth_token'],
-        ),
+        builder: (context, state) {
+          final params = parseGarminCallbackUri(state.uri);
+          return GarminConnectionScreen(
+            initialVerifier: params.verifier,
+            initialToken: params.token,
+            initialError: params.error,
+          );
+        },
       ),
       GoRoute(
         path: '/callback/garmin',
-        builder: (context, state) => GarminConnectionScreen(
-          initialVerifier: state.uri.queryParameters['oauth_verifier'],
-          initialToken: state.uri.queryParameters['oauth_token'],
-        ),
+        builder: (context, state) {
+          final params = parseGarminCallbackUri(state.uri);
+          return GarminConnectionScreen(
+            initialVerifier: params.verifier,
+            initialToken: params.token,
+            initialError: params.error,
+          );
+        },
       ),
       GoRoute(
         path: '/admin/feedback',

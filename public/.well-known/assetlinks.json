@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "app.orbit.training",
+      "sha256_cert_fingerprints": [
+        "3B:02:F4:A9:91:21:6C:A2:53:4A:1F:43:45:EB:06:85:EB:7D:AA:13:EA:4D:A8:31:F9:1B:D5:64:AF:3A:22:3D"
+      ]
+    }
+  }
+]

@@ -5,13 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ORBIT - Garmin Autorisierung</title>
     <style>
+        /* Farben verbindlich gemäß docs/design/COLOR_SYSTEM_V1.md (Dark Surfaces + Volt/Navy/Status) */
         :root {
             --navy: #001F47;
             --volt: #CDFB17;
-            --bg: #0F172A;
-            --card: #1E293B;
+            --bg: #0B0E14;
+            --card: #141923;
+            --elevated: #1B2230;
+            --border: rgba(255, 255, 255, 0.14);
             --text: #F8FAFC;
             --muted: #94A3B8;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --error: #EF4444;
         }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -28,190 +34,363 @@
         }
         .box {
             background: var(--card);
-            border: 1px solid #334155;
+            border: 1px solid var(--border);
             border-radius: 20px;
             padding: 2.5rem 2rem;
             max-width: 480px;
             width: 100%;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
         }
         .logo {
-            max-width: 90px;
+            max-width: 84px;
             border-radius: 18px;
-            margin-bottom: 1.5rem;
+            margin-bottom: 1.25rem;
         }
         h2 {
-            margin: 0 0 0.5rem 0;
-            color: #FFFFFF;
-            font-size: 1.6rem;
+            margin: 0 0 0.6rem 0;
+            color: var(--text);
+            font-size: 1.55rem;
         }
         p {
             color: var(--muted);
-            line-height: 1.5;
+            line-height: 1.55;
             font-size: 0.95rem;
-            margin: 0.5rem 0 1.5rem 0;
+            margin: 0.5rem 0 1.25rem 0;
         }
         .code-container {
-            background: #0B1120;
-            border: 2px dashed #475569;
+            background: var(--elevated);
+            border: 1.5px dashed rgba(205, 251, 23, 0.45);
             border-radius: 12px;
-            padding: 1.2rem;
-            margin: 1.5rem 0;
+            padding: 1.15rem;
+            margin: 1.25rem 0;
         }
         .code-label {
-            font-size: 0.8rem;
+            font-size: 0.78rem;
             color: var(--muted);
             text-transform: uppercase;
             letter-spacing: 1px;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.45rem;
         }
         .code-value {
             font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-            font-size: 1.8rem;
+            font-size: 1.65rem;
             font-weight: 700;
             color: var(--volt);
             letter-spacing: 2px;
             word-break: break-all;
             user-select: all;
         }
+        .status-pill {
+            display: inline-block;
+            padding: 0.35rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            margin-bottom: 0.9rem;
+        }
+        .status-success {
+            background: rgba(16, 185, 129, 0.14);
+            color: var(--success);
+            border: 1px solid rgba(16, 185, 129, 0.35);
+        }
+        .status-error {
+            background: rgba(239, 68, 68, 0.14);
+            color: var(--error);
+            border: 1px solid rgba(239, 68, 68, 0.35);
+        }
         .btn-group {
             display: flex;
             flex-direction: column;
             gap: 0.75rem;
-            margin-top: 1.5rem;
+            margin-top: 1.25rem;
         }
         .btn {
             display: block;
             border: none;
             border-radius: 12px;
-            padding: 0.9rem 1.5rem;
-            font-size: 1rem;
+            padding: 0.9rem 1.4rem;
+            font-size: 0.98rem;
             font-weight: 600;
             cursor: pointer;
             text-decoration: none;
-            transition: all 0.2s ease;
+            transition: opacity 0.2s ease, transform 0.2s ease;
         }
         .btn-primary {
             background-color: var(--volt);
             color: var(--navy);
         }
         .btn-primary:hover {
-            opacity: 0.9;
+            opacity: 0.92;
             transform: translateY(-1px);
         }
         .btn-secondary {
-            background-color: #334155;
-            color: #FFFFFF;
+            background-color: var(--elevated);
+            color: var(--text);
+            border: 1px solid var(--border);
         }
         .btn-secondary:hover {
-            background-color: #475569;
+            opacity: 0.92;
         }
         .alert-success {
-            color: #4ADE80;
+            color: var(--success);
             font-weight: 600;
             margin-top: 0.5rem;
             display: none;
+        }
+        .hint {
+            font-size: 0.84rem;
+            margin-top: 1rem;
+            color: var(--muted);
         }
     </style>
 </head>
 <body>
     <div class="box">
         <img src="/logo.png" alt="ORBIT Logo" class="logo">
+
+        <!-- Ansicht 1: Gültiger Bestätigungscode vorhanden -->
         <div id="success-view" style="display: none;">
-            <h2>Garmin Login erfolgreich!</h2>
-            <p>Dein Bestätigungscode (oauth_verifier) wurde generiert:</p>
-            
+            <div class="status-pill status-success">Autorisierung bestätigt</div>
+            <h2>Garmin Connect bestätigt</h2>
+            <p id="success-subtitle">Die Bestätigung wird jetzt automatisch an ORBIT übergeben.</p>
+
             <div class="code-container">
-                <div class="code-label">Bestätigungscode</div>
+                <div class="code-label">Bestätigungscode (falls manuell benötigt)</div>
                 <div id="verifier-display" class="code-value">------</div>
             </div>
 
-            <div id="copy-status" class="alert-success">✓ In die Zwischenablage kopiert!</div>
+            <div id="copy-status" class="alert-success">✓ In die Zwischenablage kopiert</div>
 
             <div class="btn-group">
-                <a id="orbit-app-btn" class="btn btn-primary" href="#">In ORBIT App öffnen</a>
-                <button class="btn btn-secondary" onclick="copyVerifier()">Code kopieren</button>
-                <button class="btn btn-secondary" onclick="returnToOrbit()">Fenster schließen</button>
+                <a id="primary-return-btn" class="btn btn-primary" href="/app/#/settings/garmin">Zurück zu ORBIT</a>
+                <a id="secondary-app-btn" class="btn btn-secondary" href="#" style="display: none;">In ORBIT Android App öffnen</a>
+                <button id="copy-btn" class="btn btn-secondary" type="button" onclick="copyVerifier()">Code kopieren</button>
+                <button id="close-tab-btn" class="btn btn-secondary" type="button" onclick="closeOrReturn()">Fenster schließen</button>
+            </div>
+            <p id="redirect-hint" class="hint"></p>
+        </div>
+
+        <!-- Ansicht 2: Abbruch oder Fehler durch Garmin / Nutzer -->
+        <div id="cancelled-view" style="display: none;">
+            <div class="status-pill status-error">Vorgang abgebrochen</div>
+            <h2>Garmin-Verbindung nicht abgeschlossen</h2>
+            <p id="cancelled-reason">Die Autorisierung bei Garmin Connect wurde abgebrochen oder abgelehnt. Du kannst den Vorgang in ORBIT jederzeit neu starten.</p>
+            <div class="btn-group">
+                <a id="cancelled-web-btn" class="btn btn-primary" href="/app/#/callback/garmin?error=cancelled">Zurück zu ORBIT Web</a>
+                <a id="cancelled-app-btn" class="btn btn-secondary" href="orbit://oauth/garmin?error=cancelled" style="display: none;">Zurück zur ORBIT App</a>
             </div>
         </div>
 
+        <!-- Ansicht 3: Aufruf ohne Query-Parameter -->
         <div id="no-code-view">
-            <h2>Fast fertig!</h2>
-            <p>Es wurde noch kein Bestätigungscode übergeben. Wenn du den Login bei Garmin gestartet hast, wirst du automatisch hierher weitergeleitet.</p>
+            <h2>Fast fertig</h2>
+            <p>Es wurde kein Bestätigungscode übergeben. Kehre zu ORBIT zurück, um die Verbindung neu zu starten oder den Code manuell einzugeben.</p>
             <div class="btn-group">
-                <a id="orbit-app-fallback-btn" class="btn btn-primary" href="orbit://oauth/garmin">Zurück zu ORBIT</a>
+                <a id="orbit-web-fallback-btn" class="btn btn-primary" href="/app/#/settings/garmin">Zurück zu ORBIT Web</a>
+                <a id="orbit-app-fallback-btn" class="btn btn-secondary" href="orbit://oauth/garmin">Zurück zur ORBIT App</a>
             </div>
         </div>
     </div>
 
     <script>
-        const urlParams = new URLSearchParams(window.location.search);
-        const verifier = urlParams.get('oauth_verifier');
-        const token = urlParams.get('oauth_token');
+        (function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            const rawVerifier = (urlParams.get('oauth_verifier') || '').trim();
+            const token = (urlParams.get('oauth_token') || '').trim();
+            const denied = (urlParams.get('denied') || '').trim();
+            const errorParam = (urlParams.get('error') || '').trim();
 
-        const appDeepLink = 'orbit://oauth/garmin' + window.location.search;
+            // Prüfen, ob Garmin `oauth_verifier=null` (Abbruch) oder einen Fehler gesendet hat
+            const normalizedVerifier = rawVerifier.toLowerCase();
+            const isValidVerifier =
+                normalizedVerifier.length > 0 &&
+                normalizedVerifier !== 'null' &&
+                normalizedVerifier !== 'undefined' &&
+                normalizedVerifier !== 'denied';
+            const isExplicitCancel =
+                denied.length > 0 ||
+                errorParam.length > 0 ||
+                (rawVerifier.length > 0 && !isValidVerifier);
 
-        function returnToOrbit() {
-            if (verifier) {
-                try { navigator.clipboard.writeText(verifier); } catch(e) {}
+            const isAndroid = /Android/i.test(navigator.userAgent || '');
+            let startedPlatform = '';
+            let storedReturnOrigin = '';
+            try {
+                startedPlatform = localStorage.getItem('orbit_garmin_oauth_platform') || '';
+                storedReturnOrigin = localStorage.getItem('orbit_garmin_oauth_origin') || '';
+            } catch (e) {}
+
+            // Nur vertrauenswürdige ORBIT-Origins als Rücksprungziel zulassen (Open-Redirect-Schutz)
+            const allowedOrigins = [
+                window.location.origin,
+                'https://orbit-app-mvp.web.app',
+                'https://orbit-app-mvp.firebaseapp.com',
+                'https://app.orbit.training'
+            ];
+            const isSafeLocalhost = /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(storedReturnOrigin);
+            const returnOrigin =
+                allowedOrigins.includes(storedReturnOrigin) || isSafeLocalhost
+                    ? storedReturnOrigin
+                    : window.location.origin;
+
+            const callbackQueryParts = [];
+            if (isValidVerifier) {
+                callbackQueryParts.push('oauth_verifier=' + encodeURIComponent(rawVerifier));
             }
-            if (window.opener && !window.opener.closed) {
+            if (token) {
+                callbackQueryParts.push('oauth_token=' + encodeURIComponent(token));
+            }
+            if (isExplicitCancel) {
+                callbackQueryParts.push('error=' + encodeURIComponent(errorParam || denied || 'cancelled'));
+            }
+            const safeSearch = callbackQueryParts.length > 0 ? '?' + callbackQueryParts.join('&') : '';
+
+            const webCallbackUrl = returnOrigin + '/app/#/callback/garmin' + safeSearch;
+            const appDeepLink = 'orbit://oauth/garmin' + safeSearch;
+
+            function broadcastPayload(payload) {
+                // 1. Direkte Kommunikation zum öffnenden Web-Tab (falls vorhanden)
                 try {
-                    window.opener.focus();
-                    window.close();
-                    return;
+                    if (window.opener && !window.opener.closed) {
+                        window.opener.postMessage(payload, returnOrigin);
+                        if (returnOrigin !== window.location.origin) {
+                            window.opener.postMessage(payload, window.location.origin);
+                        }
+                    }
+                } catch (e) {}
+
+                // 2. BroadcastChannel (gleiche Origin, z. B. Safari/Chrome Tab-Wechsel ohne opener)
+                try {
+                    if ('BroadcastChannel' in window) {
+                        const bc = new BroadcastChannel('orbit_garmin_auth');
+                        bc.postMessage(payload);
+                        bc.close();
+                    }
+                } catch (e) {}
+
+                // 3. localStorage-Fallback (triggert `storage`-Event und `resumed`/Focus-Prüfung)
+                try {
+                    localStorage.setItem('orbit_garmin_oauth_callback', JSON.stringify(payload));
                 } catch (e) {}
             }
-            window.location.href = appDeepLink;
-        }
 
-        if (verifier) {
-            document.getElementById('no-code-view').style.display = 'none';
-            document.getElementById('success-view').style.display = 'block';
-            document.getElementById('verifier-display').innerText = verifier;
-
-            const appBtn = document.getElementById('orbit-app-btn');
-            if (appBtn) {
-                appBtn.href = appDeepLink;
-            }
-
-            // PostMessage an Opener senden (falls in Popup/Tab geöffnet)
-            try {
-                if (window.opener) {
-                    window.opener.postMessage({
-                        type: 'GARMIN_AUTH_CALLBACK',
-                        oauthVerifier: verifier,
-                        oauthToken: token
-                    }, '*');
+            window.copyVerifier = function () {
+                if (!isValidVerifier) return;
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(rawVerifier).then(function () {
+                        const status = document.getElementById('copy-status');
+                        status.style.display = 'block';
+                        setTimeout(function () { status.style.display = 'none'; }, 3000);
+                    }).catch(function () {
+                        alert('Bestätigungscode: ' + rawVerifier);
+                    });
+                } else {
+                    alert('Bestätigungscode: ' + rawVerifier);
                 }
-            } catch (e) {}
+            };
 
-            // BroadcastChannel senden
-            try {
-                if ('BroadcastChannel' in window) {
-                    const bc = new BroadcastChannel('orbit_garmin_auth');
-                    bc.postMessage({ oauthVerifier: verifier, oauthToken: token });
-                }
-            } catch (e) {}
-
-            // Automatische Weiterleitung zur ORBIT Android App per Deep-Link
-            try {
-                setTimeout(() => {
+            window.closeOrReturn = function () {
+                if (isAndroid && startedPlatform !== 'web') {
                     window.location.href = appDeepLink;
-                }, 300);
-            } catch (e) {}
-        }
+                    return;
+                }
+                if (window.opener && !window.opener.closed) {
+                    try {
+                        window.opener.focus();
+                        window.close();
+                        return;
+                    } catch (e) {}
+                }
+                window.location.href = webCallbackUrl;
+            };
 
-        function copyVerifier() {
-            if (!verifier) return;
-            navigator.clipboard.writeText(verifier).then(() => {
-                const status = document.getElementById('copy-status');
-                status.style.display = 'block';
-                setTimeout(() => { status.style.display = 'none'; }, 3000);
-            }).catch(err => {
-                alert('Code: ' + verifier);
-            });
-        }
+            if (isValidVerifier) {
+                document.getElementById('no-code-view').style.display = 'none';
+                document.getElementById('success-view').style.display = 'block';
+                document.getElementById('verifier-display').innerText = rawVerifier;
+
+                const payload = {
+                    type: 'GARMIN_AUTH_CALLBACK',
+                    oauthVerifier: rawVerifier,
+                    oauthToken: token || null,
+                    timestamp: Date.now()
+                };
+                broadcastPayload(payload);
+
+                const primaryBtn = document.getElementById('primary-return-btn');
+                const secondaryAppBtn = document.getElementById('secondary-app-btn');
+                const subtitle = document.getElementById('success-subtitle');
+                const hint = document.getElementById('redirect-hint');
+
+                // Auf Android (wenn nicht aus ORBIT Web gestartet): Deep-Link in die Android-App
+                if (isAndroid && startedPlatform !== 'web') {
+                    primaryBtn.href = appDeepLink;
+                    primaryBtn.innerText = 'In ORBIT App öffnen';
+                    secondaryAppBtn.style.display = 'block';
+                    secondaryAppBtn.href = webCallbackUrl;
+                    secondaryAppBtn.innerText = 'Stattdessen in ORBIT Web fortfahren';
+                    subtitle.innerText = 'Öffne jetzt wieder ORBIT, um die Verknüpfung abzuschließen.';
+                    hint.innerText = 'Falls sich die App nicht automatisch öffnet, tippe oben auf „In ORBIT App öffnen“ oder kopiere den Code.';
+
+                    setTimeout(function () {
+                        try {
+                            window.location.href = appDeepLink;
+                        } catch (e) {}
+                    }, 250);
+                } else {
+                    // Safari / Desktop / ORBIT Web: Niemals automatisches orbit:// (führt in Safari zu Fehler!)
+                    primaryBtn.href = webCallbackUrl;
+                    primaryBtn.innerText = 'Zurück zu ORBIT Web';
+                    if (isAndroid) {
+                        secondaryAppBtn.style.display = 'block';
+                        secondaryAppBtn.href = appDeepLink;
+                    }
+
+                    const hasOpener = !!(window.opener && !window.opener.closed);
+                    if (hasOpener) {
+                        subtitle.innerText = 'Die Bestätigung wurde an deinen geöffneten ORBIT-Tab übertragen.';
+                        hint.innerText = 'Du kannst dieses Fenster jetzt schließen oder unten auf „Zurück zu ORBIT Web“ tippen.';
+                        // Erst wenn Übertragung raus ist, sanftes Schließen versuchen
+                        setTimeout(function () {
+                            try {
+                                window.opener.focus();
+                                window.close();
+                            } catch (e) {}
+                        }, 450);
+                    } else {
+                        subtitle.innerText = 'Du wirst automatisch zurück zu ORBIT Web geleitet…';
+                        hint.innerText = 'Falls keine Weiterleitung erfolgt, klicke auf „Zurück zu ORBIT Web“.';
+                        setTimeout(function () {
+                            window.location.replace(webCallbackUrl);
+                        }, 650);
+                    }
+                }
+            } else if (isExplicitCancel) {
+                document.getElementById('no-code-view').style.display = 'none';
+                document.getElementById('cancelled-view').style.display = 'block';
+
+                const cancelWebBtn = document.getElementById('cancelled-web-btn');
+                const cancelAppBtn = document.getElementById('cancelled-app-btn');
+                cancelWebBtn.href = webCallbackUrl;
+                if (isAndroid && startedPlatform !== 'web') {
+                    cancelAppBtn.style.display = 'block';
+                    cancelAppBtn.href = appDeepLink;
+                }
+
+                broadcastPayload({
+                    type: 'GARMIN_AUTH_CANCELLED',
+                    oauthToken: token || null,
+                    reason: errorParam || denied || 'cancelled',
+                    timestamp: Date.now()
+                });
+            } else {
+                const webFallbackBtn = document.getElementById('orbit-web-fallback-btn');
+                webFallbackBtn.href = returnOrigin + '/app/#/settings/garmin';
+                if (!isAndroid) {
+                    document.getElementById('orbit-app-fallback-btn').style.display = 'none';
+                }
+            }
+        })();
     </script>
 </body>
 </html>

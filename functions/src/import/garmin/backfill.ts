@@ -132,9 +132,10 @@ export async function executeGarminBackfill(
           })
         );
 
-        // Garmin Backfill antwortet regulär mit HTTP 202 Accepted (leerer Body)
+        // Garmin Backfill antwortet regulär mit HTTP 202 Accepted (leerer Body); 5s-Timeout schützt vor Hängern
         await axios.get(url, {
           headers: authHeader,
+          timeout: 5000,
           validateStatus: (status) => status === 200 || status === 202,
         });
         requestedCount++;

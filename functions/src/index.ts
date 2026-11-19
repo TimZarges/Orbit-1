@@ -45,6 +45,7 @@ export { processFitUpload, processActivityUpload } from "./import/index";
 export { deleteActivity } from "./import/deleteActivity";
 export {
   garminAuthStart,
+  garminAuthCancel,
   garminAuthCallback,
   garminDisconnect,
   garminWebhook,
