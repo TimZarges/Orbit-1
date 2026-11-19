@@ -16,8 +16,8 @@ class AppInfo {
   /// Freigabekanal für Produktions-Releases (`Release`).
   static const String environment = 'Release';
 
-  /// Garantierte EU-Serverregion (`europe-west3`).
-  static const String region = 'Deutschland (Frankfurt am Main)';
+  /// Garantierte EU-Serverregion (Frankfurt am Main, Deutschland).
+  static const String region = 'Frankfurt am Main (Deutschland / EU)';
 
   /// Formatierte Versionsanzeige für Profil- und Einstellungs-Footer (`v1.0.0 (Build 1)`).
   static String get fullVersionString => 'v$version (Build $buildNumber)';

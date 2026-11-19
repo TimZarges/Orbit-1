@@ -29,8 +29,8 @@ class ContactConfig {
   /// Standort / EU-Jurisdiktion (Englisch).
   static const String locationLabelEn = 'Germany (European Union)';
 
-  /// Serverregion (Frankfurt am Main).
-  static const String serverRegion = 'Frankfurt am Main (europe-west3, EU)';
+  /// Serverregion (Frankfurt am Main, Deutschland / EU).
+  static const String serverRegion = 'Frankfurt am Main (Deutschland / EU)';
 
   /// Allgemeine Hilfe & Fragen zur Nutzung.
   static const String supportEmail = 'support@orbit-training.app';

@@ -1,5 +1,5 @@
 /// Datei-Header: `lib/features/home/widgets/home_recent_activity_card.dart`
-/// Zweck: Einheitliche COROS-Trainings-Vorschaukarte (`TrainingPreviewCard` /
+/// Zweck: Einheitliche Trainings-Vorschaukarte (`TrainingPreviewCard` /
 /// `HomeRecentActivityCard`) für Heute-Ansicht und alle Kalender-Ansichten (Woche,
 /// Monat, Liste) im Clean Professional Design (Hell & Dunkel).
 /// Architektur-Einordnung: Präsentationsschicht (`lib/features/home/widgets/`),
@@ -22,7 +22,7 @@ import '../../settings/providers/settings_provider.dart';
 /// Abwärtskompatibler Alias für bestehende Referenzen auf [TrainingPreviewCard].
 typedef HomeRecentActivityCard = TrainingPreviewCard;
 
-/// Einheitliche COROS-inspirierte Trainings-Vorschaukarte für absolvierte Einheiten.
+/// Einheitliche, klar strukturierte Trainings-Vorschaukarte für absolvierte Einheiten.
 ///
 /// Was:
 /// - **Linke Spalte (~68 % Breite):**
@@ -94,7 +94,7 @@ class TrainingPreviewCard extends ConsumerWidget {
 
     // Kartenkörper: In V1.0.0 strikt ohne InkWell/onTap auf dem Container
     return Container(
-      key: Key('coros_activity_card_${activity.id}'),
+      key: Key('training_preview_card_${activity.id}'),
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
         color: cardBg,
@@ -232,8 +232,9 @@ class TrainingPreviewCard extends ConsumerWidget {
                                   height: 16,
                                   child: CircularProgressIndicator(
                                     strokeWidth: 2,
-                                    color:
-                                        isDark ? AppColors.navy : AppColors.white,
+                                    color: isDark
+                                        ? AppColors.navy
+                                        : AppColors.white,
                                   ),
                                 )
                               else

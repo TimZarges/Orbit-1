@@ -282,7 +282,7 @@ class CalendarScreen extends ConsumerWidget {
     );
   }
 
-  /// Wochenansicht: 7 Tage (Mo–So) mit Sportart-Farbpunkten und COROS-Vorschaukarten.
+  /// Wochenansicht: 7 Tage (Mo–So) mit Sportart-Farbpunkten und Trainings-Vorschaukarten.
   Widget _buildWeekView(
     BuildContext context,
     WidgetRef ref,
@@ -472,7 +472,7 @@ class CalendarScreen extends ConsumerWidget {
     );
   }
 
-  /// Monatsansicht: Monatsraster mit Sportart-Farbpunkten und darunter die COROS-Karten.
+  /// Monatsansicht: Monatsraster mit Sportart-Farbpunkten und darunter die Trainings-Vorschaukarten.
   Widget _buildMonthView(
     BuildContext context,
     WidgetRef ref,

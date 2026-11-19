@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ORBIT V1.0.0 — Ausdauertraining, Garmin Sync &amp; Coaching für Athleten &amp; Trainer</title>
   <link rel="icon" type="image/png" href="/logo.png">
-  <meta name="description" content="ORBIT V1.0.0 verbindet Garmin Sync, .FIT-Dateimanagement, Heute- &amp; Kalender-Ansichten im COROS-Stil sowie DSGVO-konformes Athlet-Coach-Zusammenspiel (Server Frankfurt am Main).">
+  <meta name="description" content="ORBIT V1.0.0 verbindet Garmin Sync, .FIT-Dateimanagement, klare Heute- &amp; Kalender-Ansichten sowie DSGVO-konformes Athlet-Coach-Zusammenspiel (Server Frankfurt am Main, Deutschland / EU).">
   <style>
     :root {
       --brand-navy: #001F47;
@@ -279,7 +279,7 @@
       gap: 6px;
     }
 
-    /* Live V1.0.0 Hero Mockup (COROS Training Preview + Coach Connection) */
+    /* Live V1.0.0 Hero Mockup (ORBIT Training Preview + Coach Connection) */
     .hero-mockup-wrapper {
       background: var(--hero-card-bg);
       border-radius: 26px;
@@ -351,8 +351,8 @@
       justify-content: center;
     }
 
-    /* COROS-inspired Training Preview Card inside Hero */
-    .coros-preview-card {
+    /* Compact ORBIT Training Preview Card inside Hero */
+    .orbit-preview-card {
       background: rgba(255, 255, 255, 0.06);
       border: 1px solid rgba(255, 255, 255, 0.12);
       border-radius: 16px;
@@ -364,13 +364,13 @@
       align-items: center;
     }
 
-    .coros-left-col {
+    .preview-left-col {
       display: flex;
       flex-direction: column;
       gap: 6px;
     }
 
-    .coros-main-row {
+    .preview-main-row {
       display: flex;
       align-items: center;
       gap: 10px;
@@ -385,20 +385,20 @@
       letter-spacing: 0.5px;
     }
 
-    .coros-primary-metric {
+    .preview-primary-metric {
       font-size: 24px;
       font-weight: 900;
       letter-spacing: -0.5px;
       color: #FFFFFF;
     }
 
-    .coros-secondary-metrics {
+    .preview-secondary-metrics {
       font-size: 12px;
       color: #CBD5E1;
       font-family: var(--font-mono);
     }
 
-    .coros-right-col {
+    .preview-right-col {
       display: flex;
       flex-direction: column;
       align-items: flex-end;
@@ -406,7 +406,7 @@
       text-align: right;
     }
 
-    .coros-workout-title {
+    .preview-workout-title {
       font-size: 12px;
       font-weight: 800;
       color: #F8FAFC;
@@ -833,8 +833,8 @@
     @media (max-width: 640px) {
       header.site-header { padding: 12px 16px; }
       .hero-headline { font-size: 32px; }
-      .coros-preview-card { grid-template-columns: 1fr; }
-      .coros-right-col { align-items: flex-start; text-align: left; }
+      .orbit-preview-card { grid-template-columns: 1fr; }
+      .preview-right-col { align-items: flex-start; text-align: left; }
       .form-row { grid-template-columns: 1fr; }
       .waitlist-card { padding: 26px 20px; }
     }
@@ -868,8 +868,8 @@
         <span class="lang-en">Help &amp; Compendium</span>
       </a>
       <a href="#contact" class="nav-link">
-        <span class="lang-de">Kontakt &amp; Teams</span>
-        <span class="lang-en">Contact &amp; Teams</span>
+        <span class="lang-de">Kontakt &amp; Support</span>
+        <span class="lang-en">Contact &amp; Support</span>
       </a>
     </nav>
 
@@ -902,10 +902,10 @@
 
       <p class="hero-sub" id="hero-sub">
         <span class="lang-de">
-          ORBIT Version 1.0.0 bringt automatischen Garmin Sync, manuellen <code>.fit</code>-Datei-Upload, die aufgeräumte Heute- &amp; Kalender-Ansicht (Woche, Monat, Liste) mit Trainings-Vorschaukarten im COROS-Stil sowie den direkten <code>.FIT</code>-Download für Athleten und verbundene Coaches — DSGVO-konform gehostet in Frankfurt am Main (<code>europe-west3</code>).
+          ORBIT Version 1.0.0 bringt automatischen Garmin Sync, manuellen <code>.fit</code>-Datei-Upload, die aufgeräumte Heute- &amp; Kalender-Ansicht (Woche, Monat, Liste) mit kompakter Trainings-Vorschaukarte sowie den direkten <code>.FIT</code>-Download für Athleten und verbundene Coaches — DSGVO-konform gehostet in Frankfurt am Main (Deutschland / EU).
         </span>
         <span class="lang-en">
-          ORBIT Version 1.0.0 delivers automatic Garmin Sync, manual <code>.fit</code> file uploads, a clean Today &amp; Calendar view (Week, Month, List) featuring COROS-inspired training preview cards, and direct <code>.FIT</code> file downloads for athletes and connected coaches — hosted exclusively in Frankfurt am Main (<code>europe-west3</code>).
+          ORBIT Version 1.0.0 delivers automatic Garmin Sync, manual <code>.fit</code> file uploads, a clean Today &amp; Calendar view (Week, Month, List) featuring compact training preview cards, and direct <code>.FIT</code> file downloads for athletes and connected coaches — hosted exclusively in Frankfurt am Main (Germany / EU).
         </span>
       </p>
 
@@ -925,13 +925,13 @@
       </div>
 
       <div class="hero-trust-strip">
-        <span>✓ <span class="lang-de">Server Frankfurt (europe-west3)</span><span class="lang-en">Frankfurt EU Servers (europe-west3)</span></span>
+        <span>✓ <span class="lang-de">Server Frankfurt am Main (Deutschland / EU)</span><span class="lang-en">Frankfurt am Main Servers (Germany / EU)</span></span>
         <span>✓ <span class="lang-de">Triathlon, Rad, Lauf, Schwimmen &amp; Kraft</span><span class="lang-en">Triathlon, Bike, Run, Swim &amp; Strength</span></span>
         <span>✓ <span class="lang-de">Direkter .FIT-Download für Athlet &amp; Coach</span><span class="lang-en">Direct .FIT Download for Athlete &amp; Coach</span></span>
       </div>
     </div>
 
-    <!-- Live Hero Mockup: Realer V1.0.0 Funktionsumfang (Heute & Kalender COROS-Preview + Coach-Link) -->
+    <!-- Live Hero Mockup: Realer V1.0.0 Funktionsumfang (Heute & Kalender Vorschaukarte + Coach-Link) -->
     <div class="hero-mockup-wrapper" aria-label="ORBIT V1.0.0 Heute &amp; Kalender Vorschau">
       <div class="coach-bubble-floating">
         <div class="coach-avatar-mini">C</div>
@@ -966,22 +966,22 @@
         </div>
       </div>
 
-      <!-- COROS-inspired Preview Card 1 (Bike) -->
-      <div class="coros-preview-card">
-        <div class="coros-left-col">
-          <div class="coros-main-row">
+      <!-- Training Preview Card 1 (Bike) -->
+      <div class="orbit-preview-card">
+        <div class="preview-left-col">
+          <div class="preview-main-row">
             <span class="sport-dot-badge" style="background:#FF6B00; color:#FFFFFF;">
               <span class="lang-de">🚴 RADFAHREN</span>
               <span class="lang-en">🚴 CYCLING</span>
             </span>
-            <span class="coros-primary-metric">84,2 km</span>
+            <span class="preview-primary-metric">84,2 km</span>
           </div>
-          <div class="coros-secondary-metrics">
+          <div class="preview-secondary-metrics">
             02:38:14 &middot; 218 W &middot; 146 bpm &middot; 740 hm
           </div>
         </div>
-        <div class="coros-right-col">
-          <div class="coros-workout-title">
+        <div class="preview-right-col">
+          <div class="preview-workout-title">
             <span class="lang-de">Grundlagenausfahrt Taunus</span>
             <span class="lang-en">Taunus Endurance Ride</span>
           </div>
@@ -990,22 +990,22 @@
         </div>
       </div>
 
-      <!-- COROS-inspired Preview Card 2 (Run) -->
-      <div class="coros-preview-card" style="margin-bottom:0;">
-        <div class="coros-left-col">
-          <div class="coros-main-row">
+      <!-- Training Preview Card 2 (Run) -->
+      <div class="orbit-preview-card" style="margin-bottom:0;">
+        <div class="preview-left-col">
+          <div class="preview-main-row">
             <span class="sport-dot-badge" style="background:#00D2FF; color:#001F47;">
               <span class="lang-de">🏃 LAUFEN</span>
               <span class="lang-en">🏃 RUNNING</span>
             </span>
-            <span class="coros-primary-metric">12,5 km</span>
+            <span class="preview-primary-metric">12,5 km</span>
           </div>
-          <div class="coros-secondary-metrics">
+          <div class="preview-secondary-metrics">
             00:56:15 &middot; 4:30 /km &middot; 154 bpm &middot; 85 hm
           </div>
         </div>
-        <div class="coros-right-col">
-          <div class="coros-workout-title">
+        <div class="preview-right-col">
+          <div class="preview-workout-title">
             <span class="lang-de">Tempolauf am Main</span>
             <span class="lang-en">River Tempo Run</span>
           </div>
@@ -1073,8 +1073,8 @@
           <li>
             <span class="check-bullet">✓</span>
             <div>
-              <span class="lang-de"><strong>Volle EU-Datenhoheit &amp; Topbar-Bugmeldung:</strong> Serverstandort Frankfurt am Main (<code>europe-west3</code>), zweistufige Funktion „Daten &amp; Konto löschen“ (Art. 17 DSGVO) sowie direktes Bug- &amp; Feedback-Icon oben rechts in der Topbar.</span>
-              <span class="lang-en"><strong>Full EU Data Sovereignty &amp; Topbar Bug Reporting:</strong> Hosted in Frankfurt am Main (<code>europe-west3</code>), two-step "Delete Data &amp; Account" flow (Art. 17 GDPR), and a clean bug report icon in the top bar.</span>
+              <span class="lang-de"><strong>Volle EU-Datenhoheit &amp; Topbar-Bugmeldung:</strong> Serverstandort Frankfurt am Main (Deutschland / EU), zweistufige Funktion „Daten &amp; Konto löschen“ (Art. 17 DSGVO) sowie direktes Bug- &amp; Feedback-Icon oben rechts in der Topbar.</span>
+              <span class="lang-en"><strong>Full EU Data Sovereignty &amp; Topbar Bug Reporting:</strong> Hosted in Frankfurt am Main (Germany / EU), two-step "Delete Data &amp; Account" flow (Art. 17 GDPR), and a clean bug report icon in the top bar.</span>
             </div>
           </li>
         </ul>
@@ -1115,8 +1115,8 @@
           <li>
             <span class="check-bullet">✓</span>
             <div>
-              <span class="lang-de"><strong>Training Preview angelehnt an COROS:</strong> Kompakte Vorschaukarte mit Sportart-Icon, Hauptmetrik (Distanz <code>km</code> oder Dauer <code>hh:mm:ss</code>), Sekundärmetriken (Watt, Pace, Puls, Höhenmeter) und direktem <strong><code>.FIT</code>-Download-Button</strong> rechts.</span>
-              <span class="lang-en"><strong>COROS-Inspired Training Preview Card:</strong> Unified activity card with sport icon, primary metric (distance <code>km</code> or duration <code>hh:mm:ss</code>), secondary metrics (power, pace, HR, elevation), and a direct <strong><code>.FIT</code> download button</strong> on the right.</span>
+              <span class="lang-de"><strong>Kompakte Trainings-Vorschaukarte (Training Preview):</strong> Einheitliche Karte mit Sportart-Icon, Hauptmetrik (Distanz <code>km</code> oder Dauer <code>hh:mm:ss</code>), Sekundärmetriken (Watt, Pace, Puls, Höhenmeter) und direktem <strong><code>.FIT</code>-Download-Button</strong> rechts.</span>
+              <span class="lang-en"><strong>Compact Training Preview Card:</strong> Unified activity card with sport icon, primary metric (distance <code>km</code> or duration <code>hh:mm:ss</code>), secondary metrics (power, pace, HR, elevation), and a direct <strong><code>.FIT</code> download button</strong> on the right.</span>
             </div>
           </li>
         </ul>
@@ -1215,8 +1215,8 @@
           <span class="lang-en">Inspect Calendar &amp; Download .FIT</span>
         </h4>
         <p>
-          <span class="lang-de">Sobald der Athlet über Garmin synchronisiert oder eine <code>.fit</code>-Datei hochlädt, sieht der Coach die Einheit in der COROS-Vorschaukarte im Kalender und kann die originale <code>.fit</code>-Datei direkt herunterladen.</span>
-          <span class="lang-en">As soon as the athlete syncs via Garmin or uploads a <code>.fit</code> file, the coach sees the workout on the COROS preview card in the calendar and can download the original <code>.fit</code> file directly.</span>
+          <span class="lang-de">Sobald der Athlet über Garmin synchronisiert oder eine <code>.fit</code>-Datei hochlädt, sieht der Coach die Einheit auf der kompakten Trainings-Vorschaukarte im Kalender und kann die originale <code>.fit</code>-Datei direkt herunterladen.</span>
+          <span class="lang-en">As soon as the athlete syncs via Garmin or uploads a <code>.fit</code> file, the coach sees the workout on the compact training preview card in the calendar and can download the original <code>.fit</code> file directly.</span>
         </p>
       </div>
     </div>
@@ -1376,8 +1376,8 @@
           </div>
           <ul class="roadmap-list">
             <li>
-              <span class="lang-de"><strong>Sync zu weiteren Plattformen:</strong> Direkte Anbindung zusätzlicher Ökosysteme (z. B. Wahoo Cloud, COROS, Polar, Strava &amp; Apple Health / Health Connect).</span>
-              <span class="lang-en"><strong>Sync with Additional Ecosystems:</strong> Direct integration with Wahoo Cloud, COROS, Polar, Strava, and Apple Health / Health Connect.</span>
+              <span class="lang-de"><strong>Sync zu weiteren Plattformen:</strong> Direkte Anbindung zusätzlicher Ökosysteme (z. B. Wahoo Cloud, Polar, Strava &amp; Apple Health / Health Connect).</span>
+              <span class="lang-en"><strong>Sync with Additional Ecosystems:</strong> Direct integration with Wahoo Cloud, Polar, Strava, and Apple Health / Health Connect.</span>
             </li>
           </ul>
         </div>
@@ -1402,90 +1402,8 @@
     </div>
   </section>
 
-  <!-- Section 4: Vereins- & Team-Anfrage Formular -->
-  <section class="waitlist-sec" id="waitlist">
-    <div class="waitlist-card">
-      <span class="sec-tag">
-        <span class="lang-de">VEREINE, TEAMS &amp; TRAINERGRUPPEN</span>
-        <span class="lang-en">CLUBS, TEAMS &amp; COACHING GROUPS</span>
-      </span>
-      <h2 style="font-size:28px; font-weight:900; margin:10px 0 12px;" id="waitlist-title">
-        <span class="lang-de">Vereins- &amp; Team-Onboarding anfragen</span>
-        <span class="lang-en">Request Club &amp; Team Onboarding</span>
-      </h2>
-      <p style="font-size:15px; color:var(--text-muted); margin-bottom:28px;" id="waitlist-sub">
-        <span class="lang-de">
-          Einzelne Athleten und Coaches können sich sofort kostenlos über <a href="/app/#/register" style="color:inherit; font-weight:800;">ORBIT Web (/app/)</a> registrieren. Für Vereine, Kader und Trainingsgruppen richten wir gerne ein begleitetes Team-Setup ein.
-        </span>
-        <span class="lang-en">
-          Individual athletes and coaches can register right away for free via <a href="/app/#/register" style="color:inherit; font-weight:800;">ORBIT Web (/app/)</a>. For clubs, squads, and training groups, we gladly provide guided team onboarding.
-        </span>
-      </p>
-
-      <form id="beta-form" onsubmit="submitBetaWaitlist(event)">
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label" for="waitlist-name">
-              <span class="lang-de">Dein Name *</span>
-              <span class="lang-en">Your Name *</span>
-            </label>
-            <input type="text" class="form-input" id="waitlist-name" placeholder="z. B. Tim Zarges" required minlength="2" maxlength="100">
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="waitlist-email">
-              <span class="lang-de">E-Mail-Adresse *</span>
-              <span class="lang-en">Email Address *</span>
-            </label>
-            <input type="email" class="form-input" id="waitlist-email" placeholder="name@verein.de" required maxlength="200">
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label" for="waitlist-role">
-              <span class="lang-de">Deine Rolle *</span>
-              <span class="lang-en">Your Role *</span>
-            </label>
-            <select class="form-select" id="waitlist-role" required>
-              <option value="ATHLETE">Athlet / Athlete</option>
-              <option value="COACH">Trainer / Coach</option>
-              <option value="CLUB">Verein / Club &amp; Team</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="waitlist-device">
-              <span class="lang-de">Haupt-Gerätesystem *</span>
-              <span class="lang-en">Primary Device Ecosystem *</span>
-            </label>
-            <select class="form-select" id="waitlist-device" required>
-              <option value="GARMIN">Garmin Connect (Edge / Forerunner / Fenix)</option>
-              <option value="WAHOO">Wahoo (.FIT Upload)</option>
-              <option value="SRM">SRM / PowerControl (.FIT Upload)</option>
-              <option value="OTHER">Sonstiges (.FIT)</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="checkbox-row">
-          <input type="checkbox" id="waitlist-consent" required style="margin-top:3px; accent-color:var(--brand-volt);">
-          <label for="waitlist-consent">
-            <span class="lang-de">Ich stimme der Kontaktaufnahme und der <a href="/privacy.html" target="_blank" style="color:inherit; font-weight:700;">Datenschutzerklärung (Art. 9 &amp; 13 DSGVO)</a> zu. Keine Weitergabe, keine Werbung.</span>
-            <span class="lang-en">I agree to be contacted regarding my request and accept the <a href="/privacy.html" target="_blank" style="color:inherit; font-weight:700;">Privacy Policy (Art. 9 &amp; 13 GDPR)</a>. No third-party sharing, no ads.</span>
-          </label>
-        </div>
-
-        <button type="submit" class="btn-submit-waitlist" id="btn-submit-text">
-          <span class="lang-de">Vereins- &amp; Team-Anfrage absenden →</span>
-          <span class="lang-en">Submit Club &amp; Team Request →</span>
-        </button>
-      </form>
-
-      <div id="waitlist-feedback" style="display:none; margin-top:20px; padding:16px; border-radius:12px; font-weight:800; font-size:14px;"></div>
-    </div>
-  </section>
-
-  <!-- Section 5: Kontakt- & Feedback-Formular -->
-  <section class="waitlist-sec" id="contact" style="margin-top:0;">
+  <!-- Section 4: Kontakt- & Feedback-Formular -->
+  <section class="waitlist-sec" id="contact">
     <div class="waitlist-card">
       <span class="sec-tag">SUPPORT &amp; FEEDBACK</span>
       <h2 style="font-size:28px; font-weight:900; margin:10px 0 12px;" id="contact-title">
@@ -1511,7 +1429,7 @@
               <span class="lang-de">E-Mail-Adresse *</span>
               <span class="lang-en">Email Address *</span>
             </label>
-            <input type="email" class="form-input" id="contact-email" placeholder="name@verein.de" required maxlength="200">
+            <input type="email" class="form-input" id="contact-email" placeholder="name@example.com" required maxlength="200">
           </div>
         </div>
 
@@ -1524,7 +1442,6 @@
             <option value="SUPPORT">❓ Allgemeine Frage &amp; Hilfe / General Support</option>
             <option value="FEEDBACK">💡 Feature-Wunsch &amp; Feedback / Feature Request</option>
             <option value="BUG">🐛 Fehler / Technisches Problem / Bug Report</option>
-            <option value="PARTNERSHIP">🤝 Kooperation / Vereinspartnerschaft / Club Partnership</option>
             <option value="OTHER">Sonstiges / Other</option>
           </select>
         </div>
@@ -1553,8 +1470,8 @@
       <div class="footer-brand">
         <h4>ORBIT Performance / ORBIT Training</h4>
         <p>
-          <span class="lang-de">Ausdauer-, Telemetrie- &amp; Coaching-Plattform für Triathleten, Radsportler, Läufer, Schwimmer und deren Vereinstrainer. Betreiber: ORBIT Endurance Technologies (Tim Zarges).</span>
-          <span class="lang-en">Endurance training, telemetry &amp; coaching platform for triathletes, cyclists, runners, swimmers, and their club coaches. Operated by ORBIT Endurance Technologies (Tim Zarges).</span>
+          <span class="lang-de">Ausdauer-, Telemetrie- &amp; Coaching-Plattform für Triathleten, Radsportler, Läufer, Schwimmer und deren Trainer. Betreiber: ORBIT Endurance Technologies (Tim Zarges).</span>
+          <span class="lang-en">Endurance training, telemetry &amp; coaching platform for triathletes, cyclists, runners, swimmers, and their coaches. Operated by ORBIT Endurance Technologies (Tim Zarges).</span>
         </p>
       </div>
 
@@ -1598,7 +1515,7 @@
     </div>
 
     <div class="footer-bottom">
-      <div>&copy; 2026 ORBIT Performance / ORBIT Training (ORBIT Endurance Technologies · Tim Zarges). Serverstandort: Frankfurt am Main (europe-west3).</div>
+      <div>&copy; 2026 ORBIT Performance / ORBIT Training (ORBIT Endurance Technologies · Tim Zarges). Serverstandort: Frankfurt am Main (Deutschland / EU).</div>
       <div>ORBIT Version 1.0.0 (Build 1) · Android &amp; Web</div>
     </div>
   </footer>
@@ -1616,60 +1533,6 @@
     function toggleGlobalLang() {
       isEn = !isEn;
       document.documentElement.setAttribute('lang', isEn ? 'en' : 'de');
-    }
-
-    // Vereins- & Team-Anfrage via Firestore REST API (konform zu firestore.rules)
-    async function submitBetaWaitlist(e) {
-      e.preventDefault();
-      const feedback = document.getElementById('waitlist-feedback');
-      const submitBtn = document.getElementById('btn-submit-text');
-
-      const name = document.getElementById('waitlist-name').value.trim();
-      const email = document.getElementById('waitlist-email').value.trim();
-      const role = document.getElementById('waitlist-role').value;
-      const device = document.getElementById('waitlist-device').value;
-      const consentGiven = document.getElementById('waitlist-consent').checked;
-
-      submitBtn.disabled = true;
-
-      const entryId = 'beta_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
-      const payload = {
-        fields: {
-          name: { stringValue: name },
-          email: { stringValue: email },
-          role: { stringValue: role },
-          device: { stringValue: device },
-          consentGiven: { booleanValue: consentGiven },
-          createdAt: { stringValue: new Date().toISOString() }
-        }
-      };
-
-      try {
-        const projectId = 'orbit-app-mvp';
-        const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/betaWaitlist?documentId=${entryId}`;
-        await fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-
-        feedback.style.display = 'block';
-        feedback.style.background = '#001F47';
-        feedback.style.color = '#CDFB17';
-        feedback.innerText = isEn
-          ? '✓ Thank you! Your club & team request has been recorded. We will contact you shortly via email.'
-          : '✓ Vielen Dank! Deine Vereins- & Team-Anfrage wurde erfolgreich erfasst. Wir melden uns kurzfristig per E-Mail!';
-        document.getElementById('beta-form').reset();
-      } catch (err) {
-        feedback.style.display = 'block';
-        feedback.style.background = '#001F47';
-        feedback.style.color = '#CDFB17';
-        feedback.innerText = isEn
-          ? '✓ Thank you! Your request has been queued. We will contact you shortly via email.'
-          : '✓ Vielen Dank! Deine Anfrage wurde vorgemerkt. Wir kontaktieren dich kurzfristig per E-Mail!';
-      } finally {
-        submitBtn.disabled = false;
-      }
     }
 
     // Kontakt- & Support-Formular via Firestore REST API

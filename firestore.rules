@@ -14,6 +14,12 @@ service cloud.firestore {
     // Collection: invites/{code}
     // Fields: coachId, expiresAt, maxUses, usedBy
     //
+    // Collection: coachInvites/{inviteId}
+    // Fields: inviteId, coachId, coachName, coachEmail, athleteEmail, athleteId (optional), inviteCode, status ('PENDING_REGISTRATION' | 'LINKED_PENDING' | 'CLAIMED_PENDING' | 'REVOKED'), mailQueued, createdAt, updatedAt, expiresAt
+    //
+    // Collection: mail/{mailId}
+    // Fields: Serverseitige E-Mail-Queue (ausschließlich Cloud Functions / Admin SDK)
+    //
     // Collection: activities/{activityId}
     // Fields: athleteId, coachId, ...
     //
@@ -454,6 +460,34 @@ service cloud.firestore {
     match /invites/{code} {
       allow read: if isAuthenticated();
       allow write: if false; // Only backend can write
+    }
+
+    /**
+     * Coach-E-Mail-Einladungen (`coachInvites/{inviteId}`):
+     * Ein Coach darf seine eigenen versendeten Einladungen (`coachId == request.auth.uid`) lesen;
+     * ein eingeladener Athlet darf ausschließlich an seine normalisierte Token-E-Mail-Adresse
+     * (`athleteEmail == request.auth.token.email.lower()`) gerichtete Einladungen lesen.
+     * Schreibzugriffe vom Client sind strikt gesperrt (ausschließlich Cloud Functions / Admin SDK).
+     */
+    match /coachInvites/{inviteId} {
+      allow read: if isAuthenticated() && (
+        resource.data.coachId == request.auth.uid ||
+        (
+          'email' in request.auth.token &&
+          request.auth.token.email is string &&
+          resource.data.athleteEmail == request.auth.token.email.lower()
+        )
+      );
+      allow write: if false; // Ausschließlich Cloud Functions / Admin SDK
+    }
+
+    /**
+     * Server-seitige E-Mail-Queue (`mail/{mailId}`):
+     * Enthält vertrauliche E-Mail-Zustellungsaufträge für Cloud Functions / Admin SDK
+     * und ist für sämtliche Clients (Lesen und Schreiben) strikt gesperrt.
+     */
+    match /mail/{mailId} {
+      allow read, write: if false; // Ausschließlich Cloud Functions / Admin SDK
     }
 
     // Aktivitäten: Zugriff für den Athleten selbst sowie für autorisierte Coaches über coachLinks (auch bei älteren Aktivitäten ohne coachId-Feld).

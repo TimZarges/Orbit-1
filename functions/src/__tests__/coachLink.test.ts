@@ -12,6 +12,9 @@ import {
   redeemInvite,
   updatePermissions,
   revokeLink,
+  requestAthleteLinkByEmail,
+  claimPendingCoachInvites,
+  respondToCoachLinkRequest,
 } from "../coach";
 
 // Sicherstellen, dass firebase-admin mit dem Emulator verbunden ist
@@ -144,5 +147,87 @@ describe("Phase 18.3 Trainer-Athleten-Kopplung E2E Flow (Invite -> Redeem -> Art
     await assertFails(
       coachClientDb.collection("users").doc(athleteUid).collection("dailyMetrics").doc("2026-10-16").get()
     );
+  });
+
+  it("E-Mail-Einladung für bestehende UND noch nicht registrierte Athleten (coachInvites -> claimPendingCoachInvites -> DSGVO-Bestätigung)", async () => {
+    const db = admin.firestore();
+    const coachUid = "coach_email_1";
+    const existingAthleteUid = "athlete_existing_1";
+    const lateAthleteUid = "athlete_late_1";
+    const existingEmail = "existing.athlete@orbit.training";
+    const lateEmail = "late.athlete@orbit.training";
+
+    await db.collection("users").doc(coachUid).set({
+      uid: coachUid,
+      role: "TRAINER",
+      email: "coach.email@orbit.training",
+      profile: { firstName: "Tim", lastName: "Coach" },
+    });
+    await db.collection("users").doc(existingAthleteUid).set({
+      uid: existingAthleteUid,
+      role: "ATHLETE",
+      email: existingEmail,
+      profile: { firstName: "Anna", lastName: "Sprint" },
+    });
+
+    // 1. E-Mail-Anfrage an bereits registrierten Athleten -> direktes PENDING coachLink + inviteCode
+    const existingRes = await (requestAthleteLinkByEmail as any).run({
+      auth: { uid: coachUid },
+      data: { email: existingEmail },
+    });
+    expect(existingRes.success).toBe(true);
+    expect(existingRes.deliveryMode).toBe("IN_APP_PENDING");
+    expect(existingRes.accountExists).toBe(true);
+    expect(existingRes.inviteCode).toHaveLength(6);
+
+    const existingLinkSnap = await db.collection("coachLinks").doc(`${existingAthleteUid}_${coachUid}`).get();
+    expect(existingLinkSnap.exists).toBe(true);
+    expect(existingLinkSnap.data()?.status).toBe("PENDING");
+
+    // 2. E-Mail-Einladung an noch nicht registrierte Adresse -> persistentes coachInvites-Dokument + inviteCode + mail-Queue
+    const lateRes = await (requestAthleteLinkByEmail as any).run({
+      auth: { uid: coachUid },
+      data: { email: lateEmail },
+    });
+    expect(lateRes.success).toBe(true);
+    expect(lateRes.deliveryMode).toBe("INVITE_CREATED_NO_ACCOUNT");
+    expect(lateRes.accountExists).toBe(false);
+    expect(lateRes.inviteCode).toHaveLength(6);
+
+    const inviteSnap = await db.collection("coachInvites").doc(lateRes.inviteId).get();
+    expect(inviteSnap.exists).toBe(true);
+    expect(inviteSnap.data()?.status).toBe("PENDING_REGISTRATION");
+    expect(inviteSnap.data()?.athleteEmail).toBe(lateEmail);
+
+    // 3. Spätere Registrierung des Athleten mit dieser E-Mail-Adresse -> claimPendingCoachInvites
+    await db.collection("users").doc(lateAthleteUid).set({
+      uid: lateAthleteUid,
+      role: "ATHLETE",
+      email: lateEmail,
+      profile: { firstName: "Lukas", lastName: "Tri" },
+    });
+
+    const claimRes = await (claimPendingCoachInvites as any).run({
+      auth: { uid: lateAthleteUid, token: { email: lateEmail } },
+      data: {},
+    });
+    expect(claimRes.claimedCount).toBe(1);
+    expect(claimRes.claimedCoachIds).toContain(coachUid);
+
+    const claimedLinkSnap = await db.collection("coachLinks").doc(`${lateAthleteUid}_${coachUid}`).get();
+    expect(claimedLinkSnap.exists).toBe(true);
+    expect(claimedLinkSnap.data()?.status).toBe("PENDING");
+
+    // 4. Athlet bestätigt mit expliziter DSGVO-Einwilligung -> Link wird ACTIVE
+    const acceptRes = await (respondToCoachLinkRequest as any).run({
+      auth: { uid: lateAthleteUid },
+      data: {
+        linkId: `${lateAthleteUid}_${coachUid}`,
+        accept: true,
+        gdprConsent: true,
+      },
+    });
+    expect(acceptRes.success).toBe(true);
+    expect(acceptRes.status).toBe("ACTIVE");
   });
 });

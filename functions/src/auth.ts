@@ -13,6 +13,7 @@ import {
   garminConsumerSecret,
   getOAuthClient,
 } from "./import/garmin/backfill";
+import { claimCoachInvitesForAthlete } from "./coach";
 
 if (!admin.apps.length) {
   admin.initializeApp();
@@ -55,10 +56,22 @@ export const setInitialRole = onCall(async (request) => {
   await admin.auth().setCustomUserClaims(uid, { role });
 
   const now = admin.firestore.FieldValue.serverTimestamp();
+  let normalizedEmail =
+    typeof request.auth?.token.email === "string"
+      ? request.auth.token.email.trim().toLowerCase()
+      : "";
+  if (!normalizedEmail) {
+    try {
+      const authRecord = await admin.auth().getUser(uid);
+      normalizedEmail = (authRecord.email || "").trim().toLowerCase();
+    } catch (_) {
+      // Optional in isolierten Unit-Tests ohne Auth-Backend
+    }
+  }
 
   batch.set(userRef, {
     uid,
-    email: request.auth?.token.email,
+    ...(normalizedEmail ? { email: normalizedEmail } : {}),
     createdAt: now,
     role,
     trainerVerified: false,
@@ -105,6 +118,15 @@ export const setInitialRole = onCall(async (request) => {
   }
 
   await batch.commit();
+
+  // Offene E-Mail-Einladungen von Coaches automatisch als PENDING-Anfrage übernehmen
+  if (role === "ATHLETE" && normalizedEmail) {
+    try {
+      await claimCoachInvitesForAthlete(admin.firestore(), uid, normalizedEmail);
+    } catch (_) {
+      // Einladungs-Übernahme darf die Registrierung niemals blockieren
+    }
+  }
 
   return { success: true };
 });
@@ -306,9 +328,12 @@ export const deleteAccount = onCall(
   }
   await linkCleanupBatch.commit();
 
-  // 2. Eigene Coach-Einladungen und Coach-Dashboard löschen
-  await deleteQueryInBatches(db.collection("invites").where("coachId", "==", uid));
-  await db.recursiveDelete(db.collection("coachDashboard").doc(uid));
+  // 2. Eigene Coach-Einladungen (invites & coachInvites) und Coach-Dashboard löschen
+  await Promise.all([
+    deleteQueryInBatches(db.collection("invites").where("coachId", "==", uid)),
+    deleteQueryInBatches(db.collection("coachInvites").where("coachId", "==", uid)),
+    db.recursiveDelete(db.collection("coachDashboard").doc(uid)),
+  ]);
 
   // 3. Top-Level Aktivitäten, geplante Trainings, Chats & Garmin-Mappings bereinigen
   await Promise.all([

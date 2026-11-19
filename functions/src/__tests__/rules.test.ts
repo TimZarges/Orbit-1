@@ -1153,6 +1153,131 @@ describe("Firestore Security Rules Tests (RULES_TESTPLAN.md)", () => {
       await assertFails(anonDb.collection("users").doc("victimAlice").collection("dailyMetrics").doc("2026-10-18").delete());
     });
   });
+
+  // ===============================================================
+  // 13. Coach-E-Mail-Einladungssystem & Mail-Queue (V1.0.0)
+  // ===============================================================
+  describe("13. Coach-E-Mail-Einladungssystem & Mail-Queue (coachInvites & mail — V1.0.0)", () => {
+    const inviteId = "inv_coachBob_alice";
+    const mailId = "mail_inv_1";
+
+    beforeEach(async () => {
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        const adminDb = context.firestore();
+
+        // Coach-Einladung serverseitig anlegen
+        await adminDb.collection("coachInvites").doc(inviteId).set({
+          inviteId,
+          coachId: "coachBob",
+          coachName: "Coach Bob",
+          coachEmail: "bob@orbit.training",
+          athleteEmail: "alice@example.com",
+          inviteCode: "BOB123",
+          status: "PENDING_REGISTRATION",
+          mailQueued: true,
+          createdAt: new Date("2026-11-19T06:00:00Z"),
+          updatedAt: new Date("2026-11-19T06:00:00Z"),
+          expiresAt: new Date("2026-11-26T06:00:00Z"),
+        });
+
+        // Zugehörigen E-Mail-Queue-Eintrag serverseitig anlegen
+        await adminDb.collection("mail").doc(mailId).set({
+          to: ["alice@example.com"],
+          message: {
+            subject: "Einladung zu ORBIT",
+            text: "Dein Coach-Code lautet BOB123.",
+          },
+        });
+      });
+    });
+
+    it("erlaubt dem Coach das Lesen seiner eigenen coachInvites, verweigert aber fremden Nutzern den Zugriff", async () => {
+      const coachBobDb = testEnv.authenticatedContext("coachBob", { email: "bob@orbit.training" }).firestore();
+      const strangerDb = testEnv.authenticatedContext("eve", { email: "eve@example.com" }).firestore();
+      const anonDb = testEnv.unauthenticatedContext().firestore();
+
+      // Coach darf eigenes Einladungsdokument und eigene Query lesen
+      await assertSucceeds(coachBobDb.collection("coachInvites").doc(inviteId).get());
+      await assertSucceeds(
+        coachBobDb.collection("coachInvites").where("coachId", "==", "coachBob").get()
+      );
+
+      // Fremder authentifizierter Nutzer und unauthentifizierter Nutzer erhalten PERMISSION_DENIED
+      await assertFails(strangerDb.collection("coachInvites").doc(inviteId).get());
+      await assertFails(
+        strangerDb.collection("coachInvites").where("coachId", "==", "coachBob").get()
+      );
+      await assertFails(anonDb.collection("coachInvites").doc(inviteId).get());
+    });
+
+    it("erlaubt dem eingeladenen Athleten mit passender Token-E-Mail das Lesen seiner Einladung, verweigert aber anderen Athleten den Zugriff", async () => {
+      // Groß-/Kleinschreibung in token.email wird per .lower() gegen athleteEmail abgeglichen
+      const invitedAliceDb = testEnv.authenticatedContext("aliceUid", { email: "Alice@Example.com" }).firestore();
+      const otherAthleteDb = testEnv.authenticatedContext("charlieUid", { email: "charlie@example.com" }).firestore();
+      const noEmailTokenDb = testEnv.authenticatedContext("noEmailUid").firestore();
+
+      // Eingeladene Athletin darf ihre Einladung direkt und per gefilterter Query lesen
+      await assertSucceeds(invitedAliceDb.collection("coachInvites").doc(inviteId).get());
+      await assertSucceeds(
+        invitedAliceDb.collection("coachInvites").where("athleteEmail", "==", "alice@example.com").get()
+      );
+
+      // Anderer Athlet mit anderer E-Mail sowie Nutzer ohne E-Mail-Claim erhalten PERMISSION_DENIED
+      await assertFails(otherAthleteDb.collection("coachInvites").doc(inviteId).get());
+      await assertFails(
+        otherAthleteDb.collection("coachInvites").where("athleteEmail", "==", "alice@example.com").get()
+      );
+      await assertFails(noEmailTokenDb.collection("coachInvites").doc(inviteId).get());
+    });
+
+    it("verbietet allen Clients strikt jedes Schreiben/Löschen in coachInvites sowie jegliches Lesen/Schreiben/Löschen in mail", async () => {
+      const coachBobDb = testEnv.authenticatedContext("coachBob", { email: "bob@orbit.training" }).firestore();
+      const invitedAliceDb = testEnv.authenticatedContext("aliceUid", { email: "alice@example.com" }).firestore();
+      const anonDb = testEnv.unauthenticatedContext().firestore();
+
+      // coachInvites: Create, Update, Delete für alle Clients verboten
+      await assertFails(
+        coachBobDb.collection("coachInvites").doc("inv_client_create").set({
+          inviteId: "inv_client_create",
+          coachId: "coachBob",
+          coachName: "Coach Bob",
+          coachEmail: "bob@orbit.training",
+          athleteEmail: "new@example.com",
+          inviteCode: "BOB123",
+          status: "PENDING_REGISTRATION",
+          mailQueued: false,
+        })
+      );
+      await assertFails(
+        coachBobDb.collection("coachInvites").doc(inviteId).update({ status: "REVOKED" })
+      );
+      await assertFails(
+        invitedAliceDb.collection("coachInvites").doc(inviteId).update({
+          status: "LINKED_PENDING",
+          athleteId: "aliceUid",
+        })
+      );
+      await assertFails(coachBobDb.collection("coachInvites").doc(inviteId).delete());
+      await assertFails(invitedAliceDb.collection("coachInvites").doc(inviteId).delete());
+      await assertFails(anonDb.collection("coachInvites").doc(inviteId).delete());
+
+      // mail: Read, Create, Update, Delete für alle Clients verboten
+      await assertFails(coachBobDb.collection("mail").doc(mailId).get());
+      await assertFails(invitedAliceDb.collection("mail").doc(mailId).get());
+      await assertFails(anonDb.collection("mail").doc(mailId).get());
+      await assertFails(
+        coachBobDb.collection("mail").doc("mail_client_create").set({
+          to: ["victim@example.com"],
+          message: { subject: "Spam", text: "Phishing" },
+        })
+      );
+      await assertFails(
+        coachBobDb.collection("mail").doc(mailId).update({ to: ["hacker@example.com"] })
+      );
+      await assertFails(coachBobDb.collection("mail").doc(mailId).delete());
+      await assertFails(anonDb.collection("mail").doc(mailId).delete());
+    });
+  });
 });
 
 

@@ -49,6 +49,11 @@ class _MockAuthService implements AuthService {
     reloadCheckCount++;
     return nextReloadVerified;
   }
+
+  @override
+  Future<bool> reloadAndRefreshEmailVerification() {
+    return reloadAndCheckEmailVerified();
+  }
 }
 
 void main() {
@@ -318,7 +323,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(
-        find.text('Ich habe bestätigt – Status prüfen'),
+        find.text('Bereits bestätigt? Status prüfen'),
         findsOneWidget,
       );
       expect(

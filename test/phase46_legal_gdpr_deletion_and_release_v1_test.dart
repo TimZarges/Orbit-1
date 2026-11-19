@@ -35,6 +35,7 @@ import 'package:orbit/features/beta_feedback/widgets/global_floating_bug_beetle.
 import 'package:orbit/features/coach_link/models/v1_coach_athlete_link.dart';
 import 'package:orbit/features/coach_link/providers/athlete_context_provider.dart';
 import 'package:orbit/features/coach_link/providers/v1_coach_connection_provider.dart';
+import 'package:orbit/features/coach_link/screens/v1_coach_athletes_tab.dart';
 import 'package:orbit/features/dashboard/screens/dashboard_screen.dart';
 import 'package:orbit/features/integrations/models/garmin_status.dart';
 import 'package:orbit/features/integrations/providers/garmin_provider.dart';
@@ -100,7 +101,11 @@ void main() {
       expect(ContactConfig.privacyEmail, equals('privacy@orbit-training.app'));
       expect(
         ContactConfig.serverRegion,
-        equals('Frankfurt am Main (europe-west3, EU)'),
+        equals('Frankfurt am Main (Deutschland / EU)'),
+      );
+      expect(
+        ContactConfig.serverRegion.contains('europe-west3'),
+        isFalse,
       );
     });
   });
@@ -453,6 +458,58 @@ void main() {
 
       expect(find.byKey(const Key('unverified_email_banner')), findsNothing);
     });
+
+    testWidgets(
+        'prüft E-Mail-Verifizierung sofort per Status-Button ohne Neuanmeldung',
+        (tester) async {
+      final unverifiedUser = _FakeVerifyUser(
+        emailVerified: false,
+        email: 'verify@orbit.training',
+      );
+      var checkCalls = 0;
+      var verifiedNow = false;
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            authStateChangesProvider.overrideWith((ref) => Stream.value(null)),
+          ],
+          child: MaterialApp(
+            locale: const Locale('de'),
+            home: Scaffold(
+              body: EmailVerificationBanner(
+                userOverride: unverifiedUser,
+                onCheckStatusOverride: (user) async {
+                  checkCalls++;
+                  return verifiedNow;
+                },
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // 1. Button "Bereits bestätigt? Status prüfen" existiert
+      final checkBtn = find.byKey(
+        const Key('unverified_email_check_status_button'),
+      );
+      expect(checkBtn, findsOneWidget);
+      expect(find.text('Bereits bestätigt? Status prüfen'), findsOneWidget);
+
+      // 2. Erster Check liefert false -> Banner bleibt sichtbar
+      await tester.tap(checkBtn);
+      await tester.pumpAndSettle();
+      expect(checkCalls, equals(1));
+      expect(find.byKey(const Key('unverified_email_banner')), findsOneWidget);
+
+      // 3. Zweiter Check liefert true -> Banner verschwindet sofort
+      verifiedNow = true;
+      await tester.tap(checkBtn);
+      await tester.pumpAndSettle();
+      expect(checkCalls, equals(2));
+      expect(find.byKey(const Key('unverified_email_banner')), findsNothing);
+    });
   });
 
   group('6. V1.0.0 Topbar-Bugmeldung & Dauerhaftes Profilbild', () {
@@ -699,6 +756,73 @@ void main() {
         expect(tester.takeException(), isNull);
       }
       await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+    });
+  });
+
+  group('8. V1.0.1 Coach-E-Mail-Einladung & ehrlicher Rückmelde-Dialog', () {
+    testWidgets(
+        'sendet E-Mail-Einladung an noch nicht registrierten Athleten und zeigt Code & Share-Option',
+        (tester) async {
+      String? invokedFn;
+      Map<String, dynamic>? invokedPayload;
+
+      final fakeService = V1CoachConnectionService(
+        invoke: (name, payload) async {
+          invokedFn = name;
+          invokedPayload = payload;
+          return <String, dynamic>{
+            'ok': true,
+            'status': 'INVITE_CREATED_NO_ACCOUNT',
+            'inviteId': 'inv_test_1',
+            'inviteCode': 'XYZ789',
+            'athleteEmail': 'neu.athlet@verein.de',
+            'mailProviderConfigured': false,
+          };
+        },
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            v1CoachConnectionServiceProvider.overrideWithValue(fakeService),
+          ],
+          child: const MaterialApp(
+            home: Scaffold(
+              body: V1CoachAthletesTab(
+                athletesOverride: [],
+                initialInviteCodeOverride: 'XYZ789',
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const Key('coach_open_email_invite_btn')));
+      await tester.pumpAndSettle();
+
+      await tester.enterText(
+        find.byKey(const Key('coach_invite_email_input')),
+        'Neu.Athlet@Verein.de',
+      );
+      await tester.pump();
+
+      await tester.tap(find.byKey(const Key('coach_send_email_invite_btn')));
+      await tester.pumpAndSettle();
+
+      expect(invokedFn, equals('requestAthleteLinkByEmail'));
+      expect(invokedPayload?['email'], equals('neu.athlet@verein.de'));
+
+      expect(
+        find.byKey(const Key('coach_email_invite_result_dialog')),
+        findsOneWidget,
+      );
+      expect(find.text('XYZ789'), findsWidgets);
+      expect(
+        find.byKey(const Key('coach_copy_invite_share_btn')),
+        findsOneWidget,
+      );
       expect(tester.takeException(), isNull);
     });
   });

@@ -105,107 +105,128 @@ class _V1CoachAthletesTabState extends ConsumerState<V1CoachAthletesTab> {
   }
 
   /// Öffnet den Dialog zum Versenden einer E-Mail-Verbindungsanfrage an einen Athleten.
+  ///
+  /// Warum [_InviteByEmailDialog]: Kapselt den [TextEditingController] im eigenen
+  /// `ConsumerStatefulWidget`, sodass `dispose()` sicher erst nach der Dialog-Schließanimation
+  /// greift und Rückmeldungen sowohl für bestehende als auch neue Athleten-Konten sauber
+  /// inklusive 6-stelligem Einladungscode angezeigt werden.
   Future<void> _showInviteByEmailDialog(String lang) async {
-    final isEn = lang == 'en';
-    final controller = TextEditingController();
-    bool isSending = false;
-    String? errorMsg;
+    final result = await showDialog<Map<String, dynamic>>(
+      context: context,
+      builder: (_) => _InviteByEmailDialog(isEn: lang == 'en'),
+    );
+    if (!mounted || result == null) return;
 
+    final isEn = lang == 'en';
+    final returnedCode =
+        (result['inviteCode'] as String? ?? '').trim().toUpperCase();
+    if (returnedCode.isNotEmpty) {
+      setState(() => _inviteCode = returnedCode);
+    }
+
+    final email = (result['athleteEmail'] as String? ?? '').trim();
+    final accountExists = result['accountExists'] == true;
+    final mailProviderConfigured = result['mailProviderConfigured'] == true;
+
+    if (accountExists) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            isEn
+                ? 'Connection request sent to $email (Coach code: $returnedCode). Athlete confirms GDPR sharing in Profile.'
+                : 'Verbindungsanfrage für $email hinterlegt (Coach-Code: $returnedCode). Athlet bestätigt im Profil.',
+          ),
+        ),
+      );
+      return;
+    }
+
+    // Für noch nicht registrierte E-Mails: Klare Anleitung + 1-Klick-Teilen des Coach-Codes
     await showDialog<void>(
       context: context,
-      builder: (dialogCtx) => StatefulBuilder(
-        builder: (ctx, setDialogState) => AlertDialog(
-          title: Text(
-            isEn ? 'Invite Athlete by Email' : 'Athlet per E-Mail einladen',
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
+      builder: (ctx) => AlertDialog(
+        key: const Key('coach_email_invite_result_dialog'),
+        title: Text(
+          isEn
+              ? 'Invitation Saved (No Account Yet)'
+              : 'Einladung vorgemerkt (noch kein Konto)',
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              isEn
+                  ? 'No ORBIT account exists for $email yet. Your invitation is saved and will appear automatically in their Profile as soon as they sign up with $email.'
+                  : 'Für $email existiert noch kein ORBIT-Konto. Die Einladung ist gespeichert und erscheint automatisch im Profil, sobald sich $email registriert.',
+            ),
+            const SizedBox(height: 10),
+            if (!mailProviderConfigured)
               Text(
                 isEn
-                    ? 'The athlete will see your request in their Profile and must confirm GDPR sharing.'
-                    : 'Der Athlet sieht deine Anfrage in seinem Profil und muss der DSGVO-Freigabe zustimmen.',
+                    ? 'Note: Automatic email dispatch is not active yet. Please share your 6-character Coach Code directly:'
+                    : 'Hinweis: Automatischer E-Mail-Versand ist aktuell nicht aktiv. Bitte teile deinem Athleten direkt deinen 6-stelligen Coach-Code mit:',
                 style: Theme.of(ctx).textTheme.bodySmall,
               ),
+            if (returnedCode.isNotEmpty) ...[
               const SizedBox(height: 12),
-              TextField(
-                key: const Key('coach_invite_email_input'),
-                controller: controller,
-                keyboardType: TextInputType.emailAddress,
-                decoration: InputDecoration(
-                  labelText: isEn ? 'Athlete Email' : 'Athleten-E-Mail',
-                  hintText: 'athlet@verein.de',
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 10,
+                ),
+                decoration: BoxDecoration(
+                  color: Theme.of(ctx).colorScheme.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  returnedCode,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 4,
+                  ),
                 ),
               ),
-              if (errorMsg != null) ...[
-                const SizedBox(height: 8),
-                Text(
-                  errorMsg!,
-                  style: const TextStyle(color: Colors.redAccent, fontSize: 12),
-                ),
-              ],
             ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: isSending ? null : () => Navigator.of(ctx).pop(),
-              child: Text(isEn ? 'Cancel' : 'Abbrechen'),
-            ),
-            FilledButton(
-              key: const Key('coach_send_email_invite_btn'),
-              onPressed: isSending
-                  ? null
-                  : () async {
-                      final email = controller.text.trim();
-                      if (email.isEmpty || !email.contains('@')) {
-                        setDialogState(() {
-                          errorMsg = isEn
-                              ? 'Please enter a valid email address.'
-                              : 'Bitte gültige E-Mail-Adresse eingeben.';
-                        });
-                        return;
-                      }
-                      setDialogState(() {
-                        isSending = true;
-                        errorMsg = null;
-                      });
-                      try {
-                        await ref
-                            .read(v1CoachConnectionServiceProvider)
-                            .requestAthleteByEmail(email);
-                        if (ctx.mounted) Navigator.of(ctx).pop();
-                        if (mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                isEn
-                                    ? 'Connection request sent to $email.'
-                                    : 'Verbindungsanfrage an $email gesendet.',
-                              ),
-                            ),
-                          );
-                        }
-                      } catch (e) {
-                        setDialogState(() {
-                          isSending = false;
-                          errorMsg = e.toString();
-                        });
-                      }
-                    },
-              child: isSending
-                  ? const SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : Text(isEn ? 'Send Request' : 'Anfrage senden'),
-            ),
           ],
         ),
+        actions: [
+          if (returnedCode.isNotEmpty)
+            TextButton.icon(
+              key: const Key('coach_copy_invite_share_btn'),
+              onPressed: () async {
+                final shareText = isEn
+                    ? 'Join me on ORBIT (https://orbit-app-mvp.web.app/app/#/register) with Coach Code: $returnedCode'
+                    : 'Verbinde dich mit mir auf ORBIT (https://orbit-app-mvp.web.app/app/#/register) mit meinem Coach-Code: $returnedCode';
+                await Clipboard.setData(ClipboardData(text: shareText));
+                if (ctx.mounted) Navigator.of(ctx).pop();
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        isEn
+                            ? 'Invite text & code copied!'
+                            : 'Einladungstext & Code kopiert!',
+                      ),
+                    ),
+                  );
+                }
+              },
+              icon: const Icon(Icons.copy_rounded, size: 18),
+              label: Text(
+                isEn ? 'Copy Code & Link' : 'Code & Link kopieren',
+              ),
+            ),
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text(isEn ? 'OK' : 'Verstanden'),
+          ),
+        ],
       ),
     );
-    controller.dispose();
   }
 
   /// Wählt den Athleten für Tab 2 (`Kalender`) aus, synchronisiert den globalen
@@ -230,8 +251,17 @@ class _V1CoachAthletesTabState extends ConsumerState<V1CoachAthletesTab> {
 
     final List<V1CoachAthleteLink> allLinks = widget.athletesOverride ??
         (ref.watch(v1CoachAthletesStreamProvider).valueOrNull ?? const []);
+    final List<V1PendingCoachEmailInvite> pendingEmailInvites =
+        widget.athletesOverride != null
+            ? const []
+            : (ref
+                    .watch(v1CoachPendingEmailInvitesStreamProvider)
+                    .valueOrNull ??
+                const []);
     final activeAthletes = allLinks.where((l) => l.isActive).toList();
     final pendingRequests = allLinks.where((l) => l.isPending).toList();
+    final totalPendingCount =
+        pendingRequests.length + pendingEmailInvites.length;
 
     return Scaffold(
       body: CustomScrollView(
@@ -328,12 +358,13 @@ class _V1CoachAthletesTabState extends ConsumerState<V1CoachAthletesTab> {
                                         strokeWidth: 2,
                                       ),
                                     )
-                                  : const Icon(Icons.vpn_key_outlined, size: 18),
+                                  : const Icon(
+                                      Icons.vpn_key_outlined,
+                                      size: 18,
+                                    ),
                               label: Text(
                                 _inviteCode == null
-                                    ? (isEn
-                                        ? 'Generate Code'
-                                        : 'Code erzeugen')
+                                    ? (isEn ? 'Generate Code' : 'Code erzeugen')
                                     : (isEn ? 'New Code' : 'Neuer Code'),
                               ),
                             ),
@@ -358,65 +389,142 @@ class _V1CoachAthletesTabState extends ConsumerState<V1CoachAthletesTab> {
             ),
           ),
 
-          // 2. Offene Verbindungsanfragen (PENDING)
-          if (pendingRequests.isNotEmpty) ...[
+          // 2. Offene Verbindungsanfragen (PENDING coachLinks & noch nicht registrierte coachInvites)
+          if (totalPendingCount > 0) ...[
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 6),
                 child: Text(
                   isEn
-                      ? 'Pending Requests (${pendingRequests.length})'
-                      : 'Offene Anfragen (${pendingRequests.length})',
+                      ? 'Pending Requests ($totalPendingCount)'
+                      : 'Offene Anfragen ($totalPendingCount)',
                   style: theme.textTheme.titleSmall?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
             ),
-            SliverList.builder(
-              itemCount: pendingRequests.length,
-              itemBuilder: (ctx, idx) {
-                final req = pendingRequests[idx];
-                return Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                  child: Card(
-                    key: Key('coach_pending_athlete_${req.athleteId}'),
-                    elevation: 0,
-                    color: isDark ? AppColors.anthraciteCard : Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                      side: BorderSide(
-                        color: Colors.amber.withValues(alpha: 0.4),
+            if (pendingRequests.isNotEmpty)
+              SliverList.builder(
+                itemCount: pendingRequests.length,
+                itemBuilder: (ctx, idx) {
+                  final req = pendingRequests[idx];
+                  return Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    child: Card(
+                      key: Key('coach_pending_athlete_${req.athleteId}'),
+                      elevation: 0,
+                      color: isDark ? AppColors.anthraciteCard : Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        side: BorderSide(
+                          color: Colors.amber.withValues(alpha: 0.4),
+                        ),
+                      ),
+                      child: ListTile(
+                        leading: const CircleAvatar(
+                          child: Icon(Icons.hourglass_top_rounded, size: 18),
+                        ),
+                        title: Text(
+                          req.athleteName.isNotEmpty
+                              ? req.athleteName
+                              : req.athleteEmail,
+                          style: const TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                        subtitle: Text(
+                          isEn
+                              ? 'Waiting for athlete GDPR confirmation'
+                              : 'Wartet auf DSGVO-Bestätigung des Athleten',
+                        ),
+                        trailing: IconButton(
+                          icon:
+                              const Icon(Icons.close, color: Colors.redAccent),
+                          tooltip:
+                              isEn ? 'Cancel request' : 'Anfrage zurückziehen',
+                          onPressed: () => ref
+                              .read(v1CoachConnectionServiceProvider)
+                              .revokeLink(req.linkId),
+                        ),
                       ),
                     ),
-                    child: ListTile(
-                      leading: const CircleAvatar(
-                        child: Icon(Icons.hourglass_top_rounded, size: 18),
+                  );
+                },
+              ),
+            if (pendingEmailInvites.isNotEmpty)
+              SliverList.builder(
+                itemCount: pendingEmailInvites.length,
+                itemBuilder: (ctx, idx) {
+                  final inv = pendingEmailInvites[idx];
+                  return Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    child: Card(
+                      key: Key('coach_pending_email_invite_${inv.inviteId}'),
+                      elevation: 0,
+                      color: isDark ? AppColors.anthraciteCard : Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        side: BorderSide(
+                          color: Colors.amber.withValues(alpha: 0.4),
+                        ),
                       ),
-                      title: Text(
-                        req.athleteName.isNotEmpty
-                            ? req.athleteName
-                            : req.athleteEmail,
-                        style: const TextStyle(fontWeight: FontWeight.w600),
-                      ),
-                      subtitle: Text(
-                        isEn
-                            ? 'Waiting for athlete GDPR confirmation'
-                            : 'Wartet auf DSGVO-Bestätigung des Athleten',
-                      ),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.close, color: Colors.redAccent),
-                        tooltip: isEn ? 'Cancel request' : 'Anfrage zurückziehen',
-                        onPressed: () => ref
-                            .read(v1CoachConnectionServiceProvider)
-                            .revokeLink(req.linkId),
+                      child: ListTile(
+                        leading: const CircleAvatar(
+                          child: Icon(Icons.mail_outline_rounded, size: 18),
+                        ),
+                        title: Text(
+                          inv.athleteEmail,
+                          style: const TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                        subtitle: Text(
+                          isEn
+                              ? 'Pending sign-up • Share code: ${inv.inviteCode}'
+                              : 'Wartet auf Registrierung • Coach-Code: ${inv.inviteCode}',
+                        ),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (inv.inviteCode.isNotEmpty)
+                              IconButton(
+                                icon: const Icon(Icons.copy_rounded, size: 18),
+                                tooltip: isEn ? 'Copy Code' : 'Code kopieren',
+                                onPressed: () async {
+                                  await Clipboard.setData(
+                                    ClipboardData(text: inv.inviteCode),
+                                  );
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          isEn
+                                              ? 'Invite code copied: ${inv.inviteCode}'
+                                              : 'Einladungscode kopiert: ${inv.inviteCode}',
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                },
+                              ),
+                            IconButton(
+                              icon: const Icon(
+                                Icons.close,
+                                color: Colors.redAccent,
+                              ),
+                              tooltip: isEn
+                                  ? 'Revoke invite'
+                                  : 'Einladung zurückziehen',
+                              onPressed: () => ref
+                                  .read(v1CoachConnectionServiceProvider)
+                                  .revokePendingInvite(inv.inviteId),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                );
-              },
-            ),
+                  );
+                },
+              ),
           ],
 
           // 3. Überschrift Verbundene Athleten
@@ -559,8 +667,8 @@ class _V1CoachAthletesTabState extends ConsumerState<V1CoachAthletesTab> {
                                         isEn
                                             ? 'Last training: $lastActStr'
                                             : 'Letztes Training: $lastActStr',
-                                        style: theme.textTheme.bodySmall
-                                            ?.copyWith(
+                                        style:
+                                            theme.textTheme.bodySmall?.copyWith(
                                           color: theme
                                               .colorScheme.onSurfaceVariant,
                                         ),
@@ -602,7 +710,8 @@ class _SportBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final normalized = sport.toUpperCase();
     final isTri = normalized == 'TRIATHLON';
-    final label = isTri ? 'Triathlon' : AppStrings.sportLabel(normalized, lang: lang);
+    final label =
+        isTri ? 'Triathlon' : AppStrings.sportLabel(normalized, lang: lang);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
@@ -653,5 +762,124 @@ class _SportBadge extends StatelessWidget {
       default:
         return Icons.sports;
     }
+  }
+}
+
+/// Eigenständiges Dialog-Widget für die E-Mail-Einladung durch den Coach.
+///
+/// Was: Rendert das E-Mail-Eingabefeld und ruft `requestAthleteByEmail` auf.
+/// Warum: Durch die Kapselung als `ConsumerStatefulWidget` wird der interne
+/// `TextEditingController` erst nach Abschluss der Dialog-Schließanimation
+/// in `State.dispose()` freigegeben (`AGENTS.md` Regel 10).
+class _InviteByEmailDialog extends ConsumerStatefulWidget {
+  final bool isEn;
+
+  const _InviteByEmailDialog({required this.isEn});
+
+  @override
+  ConsumerState<_InviteByEmailDialog> createState() =>
+      _InviteByEmailDialogState();
+}
+
+class _InviteByEmailDialogState extends ConsumerState<_InviteByEmailDialog> {
+  final TextEditingController _controller = TextEditingController();
+  bool _isSending = false;
+  String? _errorMsg;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isEn = widget.isEn;
+    return AlertDialog(
+      title: Text(
+        isEn ? 'Invite Athlete by Email' : 'Athlet per E-Mail einladen',
+      ),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            isEn
+                ? 'The athlete will see your request in their Profile (immediately or after registration) and must confirm GDPR sharing.'
+                : 'Der Athlet sieht deine Anfrage in seinem Profil (sofort oder nach Registrierung) und muss der DSGVO-Freigabe zustimmen.',
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            key: const Key('coach_invite_email_input'),
+            controller: _controller,
+            keyboardType: TextInputType.emailAddress,
+            decoration: InputDecoration(
+              labelText: isEn ? 'Athlete Email' : 'Athleten-E-Mail',
+              hintText: 'athlet@verein.de',
+            ),
+          ),
+          if (_errorMsg != null) ...[
+            const SizedBox(height: 8),
+            Text(
+              _errorMsg!,
+              style: const TextStyle(color: Colors.redAccent, fontSize: 12),
+            ),
+          ],
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: _isSending ? null : () => Navigator.of(context).pop(),
+          child: Text(isEn ? 'Cancel' : 'Abbrechen'),
+        ),
+        FilledButton(
+          key: const Key('coach_send_email_invite_btn'),
+          onPressed: _isSending
+              ? null
+              : () async {
+                  final email = _controller.text.trim();
+                  if (email.isEmpty || !email.contains('@')) {
+                    setState(() {
+                      _errorMsg = isEn
+                          ? 'Please enter a valid email address.'
+                          : 'Bitte gültige E-Mail-Adresse eingeben.';
+                    });
+                    return;
+                  }
+                  setState(() {
+                    _isSending = true;
+                    _errorMsg = null;
+                  });
+                  try {
+                    final response = await ref
+                        .read(v1CoachConnectionServiceProvider)
+                        .requestAthleteByEmail(email);
+                    if (context.mounted) {
+                      Navigator.of(context).pop(<String, dynamic>{
+                        ...response,
+                        'athleteEmail':
+                            response['athleteEmail'] ?? email.toLowerCase(),
+                      });
+                    }
+                  } catch (e) {
+                    if (mounted) {
+                      setState(() {
+                        _isSending = false;
+                        _errorMsg = e.toString();
+                      });
+                    }
+                  }
+                },
+          child: _isSending
+              ? const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : Text(isEn ? 'Send Request' : 'Anfrage senden'),
+        ),
+      ],
+    );
   }
 }

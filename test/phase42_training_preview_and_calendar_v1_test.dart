@@ -272,7 +272,7 @@ void main() {
     });
 
     testWidgets(
-        'zeigt aufgeräumten Empty-State mit Garmin Sync & .FIT-Upload wenn heute noch keine Einheit existiert',
+        'zeigt ruhigen Empty-State ohne Garmin Sync oder .FIT-Upload wenn heute noch keine Einheit existiert',
         (tester) async {
       final now = DateTime.now();
       final yesterday = now.subtract(const Duration(days: 1));
@@ -312,14 +312,27 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('Heute noch kein absolviertes Training'), findsOneWidget);
       expect(
-        find.byKey(const Key('v1_today_empty_garmin_button')),
+        find.text('Heute noch kein absolviertes Training'),
         findsOneWidget,
       );
       expect(
-        find.byKey(const Key('v1_today_empty_upload_button')),
+        find.text(
+          'Sobald heute ein Training synchronisiert wird, erscheint es hier.',
+        ),
         findsOneWidget,
+      );
+      expect(
+        find.byKey(const Key('v1_today_empty_garmin_button')),
+        findsNothing,
+      );
+      expect(
+        find.byKey(const Key('v1_today_empty_upload_button')),
+        findsNothing,
+      );
+      expect(
+        find.byKey(const Key('today_fab_upload_button')),
+        findsNothing,
       );
       expect(find.text('Gestrige Einheit'), findsNothing);
     });
@@ -350,7 +363,8 @@ void main() {
           overrides: [
             currentAthleteIdProvider.overrideWithValue('athlete_1'),
             viewedAthleteIdProvider.overrideWith((ref) => 'athlete_1'),
-            calendarViewModeProvider.overrideWith((ref) => CalendarViewMode.week),
+            calendarViewModeProvider
+                .overrideWith((ref) => CalendarViewMode.week),
             selectedCalendarDateProvider.overrideWith((ref) => now),
             activitiesProvider.overrideWith((ref) => Stream.value([act])),
           ],

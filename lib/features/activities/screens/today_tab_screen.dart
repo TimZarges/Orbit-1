@@ -8,7 +8,6 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import '../../../core/config/release_config.dart';
 import '../../../core/design/app_colors.dart';
 import '../../../core/design/app_spacing.dart';
@@ -43,9 +42,11 @@ import 'activity_detail_screen.dart';
 ///
 /// Was:
 /// - Im V1.0.0-Standardbetrieb (`ReleaseConfig.isStrictV1 == true`):
-///   - Zeigt ausschließlich **absolviertes Training** (COROS-Vorschaukarten, nicht klickbar,
-///     rechts direkter `.FIT`-Download-Button) sowie oben den **Schnellzugriff auf Garmin Sync
-///     & Datei-Upload** (`.fit`, `.tcx`, `.gpx`).
+///   - Zeigt ausschließlich **absolviertes Training** des heutigen Kalendertags als
+///     kompakte Trainings-Vorschaukarten (`TrainingPreviewCard`, nicht klickbar,
+///     rechts direkter `.FIT`-Download-Button) ohne Sync- oder Upload-Schaltflächen.
+///   - Liegt heute noch keine Einheit vor, wird ausschließlich ein ruhiger Leerzustand
+///     („Heute noch kein absolviertes Training“) angezeigt.
 ///   - Blendet die 3 Daily Health Ringe (`HomeHeroCard`), den Readiness-Score (`ReadinessCard`),
 ///     die Form-Ampel und den Wettkampf-Countdown strikt aus.
 /// - Im V2/V3-Modus (`ReleaseConfig.isV2Enabled || ReleaseConfig.isV3Enabled`):
@@ -110,33 +111,37 @@ class TodayTabScreen extends ConsumerWidget {
               _buildErrorState(context, ref, athleteId, error),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        key: const Key('today_fab_upload_button'),
-        tooltip: AppStrings.fileUploadAction(lang: lang),
-        backgroundColor: isDark ? AppColors.volt : AppColors.navy,
-        foregroundColor: isDark ? AppColors.navy : AppColors.volt,
-        onPressed: uploadState.isUploading
-            ? null
-            : () => ref
-                .read(activityUploadProvider.notifier)
-                .pickAndUpload(targetAthleteId: athleteId),
-        child: uploadState.isUploading
-            ? SizedBox(
-                width: 24,
-                height: 24,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: isDark ? AppColors.navy : AppColors.volt,
-                ),
-              )
-            : const Icon(Icons.add),
-      ),
+      floatingActionButton: (!isV2Enabled && !isV3Enabled)
+          ? null
+          : FloatingActionButton(
+              key: const Key('today_fab_upload_button'),
+              tooltip: AppStrings.fileUploadAction(lang: lang),
+              backgroundColor: isDark ? AppColors.volt : AppColors.navy,
+              foregroundColor: isDark ? AppColors.navy : AppColors.volt,
+              onPressed: uploadState.isUploading
+                  ? null
+                  : () => ref
+                      .read(activityUploadProvider.notifier)
+                      .pickAndUpload(targetAthleteId: athleteId),
+              child: uploadState.isUploading
+                  ? SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: isDark ? AppColors.navy : AppColors.volt,
+                      ),
+                    )
+                  : const Icon(Icons.add),
+            ),
     );
   }
 
-  /// Rendert die fokussierte V1.0.0-Heute-Ansicht:
-  /// 1. Schnellzugriffs-Leiste für Garmin Sync & Datei-Upload (`.fit`, `.tcx`, `.gpx`).
-  /// 2. Liste ausschließlich der am heutigen Kalendertag absolvierten Trainings im COROS-Stil.
+  /// Rendert die radikal entschlackte V1.0.0-Heute-Ansicht:
+  /// - Zeigt ohne Sync-/Upload-Karten ausschließlich am heutigen Tag absolvierte
+  ///   Trainings als kompakte `TrainingPreviewCard` (rechts `.FIT`-Download-Button).
+  /// - Liegt heute noch kein absolviertes Training vor, wird ausschließlich der ruhige
+  ///   Empty-State („Heute noch kein absolviertes Training“) angezeigt.
   Widget _buildV1CompletedTrainingView(
     BuildContext context,
     WidgetRef ref, {
@@ -174,114 +179,36 @@ class TodayTabScreen extends ConsumerWidget {
     final secondaryTextColor =
         isDark ? AppColors.textSecondaryDark : const Color(0xFF475569);
 
-    return ListView.builder(
-      key: const Key('v1_today_completed_list'),
-      physics: const AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.mobilePageMargin,
-        vertical: AppSpacing.p16,
-      ),
-      itemCount: completedToday.isEmpty ? 2 : completedToday.length + 1,
-      itemBuilder: (context, index) {
-        // Index 0: Schnellzugriffs-Karte (Garmin Sync & Datei-Upload) + Abschnitts-Header
-        if (index == 0) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Upload-Fortschritt (falls aktiv)
-              if (uploadState.isUploading)
-                _buildUploadProgressBanner(uploadState),
-
-              // Schnellzugriff: Garmin Sync & Datei-Upload (.fit)
-              Container(
-                key: const Key('v1_today_quick_actions_card'),
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: cardBg,
-                  borderRadius: BorderRadius.circular(18),
-                  border: Border.all(color: borderColor),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      AppStrings.todayCompletedTrainingHeader(lang: lang),
-                      style: AppTypography.title.copyWith(
-                        fontSize: 18,
-                        color: primaryTextColor,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      AppStrings.todayQuickSyncSubtitle(lang: lang),
-                      style: AppTypography.bodySmall.copyWith(
-                        color: secondaryTextColor,
-                      ),
-                    ),
-                    const SizedBox(height: 14),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            key: const Key('v1_today_garmin_sync_button'),
-                            onPressed: () => context.push('/settings/garmin'),
-                            icon: const Icon(Icons.sync_rounded, size: 18),
-                            label: Text(
-                              AppStrings.garminSyncAction(lang: lang),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: ElevatedButton.icon(
-                            key: const Key('v1_today_file_upload_button'),
-                            onPressed: uploadState.isUploading
-                                ? null
-                                : () => ref
-                                    .read(activityUploadProvider.notifier)
-                                    .pickAndUpload(targetAthleteId: athleteId),
-                            icon: const Icon(
-                              Icons.upload_file_rounded,
-                              size: 18,
-                            ),
-                            label: Text(
-                              lang == 'en' ? 'File Upload' : 'Datei-Upload',
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-            ],
-          );
-        }
-
-        // Aufgeräumter Empty-State, falls heute noch keine Einheit absolviert wurde
-        if (completedToday.isEmpty) {
-          return Container(
+    if (completedToday.isEmpty) {
+      return ListView(
+        key: const Key('v1_today_completed_list'),
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.mobilePageMargin,
+          vertical: AppSpacing.p24,
+        ),
+        children: [
+          if (uploadState.isUploading) _buildUploadProgressBanner(uploadState),
+          Container(
             key: const Key('v1_today_empty_completed_card'),
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
             decoration: BoxDecoration(
               color: cardBg,
               borderRadius: BorderRadius.circular(18),
               border: Border.all(color: borderColor),
             ),
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(
-                  Icons.directions_bike_rounded,
-                  size: 40,
+                  Icons.event_available_outlined,
+                  size: 42,
                   color: isDark ? AppColors.volt : AppColors.navy,
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 14),
                 Text(
                   lang == 'en'
-                      ? 'No completed training today'
+                      ? 'No completed workout today'
                       : 'Heute noch kein absolviertes Training',
                   textAlign: TextAlign.center,
                   style: AppTypography.title.copyWith(
@@ -292,52 +219,34 @@ class TodayTabScreen extends ConsumerWidget {
                 const SizedBox(height: 6),
                 Text(
                   lang == 'en'
-                      ? 'Sync your Garmin device or upload a .fit file to see today\'s training here.'
-                      : 'Synchronisiere dein Garmin-Gerät oder lade eine .fit-Datei hoch, um dein heutiges Training hier zu sehen.',
+                      ? 'Once a workout for today is synced, it will appear here.'
+                      : 'Sobald heute ein Training synchronisiert wird, erscheint es hier.',
                   textAlign: TextAlign.center,
                   style: AppTypography.bodySmall.copyWith(
                     color: secondaryTextColor,
                   ),
                 ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        key: const Key('v1_today_empty_garmin_button'),
-                        onPressed: () => context.push('/settings/garmin'),
-                        icon: const Icon(Icons.sync_rounded, size: 16),
-                        label: Text(
-                          AppStrings.garminSyncAction(lang: lang),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        key: const Key('v1_today_empty_upload_button'),
-                        onPressed: uploadState.isUploading
-                            ? null
-                            : () => ref
-                                .read(activityUploadProvider.notifier)
-                                .pickAndUpload(targetAthleteId: athleteId),
-                        icon: const Icon(Icons.upload_file_rounded, size: 16),
-                        label: Text(
-                          lang == 'en' ? 'Upload .FIT' : '.FIT hochladen',
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
               ],
             ),
-          );
-        }
+          ),
+        ],
+      );
+    }
 
-        // Rendert jede heutige Einheit als nicht-klickbare COROS-Vorschaukarte
-        final activity = completedToday[index - 1];
+    return ListView.builder(
+      key: const Key('v1_today_completed_list'),
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.mobilePageMargin,
+        vertical: AppSpacing.p16,
+      ),
+      itemCount: completedToday.length + (uploadState.isUploading ? 1 : 0),
+      itemBuilder: (context, index) {
+        if (uploadState.isUploading && index == 0) {
+          return _buildUploadProgressBanner(uploadState);
+        }
+        final actIndex = uploadState.isUploading ? index - 1 : index;
+        final activity = completedToday[actIndex];
         return TrainingPreviewCard(
           activity: activity,
           onOpenCockpit: null,
@@ -436,25 +345,22 @@ class TodayTabScreen extends ConsumerWidget {
     final experienceLevel = ref.watch(
       settingsControllerProvider.select((s) => s.experienceLevel),
     );
-    final visibleCards = const HomeCardResolver()
-        .resolveVisibleCards(cardContext)
-        .where((c) {
-          // V3-Karten (3 Ringe & Readiness/Form-Ampel) nur bei aktivem V3 anzeigen
-          if (!isV3Enabled &&
-              (c == HomeCardType.heroDailyRing ||
-                  c == HomeCardType.formTrafficLight)) {
-            return false;
-          }
-          // V2-Karten (Action-Banner & Race-Countdown) nur bei aktivem V2 anzeigen
-          if (!isV2Enabled &&
-              (c == HomeCardType.actionBanner ||
-                  c == HomeCardType.raceCountdown)) {
-            return false;
-          }
-          return experienceLevel != ExperienceLevel.beginner ||
-              c != HomeCardType.formTrafficLight;
-        })
-        .toList();
+    final visibleCards =
+        const HomeCardResolver().resolveVisibleCards(cardContext).where((c) {
+      // V3-Karten (3 Ringe & Readiness/Form-Ampel) nur bei aktivem V3 anzeigen
+      if (!isV3Enabled &&
+          (c == HomeCardType.heroDailyRing ||
+              c == HomeCardType.formTrafficLight)) {
+        return false;
+      }
+      // V2-Karten (Action-Banner & Race-Countdown) nur bei aktivem V2 anzeigen
+      if (!isV2Enabled &&
+          (c == HomeCardType.actionBanner || c == HomeCardType.raceCountdown)) {
+        return false;
+      }
+      return experienceLevel != ExperienceLevel.beginner ||
+          c != HomeCardType.formTrafficLight;
+    }).toList();
 
     if (visibleCards.length == 1 &&
         visibleCards.first == HomeCardType.emptyGetStarted) {

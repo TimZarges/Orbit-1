@@ -25,7 +25,7 @@ import '../../beta_feedback/widgets/beta_bug_reporter_sheet.dart';
 /// Tiefenansicht einer Aktivität im Dark Cockpit (#001F47 Navy Look).
 ///
 /// Orientiert an den besten Telemetrie- und Analyse-Standards (Strava, Garmin Connect,
-/// Coros und MATS.coach) mit wissenschaftlicher Tiefe nach Coggan und Skiba.
+/// Strukturierte Telemetrie-Ansicht mit wissenschaftlicher Tiefe nach Coggan und Skiba.
 ///
 /// Performance-Architektur (120 Hz / 60 FPS):
 /// - LTTB Downsampling auf max. 400 Punkte für flüssiges Rendering im Viewport.
@@ -121,7 +121,8 @@ class _ActivityCockpitScreenState extends ConsumerState<ActivityCockpitScreen> {
         }
       } catch (e) {
         debugPrint(
-            'Hinweis: Konnte Telemetrie-Stream nicht aus Storage laden: $e',);
+          'Hinweis: Konnte Telemetrie-Stream nicht aus Storage laden: $e',
+        );
       }
     }
 
@@ -236,8 +237,10 @@ class _ActivityCockpitScreenState extends ConsumerState<ActivityCockpitScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Abbrechen',
-                style: TextStyle(color: Colors.white54),),
+            child: const Text(
+              'Abbrechen',
+              style: TextStyle(color: Colors.white54),
+            ),
           ),
           ElevatedButton(
             key: const Key('activity_title_save_button'),
@@ -245,15 +248,18 @@ class _ActivityCockpitScreenState extends ConsumerState<ActivityCockpitScreen> {
               backgroundColor: AppColors.volt,
               foregroundColor: AppColors.navy,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),),
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
             onPressed: () {
               if (formKey.currentState?.validate() ?? false) {
                 Navigator.of(ctx).pop(controller.text.trim());
               }
             },
-            child: const Text('Speichern',
-                style: TextStyle(fontWeight: FontWeight.bold),),
+            child: const Text(
+              'Speichern',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
           ),
         ],
       ),
@@ -298,8 +304,10 @@ class _ActivityCockpitScreenState extends ConsumerState<ActivityCockpitScreen> {
         backgroundColor: const Color(0xFF001F47),
         appBar: AppBar(
           backgroundColor: const Color(0xFF001F47),
-          title: Text('$_currentTitle (Vollbild)',
-              style: const TextStyle(color: Colors.white),),
+          title: Text(
+            '$_currentTitle (Vollbild)',
+            style: const TextStyle(color: Colors.white),
+          ),
           leading: IconButton(
             icon: const Icon(Icons.close, color: Colors.white),
             onPressed: () => Navigator.of(context).pop(),
@@ -345,8 +353,10 @@ class _ActivityCockpitScreenState extends ConsumerState<ActivityCockpitScreen> {
           actions: [
             const BetaBugReportIconButton(),
             IconButton(
-              icon: const Icon(Icons.screen_rotation_outlined,
-                  color: Colors.white70,),
+              icon: const Icon(
+                Icons.screen_rotation_outlined,
+                color: Colors.white70,
+              ),
               tooltip: 'Vollbild',
               onPressed: _openFullscreen,
             ),
@@ -354,7 +364,8 @@ class _ActivityCockpitScreenState extends ConsumerState<ActivityCockpitScreen> {
         ),
         body: _isLoading
             ? const Center(
-                child: CircularProgressIndicator(color: AppColors.volt),)
+                child: CircularProgressIndicator(color: AppColors.volt),
+              )
             : SingleChildScrollView(
                 padding: const EdgeInsets.all(16),
                 child: Column(
@@ -364,7 +375,9 @@ class _ActivityCockpitScreenState extends ConsumerState<ActivityCockpitScreen> {
                     if (widget.athleteName != null) ...[
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 8,),
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
                         decoration: BoxDecoration(
                           color: const Color(0xFF0F172A),
                           borderRadius: BorderRadius.circular(8),
@@ -372,8 +385,9 @@ class _ActivityCockpitScreenState extends ConsumerState<ActivityCockpitScreen> {
                         child: Text(
                           'Aktivität von ${widget.athleteName}',
                           style: const TextStyle(
-                              color: AppColors.volt,
-                              fontWeight: FontWeight.bold,),
+                            color: AppColors.volt,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                       const SizedBox(height: 12),
@@ -422,10 +436,13 @@ class _ActivityCockpitScreenState extends ConsumerState<ActivityCockpitScreen> {
                       children: [
                         InkWell(
                           onTap: () => setState(
-                              () => _useDistanceAxis = !_useDistanceAxis,),
+                            () => _useDistanceAxis = !_useDistanceAxis,
+                          ),
                           child: Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 4,),
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
                             decoration: BoxDecoration(
                               color: const Color(0xFF0F172A),
                               borderRadius: BorderRadius.circular(8),
@@ -434,15 +451,20 @@ class _ActivityCockpitScreenState extends ConsumerState<ActivityCockpitScreen> {
                             ),
                             child: Row(
                               children: [
-                                const Icon(Icons.swap_horiz,
-                                    size: 14, color: Colors.white70,),
+                                const Icon(
+                                  Icons.swap_horiz,
+                                  size: 14,
+                                  color: Colors.white70,
+                                ),
                                 const SizedBox(width: 4),
                                 Text(
                                   _useDistanceAxis
                                       ? 'Achse: Distanz (km)'
                                       : 'Achse: Zeit (h:mm)',
                                   style: const TextStyle(
-                                      color: Colors.white70, fontSize: 11,),
+                                    color: Colors.white70,
+                                    fontSize: 11,
+                                  ),
                                 ),
                               ],
                             ),
@@ -616,8 +638,11 @@ class _ActivityCockpitScreenState extends ConsumerState<ActivityCockpitScreen> {
             ),
             IconButton(
               key: const Key('activity_title_edit_button'),
-              icon: const Icon(Icons.edit_outlined,
-                  size: 20, color: AppColors.volt,),
+              icon: const Icon(
+                Icons.edit_outlined,
+                size: 20,
+                color: AppColors.volt,
+              ),
               tooltip: 'Titel bearbeiten',
               onPressed: _showEditTitleDialog,
             ),
@@ -672,8 +697,11 @@ class _ActivityCockpitScreenState extends ConsumerState<ActivityCockpitScreen> {
         ),
         child: Row(
           children: [
-            const Icon(Icons.event_available_outlined,
-                color: Colors.white60, size: 20,),
+            const Icon(
+              Icons.event_available_outlined,
+              color: Colors.white60,
+              size: 20,
+            ),
             const SizedBox(width: 10),
             const Expanded(
               child: Text(

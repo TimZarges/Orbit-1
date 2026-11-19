@@ -1267,8 +1267,12 @@ class _V1SimpleOnboardingWizardState
 
       // Direkte Firestore-Persistenz für sofortige UI-Verfügbarkeit
       if (uid != null) {
+        final normalizedEmail =
+            (activeAuthUser?.email ?? _emailCtrl.text).trim().toLowerCase();
         await FirebaseFirestore.instance.collection('users').doc(uid).set(
           {
+            'uid': uid,
+            if (normalizedEmail.isNotEmpty) 'email': normalizedEmail,
             'role': result.role,
             'onboardingCompleted': true,
             'profile': profilePayload,

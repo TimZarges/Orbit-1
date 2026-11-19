@@ -36,7 +36,8 @@ class EmailVerificationWaitingScreen extends ConsumerStatefulWidget {
 }
 
 class _EmailVerificationWaitingScreenState
-    extends ConsumerState<EmailVerificationWaitingScreen> {
+    extends ConsumerState<EmailVerificationWaitingScreen>
+    with WidgetsBindingObserver {
   Timer? _pollingTimer;
   Timer? _cooldownTimer;
   bool _isChecking = false;
@@ -46,14 +47,25 @@ class _EmailVerificationWaitingScreenState
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _startPolling();
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _pollingTimer?.cancel();
     _cooldownTimer?.cancel();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Bei Rückkehr aus dem E-Mail-Postfach sofort ohne Relogin prüfen
+    if (state == AppLifecycleState.resumed && mounted) {
+      final isEn = ref.read(settingsControllerProvider).languageCode == 'en';
+      _checkNow(isEn: isEn, silentIfUnverified: true);
+    }
   }
 
   /// Startet das 3-Sekunden-Polling auf `emailVerified`.
@@ -61,8 +73,9 @@ class _EmailVerificationWaitingScreenState
     _pollingTimer?.cancel();
     _pollingTimer = Timer.periodic(const Duration(seconds: 3), (timer) async {
       try {
-        final verified =
-            await ref.read(authServiceProvider).reloadAndCheckEmailVerified();
+        final verified = await ref
+            .read(authServiceProvider)
+            .reloadAndRefreshEmailVerification();
         if (verified && mounted) {
           timer.cancel();
           context.go('/');
@@ -89,15 +102,20 @@ class _EmailVerificationWaitingScreenState
     });
   }
 
-  /// Prüft den Bestätigungsstatus sofort per `user.reload()`.
-  Future<void> _checkNow({required bool isEn}) async {
+  /// Prüft den Bestätigungsstatus sofort per `user.reload()` und aktualisiert
+  /// den reaktiven Controller (`reloadAndRefreshEmailVerification`).
+  Future<void> _checkNow({
+    required bool isEn,
+    bool silentIfUnverified = false,
+  }) async {
     setState(() => _isChecking = true);
     try {
-      final verified =
-          await ref.read(authServiceProvider).reloadAndCheckEmailVerified();
+      final verified = await ref
+          .read(authServiceProvider)
+          .reloadAndRefreshEmailVerification();
       if (verified) {
         if (mounted) context.go('/');
-      } else if (mounted) {
+      } else if (mounted && !silentIfUnverified) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -110,7 +128,7 @@ class _EmailVerificationWaitingScreenState
         );
       }
     } catch (e) {
-      if (mounted) {
+      if (mounted && !silentIfUnverified) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -174,6 +192,17 @@ class _EmailVerificationWaitingScreenState
 
   @override
   Widget build(BuildContext context) {
+    // Reagiert unmittelbar, sobald userChanges/idTokenChanges/reload Verifikation meldet
+    ref.listen<bool>(
+      emailVerificationControllerProvider.select((s) => s.isVerified),
+      (previous, isNowVerified) {
+        if (isNowVerified && mounted) {
+          _pollingTimer?.cancel();
+          context.go('/');
+        }
+      },
+    );
+
     final lang = ref.watch(
       settingsControllerProvider.select((s) => s.languageCode),
     );
@@ -291,8 +320,8 @@ class _EmailVerificationWaitingScreenState
                       icon: const Icon(Icons.refresh, size: 20),
                       label: Text(
                         isEn
-                            ? 'I confirmed – Check status'
-                            : 'Ich habe bestätigt – Status prüfen',
+                            ? 'Already verified? Check status'
+                            : 'Bereits bestätigt? Status prüfen',
                       ),
                       onPressed: () => _checkNow(isEn: isEn),
                     ),

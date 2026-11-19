@@ -26,6 +26,8 @@ export {
   revokeLink,
   requestAthleteLinkByEmail,
   respondToCoachLinkRequest,
+  claimPendingCoachInvites,
+  revokeCoachInvite,
   ensureStorageCors,
   downloadActivityFit,
 } from "./coach";

@@ -108,12 +108,78 @@ class V1CoachConnectionService {
     });
   }
 
+  /// Prüft serverseitig auf offene E-Mail-Einladungen (`coachInvites`) für den
+  /// aktuell angemeldeten Athleten und überführt diese in `PENDING`-Anfragen.
+  Future<int> claimPendingInvites() async {
+    final data = await _invoke('claimPendingCoachInvites', const {});
+    return (data['claimedCount'] as num?)?.toInt() ?? 0;
+  }
+
+  /// Zieht eine offene E-Mail-Einladung für noch nicht registrierte Athleten zurück.
+  Future<void> revokePendingInvite(String inviteId) async {
+    await _invoke('revokeCoachInvite', {'inviteId': inviteId});
+  }
+
   /// Beendet eine bestehende Verbindung (oder zieht eine offene Anfrage zurück)
   /// und entzieht dem Coach sofort alle Leserechte.
   Future<void> revokeLink(String linkId) async {
     await _invoke('revokeLink', {'linkId': linkId});
   }
 }
+
+/// Modell einer offenen Coach-E-Mail-Einladung für noch nicht registrierte Athleten.
+class V1PendingCoachEmailInvite {
+  /// Dokument-ID in `coachInvites`.
+  final String inviteId;
+
+  /// Normalisierte E-Mail-Adresse des eingeladenen Athleten.
+  final String athleteEmail;
+
+  /// Zugehöriger 6-stelliger Einladungscode des Coaches.
+  final String inviteCode;
+
+  /// Status (`'PENDING_REGISTRATION'`).
+  final String status;
+
+  /// Erstellt ein [V1PendingCoachEmailInvite].
+  const V1PendingCoachEmailInvite({
+    required this.inviteId,
+    required this.athleteEmail,
+    required this.inviteCode,
+    required this.status,
+  });
+
+  /// Erzeugt das Modell aus einem Firestore-Dokument.
+  factory V1PendingCoachEmailInvite.fromMap(
+    String id,
+    Map<String, dynamic> map,
+  ) {
+    return V1PendingCoachEmailInvite(
+      inviteId: id,
+      athleteEmail: (map['athleteEmail'] as String? ?? '').trim(),
+      inviteCode: (map['inviteCode'] as String? ?? '').trim().toUpperCase(),
+      status: (map['status'] as String? ?? 'PENDING_REGISTRATION').trim(),
+    );
+  }
+}
+
+/// Stream aller noch unbeanspruchten E-Mail-Einladungen (`coachInvites`) eines Coaches.
+final v1CoachPendingEmailInvitesStreamProvider =
+    StreamProvider.autoDispose<List<V1PendingCoachEmailInvite>>((ref) {
+  final uid = ref.watch(authStateChangesProvider).valueOrNull?.uid;
+  if (uid == null || uid.isEmpty) return Stream.value(const []);
+
+  return FirebaseFirestore.instance
+      .collection('coachInvites')
+      .where('coachId', isEqualTo: uid)
+      .where('status', isEqualTo: 'PENDING_REGISTRATION')
+      .snapshots()
+      .map(
+        (snap) => snap.docs
+            .map((d) => V1PendingCoachEmailInvite.fromMap(d.id, d.data()))
+            .toList(growable: false),
+      );
+});
 
 /// Riverpod-Provider für den [V1CoachConnectionService].
 final v1CoachConnectionServiceProvider =
@@ -215,7 +281,8 @@ Future<V1CoachAthleteLink> _enrichLinkForCoach(
       final firstName = (profile['firstName'] as String? ?? '').trim();
       final lastName = (profile['lastName'] as String? ?? '').trim();
       final displayName = (profile['displayName'] as String? ?? '').trim();
-      final fullName = [firstName, lastName].where((s) => s.isNotEmpty).join(' ');
+      final fullName =
+          [firstName, lastName].where((s) => s.isNotEmpty).join(' ');
       final resolvedName = fullName.isNotEmpty
           ? fullName
           : (displayName.isNotEmpty
@@ -282,7 +349,8 @@ Future<V1CoachAthleteLink> _enrichLinkForAthlete(
       final firstName = (profile['firstName'] as String? ?? '').trim();
       final lastName = (profile['lastName'] as String? ?? '').trim();
       final displayName = (profile['displayName'] as String? ?? '').trim();
-      final fullName = [firstName, lastName].where((s) => s.isNotEmpty).join(' ');
+      final fullName =
+          [firstName, lastName].where((s) => s.isNotEmpty).join(' ');
       final resolvedName = fullName.isNotEmpty
           ? fullName
           : (displayName.isNotEmpty

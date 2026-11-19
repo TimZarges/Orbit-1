@@ -2539,3 +2539,31 @@ The operation couldn’t be completed. Unable to locate a Java Runtime.
   - **Garmin-Telemetrie-Cockpit (Kopfdaten & GPS-Volt-Spur):** `docs/beta/screenshots/screen_garmin_24_cockpit.png` (NP 245 W, IF 0.88, VI 1.05, EF 1.59, Aerobe Entkopplung 2.1 %)
   - **Garmin-Telemetrie-Cockpit (Multi-Stream-Graphen & Runden):** `docs/beta/screenshots/screen_garmin_25_cockpit_scrolled.png` (Leistungs-/W'bal-/HF-/Pace-Kurven + 4 Laps)
 
+---
+
+## Checkpoint Launch-Update `v1.0.1` — E-Mail-Verifizierung, Coach-Einladung, Heute-Entschlackung & Bereinigung
+- **Status:** Implementiert, gegen Emulator/Tests geprüft, auf `orbit-app-mvp` & Pixel 10 Pro (`58251FDCR00EQ2`) deployed und visuell verifiziert
+- **Datum:** 2026-11-19
+- **Umgesetzte Maßnahmen:**
+  1. **Reaktive E-Mail-Bestätigung (`auth_provider.dart`, `email_verification_banner.dart`, `email_verification_waiting_screen.dart`):**
+     - `EmailVerificationController` mit `userChanges()` + `idTokenChanges()` + `reload()`/`getIdToken(true)`; `AppLifecycleState.resumed`-Prüfung und Status-Button (`„Bereits bestätigt? Status prüfen“`).
+  2. **End-to-End Coach-E-Mail-Einladung (`functions/src/coach.ts`, `auth.ts`, `index.ts`, `firestore.rules`, `v1_coach_athletes_tab.dart`, `v1_athlete_coach_connection_card.dart`, `v1_simple_onboarding_wizard.dart`):**
+     - Fallback über `admin.auth().getUserByEmail`, persistente `coachInvites` + `mail`-Queue für nicht registrierte E-Mails, automatische Übertragung bei Registrierung (`claimCoachInvitesForAthlete`) bzw. via `claimPendingCoachInvites`, neue Callables `claimPendingCoachInvites` & `revokeCoachInvite`, strikte Rules für `coachInvites` & `mail`, Controller-sicherer Dialog (`_InviteByEmailDialog`) + ehrlicher Code-/Share-Rückmeldedialog.
+  3. **Entschlackter Heute-Tab in V1.0.0 (`today_tab_screen.dart`):**
+     - Alle Sync-/Upload-Karten, Buttons und FAB im strikten V1.0.0-Modus entfernt; ruhiger Empty-State mit `"Heute noch kein absolviertes Training"` / `"Sobald heute ein Training synchronisiert wird, erscheint es hier."`.
+  4. **Bereinigung von `COROS`, `MATS`, `TrainingPeaks`, `europe-west3` (Nutzertexte) & Vereins-Onboarding (`public/`, `lib/`):**
+     - `public/brand-showcase.html` und `web/brand-showcase.html` entfernt; `public/*.html`, `public/privacy/index.html`, `public/impressum/index.html` und betroffene UI-/Config-Texte bereinigt (`Frankfurt am Main (Deutschland / EU)`).
+- **Verifizierte Befehlsausgaben (Evidence-Only gemäß Regel 2 & 4):**
+  - `grep -Ein "coros|\bmats\b|mats\.coach|trainingpeaks|europe-west3|europ-west-3|vereins-" public/*.html public/privacy/index.html public/impressum/index.html` -> `ZERO_HITS_VERIFIED` (`0` Treffer).
+  - `node -e "console.log(Object.keys(require('./functions/lib/index.js')))"` -> enthält u. a. `'claimPendingCoachInvites'`, `'revokeCoachInvite'`, `'requestAthleteLinkByEmail'`.
+  - `bash scripts/check_phase_ready.sh` -> Exit Code `0` (`flutter analyze`: `0 Errors, 0 Warnings, 0 Infos`, `functions` Build & Lint: `0 Errors`, `100 %` deutsche Kommentare, `flutter test`: `271/271` Tests bestanden).
+  - `npx -y firebase-tools emulators:exec --only firestore,storage "npm --prefix functions test" --project orbit-app-mvp` -> Exit Code `0` (`Test Suites: 12 passed, 12 total`, `Tests: 117 passed, 117 total`).
+  - `flutter build web --release --no-pub --no-web-resources-cdn --base-href /app/ --suppress-analytics` -> Exit Code `0` (`Built build/web`), gespiegelt nach `public/app/` (`BRAND_SHOWCASE_ABSENT`).
+  - `npx -y firebase-tools deploy --only functions,firestore:rules,hosting --project orbit-app-mvp --force` -> Exit Code `0` (`Deploy complete!`).
+  - `flutter build apk --release --no-pub --suppress-analytics && adb -s 58251FDCR00EQ2 install -r build/app/outputs/flutter-apk/app-release.apk` -> `Built ...app-release.apk (67.2MB)` & `Performing Streamed Install -> Success`.
+  - Live-URL-Check (`/`, `/privacy/`, `/impressum/`, `/help`, `/delete-account`, `/app/`): alle `HTTP 200`, `forbidden_hits=0`.
+- **Live-Screenshots:**
+  - `docs/beta/screenshots/audit_pixel10_v1_0_1_today_clean.png`
+  - `docs/beta/screenshots/audit_safari_v1_0_1_website_clean.png`
+  - `docs/beta/screenshots/audit_safari_v1_0_1_web_app.png`
+

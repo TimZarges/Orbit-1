@@ -123,22 +123,26 @@ void main() {
       expect(find.text('Kalender'), findsOneWidget);
       expect(find.text('Coach'), findsOneWidget);
 
-      // 3. Heute-Ansicht zeigt Schnellzugriff (Garmin Sync & Datei-Upload) + absolviertes Training
+      // 3. Heute-Ansicht zeigt in V1.0.0 aufgeräumt das absolvierte Training ohne Sync-/Upload-Karten
       expect(
         find.byKey(const Key('v1_today_quick_actions_card')),
-        findsOneWidget,
+        findsNothing,
       );
       expect(
         find.byKey(const Key('v1_today_garmin_sync_button')),
-        findsOneWidget,
+        findsNothing,
       );
       expect(
         find.byKey(const Key('v1_today_file_upload_button')),
-        findsOneWidget,
+        findsNothing,
+      );
+      expect(
+        find.byKey(const Key('today_fab_upload_button')),
+        findsNothing,
       );
       expect(find.text('Bonn Ausfahrt'), findsOneWidget);
 
-      // 4. COROS-Karte zeigt .FIT-Download-Button rechts und Datum als dd.mm.yy • 24h
+      // 4. Trainings-Vorschaukarte zeigt .FIT-Download-Button rechts und Datum als dd.mm.yy • 24h
       expect(
         find.byKey(const Key('fit_download_button_act_v1_test')),
         findsOneWidget,
@@ -259,7 +263,8 @@ void main() {
       }
     });
 
-    test('formatiert einstellige Tage, Monate und Morgenstunden mit führender Null',
+    test(
+        'formatiert einstellige Tage, Monate und Morgenstunden mit führender Null',
         () {
       final morning = DateTime(2026, 3, 5, 7, 4);
       expect(
@@ -271,8 +276,10 @@ void main() {
         equals('07:04'),
       );
       expect(
-        CountryDateTimeFormatter.formatDateString('2026-10-21',
-            countryCode: 'AT',),
+        CountryDateTimeFormatter.formatDateString(
+          '2026-10-21',
+          countryCode: 'AT',
+        ),
         equals('21.10.26'),
       );
     });

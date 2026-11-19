@@ -118,3 +118,20 @@
   - `docs/beta/screenshots/audit_safari_orbit_web_app_icons_verify.png` (ORBIT Web unter `/app/` mit lokalem CanvasKit & `MaterialIcons-Regular.otf` ohne Tofu-Icons)
   - `docs/beta/screenshots/audit_pixel10_v1_final.png` (ORBIT V1.0.0 Release-APK `1.0.0+1` auf dem Google Pixel 10 Pro `58251FDCR00EQ2` mit Topbar-Bugbutton und gespeichertem Profilbild)
 - **Produktions-Deployments:** Firebase Hosting (`/`, `/app/`, `/imprint.html`, `/privacy.html`, `/delete-account.html`, `/help.html`), Firestore Rules, Storage Rules, Cloud Functions (`europe-west3`) sowie Android Release-APK (`1.0.0+1`) auf Pixel 10 Pro (`58251FDCR00EQ2`).
+
+---
+
+## 7. Block 7 — Launch-Update `v1.0.1` (Reaktive E-Mail-Verifizierung, Coach-Invite-Fix, Heute-Entschlackung & Web-Bereinigung)
+
+- **Reaktive E-Mail-Bestätigung ohne Relogin (`auth_provider.dart`, `email_verification_banner.dart`, `email_verification_waiting_screen.dart`):**
+  - `EmailVerificationController` kombiniert `userChanges()`, `idTokenChanges()` sowie `reload()` + `getIdToken(true)`; beide Oberflächen beobachten zusätzlich `AppLifecycleState.resumed` und bieten den Button `„Bereits bestätigt? Status prüfen“` / `„Already verified? Check status“`.
+- **End-to-End-Reparatur der Coach-E-Mail-Einladung (`functions/src/coach.ts`, `auth.ts`, `firestore.rules`, `v1_coach_athletes_tab.dart`):**
+  - `requestAthleteLinkByEmail` sucht sowohl in Firestore (`users`) als auch via Firebase Auth (`getUserByEmail`), legt für noch nicht registrierte E-Mail-Adressen persistente `coachInvites` + `mail`-Queue-Einträge an, gibt den 6-stelligen Coach-Code für den ehrlichen Rückmelde-Dialog zurück und überträgt offene Einladungen bei Signup (`setInitialRole`) bzw. über `claimPendingCoachInvites` in eine DSGVO-pflichtige `PENDING`-Anfrage (`coachLinks`). `coachInvites` & `mail` sind durch neue `firestore.rules` + Emulator-Tests abgesichert.
+- **Radikal aufgeräumter Heute-Tab in V1.0.0 (`today_tab_screen.dart`):**
+  - Im strikten V1.0.0-Modus werden alle Garmin-Sync- und `.fit`-Upload-Karten, Buttons und der FAB ausgeblendet; ohne heutiges Training erscheint ausschließlich die ruhige Hinweiskarte (`„Heute noch kein absolviertes Training“` / `„Sobald heute ein Training synchronisiert wird, erscheint es hier.“`).
+- **Bereinigung von Mitbewerber-Marken, `europe-west3` in Nutzertexten & Vereins-Onboarding (`public/`, `lib/`):**
+  - Entfernt aus allen HTML-Seiten (`public/index.html`, `help.html`, `privacy.html`, `delete-account.html`, `privacy/index.html`, `impressum/index.html`; `brand-showcase.html` gelöscht) und App-Texten; `ContactConfig.serverRegion` & `AppInfo.region` vereinheitlicht auf `Frankfurt am Main (Deutschland / EU)`. Live-Prüfung auf `/`, `/privacy/`, `/impressum/`, `/help`, `/delete-account`, `/app/`: überall `HTTP 200` und `0` Treffer (`forbidden_hits=0`).
+- **Verifikation (`v1.0.1`):**
+  - `bash scripts/check_phase_ready.sh`: `flutter analyze` `0 Errors / 0 Warnings / 0 Infos`, `functions` Build & Lint `0 Errors`, `100 %` deutsche Kommentare, **`271/271` Flutter-Tests bestanden**.
+  - Emulator-Suite (`npx -y firebase-tools emulators:exec --only firestore,storage "npm --prefix functions test" --project orbit-app-mvp`): **`12/12` Test-Suites (`117/117` Tests) bestanden**.
+  - Live-Screenshots: `docs/beta/screenshots/audit_pixel10_v1_0_1_today_clean.png`, `docs/beta/screenshots/audit_safari_v1_0_1_website_clean.png`, `docs/beta/screenshots/audit_safari_v1_0_1_web_app.png`.

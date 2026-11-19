@@ -1,3 +1,10 @@
+/**
+ * @file coach.ts
+ * @description Cloud Functions 2nd Gen für die sichere Coach-Athleten-Verbindung
+ * in `europe-west3` (Einladungscodes, E-Mail-Einladungen, DSGVO-Annahme/Widerruf,
+ * Storage-CORS und `.FIT`-Originaldatei-Download).
+ */
+
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import * as admin from "firebase-admin";
 import * as crypto from "crypto";
@@ -5,9 +12,139 @@ import * as crypto from "crypto";
 export * from "./coach/dashboard";
 export * from "./seeds/seed_coach_athletes";
 
-// Erzeugt einen 6-stelligen alphanumerischen Einladungscode
+/**
+ * Erzeugt einen 6-stelligen alphanumerischen Einladungscode.
+ */
 function generateInviteCode(): string {
   return crypto.randomBytes(3).toString("hex").toUpperCase();
+}
+
+/**
+ * Bildet eine deterministische Einladungs-ID aus Coach-UID und normalisierter E-Mail.
+ */
+function buildEmailInviteId(coachUid: string, normalizedEmail: string): string {
+  const emailHash = crypto
+    .createHash("sha256")
+    .update(normalizedEmail)
+    .digest("hex")
+    .slice(0, 16);
+  return `${coachUid}_${emailHash}`;
+}
+
+/**
+ * Ermittelt den Anzeigenamen aus einem Firestore-Nutzerdokument.
+ */
+function resolveDisplayName(
+  userData: Record<string, any> | undefined,
+  fallback: string
+): string {
+  const profile = userData?.profile;
+  const displayName =
+    typeof profile?.displayName === "string" ? profile.displayName.trim() : "";
+  if (displayName) return displayName;
+  const combined = [profile?.firstName, profile?.lastName]
+    .filter((v) => typeof v === "string" && v.trim().length > 0)
+    .join(" ")
+    .trim();
+  if (combined) return combined;
+  if (typeof userData?.email === "string" && userData.email.trim().length > 0) {
+    return userData.email.trim();
+  }
+  return fallback;
+}
+
+/**
+ * Sucht für einen Coach einen gültigen, nicht abgelaufenen 6-stelligen Einladungscode
+ * oder legt automatisch einen neuen Code in `invites/{code}` an.
+ */
+async function ensureCoachInviteCode(
+  db: admin.firestore.Firestore,
+  coachUid: string
+): Promise<string> {
+  try {
+    const existingSnap = await db
+      .collection("invites")
+      .where("coachId", "==", coachUid)
+      .limit(10)
+      .get();
+    const nowMs = Date.now();
+    for (const doc of existingSnap.docs) {
+      const data = doc.data();
+      const usedBy = Array.isArray(data?.usedBy) ? data.usedBy : [];
+      const maxUses = typeof data?.maxUses === "number" ? data.maxUses : 10;
+      const expiresAtMs =
+        typeof data?.expiresAt?.toMillis === "function"
+          ? data.expiresAt.toMillis()
+          : nowMs + 1000;
+      if (expiresAtMs > nowMs && usedBy.length < maxUses) {
+        return doc.id;
+      }
+    }
+  } catch (_) {
+    // Fallback auf Neuanlage bei fehlender Abfrageunterstützung in Tests
+  }
+
+  const code = generateInviteCode();
+  await db.collection("invites").doc(code).set({
+    coachId: coachUid,
+    expiresAt: admin.firestore.Timestamp.fromDate(
+      new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+    ),
+    maxUses: 10,
+    usedBy: [],
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
+  return code;
+}
+
+/**
+ * Stellt eine strukturierte Einladungs-E-Mail in die Firestore-Collection `mail` ein
+ * (kompatibel mit der Firebase Trigger-Email-Erweiterung). Ein externer Mail-Versand
+ * findet nur statt, wenn im Projekt eine Mail-Extension/SMTP konfiguriert ist.
+ */
+async function queueCoachInviteMail(
+  db: admin.firestore.Firestore,
+  params: {
+    toEmail: string;
+    coachId: string;
+    coachName: string;
+    inviteCode: string;
+    accountExists: boolean;
+  }
+): Promise<boolean> {
+  try {
+    const actionUrl = params.accountExists
+      ? "https://orbit-app-mvp.web.app/app/#/login"
+      : "https://orbit-app-mvp.web.app/app/#/register";
+    const subject = `ORBIT Coaching-Einladung von ${params.coachName}`;
+    const text = [
+      `Hallo,`,
+      ``,
+      `${params.coachName} lädt dich ein, deine Trainingsdaten DSGVO-konform über ORBIT zu teilen.`,
+      `Dein 6-stelliger Coach-Einladungscode lautet: ${params.inviteCode}`,
+      ``,
+      params.accountExists
+        ? `Öffne dein ORBIT Profil unter ${actionUrl} und bestätige die eingehende Anfrage (oder gib den Code ein).`
+        : `Registriere dich kostenlos unter ${actionUrl} mit dieser E-Mail-Adresse (${params.toEmail}) und gib den Coach-Code ${params.inviteCode} ein.`,
+      ``,
+      `Ohne deine ausdrückliche DSGVO-Einwilligung hat niemand Zugriff auf deine Daten.`,
+    ].join("\n");
+
+    await db.collection("mail").add({
+      to: [params.toEmail],
+      coachId: params.coachId,
+      inviteCode: params.inviteCode,
+      type: "COACH_INVITE",
+      message: {
+        subject,
+        text,
+      },
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+    return true;
+  } catch (_) {
+    return false;
+  }
 }
 
 /**
@@ -392,8 +529,17 @@ export const revokeLink = onCall(async (request) => {
 /**
  * Sendet eine Verbindungsanfrage eines Coaches an einen Athleten per E-Mail-Adresse.
  *
+ * Ablauf:
+ * 1. Erzeugt oder reaktiviert für den Coach einen 6-stelligen Einladungscode (`invites/{code}`).
+ * 2. Sucht einen bestehenden Athleten-Account in `users` (case-insensitiv per Fallback
+ *    über `admin.auth().getUserByEmail`) und legt dort eine `PENDING`-Verbindungsanfrage
+ *    (`coachLinks/{athleteId}_{coachUid}`) plus In-App-Hinweis an.
+ * 3. Existiert noch kein ORBIT-Account für die E-Mail, wird die Einladung persistent in
+ *    `coachInvites/{inviteId}` (`status: 'PENDING_REGISTRATION'`) sowie in der `mail`-Queue
+ *    abgelegt, sodass sie beim späteren Registrieren/Einloggen automatisch erscheint.
+ *
  * @param request - Enthält `email` des gewünschten Athleten.
- * @returns Objekt mit `success`, `linkId`, `athleteId`, `athleteName` und `status: 'PENDING'`.
+ * @returns Strukturiertes Statusobjekt inkl. `deliveryMode`, `accountExists` und `inviteCode`.
  */
 export const requestAthleteLinkByEmail = onCall(async (request) => {
   const coachUid = request.auth?.uid;
@@ -414,72 +560,319 @@ export const requestAthleteLinkByEmail = onCall(async (request) => {
     throw new HttpsError("invalid-argument", "A valid athlete email is required.");
   }
 
-  // Athleten-Dokument anhand der E-Mail-Adresse suchen
+  const coachName = resolveDisplayName(coachData, "Coach");
+  const coachEmail = typeof coachData?.email === "string" ? coachData.email : "";
+  const inviteCode = await ensureCoachInviteCode(db, coachUid);
+  const inviteId = buildEmailInviteId(coachUid, normalizedEmail);
+
+  // 1. Athleten-Account über Firestore `users` oder Firebase Auth (case-insensitiv) ermitteln
+  let athleteId = "";
+  let athleteData: Record<string, any> = {};
+
   const athleteSnap = await db.collection("users")
     .where("email", "==", normalizedEmail)
     .limit(1)
     .get();
 
-  if (athleteSnap.empty) {
-    throw new HttpsError("not-found", "No athlete found with this email address.");
+  if (!athleteSnap.empty) {
+    const athleteDoc = athleteSnap.docs[0];
+    athleteId = athleteDoc.id;
+    athleteData = athleteDoc.data() || {};
+  } else {
+    // Fallback über Firebase Auth (fängt Groß-/Kleinschreibung oder fehlendes users.email auf)
+    try {
+      const authRecord = await admin.auth().getUserByEmail(normalizedEmail);
+      athleteId = authRecord.uid;
+      const docSnap = await db.collection("users").doc(athleteId).get();
+      if (docSnap.exists) {
+        athleteData = docSnap.data() || {};
+        if (!athleteData.email) {
+          await db.collection("users").doc(athleteId).set(
+            { uid: athleteId, email: normalizedEmail },
+            { merge: true }
+          );
+          athleteData.email = normalizedEmail;
+        }
+      }
+    } catch (_) {
+      // Kein Konto in Firebase Auth -> Einladung für spätere Registrierung anlegen
+    }
   }
 
-  const athleteDoc = athleteSnap.docs[0];
-  const athleteId = athleteDoc.id;
-  const athleteData = athleteDoc.data();
+  // 2. Fall A: Konto existiert -> direkte PENDING-Verbindungsanfrage in coachLinks anlegen
+  if (athleteId) {
+    if (athleteId === coachUid) {
+      throw new HttpsError("invalid-argument", "Cannot link with yourself.");
+    }
+    if (athleteData.role === "TRAINER") {
+      throw new HttpsError("failed-precondition", "Target user is not an athlete.");
+    }
 
-  if (athleteId === coachUid) {
-    throw new HttpsError("invalid-argument", "Cannot link with yourself.");
+    const linkId = `${athleteId}_${coachUid}`;
+    const linkRef = db.collection("coachLinks").doc(linkId);
+    const existingLink = await linkRef.get();
+    if (existingLink.exists && existingLink.data()?.status === "ACTIVE") {
+      throw new HttpsError("already-exists", "Athlete is already connected with this coach.");
+    }
+
+    const athleteName = resolveDisplayName(
+      { ...athleteData, email: athleteData.email ?? normalizedEmail },
+      normalizedEmail
+    );
+
+    // Verbindungsanfrage im Status PENDING speichern (keine Datenfreigabe ohne DSGVO-Opt-in)
+    await linkRef.set({
+      athleteId,
+      coachId: coachUid,
+      status: "PENDING",
+      requestedBy: coachUid,
+      inviteCode,
+      coachName,
+      coachEmail,
+      athleteName,
+      athleteEmail: athleteData?.email ?? normalizedEmail,
+      permissions: {
+        activities: false,
+        calendar: false,
+        health: false,
+        bodyWeightAndNotes: false,
+      },
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    }, { merge: true });
+
+    await db.collection("coachInvites").doc(inviteId).set({
+      inviteId,
+      coachId: coachUid,
+      coachName,
+      coachEmail,
+      athleteId,
+      athleteEmail: normalizedEmail,
+      inviteCode,
+      status: "LINKED_PENDING",
+      mailQueued: true,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    }, { merge: true });
+
+    // Optionale In-App-Benachrichtigung + Mail-Queue-Eintrag anlegen
+    try {
+      await db.collection("users").doc(athleteId).collection("notifications").add({
+        title: "Neue Coach-Verbindungsanfrage",
+        body: `${coachName} möchte sich mit deinem ORBIT-Konto verbinden. Bitte im Profil bestätigen.`,
+        type: "SYSTEM",
+        route: "/profile",
+        read: false,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+    } catch (_) {
+      // Benachrichtigung optional
+    }
+
+    const mailQueued = await queueCoachInviteMail(db, {
+      toEmail: normalizedEmail,
+      coachId: coachUid,
+      coachName,
+      inviteCode,
+      accountExists: true,
+    });
+
+    return {
+      success: true,
+      deliveryMode: "IN_APP_PENDING",
+      accountExists: true,
+      mailQueued,
+      mailProviderConfigured: false,
+      linkId,
+      inviteId,
+      athleteId,
+      athleteName,
+      athleteEmail: normalizedEmail,
+      inviteCode,
+      status: "PENDING",
+    };
   }
-  if (athleteData.role !== "ATHLETE") {
-    throw new HttpsError("failed-precondition", "Target user is not an athlete.");
-  }
 
-  const linkId = `${athleteId}_${coachUid}`;
-  const linkRef = db.collection("coachLinks").doc(linkId);
-  const existingLink = await linkRef.get();
-  if (existingLink.exists && existingLink.data()?.status === "ACTIVE") {
-    throw new HttpsError("already-exists", "Athlete is already connected with this coach.");
-  }
-
-  const coachName =
-    coachData?.profile?.displayName ||
-    [coachData?.profile?.firstName, coachData?.profile?.lastName].filter(Boolean).join(" ").trim() ||
-    coachData?.email ||
-    "Coach";
-  const athleteName =
-    athleteData?.profile?.displayName ||
-    [athleteData?.profile?.firstName, athleteData?.profile?.lastName].filter(Boolean).join(" ").trim() ||
-    athleteData?.email ||
-    "Athlet";
-
-  // Verbindungsanfrage im Status PENDING speichern (ohne Datenfreigabe bis zur DSGVO-Zustimmung)
-  await linkRef.set({
-    athleteId,
+  // 3. Fall B: Noch kein ORBIT-Konto -> offene Einladung in `coachInvites` & `mail`-Queue speichern
+  await db.collection("coachInvites").doc(inviteId).set({
+    inviteId,
     coachId: coachUid,
-    status: "PENDING",
-    requestedBy: coachUid,
     coachName,
-    coachEmail: coachData?.email ?? "",
-    athleteName,
-    athleteEmail: athleteData?.email ?? normalizedEmail,
-    permissions: {
-      activities: false,
-      calendar: false,
-      health: false,
-      bodyWeightAndNotes: false,
-    },
+    coachEmail,
+    athleteEmail: normalizedEmail,
+    inviteCode,
+    status: "PENDING_REGISTRATION",
+    mailQueued: true,
+    expiresAt: admin.firestore.Timestamp.fromDate(
+      new Date(Date.now() + 14 * 24 * 60 * 60 * 1000)
+    ),
     createdAt: admin.firestore.FieldValue.serverTimestamp(),
     updatedAt: admin.firestore.FieldValue.serverTimestamp(),
   }, { merge: true });
 
+  const mailQueued = await queueCoachInviteMail(db, {
+    toEmail: normalizedEmail,
+    coachId: coachUid,
+    coachName,
+    inviteCode,
+    accountExists: false,
+  });
+
   return {
     success: true,
-    linkId,
-    athleteId,
-    athleteName,
-    status: "PENDING",
+    deliveryMode: "INVITE_CREATED_NO_ACCOUNT",
+    accountExists: false,
+    mailQueued,
+    mailProviderConfigured: false,
+    inviteId,
+    athleteId: "",
+    athleteName: normalizedEmail,
+    athleteEmail: normalizedEmail,
+    inviteCode,
+    status: "PENDING_REGISTRATION",
   };
+});
+
+/**
+ * Überführt alle offenen E-Mail-Einladungen (`coachInvites` mit Status
+ * `PENDING_REGISTRATION`) für den angegebenen Athleten in `PENDING`-`coachLinks`,
+ * sodass sie sofort im „Profil Einfach“ mit DSGVO-Bestätigung erscheinen.
+ */
+export async function claimCoachInvitesForAthlete(
+  db: admin.firestore.Firestore,
+  uid: string,
+  rawEmail?: string
+): Promise<{ claimedCount: number; claimedCoachIds: string[] }> {
+  let normalizedEmail = typeof rawEmail === "string" ? rawEmail.trim().toLowerCase() : "";
+
+  const userDoc = await db.collection("users").doc(uid).get();
+  const userData = userDoc.data() || {};
+  if (!normalizedEmail && typeof userData.email === "string") {
+    normalizedEmail = userData.email.trim().toLowerCase();
+  }
+  if (!normalizedEmail) {
+    try {
+      const authUser = await admin.auth().getUser(uid);
+      normalizedEmail = (authUser.email || "").trim().toLowerCase();
+    } catch (_) {
+      // Ohne E-Mail ist kein Abgleich möglich
+    }
+  }
+  if (!normalizedEmail || userData.role === "TRAINER") {
+    return { claimedCount: 0, claimedCoachIds: [] };
+  }
+
+  const invitesSnap = await db
+    .collection("coachInvites")
+    .where("athleteEmail", "==", normalizedEmail)
+    .where("status", "==", "PENDING_REGISTRATION")
+    .get();
+
+  if (invitesSnap.empty) {
+    return { claimedCount: 0, claimedCoachIds: [] };
+  }
+
+  const athleteName = resolveDisplayName(
+    { ...userData, email: normalizedEmail },
+    normalizedEmail
+  );
+  const nowMs = Date.now();
+  const claimedCoachIds: string[] = [];
+
+  for (const inviteDoc of invitesSnap.docs) {
+    const inv = inviteDoc.data();
+    const coachId = typeof inv.coachId === "string" ? inv.coachId : "";
+    if (!coachId || coachId === uid) continue;
+
+    const expiresAtMs =
+      typeof inv.expiresAt?.toMillis === "function"
+        ? inv.expiresAt.toMillis()
+        : nowMs + 1000;
+    if (expiresAtMs <= nowMs) continue;
+
+    const linkId = `${uid}_${coachId}`;
+    const linkRef = db.collection("coachLinks").doc(linkId);
+    const existingLink = await linkRef.get();
+    if (!existingLink.exists || existingLink.data()?.status !== "ACTIVE") {
+      await linkRef.set({
+        athleteId: uid,
+        coachId,
+        status: "PENDING",
+        requestedBy: coachId,
+        inviteCode: inv.inviteCode || "",
+        coachName: inv.coachName || "Coach",
+        coachEmail: inv.coachEmail || "",
+        athleteName,
+        athleteEmail: normalizedEmail,
+        permissions: {
+          activities: false,
+          calendar: false,
+          health: false,
+          bodyWeightAndNotes: false,
+        },
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      }, { merge: true });
+    }
+
+    await inviteDoc.ref.set({
+      status: "CLAIMED_PENDING",
+      athleteId: uid,
+      claimedAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    }, { merge: true });
+
+    claimedCoachIds.push(coachId);
+  }
+
+  return { claimedCount: claimedCoachIds.length, claimedCoachIds };
+}
+
+/**
+ * Ermöglicht dem eingeloggten Athleten den expliziten Abruf und das Überführen
+ * offener E-Mail-Einladungen (`coachInvites` -> `PENDING` `coachLinks`).
+ */
+export const claimPendingCoachInvites = onCall(async (request) => {
+  const uid = request.auth?.uid;
+  if (!uid) {
+    throw new HttpsError("unauthenticated", "Must be logged in.");
+  }
+  const tokenEmail =
+    typeof request.auth?.token?.email === "string"
+      ? request.auth.token.email
+      : undefined;
+  return claimCoachInvitesForAthlete(admin.firestore(), uid, tokenEmail);
+});
+
+/**
+ * Zieht eine offene E-Mail-Einladung (`coachInvites`) des Coaches wieder zurück.
+ */
+export const revokeCoachInvite = onCall(async (request) => {
+  const coachUid = request.auth?.uid;
+  if (!coachUid) {
+    throw new HttpsError("unauthenticated", "Must be logged in.");
+  }
+
+  const rawInviteId = request.data?.inviteId;
+  const inviteId = typeof rawInviteId === "string" ? rawInviteId.trim() : "";
+  if (!inviteId) {
+    throw new HttpsError("invalid-argument", "inviteId is required.");
+  }
+
+  const inviteRef = admin.firestore().collection("coachInvites").doc(inviteId);
+  const inviteSnap = await inviteRef.get();
+  if (!inviteSnap.exists) {
+    throw new HttpsError("not-found", "Invite not found.");
+  }
+  if (inviteSnap.data()?.coachId !== coachUid) {
+    throw new HttpsError("permission-denied", "Only the inviting coach can revoke this invite.");
+  }
+
+  await inviteRef.update({
+    status: "REVOKED",
+    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
+  return { success: true };
 });
 
 /**

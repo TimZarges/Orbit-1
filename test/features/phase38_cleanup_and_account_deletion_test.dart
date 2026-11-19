@@ -29,6 +29,9 @@ class _MockAuthService implements AuthService {
 
   @override
   Future<bool> reloadAndCheckEmailVerified() async => true;
+
+  @override
+  Future<bool> reloadAndRefreshEmailVerification() async => true;
 }
 
 void main() {

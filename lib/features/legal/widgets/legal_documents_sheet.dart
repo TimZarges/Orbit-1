@@ -25,7 +25,7 @@ enum LegalDocumentTab {
 /// Zweisprachige In-App-Ansicht für Datenschutz & Impressum (DE & EN, Light & Dark).
 ///
 /// Was: Zeigt die vollständige Datenschutzerklärung (Art. 9 Gesundheits-/Trainingsdaten,
-/// Garmin Sync, Coach-`.FIT`-Freigabe, Serverstandort Frankfurt am Main `europe-west3`,
+/// Garmin Sync, Coach-`.FIT`-Freigabe, Serverstandort Frankfurt am Main (Deutschland / EU),
 /// Anleitung zur Art.-17-Kontolöschung) sowie das Impressum mit offiziellen
 /// Marken-/Kontaktdaten von `ORBIT Performance / ORBIT Training`.
 /// Warum: Stellt die sofortige 1-Klick-Erreichbarkeit aus jedem V1.0.0-Screen sicher.
@@ -235,8 +235,8 @@ class _LegalDocumentsSheetState extends State<LegalDocumentsSheet> {
             ? '4. Server Location Germany & Processors (Art. 28 GDPR)'
             : '4. Serverstandort Deutschland & Auftragsverarbeiter (Art. 28 DSGVO)',
         body: isEn
-            ? 'All data is stored and processed exclusively inside the European Union in Frankfurt am Main (europe-west3) via Google Cloud EMEA Limited / Google Ireland Limited (Firebase Auth, Firestore, Cloud Storage, Cloud Functions) under an EU Data Processing Addendum (DPA). No ad trackers or external Google Fonts are loaded.'
-            : 'Sicherer Serverstandort Deutschland: Sämtliche Daten werden ausschließlich innerhalb der EU in Frankfurt am Main (europe-west3) über Google Cloud EMEA Limited / Google Ireland Limited (Firebase Auth, Firestore, Cloud Storage, Cloud Functions) auf Basis eines EU-Auftragsverarbeitungsvertrags (Art. 28 DSGVO) verarbeitet. Keine Werbe-Tracker, keine externen Google-Fonts-Abrufe.',
+            ? 'All data is stored and processed exclusively inside the European Union in Frankfurt am Main (Germany / EU) via Google Cloud EMEA Limited / Google Ireland Limited (Firebase Auth, Firestore, Cloud Storage, Cloud Functions) under an EU Data Processing Addendum (DPA). No ad trackers or external font servers are loaded.'
+            : 'Sicherer Serverstandort Deutschland: Sämtliche Daten werden ausschließlich innerhalb der EU in Frankfurt am Main (Deutschland / EU) über Google Cloud EMEA Limited / Google Ireland Limited (Firebase Auth, Firestore, Cloud Storage, Cloud Functions) auf Basis eines EU-Auftragsverarbeitungsvertrags (Art. 28 DSGVO) verarbeitet. Keine Werbe-Tracker, keine externen Schriftart-Abrufe.',
         primaryText: primaryText,
         secondaryText: secondaryText,
       ),

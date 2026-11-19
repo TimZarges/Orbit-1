@@ -8,6 +8,7 @@
 /// (`AGENTS.md` Regel 10).
 library;
 
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/design/app_colors.dart';
@@ -50,6 +51,27 @@ class _V1AthleteCoachConnectionCardState
   bool _gdprAcceptedForCode = false;
   final Map<String, bool> _gdprAcceptedForRequest = {};
   bool _isBusy = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Übernimmt etwaige vor Registrierung gesendete Coach-E-Mail-Einladungen als PENDING-Anfrage
+    if (widget.linksOverride == null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _claimPendingEmailInvitesIfReady();
+      });
+    }
+  }
+
+  /// Prüft still im Hintergrund auf offene Coach-E-Mail-Einladungen (`coachInvites`).
+  Future<void> _claimPendingEmailInvitesIfReady() async {
+    try {
+      if (Firebase.apps.isEmpty) return;
+      await ref.read(v1CoachConnectionServiceProvider).claimPendingInvites();
+    } catch (_) {
+      // Optionaler Hintergrundabgleich ohne UI-Störung
+    }
+  }
 
   @override
   void dispose() {
